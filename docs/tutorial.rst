@@ -1,0 +1,460 @@
+=======================
+Threat Hunting Tutorial
+=======================
+
+Install Kestrel runtime, write your first hello world hunt, investigate into a
+data source, apply analytics, and compose larger hunt flows.
+
+Hello World Hunt
+================
+
+Installation
+------------
+
+Make sure you have `Python 3`_ and `pip`_ installed. The simplest way to
+install Kestrel is to use pip:
+
+.. code-block:: console
+
+    $ pip install --upgrade pip
+    $ pip install kestrel-lang
+
+If you need more control, check our guide on :doc:`installation` for more details.
+
+Write Your First Hunt Flow
+--------------------------
+
+Now let's write our first hunt. Since we haven't set up a data source to
+retrieve real-world monitored data yet, we will create some entities in Kestrel
+to hunt.
+
+.. code-block::
+
+    # create four process entities in Kestrel and store them in the variable `proclist`
+    proclist = NEW process [ {"name": "cmd.exe", "pid": "123"}
+                           , {"name": "explorer.exe", "pid": "99"}
+                           , {"name": "firefox.exe", "pid": "201"}
+                           , {"name": "chrome.exe", "pid": "205"}
+                           ]
+
+    # match a pattern of browser processes, and put the matched entities in variable `browsers`
+    browsers = GET process FROM proclist WHERE [process:name IN ('firefox.exe', 'chrome.exe')]
+
+    # display the information (attributes name, pid) of the entities in variable `browsers`
+    DISP browsers ATTR name, pid
+
+Copy this simple hunt flow, paste into your favorite text editor, and save to a
+file ``helloworld.hf``.
+
+Execute The Hunt
+----------------
+
+Execute the entire hunt flow using Kestrel command line utility in a terminal:
+
+.. code-block:: console
+
+    $ kestrel helloworld.hf
+
+This is the batch execution mode of Kestrel. The hunt flow will be executed as
+a whole and all results are printed at the end of the execution.
+
+::
+    
+           name pid
+     chrome.exe 205
+    firefox.exe 201
+
+    [SUMMARY] block executed in 1 seconds
+    VARIABLE    TYPE  #(ENTITIES)  #(RECORDS)  process*
+    proclist process            4           4         0
+    browsers process            2           2         0
+    *Number of related records cached.
+
+The results have two parts:
+
+- The results of the ``DISP`` (display) command.
+
+- The execution summary.
+
+Kestrel + Jupyter
+=================
+
+Let's develop a hunt flow on the fly in Jupyter Notebook.
+
+Installation
+------------
+
+Install and setup the Kestrel Jupyter Notebook kernel:
+
+.. code-block:: console
+
+    $ pip install kestrel-jupyter
+    $ python -m kestrel_jupyter_kernel.setup
+
+Creating A Hunt Book
+--------------------
+
+1. Launch a Jupyter Notebook (not Jupyter Lab, which is not fully supported
+   yet) from the terminal:
+
+.. code-block:: console
+
+    $ jupyter notebook
+
+2. Start a hunt book by clicking the ``New`` button on the top left and choose
+   ``Kestrel`` kernel:
+
+.. image:: images/tutorial/start_kernel.png
+   :width: 25%
+   :alt: Start Jupyter notebook with Kestrel kernel.
+
+3. In the first cell, copy and paste the hello world hunt flow from the section
+   `Write Your First Hunt Flow`, and press ``Shifter`` + ``Enter`` to run it.
+
+.. image:: images/tutorial/jupyter_helloworld_hunt.png
+   :width: 100%
+   :alt: Hello world hunt in Jupyter.
+
+4. The result shows two process entities in the variable ``browsers``. The
+   ``DISP`` command is an inspection command (more in :doc:`language`), which
+   prints entity information.
+
+5. When we get an idea of the pid associated with the firefox process, let's
+   add another hunt step in a new notebook cell to capture the firefox process
+   only, and show the results.
+
+::
+    
+    firefox = GET process FROM browsers WHERE [process:pid = '201']
+    DISP firefox ATTR name, pid
+
+6. Run the second cell with ``Shifter`` + ``Enter``. Now we have a hunt book
+   with two cells and results from them.
+
+.. image:: images/tutorial/jupyter_helloworld_strech.png
+   :width: 100%
+   :alt: Additional command in Jupyter.
+
+You can put any number of hunt steps in a hunt book cell. If you need the
+results of some hunt steps to decide what to hunt next, you can put the *some
+steps* in one cell and execute it. After getting the results, write the
+following hunt steps in the next cell.
+
+Saving A Hunt Book
+------------------
+
+Now you can save the hunt book as any Jupyter Notebook, re-execute it, edit or
+add more hunt steps, or share the hunt book with others.
+
+Hunting On Real-World Data
+==========================
+
+Now it is time to hunt on real-world data. Before we start, we need to identify
+an available data source, which can be a host monitor, an EDR, a SIEM, a
+firewall, etc. In the first release of Kestrel, we include the *STIX-Shifter
+data source interface*. `STIX-Shifter`_ supports lots of data sources to
+connect to Kestrel. Check if yours is in the `supported list`_ before start.
+
+Checking Data Sources
+---------------------
+
+We describe two example data sources. Pick up any option(s) below to start:
+
+Option 1: Sysmon + Elasticsearch
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+`Sysmon`_ is a popular host monitor monitor, but it is not a full monitoring
+stack---it does not store data or handle queries. To create the queryable stack
+for Kestrel, we can setup an `Elasticsearch`_ instance to store the monitored
+data. 
+
+1. Install Sysmon on a host to monitor it.
+
+2. Install Elasticsearch somewhere that is reachable by both the monitored host
+   and the hunter's machine where Kestrel and STIX-Shifter are running.
+
+3. Setup Sysmon ingestion into Elasticsearch, e.g., via `Logstash`_.
+
+4. Pick up a index for the data source in Elasticsearch, e.g., ``host101``.
+   This allows us to differentiate data stored in the same Elasticsearch but
+   are from different monitored hosts.
+
+5. Setup username/password or API keys in Elasticsearch. Test API query to the
+   Elasticsearch.
+
+Option 2: CarbonBlack
+^^^^^^^^^^^^^^^^^^^^^
+
+CarbonBlack provides full monitoring and data access stack, which can be
+directly used by STIX-Shifter and Kestrel.
+
+The only task is to get an API key of the CarbonBlack Response or CarbonBlack
+Cloud service which is running. You also need to know whether the service is
+CarbonBlack Response or Cloud, which corresponds to different STIX-Shifter
+connectors to install.
+
+STIX-Shifter Setup
+------------------
+
+STIX-Shifter is automatically installed when installing ``kestrel``. However,
+you need to install additional STIX-Shifter connector packages for each
+specific data sources. Example connectors:
+
+- Sysmon data in Elasticsearch: ``stix-shifter-modules-elastic_ecs``.
+- Sysflow data in Elasticsearch: ``stix-shifter-modules-elastic_ecs``.
+- CarbonBlack Response: ``stix-shifter-modules-carbonblack``.
+- CarbonBlack Cloud: ``stix-shifter-modules-cbcloud``.
+- IBM QRadar: ``stix-shifter-modules-qradar``.
+
+For example, to access Sysmon data in Elasticsearch, install the corresponding connector:
+
+.. code-block:: console
+
+    $ pip install stix-shifter-modules-elastic_ecs
+
+Suppose we setup an Elasticsearch server at ``elastic.securitylog.company.com``
+with default port ``9200``. We add the Sysmon monitored host to it as index
+``host101``. We obtained the API ID and API key of the Elasticsearch server as
+``VuaCfGcBCdbkQm-e5aOx`` and ``ui2lp2axTNmsyakw9tvNnw``, respectively.
+
+The Kestrel STIX-Shifter data source interface loads the information above via
+environment variables when querying STIX-Shifter. We need to setup three
+environment variables for each data source. Refer to
+:doc:`source/kestrel_datasource_stixshifter.interface` for more details.
+
+.. code-block:: console
+
+    $ export STIXSHIFTER_HOST101_CONNECTOR=elastic_ecs
+    $ export STIXSHIFTER_HOST101_CONNECTION='{"host":"elastic.securitylog.company.com", "port":9200, "indices":"host101"}'
+    $ export STIXSHIFTER_HOST101_CONFIG='{"auth":{"id":"VuaCfGcBCdbkQm-e5aOx", "api_key":"ui2lp2axTNmsyakw9tvNnw"}}'
+
+Another example of the configuration for an IBM QRadar instance to connect:
+
+.. code-block:: console
+
+    $ export STIXSHIFTER_SIEMQ_CONNECTOR=qradar
+    $ export STIXSHIFTER_SIEMQ_CONNECTION='{"host":"qradar.securitylog.company.com", "port":443}'
+    $ export STIXSHIFTER_SIEMQ_CONFIG='{"auth":{"SEC":"123e4567-e89b-12d3-a456-426614174000"}}'
+
+The configurations can be tested in STIX-Shifter directly to see whether the
+query translation and transmission work. Refer to `STIX-Shifter documentation`_
+for more details.
+
+Pattern Matching Against Real-World Data
+----------------------------------------
+
+Now restart Jupyter Notebook from the same terminal where environment variables
+are exported:
+
+.. code-block:: console
+
+    $ jupyter notebook
+
+Let's write the first ``GET`` command to use STIX-Shifter data source
+interface. After typing the ``stixshifter://`` URI prefix, press ``TAB`` to
+auto-complete the available data sources loaded from environment variables:
+
+.. image:: images/tutorial/datasource_list.png
+   :width: 75%
+   :alt: Listing data sources in Kestrel.
+
+We can put up a simple pattern to search the entity pool of the Sysmon data
+source:
+
+.. image:: images/tutorial/first_get.png
+   :width: 100%
+   :alt: First GET command against data source.
+
+**[Known STIX-Shifter Issue]** STIX-Shifter have compatible issues with Python
+> 3.6 on Fedora/RHEL. Test STIX-Shifter manually if Kestrel encounters a data
+source issue and suggests so. If Python version is the issue, you may need to
+install Python 3.6, e.g., ``sudo dnf install python3.6``, and create `Python
+virtual environment`_ from Python 3.6 to restart.
+
+Matching A TTP Pattern
+----------------------
+
+Here let's write a pattern to match a Tactics, Techniques, and Procedures
+(TTP). The TTP pattern describes a web service exploit where a worker process
+of a web service, e.g. ``nginx`` or ``NodeJS``, is associated with a binary
+that is not the web service. This happens when the worker process is exploited,
+and the common binary to execute is a shell, e.g., ``bash``.
+
+.. image:: images/tutorial/pattern_web_exploit.png
+   :width: 25%
+   :alt: A TTP pattern.
+
+Let's put the TTP in a STIX pattern, match it against a `Sysflow`_ data source,
+and extract exploited processes from it. We also specify a time range, which is
+highly recommended when there is no referred Kestrel variables in the ``WHERE``
+clause. If no time range given, STIX-Shifter may apply a default time range,
+e.g., the last 10 minutes. Read more about ``GET`` in :doc:`language`.
+
+.. image:: images/tutorial/ttp_exploit_matching.png
+   :width: 90%
+   :alt: Matching A TTP pattern.
+
+Knowing Your Variables
+======================
+
+After execution of each cell, Kestrel will give a summary on new variables such
+as how many entities and records are associated with it. For definitions of
+entity and record, please check :doc:`language`. The summary also shows how
+many related records are returned from a data source and cached by Kestrel for
+future use, e.g., `Finding Connected Entities`_. An example: when asking the
+TTP pattern above, the Sysflow data source also returns some
+network traffic associated with the processes in the returned variable
+``exp_node``. Kestrel caches it and gives the information in the summary.
+
+Now we have some entities back from data sources, you may be wondering what's
+in ``exp_node``. We need to have some hunt steps to inspect the Kestrel
+variables.  The most basic ones are ``INFO`` and ``DISP``, which shows the
+attributes and statistics of a variable as well as displays entities in it,
+respectively. Read more about them in :doc:`language`.
+
+Connecting Hunt Steps
+=====================
+
+The power of hunting comes from the composition of hunt steps into large and
+dynamic hunt flows. Generally, you can use a Kestrel variable in any following
+command in the same notebook or same Kestrel session. There are two common ways
+to do so:
+
+Finding Connected Entities
+--------------------------
+
+We can find connected entities easily in Kestrel, e.g., child processes created
+of processes, network traffic created by processes, files loaded by processes,
+users who own the processes. To do so, use the ``FIND`` command with a
+previously created Kestrel variable, which stores a list of entities from which
+to find connected entities. Read more in :doc:`language`.
+
+.. image:: images/tutorial/find_command.png
+   :width: 90%
+   :alt: Using a FIND command.
+
+Referring Kestrel Variables in GET
+----------------------------------
+
+Another common way to link entities in hunt flows is to write new ``GET``
+command with referred variables. You can either ``GET`` new entities within an
+existing variable (a pool/list of entities similar to a data source pool of
+entities), or refer to a variable in the ``WHERE`` clause of ``GET``. We show
+the former in our `hello world hunt`_. Let's see another example of it plus an
+example of the latter case.
+
+.. image:: images/tutorial/param_stix.png
+   :width: 95%
+   :alt: Refer to a Kestrel variable in GET.
+
+In the first notebook cell, we ``GET`` all processes with name ``tweet`` from a
+Kestrel variable ``act`` (the malicious activities as the child processes of
+variable ``nc`` in `Finding Connected Entities`_). Then we ``FIND`` their
+related network traffic and print out the information. The network traffic
+shows a proxy server as the destination IP.
+
+To get the real destination IP addresses, we need to ask the proxy server or
+the SIEM system that stores the proxy logs, i.e., `siemq` (QRadar) as we
+provided to Kestrel in `STIX-Shifter Setup`_. This is a XDR hunt that go across
+host/EDR to SIEM/firewall.
+
+We write the ``GET`` in the second notebook cell. In the ``WHERE`` clause, we
+specify the source IP and source port to identify the network traffic.  Kestrel
+will derive the time range for the ``GET``, which makes the relationship
+resolution unique. Last, we show the other half of the proxy traffic to the
+Internet using ``DISP``.
+
+Applying An Analytics
+=====================
+
+You can apply any external analyzing or detection logic to add new attributes
+to existing Kestrel variables or return visualizations. Kestrel treats
+analytics as black boxes and only cares the input and output formats. So it is
+possible to wrap even proprietary software in Kestrel analytics. Read more
+about analytics in :doc:`language`.
+
+Docker Analytics Setup
+----------------------
+
+Kestrel ships with a docker analytics interface, plus 5 examples analytics for
+*threat intelligence enrichment via SANS API*, *suspicious process scoring*,
+*machine learning model testing*, *geolocation visualization*, and *data
+plotting*.  Check our ``kestrel-analytics`` repository for more details.
+
+To use an analytics via the docker interface, you need to have `docker`_
+installed, and then build the docker container for that analytics. For example,
+to build a docker container for the *geolocation visualization* analytics, go
+to its source code and run the command:
+
+.. code-block:: console
+
+    $ docker build -t kestrel-analytics-pinip .
+
+Run An Analytics
+----------------
+
+Let's apply the analytics we built on the variable ``proxynt`` from `Referring
+Kestrel Variables in GET`_ to pin IP addresses found in the variable onto a
+map. Before finishing typing the command, you can pause at halfway ``APPLY
+docker://`` and press ``TAB`` to list all available analytics from the Kestrel
+docker analytics interface.
+
+.. image:: images/tutorial/analytics_pinip.png
+   :width: 70%
+   :alt: An analytics to pin IP addresses on map.
+
+This analytics first gets geolocations for all IP addresses in the network
+traffic using the `GeoIP2`_ API. Then it uses `Folium`_ library to pin them on
+a map. Lastly it serializes the output into a Kestrel display object and hands
+it over to the analytics manager in Kestrel runtime.
+
+Creating Your Analytics
+-----------------------
+
+It is simple to create your analytics, even analytics interface (see the last
+section in :doc:`language` for more details). To create a new analytics using
+the Kestrel docker analytics interface (more at
+:doc:`source/kestrel_analytics_docker.interface`), you can use the container
+template in the ``kestrel-analytics`` repository. After adding some meat or
+wrapping existing code into an analytics, build a docker container with the
+name prefix ``kestrel-analytics-``. For example, the full container name for
+the ``pinip`` analytics we apply in the `Run An Analytics`_ section is
+``kestrel-analytics-pinip``.
+
+Analytics are available to Kestrel immediately after they are built and can be
+listed in a terminal:
+
+.. code-block:: console
+
+    $ docker image ls
+
+Forking and Merging Hunt Flows
+==============================
+
+Threat hunters may come up with different threat hypotheses to verify from time
+to time. And you can fork a hunt flow by run a command with a previously used
+Kestrel variable---the variable that used in multiple commands are the point of
+fork. And it is simple to merge hunt flows by merging variables like ``newvar =
+varA + varB + varC``. Read more about composable hunt flow in :doc:`language`.
+
+More About The Language
+=======================
+
+Congratulation! You finish this challenging full Kestrel tutorial.
+
+To learn more about the language terms, concepts, syntax, and semantics for
+writing composable hunt flows, please go to :doc:`language`.
+
+.. _pip: https://pip.pypa.io
+.. _Python 3: http://docs.python-guide.org/en/latest/starting/installation/
+.. _STIX-Shifter: https://github.com/opencybersecurityalliance/stix-shifter
+.. _supported list: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md#available-connectors
+.. _sysmon: https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon
+.. _Elasticsearch: https://www.elastic.co/
+.. _STIX-Shifter documentation: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md
+.. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
+.. _Sysflow: https://github.com/sysflow-telemetry
+.. _GeoIP2: https://www.maxmind.com/
+.. _Folium: https://python-visualization.github.io/folium/
+.. _Logstash: https://www.elastic.co/logstash
+.. _docker: https://www.docker.com/

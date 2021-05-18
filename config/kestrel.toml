@@ -1,0 +1,20 @@
+# Kestrel Core Configuration File
+#
+# The user config (if exists) will override the system config
+# - user config: ~/.config/kestrel/kestrel.toml
+
+[session]
+local_database_path = "local.db"
+
+[language]
+default_variable = "_"
+default_sort_order = "desc"
+
+[stixquery]
+timerange_start_offset = -300 # seconds
+timerange_stop_offset = 300 # seconds
+
+[prefetch]
+# prefetch all records/observations for entities
+get = true
+find = true

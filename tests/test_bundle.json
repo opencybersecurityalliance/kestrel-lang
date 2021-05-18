@@ -1,0 +1,4670 @@
+{
+    "type": "bundle",
+    "id": "bundle--69a98fd0-0a18-491b-aa32-88557615a618",
+    "spec_version": "2.0",
+    "objects": [
+        {
+            "type": "identity",
+            "id": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.304Z",
+            "modified": "2020-06-30T19:31:23.304Z",
+            "name": "stix-generator.py",
+            "identity_class": "program"
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--358db13c-3591-4b2d-b0fc-a055dfe4d818",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.651Z",
+            "modified": "2020-06-30T19:31:23.651Z",
+            "first_observed": "2020-06-30T19:25:09.447726Z",
+            "last_observed": "2020-06-30T19:28:49.692424Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.212.97"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.141"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:09.447726Z",
+                    "end": "2020-06-30T19:28:49.692424Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 52983,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1008",
+                    "account_login": "henry"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--1e9b2a14-86b3-47d9-a642-70957400eac2",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.412Z",
+            "modified": "2020-06-30T19:31:23.412Z",
+            "first_observed": "2020-06-30T19:25:10.723267Z",
+            "last_observed": "2020-06-30T19:25:34.983662Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.121.121"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.134"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:10.723267Z",
+                    "end": "2020-06-30T19:25:34.983662Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 49434,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www27.example.com/page/64"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1002",
+                    "account_login": "bob"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--de5eed78-b71f-43e9-a280-8d5bc948d57b",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.510Z",
+            "modified": "2020-06-30T19:31:23.510Z",
+            "first_observed": "2020-06-30T19:25:13.068734Z",
+            "last_observed": "2020-06-30T19:26:03.959427Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.152.147"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.214"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:13.068734Z",
+                    "end": "2020-06-30T19:26:03.959427Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 53557,
+                    "dst_port": 8080,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www77.example.com/page/1"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1010",
+                    "account_login": "juan"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--0fa3ded9-6543-4e17-8bb5-40490c9b94da",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.464Z",
+            "modified": "2020-06-30T19:31:23.464Z",
+            "first_observed": "2020-06-30T19:25:20.119776Z",
+            "last_observed": "2020-06-30T19:26:40.634223Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.52.133"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.201"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:20.119776Z",
+                    "end": "2020-06-30T19:26:40.634223Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 61700,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1005",
+                    "account_login": "eve"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--76e41ee4-81aa-4ff2-baf2-69ff2651d143",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.660Z",
+            "modified": "2020-06-30T19:31:23.660Z",
+            "first_observed": "2020-06-30T19:25:23.518799Z",
+            "last_observed": "2020-06-30T19:27:04.736895Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.158.5"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.214"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:23.518799Z",
+                    "end": "2020-06-30T19:27:04.736895Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 51111,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1001",
+                    "account_login": "alice"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--6edc7db0-81b9-4486-8b11-433631361faa",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.475Z",
+            "modified": "2020-06-30T19:31:23.475Z",
+            "first_observed": "2020-06-30T19:25:23.521241Z",
+            "last_observed": "2020-06-30T19:29:39.826855Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.43.225"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.242"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:23.521241Z",
+                    "end": "2020-06-30T19:29:39.826855Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 59408,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1005",
+                    "account_login": "eve"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--1bec831a-cb6a-46c2-a093-7b27e8caa93a",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.316Z",
+            "modified": "2020-06-30T19:31:23.316Z",
+            "first_observed": "2020-06-30T19:25:24.15486Z",
+            "last_observed": "2020-06-30T19:28:51.892722Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.107.220"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:24.15486Z",
+                    "end": "2020-06-30T19:28:51.892722Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 61693,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1010",
+                    "account_login": "juan"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--b953faae-c781-45d5-be8a-84dfd22eac5f",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.523Z",
+            "modified": "2020-06-30T19:31:23.523Z",
+            "first_observed": "2020-06-30T19:25:26.91646Z",
+            "last_observed": "2020-06-30T19:25:27.89832Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.107.220"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.134"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:26.91646Z",
+                    "end": "2020-06-30T19:25:27.89832Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 55606,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1005",
+                    "account_login": "eve"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--929487f7-3682-4628-a22e-52047798c80e",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.495Z",
+            "modified": "2020-06-30T19:31:23.495Z",
+            "first_observed": "2020-06-30T19:25:26.950946Z",
+            "last_observed": "2020-06-30T19:27:19.969637Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.219.106"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.134"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:26.950946Z",
+                    "end": "2020-06-30T19:27:19.969637Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 58012,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1013",
+                    "account_login": "maria"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--ab3258d4-be85-401d-9ca6-30e19a2ce503",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.491Z",
+            "modified": "2020-06-30T19:31:23.491Z",
+            "first_observed": "2020-06-30T19:25:27.798203Z",
+            "last_observed": "2020-06-30T19:26:11.871085Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.157.211"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.201"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:27.798203Z",
+                    "end": "2020-06-30T19:26:11.871085Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 52143,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1004",
+                    "account_login": "david"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--604d09c2-da54-4738-8b21-6fdbd14c0198",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.503Z",
+            "modified": "2020-06-30T19:31:23.503Z",
+            "first_observed": "2020-06-30T19:25:29.678988Z",
+            "last_observed": "2020-06-30T19:28:57.811224Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.130.75"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:29.678988Z",
+                    "end": "2020-06-30T19:28:57.811224Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 62792,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1012",
+                    "account_login": "leo"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--8d20adf4-e8c7-468c-a8b5-5a1ec52c2813",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.643Z",
+            "modified": "2020-06-30T19:31:23.643Z",
+            "first_observed": "2020-06-30T19:25:32.186872Z",
+            "last_observed": "2020-06-30T19:25:33.328771Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.242.197"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.201"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:32.186872Z",
+                    "end": "2020-06-30T19:25:33.328771Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57166,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1006",
+                    "account_login": "frank"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--a73eb404-a4a0-4771-a20c-19830e611192",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.456Z",
+            "modified": "2020-06-30T19:31:23.456Z",
+            "first_observed": "2020-06-30T19:25:32.972741Z",
+            "last_observed": "2020-06-30T19:25:45.980948Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.101.220"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.91"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:32.972741Z",
+                    "end": "2020-06-30T19:25:45.980948Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 58438,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1003",
+                    "account_login": "carol"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--f9d70439-5286-4a4d-9f68-deafc1ab67d7",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.550Z",
+            "modified": "2020-06-30T19:31:23.550Z",
+            "first_observed": "2020-06-30T19:25:34.80866Z",
+            "last_observed": "2020-06-30T19:25:53.846228Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.160.194"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.91"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:34.80866Z",
+                    "end": "2020-06-30T19:25:53.846228Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57497,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www26.example.com/page/176"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1002",
+                    "account_login": "bob"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--19640d14-6538-465c-b76c-62aad7a79f07",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.583Z",
+            "modified": "2020-06-30T19:31:23.583Z",
+            "first_observed": "2020-06-30T19:25:35.216929Z",
+            "last_observed": "2020-06-30T19:29:51.414092Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.41.74"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.179"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:35.216929Z",
+                    "end": "2020-06-30T19:29:51.414092Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 50094,
+                    "dst_port": 80,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www67.example.com/page/264"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1001",
+                    "account_login": "alice"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--1dd732c2-75a0-481c-bab8-9aac885154a8",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.432Z",
+            "modified": "2020-06-30T19:31:23.432Z",
+            "first_observed": "2020-06-30T19:25:36.955941Z",
+            "last_observed": "2020-06-30T19:25:36.955941Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.95.78"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:36.955941Z",
+                    "end": "2020-06-30T19:25:36.955941Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 56484,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1007",
+                    "account_login": "grace"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--a406b089-f7bf-45ae-8230-53e3d41175b9",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.352Z",
+            "modified": "2020-06-30T19:31:23.352Z",
+            "first_observed": "2020-06-30T19:25:39.250348Z",
+            "last_observed": "2020-06-30T19:28:57.693172Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.160.194"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:39.250348Z",
+                    "end": "2020-06-30T19:28:57.693172Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 54307,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1006",
+                    "account_login": "frank"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--8334a312-1f29-48da-9d5b-3e0a4098d0e4",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.655Z",
+            "modified": "2020-06-30T19:31:23.655Z",
+            "first_observed": "2020-06-30T19:25:48.08729Z",
+            "last_observed": "2020-06-30T19:28:19.46366Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.16.60"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:48.08729Z",
+                    "end": "2020-06-30T19:28:19.46366Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 55158,
+                    "dst_port": 8080,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www4.example.com/page/44"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1012",
+                    "account_login": "leo"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--396f5f09-f040-441c-a341-f9fc561227f4",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.688Z",
+            "modified": "2020-06-30T19:31:23.688Z",
+            "first_observed": "2020-06-30T19:25:51.10348Z",
+            "last_observed": "2020-06-30T19:28:55.564814Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.13.182"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.141"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:51.10348Z",
+                    "end": "2020-06-30T19:28:55.564814Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 58306,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1011",
+                    "account_login": "kylie"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--ac7eec3f-a6d4-489f-bcfb-f7d87d833bc1",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.616Z",
+            "modified": "2020-06-30T19:31:23.616Z",
+            "first_observed": "2020-06-30T19:25:51.33976Z",
+            "last_observed": "2020-06-30T19:27:43.498965Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.157.211"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:25:51.33976Z",
+                    "end": "2020-06-30T19:27:43.498965Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 53820,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1007",
+                    "account_login": "grace"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--6e327312-1005-4d22-ae41-8e3fa33d344a",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.563Z",
+            "modified": "2020-06-30T19:31:23.563Z",
+            "first_observed": "2020-06-30T19:26:00.473606Z",
+            "last_observed": "2020-06-30T19:26:03.654448Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.120.50"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.242"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:00.473606Z",
+                    "end": "2020-06-30T19:26:03.654448Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 60683,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1012",
+                    "account_login": "leo"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--d67d0c70-1454-4310-ac31-49cbb9f29977",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.705Z",
+            "modified": "2020-06-30T19:31:23.705Z",
+            "first_observed": "2020-06-30T19:26:03.231091Z",
+            "last_observed": "2020-06-30T19:29:56.533295Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.242.211"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:03.231091Z",
+                    "end": "2020-06-30T19:29:56.533295Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 63716,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1011",
+                    "account_login": "kylie"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--9fb2e804-edcc-491c-8f03-cad23215d100",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.487Z",
+            "modified": "2020-06-30T19:31:23.487Z",
+            "first_observed": "2020-06-30T19:26:03.984661Z",
+            "last_observed": "2020-06-30T19:28:22.986441Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.109.169"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:03.984661Z",
+                    "end": "2020-06-30T19:28:22.986441Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 54139,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www66.example.com/page/127"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1005",
+                    "account_login": "eve"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--0ba6924f-e561-41bc-8858-9fc7bb314d7b",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.696Z",
+            "modified": "2020-06-30T19:31:23.696Z",
+            "first_observed": "2020-06-30T19:26:06.122705Z",
+            "last_observed": "2020-06-30T19:27:30.240248Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.152.147"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.91"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:06.122705Z",
+                    "end": "2020-06-30T19:27:30.240248Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 51961,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www65.example.com/page/162"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--48ff8698-ad69-40a4-bf96-448b5b91d94c",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.588Z",
+            "modified": "2020-06-30T19:31:23.588Z",
+            "first_observed": "2020-06-30T19:26:06.919504Z",
+            "last_observed": "2020-06-30T19:28:00.93753Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.135.121"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.179"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:06.919504Z",
+                    "end": "2020-06-30T19:28:00.93753Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 49479,
+                    "dst_port": 8080,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www21.example.com/page/288"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1007",
+                    "account_login": "grace"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--fed6184d-16a4-42c3-a2d6-e190c03155ad",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.425Z",
+            "modified": "2020-06-30T19:31:23.425Z",
+            "first_observed": "2020-06-30T19:26:07.25261Z",
+            "last_observed": "2020-06-30T19:26:09.762195Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.249.36"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:07.25261Z",
+                    "end": "2020-06-30T19:26:09.762195Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 50411,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--1d09a2e4-f68a-4b44-91bf-ddf377c35f8b",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.531Z",
+            "modified": "2020-06-30T19:31:23.531Z",
+            "first_observed": "2020-06-30T19:26:08.709114Z",
+            "last_observed": "2020-06-30T19:27:20.778876Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.104.15"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:08.709114Z",
+                    "end": "2020-06-30T19:27:20.778876Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 52679,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www64.example.com/page/136"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1013",
+                    "account_login": "maria"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--ca1b2cc0-55d1-43d1-b9f0-f93e8cc4fef1",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.519Z",
+            "modified": "2020-06-30T19:31:23.519Z",
+            "first_observed": "2020-06-30T19:26:13.656569Z",
+            "last_observed": "2020-06-30T19:29:09.664437Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.89.56"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.242"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:13.656569Z",
+                    "end": "2020-06-30T19:29:09.664437Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57992,
+                    "dst_port": 80,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www56.example.com/page/197"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--9472054e-eb0e-4eba-a949-2689e035fc8d",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.408Z",
+            "modified": "2020-06-30T19:31:23.408Z",
+            "first_observed": "2020-06-30T19:26:15.352189Z",
+            "last_observed": "2020-06-30T19:28:15.65966Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.140.201"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.242"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:15.352189Z",
+                    "end": "2020-06-30T19:28:15.65966Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 54700,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1014",
+                    "account_login": "nat"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--fd14e19c-2799-4cca-b06a-25dea92afc62",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.436Z",
+            "modified": "2020-06-30T19:31:23.436Z",
+            "first_observed": "2020-06-30T19:26:15.6771Z",
+            "last_observed": "2020-06-30T19:26:16.601665Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.114.46"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.91"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:15.6771Z",
+                    "end": "2020-06-30T19:26:16.601665Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 55397,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1004",
+                    "account_login": "david"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--b5a047c7-9428-4d72-99ab-d179d4281a08",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.664Z",
+            "modified": "2020-06-30T19:31:23.664Z",
+            "first_observed": "2020-06-30T19:26:18.788238Z",
+            "last_observed": "2020-06-30T19:28:23.89132Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.203.101"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:18.788238Z",
+                    "end": "2020-06-30T19:28:23.89132Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 54194,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www20.example.com/page/19"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1003",
+                    "account_login": "carol"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--cdb6370c-b231-4600-a7a8-987447cff1b2",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.443Z",
+            "modified": "2020-06-30T19:31:23.443Z",
+            "first_observed": "2020-06-30T19:26:20.142943Z",
+            "last_observed": "2020-06-30T19:27:08.532972Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.70.186"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:20.142943Z",
+                    "end": "2020-06-30T19:27:08.532972Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 60091,
+                    "dst_port": 80,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www8.example.com/page/176"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1010",
+                    "account_login": "juan"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--5bed7a33-41e1-48aa-988d-fee409875674",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.612Z",
+            "modified": "2020-06-30T19:31:23.612Z",
+            "first_observed": "2020-06-30T19:26:32.598301Z",
+            "last_observed": "2020-06-30T19:26:44.606426Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.105.242"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:32.598301Z",
+                    "end": "2020-06-30T19:26:44.606426Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 64914,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--c9d3fb89-8308-4fa1-8ef1-a634b205339d",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.306Z",
+            "modified": "2020-06-30T19:31:23.306Z",
+            "first_observed": "2020-06-30T19:26:32.753007Z",
+            "last_observed": "2020-06-30T19:27:24.812724Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.13.58"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.197"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:32.753007Z",
+                    "end": "2020-06-30T19:27:24.812724Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 52329,
+                    "dst_port": 80,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www88.example.com/page/164"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1012",
+                    "account_login": "leo"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--51213cb7-341a-422a-8e2e-351efddbbaa0",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.575Z",
+            "modified": "2020-06-30T19:31:23.575Z",
+            "first_observed": "2020-06-30T19:26:34.934448Z",
+            "last_observed": "2020-06-30T19:27:54.945496Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.242.153"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.242"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:34.934448Z",
+                    "end": "2020-06-30T19:27:54.945496Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 50784,
+                    "dst_port": 80,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www69.example.com/page/226"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1002",
+                    "account_login": "bob"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--81e5f7c6-233f-4f65-8ac8-64921168e502",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.623Z",
+            "modified": "2020-06-30T19:31:23.623Z",
+            "first_observed": "2020-06-30T19:26:34.975245Z",
+            "last_observed": "2020-06-30T19:26:52.97626Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.140.201"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.179"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:34.975245Z",
+                    "end": "2020-06-30T19:26:52.97626Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 60779,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1014",
+                    "account_login": "nat"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--43af76a5-5527-4860-a3bb-8e94b810f771",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.515Z",
+            "modified": "2020-06-30T19:31:23.515Z",
+            "first_observed": "2020-06-30T19:26:39.49767Z",
+            "last_observed": "2020-06-30T19:26:41.51794Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.15.35"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.201"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:39.49767Z",
+                    "end": "2020-06-30T19:26:41.51794Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 60744,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1002",
+                    "account_login": "bob"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--6504f985-0e69-4b71-a771-db5c6b8ecb31",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.368Z",
+            "modified": "2020-06-30T19:31:23.368Z",
+            "first_observed": "2020-06-30T19:26:48.777202Z",
+            "last_observed": "2020-06-30T19:27:27.890942Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.156.235"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.91"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:48.777202Z",
+                    "end": "2020-06-30T19:27:27.890942Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 64828,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www37.example.com/page/99"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1011",
+                    "account_login": "kylie"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--5e0c8883-16a9-462a-9a7d-195f927a1193",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.372Z",
+            "modified": "2020-06-30T19:31:23.372Z",
+            "first_observed": "2020-06-30T19:26:49.08789Z",
+            "last_observed": "2020-06-30T19:26:50.231717Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.90.122"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.134"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:49.08789Z",
+                    "end": "2020-06-30T19:26:50.231717Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 53913,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1010",
+                    "account_login": "juan"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--fcdf3dad-bda5-4233-b42f-8f76c46ea8f7",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.404Z",
+            "modified": "2020-06-30T19:31:23.404Z",
+            "first_observed": "2020-06-30T19:26:49.760556Z",
+            "last_observed": "2020-06-30T19:27:07.88429Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.243.96"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.242"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:49.760556Z",
+                    "end": "2020-06-30T19:27:07.88429Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 54919,
+                    "dst_port": 8080,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www57.example.com/page/58"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1003",
+                    "account_login": "carol"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--92a04646-2f31-4a99-b32f-0822422259d7",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.555Z",
+            "modified": "2020-06-30T19:31:23.555Z",
+            "first_observed": "2020-06-30T19:26:50.250149Z",
+            "last_observed": "2020-06-30T19:26:52.241042Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.95.22"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.242"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:50.250149Z",
+                    "end": "2020-06-30T19:26:52.241042Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57283,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1002",
+                    "account_login": "bob"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--3b846971-27d8-4b33-a7cb-28ec3aff07da",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.579Z",
+            "modified": "2020-06-30T19:31:23.579Z",
+            "first_observed": "2020-06-30T19:26:50.299648Z",
+            "last_observed": "2020-06-30T19:27:53.486834Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.90.122"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.214"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:50.299648Z",
+                    "end": "2020-06-30T19:27:53.486834Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 62296,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1001",
+                    "account_login": "alice"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--7414db3b-e630-4fbe-bc25-412d0397a758",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.392Z",
+            "modified": "2020-06-30T19:31:23.392Z",
+            "first_observed": "2020-06-30T19:26:50.882779Z",
+            "last_observed": "2020-06-30T19:27:21.914155Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.243.96"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:50.882779Z",
+                    "end": "2020-06-30T19:27:21.914155Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 64477,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1003",
+                    "account_login": "carol"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--190eb9df-2ff2-48e3-b79f-4201fbaab09b",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.684Z",
+            "modified": "2020-06-30T19:31:23.684Z",
+            "first_observed": "2020-06-30T19:26:53.511362Z",
+            "last_observed": "2020-06-30T19:28:34.545215Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.0.175"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:53.511362Z",
+                    "end": "2020-06-30T19:28:34.545215Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 58954,
+                    "dst_port": 80,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www77.example.com/page/108"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1006",
+                    "account_login": "frank"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--2682a8b5-b7c1-4375-8249-111c2e1406b0",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.440Z",
+            "modified": "2020-06-30T19:31:23.440Z",
+            "first_observed": "2020-06-30T19:26:56.101277Z",
+            "last_observed": "2020-06-30T19:29:39.739565Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.217.179"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.197"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:56.101277Z",
+                    "end": "2020-06-30T19:29:39.739565Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 51622,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1001",
+                    "account_login": "alice"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--7a2230d7-b3ea-4e92-a491-1e81ad334849",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.566Z",
+            "modified": "2020-06-30T19:31:23.566Z",
+            "first_observed": "2020-06-30T19:26:59.264258Z",
+            "last_observed": "2020-06-30T19:28:43.678072Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.156.235"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.197"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:26:59.264258Z",
+                    "end": "2020-06-30T19:28:43.678072Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 54594,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www76.example.com/page/285"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1011",
+                    "account_login": "kylie"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--ba54c28d-e654-4292-8ad8-0864019e907b",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.600Z",
+            "modified": "2020-06-30T19:31:23.600Z",
+            "first_observed": "2020-06-30T19:27:06.009406Z",
+            "last_observed": "2020-06-30T19:27:46.341716Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.57.49"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.91"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:06.009406Z",
+                    "end": "2020-06-30T19:27:46.341716Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 64506,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1004",
+                    "account_login": "david"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--032f0f29-ced9-478e-b043-944f90b7e11a",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.619Z",
+            "modified": "2020-06-30T19:31:23.619Z",
+            "first_observed": "2020-06-30T19:27:06.404543Z",
+            "last_observed": "2020-06-30T19:28:01.970977Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.90.122"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.179"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:06.404543Z",
+                    "end": "2020-06-30T19:28:01.970977Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 56782,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1002",
+                    "account_login": "bob"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--93f5ee27-f1e1-44aa-8d13-87195dbd6eca",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.471Z",
+            "modified": "2020-06-30T19:31:23.471Z",
+            "first_observed": "2020-06-30T19:27:14.54932Z",
+            "last_observed": "2020-06-30T19:27:38.792012Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.203.101"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:14.54932Z",
+                    "end": "2020-06-30T19:27:38.792012Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 56662,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1014",
+                    "account_login": "nat"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--6704dcfa-16cd-44f8-8bbe-e4f9ab3b2aba",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.395Z",
+            "modified": "2020-06-30T19:31:23.395Z",
+            "first_observed": "2020-06-30T19:27:15.502643Z",
+            "last_observed": "2020-06-30T19:29:47.540686Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.122.3"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:15.502643Z",
+                    "end": "2020-06-30T19:29:47.540686Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 56318,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--a6098db5-2c45-4e3b-aef7-98fa85303ade",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.343Z",
+            "modified": "2020-06-30T19:31:23.343Z",
+            "first_observed": "2020-06-30T19:27:16.51692Z",
+            "last_observed": "2020-06-30T19:28:24.561854Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.109.169"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:16.51692Z",
+                    "end": "2020-06-30T19:28:24.561854Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 50529,
+                    "dst_port": 8080,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www91.example.com/page/288"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1002",
+                    "account_login": "bob"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--facb0c8c-beb4-4d56-a30f-c3d6259f7382",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.313Z",
+            "modified": "2020-06-30T19:31:23.313Z",
+            "first_observed": "2020-06-30T19:27:19.956361Z",
+            "last_observed": "2020-06-30T19:28:19.963497Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.248.102"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:19.956361Z",
+                    "end": "2020-06-30T19:28:19.963497Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 53040,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1004",
+                    "account_login": "david"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--490bab2f-c7f9-478b-863c-c7d8823c122b",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.668Z",
+            "modified": "2020-06-30T19:31:23.668Z",
+            "first_observed": "2020-06-30T19:27:20.403288Z",
+            "last_observed": "2020-06-30T19:29:23.638937Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.183.13"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.214"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:20.403288Z",
+                    "end": "2020-06-30T19:29:23.638937Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 52832,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1003",
+                    "account_login": "carol"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--8ba8769a-790e-4a36-ba52-05447294ad04",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.388Z",
+            "modified": "2020-06-30T19:31:23.388Z",
+            "first_observed": "2020-06-30T19:27:20.647363Z",
+            "last_observed": "2020-06-30T19:28:13.65548Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.132.245"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.214"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:20.647363Z",
+                    "end": "2020-06-30T19:28:13.65548Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 62445,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1002",
+                    "account_login": "bob"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--09844b3b-0fac-40ca-8b7b-59e43dd9ae28",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.468Z",
+            "modified": "2020-06-30T19:31:23.468Z",
+            "first_observed": "2020-06-30T19:27:22.224876Z",
+            "last_observed": "2020-06-30T19:28:28.331639Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.104.15"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.201"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:22.224876Z",
+                    "end": "2020-06-30T19:28:28.331639Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 54050,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1006",
+                    "account_login": "frank"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--8ee6c90e-efa5-40de-b547-10eda9761cc3",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.570Z",
+            "modified": "2020-06-30T19:31:23.570Z",
+            "first_observed": "2020-06-30T19:27:22.942274Z",
+            "last_observed": "2020-06-30T19:27:50.973533Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.27.170"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.214"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:22.942274Z",
+                    "end": "2020-06-30T19:27:50.973533Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 50530,
+                    "dst_port": 80,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www91.example.com/page/104"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1006",
+                    "account_login": "frank"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--d90194ae-0edd-460b-990e-6d18cda39b33",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.592Z",
+            "modified": "2020-06-30T19:31:23.592Z",
+            "first_observed": "2020-06-30T19:27:25.411419Z",
+            "last_observed": "2020-06-30T19:27:26.816049Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.57.49"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.134"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:25.411419Z",
+                    "end": "2020-06-30T19:27:26.816049Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57005,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1012",
+                    "account_login": "leo"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--120673a5-e41b-4afc-966b-5f3b31ed5e1c",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.559Z",
+            "modified": "2020-06-30T19:31:23.559Z",
+            "first_observed": "2020-06-30T19:27:27.931379Z",
+            "last_observed": "2020-06-30T19:27:59.9817Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.183.13"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.134"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:27.931379Z",
+                    "end": "2020-06-30T19:27:59.9817Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 58617,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--13fb369b-3ac9-49e4-8504-0f8cf16ff220",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.647Z",
+            "modified": "2020-06-30T19:31:23.647Z",
+            "first_observed": "2020-06-30T19:27:28.981679Z",
+            "last_observed": "2020-06-30T19:28:48.995363Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.117.23"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.91"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:28.981679Z",
+                    "end": "2020-06-30T19:28:48.995363Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 52447,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1006",
+                    "account_login": "frank"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--6a2c4cc0-cef2-42ed-b91c-9316fe4521d5",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.676Z",
+            "modified": "2020-06-30T19:31:23.676Z",
+            "first_observed": "2020-06-30T19:27:35.314772Z",
+            "last_observed": "2020-06-30T19:28:43.971884Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.216.111"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.197"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:35.314772Z",
+                    "end": "2020-06-30T19:28:43.971884Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 52441,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1001",
+                    "account_login": "alice"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--33f5a6d9-af01-4341-851a-71d2da9df9a5",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.631Z",
+            "modified": "2020-06-30T19:31:23.631Z",
+            "first_observed": "2020-06-30T19:27:44.065208Z",
+            "last_observed": "2020-06-30T19:27:45.902502Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.90.122"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.214"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:44.065208Z",
+                    "end": "2020-06-30T19:27:45.902502Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 65528,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1007",
+                    "account_login": "grace"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--5c721f0c-103c-4b6c-ba4b-501c806de3f6",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.692Z",
+            "modified": "2020-06-30T19:31:23.692Z",
+            "first_observed": "2020-06-30T19:27:53.074592Z",
+            "last_observed": "2020-06-30T19:28:15.664084Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.31.171"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.201"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:27:53.074592Z",
+                    "end": "2020-06-30T19:28:15.664084Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57366,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www64.example.com/page/76"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1006",
+                    "account_login": "frank"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--2f44af37-f93f-4e0c-ae34-6c0a717ea953",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.331Z",
+            "modified": "2020-06-30T19:31:23.331Z",
+            "first_observed": "2020-06-30T19:28:00.223876Z",
+            "last_observed": "2020-06-30T19:29:56.915409Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.90.122"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.242"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:00.223876Z",
+                    "end": "2020-06-30T19:29:56.915409Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 65446,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1006",
+                    "account_login": "frank"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--53c8fccb-8bc6-42ba-b951-27a5c2609ba2",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.499Z",
+            "modified": "2020-06-30T19:31:23.499Z",
+            "first_observed": "2020-06-30T19:28:04.167154Z",
+            "last_observed": "2020-06-30T19:29:34.882439Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.125.107"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.214"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:04.167154Z",
+                    "end": "2020-06-30T19:29:34.882439Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 56522,
+                    "dst_port": 80,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www99.example.com/page/278"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1001",
+                    "account_login": "alice"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--1feae56a-8c84-4463-9a3e-f878a4e6afbc",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.535Z",
+            "modified": "2020-06-30T19:31:23.535Z",
+            "first_observed": "2020-06-30T19:28:10.864062Z",
+            "last_observed": "2020-06-30T19:29:14.964338Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.241.99"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.197"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:10.864062Z",
+                    "end": "2020-06-30T19:29:14.964338Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 64626,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1010",
+                    "account_login": "juan"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--374cae63-7079-4cbe-a634-7f48eaecdd53",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.546Z",
+            "modified": "2020-06-30T19:31:23.546Z",
+            "first_observed": "2020-06-30T19:28:11.032977Z",
+            "last_observed": "2020-06-30T19:29:32.939661Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.90.122"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:11.032977Z",
+                    "end": "2020-06-30T19:29:32.939661Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 56011,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1003",
+                    "account_login": "carol"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--a1111fa9-dda5-4827-b789-2e7dc485ff52",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.348Z",
+            "modified": "2020-06-30T19:31:23.348Z",
+            "first_observed": "2020-06-30T19:28:11.426442Z",
+            "last_observed": "2020-06-30T19:29:33.565079Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.217.91"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:11.426442Z",
+                    "end": "2020-06-30T19:29:33.565079Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57460,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1005",
+                    "account_login": "eve"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--a6633979-7b4a-430a-8da3-60796b5111d0",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.672Z",
+            "modified": "2020-06-30T19:31:23.672Z",
+            "first_observed": "2020-06-30T19:28:19.626001Z",
+            "last_observed": "2020-06-30T19:28:23.607548Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.41.121"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:19.626001Z",
+                    "end": "2020-06-30T19:28:23.607548Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 62640,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1010",
+                    "account_login": "juan"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--3e33fe36-6eb3-442f-a5ac-7198a1f823a7",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.542Z",
+            "modified": "2020-06-30T19:31:23.542Z",
+            "first_observed": "2020-06-30T19:28:20.356676Z",
+            "last_observed": "2020-06-30T19:28:24.842112Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.104.15"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.197"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:20.356676Z",
+                    "end": "2020-06-30T19:28:24.842112Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57546,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1006",
+                    "account_login": "frank"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--018d72e5-6c07-4d95-b8ac-7753ab384ad5",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.421Z",
+            "modified": "2020-06-30T19:31:23.421Z",
+            "first_observed": "2020-06-30T19:28:22.357434Z",
+            "last_observed": "2020-06-30T19:28:23.940523Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.203.101"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.134"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:22.357434Z",
+                    "end": "2020-06-30T19:28:23.940523Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 49468,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--9faf797e-ed6f-441a-8703-435fcb3956e2",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.460Z",
+            "modified": "2020-06-30T19:31:23.460Z",
+            "first_observed": "2020-06-30T19:28:30.616792Z",
+            "last_observed": "2020-06-30T19:29:11.877981Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.57.49"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.179"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:30.616792Z",
+                    "end": "2020-06-30T19:29:11.877981Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 51497,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--bca3d216-b5d1-4d72-a69e-79c752e10a49",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.363Z",
+            "modified": "2020-06-30T19:31:23.363Z",
+            "first_observed": "2020-06-30T19:28:31.673904Z",
+            "last_observed": "2020-06-30T19:29:52.861135Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.70.186"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.242"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:31.673904Z",
+                    "end": "2020-06-30T19:29:52.861135Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 62767,
+                    "dst_port": 8080,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www52.example.com/page/114"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1007",
+                    "account_login": "grace"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--5a000445-ac43-4756-9b75-341024dd0a46",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.384Z",
+            "modified": "2020-06-30T19:31:23.384Z",
+            "first_observed": "2020-06-30T19:28:34.841425Z",
+            "last_observed": "2020-06-30T19:29:59.916295Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.96.231"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.242"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:34.841425Z",
+                    "end": "2020-06-30T19:29:59.916295Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57924,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www63.example.com/page/30"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1003",
+                    "account_login": "carol"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--4c411781-16bb-42b1-91d3-7d588102eabf",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.604Z",
+            "modified": "2020-06-30T19:31:23.604Z",
+            "first_observed": "2020-06-30T19:28:35.788478Z",
+            "last_observed": "2020-06-30T19:29:46.9734Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.16.60"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.179"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:35.788478Z",
+                    "end": "2020-06-30T19:29:46.9734Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 62048,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www11.example.com/page/108"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1001",
+                    "account_login": "alice"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--185fd722-1827-4e29-8968-d2962251478f",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.336Z",
+            "modified": "2020-06-30T19:31:23.336Z",
+            "first_observed": "2020-06-30T19:28:38.090504Z",
+            "last_observed": "2020-06-30T19:28:38.804211Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.152.147"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.242"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:38.090504Z",
+                    "end": "2020-06-30T19:28:38.804211Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 50293,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1001",
+                    "account_login": "alice"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--83b0a36e-90dd-48a9-ba10-1c679f3c21ec",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.479Z",
+            "modified": "2020-06-30T19:31:23.479Z",
+            "first_observed": "2020-06-30T19:28:41.423168Z",
+            "last_observed": "2020-06-30T19:29:49.549512Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.117.23"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:41.423168Z",
+                    "end": "2020-06-30T19:29:49.549512Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 64426,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1011",
+                    "account_login": "kylie"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--c8a2c9c7-bc8d-42a1-b958-7e41ffc5618d",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.320Z",
+            "modified": "2020-06-30T19:31:23.320Z",
+            "first_observed": "2020-06-30T19:28:48.714203Z",
+            "last_observed": "2020-06-30T19:29:20.855943Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.95.234"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.141"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:48.714203Z",
+                    "end": "2020-06-30T19:29:20.855943Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 54891,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1006",
+                    "account_login": "frank"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--1f6f7cba-343d-4373-a9df-a085166e00af",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.527Z",
+            "modified": "2020-06-30T19:31:23.527Z",
+            "first_observed": "2020-06-30T19:28:49.938966Z",
+            "last_observed": "2020-06-30T19:28:52.831977Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.152.93"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.91"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:49.938966Z",
+                    "end": "2020-06-30T19:28:52.831977Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 55940,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--f068bf62-0239-43a6-951f-1c722efae6e6",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.640Z",
+            "modified": "2020-06-30T19:31:23.640Z",
+            "first_observed": "2020-06-30T19:28:52.523026Z",
+            "last_observed": "2020-06-30T19:29:58.97658Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.23.120"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.141"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:52.523026Z",
+                    "end": "2020-06-30T19:29:58.97658Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 55780,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1011",
+                    "account_login": "kylie"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--76b43d60-83df-4274-8142-3b4c858d35fb",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.380Z",
+            "modified": "2020-06-30T19:31:23.380Z",
+            "first_observed": "2020-06-30T19:28:53.932148Z",
+            "last_observed": "2020-06-30T19:29:32.986761Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.124.115"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:53.932148Z",
+                    "end": "2020-06-30T19:29:32.986761Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 50217,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1004",
+                    "account_login": "david"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--85ac0b5f-88f9-48aa-b852-70bfb71587c3",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.359Z",
+            "modified": "2020-06-30T19:31:23.359Z",
+            "first_observed": "2020-06-30T19:28:54.108066Z",
+            "last_observed": "2020-06-30T19:29:49.836757Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.160.194"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:54.108066Z",
+                    "end": "2020-06-30T19:29:49.836757Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 50685,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1001",
+                    "account_login": "alice"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--5270ee94-4665-43fb-a6fe-d26c25ea6a28",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.448Z",
+            "modified": "2020-06-30T19:31:23.448Z",
+            "first_observed": "2020-06-30T19:28:55.640411Z",
+            "last_observed": "2020-06-30T19:29:26.682945Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.219.247"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.91"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:55.640411Z",
+                    "end": "2020-06-30T19:29:26.682945Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 60369,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www43.example.com/page/291"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1007",
+                    "account_login": "grace"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--ea60da85-1258-425c-8cb9-4aecde4e4f16",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.428Z",
+            "modified": "2020-06-30T19:31:23.428Z",
+            "first_observed": "2020-06-30T19:28:57.791286Z",
+            "last_observed": "2020-06-30T19:29:14.962936Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.70.186"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.139"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:57.791286Z",
+                    "end": "2020-06-30T19:29:14.962936Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 49710,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--e8f7b243-80be-403e-9a1c-185b5dc31fe9",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.507Z",
+            "modified": "2020-06-30T19:31:23.507Z",
+            "first_observed": "2020-06-30T19:28:59.833754Z",
+            "last_observed": "2020-06-30T19:29:47.962701Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.132.245"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:28:59.833754Z",
+                    "end": "2020-06-30T19:29:47.962701Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57454,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1010",
+                    "account_login": "juan"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--15f31450-0662-4d39-8d4a-4bfdb923a571",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.680Z",
+            "modified": "2020-06-30T19:31:23.680Z",
+            "first_observed": "2020-06-30T19:29:01.020604Z",
+            "last_observed": "2020-06-30T19:29:11.625824Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.123.66"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.197"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:01.020604Z",
+                    "end": "2020-06-30T19:29:11.625824Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 60352,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1014",
+                    "account_login": "nat"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--eafd2b22-9928-4833-8681-9868cd01fa3e",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.324Z",
+            "modified": "2020-06-30T19:31:23.324Z",
+            "first_observed": "2020-06-30T19:29:01.950472Z",
+            "last_observed": "2020-06-30T19:29:43.963395Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.156.235"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.134"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:01.950472Z",
+                    "end": "2020-06-30T19:29:43.963395Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 62574,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1011",
+                    "account_login": "kylie"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--1581015e-79fc-40b6-9329-ae12f86f621b",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.328Z",
+            "modified": "2020-06-30T19:31:23.328Z",
+            "first_observed": "2020-06-30T19:29:02.473515Z",
+            "last_observed": "2020-06-30T19:29:23.63459Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.217.91"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.134"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:02.473515Z",
+                    "end": "2020-06-30T19:29:23.63459Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 54173,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1013",
+                    "account_login": "maria"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--bdb9fb65-5e8f-4286-acdf-df5e64af021c",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.596Z",
+            "modified": "2020-06-30T19:31:23.596Z",
+            "first_observed": "2020-06-30T19:29:09.848766Z",
+            "last_observed": "2020-06-30T19:29:58.94016Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.27.170"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.214"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:09.848766Z",
+                    "end": "2020-06-30T19:29:58.94016Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 58153,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1004",
+                    "account_login": "david"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--38ee33ae-6bf2-4ddf-aa1d-ca36130b4fad",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.355Z",
+            "modified": "2020-06-30T19:31:23.355Z",
+            "first_observed": "2020-06-30T19:29:10.589321Z",
+            "last_observed": "2020-06-30T19:29:16.635234Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.132.245"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.214"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:10.589321Z",
+                    "end": "2020-06-30T19:29:16.635234Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57447,
+                    "dst_port": 8080,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www60.example.com/page/26"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1008",
+                    "account_login": "henry"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--d0d70ce3-f04d-4fcb-a6d5-6e27fec3de1d",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.340Z",
+            "modified": "2020-06-30T19:31:23.340Z",
+            "first_observed": "2020-06-30T19:29:14.746006Z",
+            "last_observed": "2020-06-30T19:29:15.066264Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.57.49"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.197"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:14.746006Z",
+                    "end": "2020-06-30T19:29:15.066264Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 55545,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1011",
+                    "account_login": "kylie"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--0bce0f99-5d80-42ab-a365-2ba9fe824516",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.608Z",
+            "modified": "2020-06-30T19:31:23.608Z",
+            "first_observed": "2020-06-30T19:29:20.278764Z",
+            "last_observed": "2020-06-30T19:29:47.81758Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.135.121"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.141"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:20.278764Z",
+                    "end": "2020-06-30T19:29:47.81758Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 58271,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1006",
+                    "account_login": "frank"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--b9fe5d28-7f0d-412c-a15a-bc66dff498c2",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.376Z",
+            "modified": "2020-06-30T19:31:23.376Z",
+            "first_observed": "2020-06-30T19:29:26.034103Z",
+            "last_observed": "2020-06-30T19:29:30.200468Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.68.64"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.141"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:26.034103Z",
+                    "end": "2020-06-30T19:29:30.200468Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 64485,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www9.example.com/page/3"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4033",
+                "category_name": "Object Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--0dde9467-8496-4ecb-841b-60f5b621f9aa",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.636Z",
+            "modified": "2020-06-30T19:31:23.636Z",
+            "first_observed": "2020-06-30T19:29:32.664925Z",
+            "last_observed": "2020-06-30T19:29:39.954658Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.160.194"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.179"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:32.664925Z",
+                    "end": "2020-06-30T19:29:39.954658Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 60106,
+                    "dst_port": 80,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www57.example.com/page/166"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1013",
+                    "account_login": "maria"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 4
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--1620acdd-dbb4-494a-a396-bbbd15ce7958",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.417Z",
+            "modified": "2020-06-30T19:31:23.417Z",
+            "first_observed": "2020-06-30T19:29:35.497626Z",
+            "last_observed": "2020-06-30T19:29:52.997875Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.45.144"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.201"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:35.497626Z",
+                    "end": "2020-06-30T19:29:52.997875Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 56916,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1013",
+                    "account_login": "maria"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "5010",
+                "category_name": "Misc Exploit",
+                "high_level_category_id": "5000",
+                "high_level_category_name": "Exploit",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--310bc0b1-8279-4b79-9fbf-4593fb045fc9",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.453Z",
+            "modified": "2020-06-30T19:31:23.453Z",
+            "first_observed": "2020-06-30T19:29:40.14377Z",
+            "last_observed": "2020-06-30T19:29:42.448389Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.216.111"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.197"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:40.14377Z",
+                    "end": "2020-06-30T19:29:42.448389Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 62131,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1004",
+                    "account_login": "david"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4002",
+                "category_name": "Firewall Permit",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 7
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--14e1d300-c326-4e12-8231-45e6a78bae10",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.539Z",
+            "modified": "2020-06-30T19:31:23.539Z",
+            "first_observed": "2020-06-30T19:29:43.984696Z",
+            "last_observed": "2020-06-30T19:29:44.996726Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.0.175"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.73"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:43.984696Z",
+                    "end": "2020-06-30T19:29:44.996726Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57884,
+                    "dst_port": 514,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1003",
+                    "account_login": "carol"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4003",
+                "category_name": "Firewall Deny",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 3
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--7fc41e5b-db16-4010-8fd8-0fb6495af607",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.627Z",
+            "modified": "2020-06-30T19:31:23.627Z",
+            "first_observed": "2020-06-30T19:29:44.273442Z",
+            "last_observed": "2020-06-30T19:29:55.88016Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.70.186"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.179"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:44.273442Z",
+                    "end": "2020-06-30T19:29:55.88016Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 57251,
+                    "dst_port": 8080,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www6.example.com/page/36"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1009",
+                    "account_login": "isabel"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 5
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--3b3c56ea-d7a6-4493-81f9-a9bc8013fb46",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.399Z",
+            "modified": "2020-06-30T19:31:23.399Z",
+            "first_observed": "2020-06-30T19:29:55.785568Z",
+            "last_observed": "2020-06-30T19:29:59.96346Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.95.78"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.197"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:55.785568Z",
+                    "end": "2020-06-30T19:29:59.96346Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 56176,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1012",
+                    "account_login": "leo"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3022",
+                "category_name": "SSH Login Failed",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--0d312374-3e28-413c-bbd8-34e76f920ca9",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.701Z",
+            "modified": "2020-06-30T19:31:23.701Z",
+            "first_observed": "2020-06-30T19:29:56.254238Z",
+            "last_observed": "2020-06-30T19:29:57.635092Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.120.50"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.141"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:56.254238Z",
+                    "end": "2020-06-30T19:29:57.635092Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 50928,
+                    "dst_port": 3128,
+                    "protocols": [
+                        "ip",
+                        "tcp",
+                        "http"
+                    ]
+                },
+                "3": {
+                    "type": "url",
+                    "value": "http://www20.example.com/page/273"
+                },
+                "4": {
+                    "type": "user-account",
+                    "user_id": "1001",
+                    "account_login": "alice"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "4034",
+                "category_name": "Object Not Cached",
+                "high_level_category_id": "4000",
+                "high_level_category_name": "Access",
+                "magnitude": 6
+            }
+        },
+        {
+            "type": "observed-data",
+            "id": "observed-data--f112eb37-3574-4077-a064-f290888eeb25",
+            "created_by_ref": "identity--44e91f59-f0ec-4d82-8eed-a7476143b70a",
+            "created": "2020-06-30T19:31:23.483Z",
+            "modified": "2020-06-30T19:31:23.483Z",
+            "first_observed": "2020-06-30T19:29:56.900714Z",
+            "last_observed": "2020-06-30T19:29:56.931378Z",
+            "number_observed": 1,
+            "objects": {
+                "0": {
+                    "type": "ipv4-addr",
+                    "value": "192.168.52.133"
+                },
+                "1": {
+                    "type": "ipv4-addr",
+                    "value": "10.0.0.197"
+                },
+                "2": {
+                    "type": "network-traffic",
+                    "start": "2020-06-30T19:29:56.900714Z",
+                    "end": "2020-06-30T19:29:56.931378Z",
+                    "src_ref": "0",
+                    "dst_ref": "1",
+                    "src_port": 50070,
+                    "dst_port": 22,
+                    "protocols": [
+                        "ip",
+                        "tcp"
+                    ]
+                },
+                "3": {
+                    "type": "user-account",
+                    "user_id": "1007",
+                    "account_login": "grace"
+                }
+            },
+            "x_com_ibm_ariel": {
+                "category_id": "3021",
+                "category_name": "SSH Login Succeeded",
+                "high_level_category_id": "3000",
+                "high_level_category_name": "Authentication",
+                "magnitude": 4
+            }
+        }
+    ]
+}
