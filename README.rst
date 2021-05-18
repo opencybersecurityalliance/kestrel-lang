@@ -2,12 +2,8 @@
 Kestrel Jupyter Notebook Kernel
 ===============================
 
-.. image:: https://img.shields.io/pypi/v/kestrel.svg
+.. image:: https://img.shields.io/pypi/v/kestrel-jupyter.svg
         :target: https://pypi.python.org/pypi/kestrel-jupyter
-
-.. image:: https://readthedocs.org/projects/kestrel/badge/?version=latest
-        :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
    :target: https://github.com/psf/black
@@ -54,7 +50,7 @@ Write your hello world hunt:
     newvar = NEW process ["cmd.exe", "reg.exe"]
     DISP newvar
 
-Check Kestrel documentation for more.
+Check `Kestrel documentation`_ for more.
 
 How to Use ipython Magic Function
 =================================
@@ -85,3 +81,5 @@ Uninstall Kestrel kernel:
 .. code-block:: console
 
     $ jupyter kernelspec uninstall kestrel
+
+.. _Kestrel documentation: https://kestrel.readthedocs.io/
