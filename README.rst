@@ -145,8 +145,14 @@ Hunting In The Real World
 
 Find more at `Kestrel documentation hub`_.
 
+Connecting With The Community
+=============================
+
+Quick questions? Like to meet other users? Want to contribute? Join our `Kestrel slack workspace`_.
+
 .. _Kestrel documentation hub: https://kestrel.readthedocs.io/
 .. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _Jupyter Notebook: https://jupyter.org/
+.. _Kestrel slack workspace: https://kestrel-lang.slack.com/
