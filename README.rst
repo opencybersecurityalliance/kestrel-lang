@@ -20,7 +20,8 @@ Kestrel Threat Hunting Language
 
 |
 
-What is Kestrel? How to install? How to connect to data sources? How to write your first hunt flow?
+What is Kestrel? Why we need it? How to hunt with XDR support? What is the
+science behind it?
 
 You can find all the answers at `Kestrel documentation hub`_. A quick primer is below.
 
@@ -30,14 +31,14 @@ Overview
 Kestrel threat hunting language provides an abstraction for threat hunters to
 focus on *what to hunt* instead of *how to hunt*. The abstraction makes it
 possible to codify resuable hunting knowledge in a composable and sharable
-manner. And the Kestrel runtime figures out *how to hunt* for hunters to make
-cyber threat hunting less tedious and more efficient.
+manner. And Kestrel runtime figures out *how to hunt* for hunters to make cyber
+threat hunting less tedious and more efficient.
 
 .. image:: docs/images/overview.png
    :width: 100%
    :alt: Kestrel overview.
 
-- Kestrel language: a threat hunting language for a human to express *what to
+- **Kestrel language**: a threat hunting language for a human to express *what to
   hunt*.
 
   - expressing the knowledge of *what* in patterns, analytics, and hunt flows.
@@ -47,7 +48,7 @@ cyber threat hunting less tedious and more efficient.
   - applying existing public and proprietary detection logic as analytics.
   - reusing and sharing individual hunting steps and entire hunt books.
 
-- Kestrel runtime: a machine interpreter that deals with *how to hunt*.
+- **Kestrel runtime**: a machine interpreter that deals with *how to hunt*.
 
   - compiling the *what* against specific hunting platform instructions.
   - executing the compiled code locally and remotely.
@@ -134,7 +135,7 @@ Hunting In The Real World
 =========================
 
 #. How to develop hunts interactively in Jupyter Notebook?
-#. How to connect to a real-world data source?
+#. How to connect to one and more real-world data sources?
 #. How to find child processes of a process?
 #. How to find network traffic from a process?
 #. How to apply pre-built analytics?
