@@ -82,12 +82,13 @@ environment`_.
 .. code-block:: console
 
     $ pip install kestrel-jupyter
+    $ python -m kestrel_jupyter_kernel.setup
 
 3. (Optional) download Kestrel analytics examples for the ``APPLY`` hunt steps.
 
 .. code-block:: console
 
-    $ git clone https://github.com/IBM/kestrel-analytics
+    $ git clone https://github.com/IBM/kestrel-analytics.git
 
 Hello World Hunt
 ================
