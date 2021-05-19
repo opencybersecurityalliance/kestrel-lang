@@ -1,5 +1,5 @@
 ===============================
-Kestrel Threat Hunting language
+Kestrel Threat Hunting Language
 ===============================
 
 .. image:: https://img.shields.io/pypi/pyversions/kestrel-lang
