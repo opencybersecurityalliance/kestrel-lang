@@ -25,7 +25,7 @@ The easy and preferred way:
 
 .. code-block:: console
 
-    $ git install kestrel-jupyter
+    $ pip install kestrel-jupyter
     $ python -m kestrel_jupyter_kernel.setup
 
 If you want to install from source code:
