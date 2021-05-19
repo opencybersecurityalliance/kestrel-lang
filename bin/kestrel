@@ -1,0 +1,8 @@
+#!/usr/bin/env python3
+
+# Executing a hunt flow in a non-interactive manner.
+# Usage: `kestrel [-v] [--debug] hunting.hf`
+
+import runpy
+
+runpy.run_module('kestrel', run_name='__main__')
