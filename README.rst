@@ -92,7 +92,7 @@ environment`_.
 Hello World Hunt
 ================
 
-1. Copy the following code into a file using your favorite text editor:
+1. Copy the following 3-step hunt flow into your favorite text editor:
 
 .. code-block::
 
@@ -117,7 +117,7 @@ Hello World Hunt
 
     $ kestrel helloworld.hf
 
-Now you captured browser processes from all processes created:
+Now you captured browser processes in a Kestrel variable ``browsers`` from all processes created:
 
 ::
     
@@ -136,6 +136,7 @@ Hunting In The Real World
 
 #. How to develop hunts interactively in Jupyter Notebook?
 #. How to connect to one and more real-world data sources?
+#. How to write and match a TTP pattern?
 #. How to find child processes of a process?
 #. How to find network traffic from a process?
 #. How to apply pre-built analytics?
