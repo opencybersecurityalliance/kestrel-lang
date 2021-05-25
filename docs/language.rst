@@ -445,7 +445,7 @@ Syntax
 ^^^^^^
 ::
 
-    returned_variable = NEW (returned_entity_type)? data
+    returned_variable = NEW [returned_entity_type] data
 
 The given data can either be:
 
@@ -648,7 +648,7 @@ Syntax
 ^^^^^^
 ::
 
-    DISP varx (ATTR attribute1, attribute2, ...)?
+    DISP varx [ATTR attribute1, attribute2, ...]
 
 - The optional clause ``ATTR`` specifies which list of attributes the user
   would like to print. If omitted, Kestrel will output all attributes.
@@ -774,7 +774,7 @@ Syntax
 ^^^^^^
 ::
 
-    newvar = LOAD file_path (AS entity_type)?
+    newvar = LOAD file_path [AS entity_type]
 
 - The suffix of the file path decides the format of the file. Current supported formats:
 
