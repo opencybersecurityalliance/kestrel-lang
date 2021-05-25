@@ -675,6 +675,36 @@ Examples
     procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
     DISP procs ATTR pid, name, command_line
 
+SORT
+----
+
+The command ``SORT`` is an *inspection* hunt step to reorder of entities in a
+Kestrel variable and output the same set of entities with new order to a new
+variable.
+
+Syntax
+^^^^^^
+::
+
+    newvar = SORT varx BY stixpath [ASC|DESC]
+
+- The ``stixpath`` can be a full STIX path like ``process.attribute`` or just
+  an attribute name like ``pid`` if ``varx`` is ``process``.
+
+- By default, data will be sorted by descending order. The user can specify the
+  direction explicitly such as ``ASC``: ascending order.
+
+Examples
+^^^^^^^^
+::
+
+    # get network traffic and sort them by their destination port
+    nt = GET network-traffic FROM stixshifter://idsX WHERE [network-traffic:dst_ref_value = '1.2.3.4']
+    ntx = SORT nt BY dst_port ASC
+
+    # display all destination port and now it is easy to check important ports
+    DISP ntx ATTR dst_port
+
 GROUP
 -----
 
