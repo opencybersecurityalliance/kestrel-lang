@@ -265,6 +265,15 @@ source:
    :width: 100%
    :alt: First GET command against data source.
 
+You may get an empty return. That is not bad! No error means the data source
+connection is setup correctly. The reason for the empty return is by default
+STIX-shifter only searches the last 10 or 30 minutes of data if no time range
+is provided. So you can get data by specifying a time range to search, e.g.,
+``START t'2021-05-06T00:00:00Z' STOP t'2021-05-07T00:00:00Z'`` to search for
+all data on the day May 6, 2021. You need to use ISO timestamp and both
+``START`` and ``STOP`` keywords. For more information, please check the
+command:GET section in :doc:`language`.
+
 **[Known STIX-Shifter Issue]** STIX-Shifter have compatible issues with Python
 > 3.6 on Fedora/RHEL. Test STIX-Shifter manually if Kestrel encounters a data
 source issue and suggests so. If Python version is the issue, you may need to
@@ -327,7 +336,10 @@ We can find connected entities easily in Kestrel, e.g., child processes created
 of processes, network traffic created by processes, files loaded by processes,
 users who own the processes. To do so, use the ``FIND`` command with a
 previously created Kestrel variable, which stores a list of entities from which
-to find connected entities. Read more in :doc:`language`.
+to find connected entities. Note that not all data sources have relation data,
+and not all STIX-Shifter are mature enough to translate relation data. The data
+sources known to work are `sysmon`_ and `Sysflow`_ both through ``elastic_ecs``
+STIX-Shifter connector. Read more in :doc:`language`.
 
 .. image:: images/tutorial/find_command.png
    :width: 90%

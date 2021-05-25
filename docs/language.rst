@@ -257,7 +257,7 @@ Syntax
 ^^^^^^
 ::
 
-    returned_variable = GET returned_entity_type FROM entity_pool WHERE stix_pattern
+    returned_variable = GET returned_entity_type FROM entity_pool WHERE stix_pattern [START t'timestamp' STOP t'timestamp']
 
 - The returned entity type is specified right after the keyword ``GET``.
 
@@ -292,14 +292,27 @@ Syntax
   It is strongly encouraged to add time range qualifiers ``START t'timestamp'
   STOP t'timestamp'`` at the end of the STIX pattern when the entity pool is a
   data source and there is no referred Kestrel variable in the STIX pattern.
-  ``timestamp`` here should be in ISO timestamp format defined in `STIX
-  Pattern`_. If one or more Kestrel variables are referred in the STIX pattern,
-  Kestrel runtime infers the time range from all entities in the referred
-  variables. If a user provides time range at the same time, it overrides the
-  inferred time range.  If no time range provided or inferred in a ``GET``
-  command, it depends on the data source interface to decide how to handle it.
-  For example, the STIX-Shifter interface will use last five minutes as the
-  time range if not specified.
+
+    - ``timestamp`` here should be in ISO timestamp format defined in `STIX
+      timestamp`_.
+
+    - Press ``tab`` to auto-complete a half-way input timestamp to the closet
+      next timetamp, e.g., ``2021-05`` to ``2021-05-01T00:00:00Z``
+
+    - The time range, when used, should always have both ``START`` and
+      ``STOP``.
+
+    - Time range inference: if one or more Kestrel variables are referred in
+      the STIX pattern, Kestrel runtime infers the time range from all entities
+      in the referred variables.
+
+    - Time range override: if a user provides time range at the same time, it
+      overrides the inferred time range if any.
+
+    - Missing time range: if no time range provided or inferred in a ``GET``
+      command, it depends on the data source interface to decide how to handle
+      it. For example, the STIX-Shifter interface will use last five minutes as
+      the time range if not specified.
 
 - Syntax sugar: if the entity pool in ``GET`` is a data source and it is the
   same as the data source used in a previous ``GET`` command, the ``FROM``
@@ -346,7 +359,7 @@ Syntax
 ^^^^^^
 ::
 
-    returned_variable = FIND returned_entity_type RELATIONFROM input_variable
+    returned_variable = FIND returned_entity_type RELATIONFROM input_variable [START t'timestamp' STOP t'timestamp']
 
 Kestrel defines the relation abstraction between entities as shown in the
 entity-relation chart:
@@ -358,6 +371,11 @@ entity-relation chart:
 To find child processes of processes in a variable ``varA``, one can look up
 the entity-relation chart and get relation ``CREATED BY``, then write the
 command ``varB = FIND process CREATED BY varA``.
+
+The optional time range works similar to that of ``GET``. However, it is not
+oftenly used in ``FIND`` since ``FIND`` always has an input variable to infer
+time range. If the user wants Kestrel to search for a specific time range
+instead of the inferred range, use ``START/STOP``.
 
 Examples
 ^^^^^^^^
@@ -886,3 +904,4 @@ is the data source name or analytics name.
 .. _STIX specification: https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html
 .. _STIX Cyber Observable Objects: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part4-cyber-observable-objects.html
 .. _STIX pattern: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part5-stix-patterning.html
+.. _STIX timestamp: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part5-stix-patterning.html
