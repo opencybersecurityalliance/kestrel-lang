@@ -421,6 +421,8 @@ class Session(object):
                 #   - complete data source if omitted by user
                 #   - complete input context
                 check_elements_not_empty(stmt)
+                if "input" in stmt:
+                    check_var_exists(stmt["input"], self.symtable)
                 if stmt["command"] == "get":
                     recognize_var_source(stmt, self.symtable)
                     complete_data_source(
