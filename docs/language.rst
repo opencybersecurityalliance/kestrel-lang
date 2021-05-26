@@ -688,7 +688,7 @@ Syntax
 
     newvar = SORT varx BY stixpath [ASC|DESC]
 
-- The ``stixpath`` can be a full STIX path like ``process.attribute`` or just
+- The ``stixpath`` can be a full STIX path like ``process:attribute`` or just
   an attribute name like ``pid`` if ``varx`` is ``process``.
 
 - By default, data will be sorted by descending order. The user can specify the

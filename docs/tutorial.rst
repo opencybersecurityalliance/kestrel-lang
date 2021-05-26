@@ -337,9 +337,9 @@ of processes, network traffic created by processes, files loaded by processes,
 users who own the processes. To do so, use the ``FIND`` command with a
 previously created Kestrel variable, which stores a list of entities from which
 to find connected entities. Note that not all data sources have relation data,
-and not all STIX-Shifter are mature enough to translate relation data. The data
-sources known to work are `sysmon`_ and `Sysflow`_ both through ``elastic_ecs``
-STIX-Shifter connector. Read more in :doc:`language`.
+and not all STIX-Shifter connector modules are mature enough to translate
+relation data. The data sources known to work are `sysmon`_ and `Sysflow`_ both
+through ``elastic_ecs`` STIX-Shifter connector. Read more in :doc:`language`.
 
 .. image:: images/tutorial/find_command.png
    :width: 90%
