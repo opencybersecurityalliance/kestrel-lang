@@ -257,7 +257,7 @@ Syntax
 ^^^^^^
 ::
 
-    returned_variable = GET returned_entity_type FROM entity_pool WHERE stix_pattern [START t'timestamp' STOP t'timestamp']
+    returned_variable = GET returned_entity_type FROM entity_pool WHERE stix_pattern
 
 - The returned entity type is specified right after the keyword ``GET``.
 
@@ -372,10 +372,10 @@ To find child processes of processes in a variable ``varA``, one can look up
 the entity-relation chart and get relation ``CREATED BY``, then write the
 command ``varB = FIND process CREATED BY varA``.
 
-The optional time range works similar to that of ``GET``. However, it is not
-oftenly used in ``FIND`` since ``FIND`` always has an input variable to infer
-time range. If the user wants Kestrel to search for a specific time range
-instead of the inferred range, use ``START/STOP``.
+The optional time range works similar to that in the STIX pattern of ``GET``.
+However, it is not oftenly used in ``FIND`` since ``FIND`` always has an input
+variable to infer time range. If the user wants Kestrel to search for a
+specific time range instead of the inferred range, use ``START/STOP``.
 
 Examples
 ^^^^^^^^
