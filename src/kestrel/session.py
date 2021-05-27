@@ -65,6 +65,7 @@ from kestrel.exceptions import (
     NoValidConfiguration,
     InvalidStixPattern,
 )
+from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.syntax.parser import parse
 from kestrel.syntax.utils import get_keywords
 from kestrel.semantics import *
@@ -421,6 +422,8 @@ class Session(object):
                 #   - complete data source if omitted by user
                 #   - complete input context
                 check_elements_not_empty(stmt)
+                for input_var_name in get_all_input_var_names(stmt):
+                    check_var_exists(input_var_name, self.symtable)
                 if stmt["command"] == "get":
                     recognize_var_source(stmt, self.symtable)
                     complete_data_source(
