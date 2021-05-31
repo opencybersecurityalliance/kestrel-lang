@@ -265,11 +265,23 @@ source:
    :width: 100%
    :alt: First GET command against data source.
 
-**[Known STIX-Shifter Issue]** STIX-Shifter have compatible issues with Python
-> 3.6 on Fedora/RHEL. Test STIX-Shifter manually if Kestrel encounters a data
-source issue and suggests so. If Python version is the issue, you may need to
-install Python 3.6, e.g., ``sudo dnf install python3.6``, and create `Python
-virtual environment`_ from Python 3.6 to restart.
+**[Empty Return]** You may get an empty return. That is not bad! No error means
+the data source connection is setup correctly. The reason for the empty return
+is by default STIX-shifter only searches the last five minutes of data if no
+time range is provided in the ``WHERE`` clause, and you are lucky that the data
+source has no matched data in the last five minutes. If this is the case, you
+can get data by specifying a time range at the end of the GET command, e.g.,
+``START t'2021-05-06T00:00:00Z' STOP t'2021-05-07T00:00:00Z'`` to search for
+all data on the day May 6, 2021. You need to use ISO timestamp and both
+``START`` and ``STOP`` keywords. Press ``tab`` in the middle of the timestamp
+to complete it. For more information, please check the command:GET section in
+:doc:`language`.
+
+**[Python Version Issue]** STIX-Shifter have compatible issues with Python >
+3.6. Test STIX-Shifter manually if Kestrel encounters a data source issue and
+suggests so. If Python version is the issue, you may need to install Python
+3.6, e.g., ``sudo dnf install python3.6``, and create `Python virtual
+environment`_ from Python 3.6 to restart.
 
 Matching A TTP Pattern
 ----------------------
@@ -327,7 +339,10 @@ We can find connected entities easily in Kestrel, e.g., child processes created
 of processes, network traffic created by processes, files loaded by processes,
 users who own the processes. To do so, use the ``FIND`` command with a
 previously created Kestrel variable, which stores a list of entities from which
-to find connected entities. Read more in :doc:`language`.
+to find connected entities. Note that not all data sources have relation data,
+and not all STIX-Shifter connector modules are mature enough to translate
+relation data. The data sources known to work are `sysmon`_ and `Sysflow`_ both
+through ``elastic_ecs`` STIX-Shifter connector. Read more in :doc:`language`.
 
 .. image:: images/tutorial/find_command.png
    :width: 90%

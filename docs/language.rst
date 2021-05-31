@@ -292,14 +292,27 @@ Syntax
   It is strongly encouraged to add time range qualifiers ``START t'timestamp'
   STOP t'timestamp'`` at the end of the STIX pattern when the entity pool is a
   data source and there is no referred Kestrel variable in the STIX pattern.
-  ``timestamp`` here should be in ISO timestamp format defined in `STIX
-  Pattern`_. If one or more Kestrel variables are referred in the STIX pattern,
-  Kestrel runtime infers the time range from all entities in the referred
-  variables. If a user provides time range at the same time, it overrides the
-  inferred time range.  If no time range provided or inferred in a ``GET``
-  command, it depends on the data source interface to decide how to handle it.
-  For example, the STIX-Shifter interface will use last five minutes as the
-  time range if not specified.
+
+    - ``timestamp`` here should be in ISO timestamp format defined in `STIX
+      timestamp`_.
+
+    - Press ``tab`` to auto-complete a half-way input timestamp to the closet
+      next timetamp, e.g., ``2021-05`` to ``2021-05-01T00:00:00Z``
+
+    - The time range, when used, should always have both ``START`` and
+      ``STOP``.
+
+    - Time range inference: if one or more Kestrel variables are referred in
+      the STIX pattern, Kestrel runtime infers the time range from all entities
+      in the referred variables.
+
+    - Time range override: if a user provides time range at the same time, it
+      overrides the inferred time range if any.
+
+    - Missing time range: if no time range provided or inferred in a ``GET``
+      command, it depends on the data source interface to decide how to handle
+      it. For example, the STIX-Shifter interface will use last five minutes as
+      the time range if not specified.
 
 - Syntax sugar: if the entity pool in ``GET`` is a data source and it is the
   same as the data source used in a previous ``GET`` command, the ``FROM``
@@ -346,7 +359,7 @@ Syntax
 ^^^^^^
 ::
 
-    returned_variable = FIND returned_entity_type RELATIONFROM input_variable
+    returned_variable = FIND returned_entity_type RELATIONFROM input_variable [START t'timestamp' STOP t'timestamp']
 
 Kestrel defines the relation abstraction between entities as shown in the
 entity-relation chart:
@@ -358,6 +371,11 @@ entity-relation chart:
 To find child processes of processes in a variable ``varA``, one can look up
 the entity-relation chart and get relation ``CREATED BY``, then write the
 command ``varB = FIND process CREATED BY varA``.
+
+The optional time range works similar to that in the STIX pattern of ``GET``.
+However, it is not oftenly used in ``FIND`` since ``FIND`` always has an input
+variable to infer time range. If the user wants Kestrel to search for a
+specific time range instead of the inferred range, use ``START/STOP``.
 
 Examples
 ^^^^^^^^
@@ -427,7 +445,7 @@ Syntax
 ^^^^^^
 ::
 
-    returned_variable = NEW (returned_entity_type)? data
+    returned_variable = NEW [returned_entity_type] data
 
 The given data can either be:
 
@@ -630,7 +648,7 @@ Syntax
 ^^^^^^
 ::
 
-    DISP varx (ATTR attribute1, attribute2, ...)?
+    DISP varx [ATTR attribute1, attribute2, ...]
 
 - The optional clause ``ATTR`` specifies which list of attributes the user
   would like to print. If omitted, Kestrel will output all attributes.
@@ -656,6 +674,36 @@ Examples
     # display process pid, name, and command line
     procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
     DISP procs ATTR pid, name, command_line
+
+SORT
+----
+
+The command ``SORT`` is an *inspection* hunt step to reorder of entities in a
+Kestrel variable and output the same set of entities with new order to a new
+variable.
+
+Syntax
+^^^^^^
+::
+
+    newvar = SORT varx BY stixpath [ASC|DESC]
+
+- The ``stixpath`` can be a full STIX path like ``process:attribute`` or just
+  an attribute name like ``pid`` if ``varx`` is ``process``.
+
+- By default, data will be sorted by descending order. The user can specify the
+  direction explicitly such as ``ASC``: ascending order.
+
+Examples
+^^^^^^^^
+::
+
+    # get network traffic and sort them by their destination port
+    nt = GET network-traffic FROM stixshifter://idsX WHERE [network-traffic:dst_ref_value = '1.2.3.4']
+    ntx = SORT nt BY dst_port ASC
+
+    # display all destination port and now it is easy to check important ports
+    DISP ntx ATTR dst_port
 
 GROUP
 -----
@@ -726,7 +774,7 @@ Syntax
 ^^^^^^
 ::
 
-    newvar = LOAD file_path (AS entity_type)?
+    newvar = LOAD file_path [AS entity_type]
 
 - The suffix of the file path decides the format of the file. Current supported formats:
 
@@ -886,3 +934,4 @@ is the data source name or analytics name.
 .. _STIX specification: https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html
 .. _STIX Cyber Observable Objects: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part4-cyber-observable-objects.html
 .. _STIX pattern: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part5-stix-patterning.html
+.. _STIX timestamp: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part5-stix-patterning.html
