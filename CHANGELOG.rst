@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.1 (2021-05-31)
+==================
+
+Changed
+-------
+
+- Fix the timestamp parsing issue #6
+
+Added
+-----
+
+- Add proper exception to non-existent variable #8
+- Add three issue templates #10
+
+
 1.0.0 (2021-05-18)
 ==================
 
