@@ -1,6 +1,6 @@
 ---
-name: documentation update template
-about: propose a documentation fix or update
+name: Documentation update
+about: Propose a documentation fix or update
 title: ''
 labels: documentation
 assignees: ''
