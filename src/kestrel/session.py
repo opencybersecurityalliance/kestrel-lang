@@ -75,23 +75,11 @@ from kestrel.codegen.summary import gen_variable_summary
 from firepit import get_storage
 from firepit.exceptions import StixPatternError
 from kestrel.symboltable import VarStruct
-from kestrel.utils import set_current_working_directory
+from kestrel.utils import set_current_working_directory, config_paths
 from kestrel.datasource import DataSourceManager
 from kestrel.analytics import AnalyticsManager
 
 _logger = logging.getLogger(__name__)
-
-ROOT_DIR_CANDIDATES = [
-    x for x in [os.getenv("VIRTUAL_ENV", ""), os.getenv("CONDA_PREFIX", ""), "/"] if x
-]
-
-# latter ones will override former ones
-CONFIG_PATHS = [
-    os.path.join(ROOT_DIR_CANDIDATES.pop(0), "etc/kestrel/kestrel.toml"),
-    "/usr/local/etc/kestrel/kestrel.toml",
-    os.path.join(os.getenv("HOME", ""), ".local/etc/kestrel/kestrel.toml"),
-    os.path.join(os.getenv("HOME", ""), ".config/kestrel/kestrel.toml"),
-]
 
 
 class Session(object):
@@ -488,7 +476,7 @@ class Session(object):
 
         configs = []
 
-        for path in CONFIG_PATHS:
+        for path in config_paths():
             try:
                 configs.append(toml.load(path))
                 _logger.debug(f"Configuration file {path} loaded successfully.")
