@@ -1,4 +1,4 @@
-name: Unit testing for push and PR to the develop branch
+name: Unit testing on PR
 
 on:
   push:
