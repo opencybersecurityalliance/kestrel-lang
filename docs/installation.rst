@@ -5,6 +5,11 @@ Installation
 Install the Kestrel runtime plus additional front ends such as Kestrel Jupyter
 Notebook kernel.
 
+Operating Systems
+=================
+
+Currently Kestrel supports to be installed and executed on Linux and macOS.
+
 Requirements
 ============
 
