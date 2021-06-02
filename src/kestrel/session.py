@@ -57,11 +57,9 @@ import time
 import math
 from datetime import datetime
 from lark import UnexpectedCharacters, UnexpectedToken
-import stix2patterns.exceptions
 
 from kestrel.exceptions import (
     KestrelSyntaxError,
-    InvalidAttribute,
     NoValidConfiguration,
     InvalidStixPattern,
 )
@@ -74,7 +72,6 @@ from kestrel.codegen.display import DisplayBlockSummary
 from kestrel.codegen.summary import gen_variable_summary
 from firepit import get_storage
 from firepit.exceptions import StixPatternError
-from kestrel.symboltable import VarStruct
 from kestrel.utils import set_current_working_directory, config_paths
 from kestrel.datasource import DataSourceManager
 from kestrel.analytics import AnalyticsManager
