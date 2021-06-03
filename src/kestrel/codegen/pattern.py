@@ -1,4 +1,3 @@
-import itertools
 import dateutil.parser
 import datetime
 import logging
