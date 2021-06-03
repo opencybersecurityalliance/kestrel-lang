@@ -1,4 +1,4 @@
-name: Unused import check
+name: Unused imports check
 
 on:
   push:
@@ -17,7 +17,7 @@ on:
       - review_requested
 
 jobs:
-  unusedimport:
+  unusedimports:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -31,5 +31,5 @@ jobs:
           python -m pip install --upgrade setuptools
           python -m pip install unimport
           python -m pip install .
-      - name: Unused import check
-        run: python -m unimport --check --exclude __init__.py src/
+      - name: Check
+        run: unimport --check --exclude __init__.py src/
