@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from pandas import DataFrame
-from numpy import nan
 import json
 
 from kestrel.exceptions import KestrelInternalError
