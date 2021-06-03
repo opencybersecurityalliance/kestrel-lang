@@ -18,11 +18,8 @@
 #     - a table that can be imported to pandas dataframe
 ################################################################
 
-import os
-import pathlib
 import functools
 import logging
-import time
 import itertools
 from collections import OrderedDict
 
