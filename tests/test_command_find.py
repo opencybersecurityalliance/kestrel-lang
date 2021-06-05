@@ -22,7 +22,6 @@ procs = FIND process CREATED conns
     correct_dict = {
         "display": "execution summary",
         "data": {
-            "execution time": 1,
             "variables updated": [
                 {
                     "VARIABLE": "conns",
@@ -47,4 +46,5 @@ procs = FIND process CREATED conns
         },
     }
     output_dict = summaries[0].to_dict()
+    del output_dict["data"]["execution time"]
     assert output_dict == correct_dict
