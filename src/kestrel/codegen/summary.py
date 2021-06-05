@@ -9,7 +9,7 @@ from firepit.query import (
     Join,
 )
 from collections import OrderedDict
-from kestrel.codegen.relations import all_entity_types, stix_2_0_identical_mapping
+from kestrel.codegen.relations import all_entity_types, get_entity_id_attribute
 from kestrel.exceptions import KestrelInternalError
 
 
@@ -35,12 +35,17 @@ def gen_variable_summary(var_name, var_struct):
 
     query_ids = _get_variable_query_ids(var_struct)
 
+    is_from_direct_datasource = False
+    var_birth_cmd = var_struct.birth_statement["command"]
+    if var_birth_cmd == "find" or (var_birth_cmd == "get" and "datasource" in var_struct.birth_statement):
+        is_from_direct_datasource = True
+
     for table in var_struct.store.tables():
 
         if table in all_entity_types:
             count = 0
 
-            if query_ids:
+            if query_ids and is_from_direct_datasource:
                 query_ids_filter = Filter([Predicate("query_id", "IN", query_ids)])
                 query = Query()
                 query.append(Table(table))
@@ -65,8 +70,7 @@ def _get_variable_query_ids(variable):
     if variable.entity_table:
         query = Query()
         query.append(Table("__queries"))
-        query.append(Join("__membership", "sco_id", "=", "sco_id"))
-        query.append(Filter([Predicate("var", "=", variable.entity_table)]))
+        query.append(Join(variable.entity_table, "sco_id", "=", "id"))
         query.append(Projection(["query_id"]))
         query.append(Unique())
         rows = variable.store.run_query(query).fetchall()
@@ -80,12 +84,8 @@ def get_variable_entity_count(variable):
     if variable.entity_table:
         query = Query()
         query.append(Table(variable.entity_table))
-        cols = (
-            stix_2_0_identical_mapping[variable.type]
-            if variable.type in stix_2_0_identical_mapping
-            else ["id"]
-        )
-        query.append(Projection(cols))
+        entity_id_attr = get_entity_id_attribute(variable)
+        query.append(Projection([entity_id_attr]))
         query.append(Unique())
         query.append(Count())
         rows = variable.store.run_query(query).fetchall()
