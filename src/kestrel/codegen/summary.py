@@ -37,7 +37,9 @@ def gen_variable_summary(var_name, var_struct):
 
     is_from_direct_datasource = False
     var_birth_cmd = var_struct.birth_statement["command"]
-    if var_birth_cmd == "find" or (var_birth_cmd == "get" and "datasource" in var_struct.birth_statement):
+    if var_birth_cmd == "find" or (
+        var_birth_cmd == "get" and "datasource" in var_struct.birth_statement
+    ):
         is_from_direct_datasource = True
 
     for table in var_struct.store.tables():

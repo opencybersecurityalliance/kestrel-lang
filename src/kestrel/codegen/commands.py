@@ -247,7 +247,9 @@ def get(stmt, session):
             prefetch_ret_entity_table = None
 
         if prefetch_ret_entity_table:
-            session.store.merge(return_var_name, [local_var_name, prefetch_ret_entity_table])
+            session.store.merge(
+                return_var_name, [local_var_name, prefetch_ret_entity_table]
+            )
             output = new_var(session.store, return_var_name, [], stmt, session.symtable)
         else:
             output = new_var(session.store, local_var_name, [], stmt, session.symtable)
@@ -379,7 +381,9 @@ def find(stmt, session):
             prefetch_ret_entity_table = None
 
         if prefetch_ret_entity_table:
-            session.store.merge(return_var_name, [local_var_name, prefetch_ret_entity_table])
+            session.store.merge(
+                return_var_name, [local_var_name, prefetch_ret_entity_table]
+            )
             output = new_var(session.store, return_var_name, [], stmt, session.symtable)
         else:
             output = new_var(session.store, local_var_name, [], stmt, session.symtable)
@@ -488,9 +492,13 @@ def _prefetch(
         str: the entity table in store if the prefetch is performed else None.
     """
 
-    pattern_body = compile_identical_entity_search_pattern(input_var_name, symtable[input_var_name])
+    pattern_body = compile_identical_entity_search_pattern(
+        input_var_name, symtable[input_var_name]
+    )
 
-    remote_pattern = build_pattern(pattern_body, time_range, start_offset, end_offset, symtable, store)
+    remote_pattern = build_pattern(
+        pattern_body, time_range, start_offset, end_offset, symtable, store
+    )
 
     if remote_pattern:
         data_source = symtable[input_var_name].data_source

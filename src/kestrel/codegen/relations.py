@@ -8,12 +8,7 @@ for more details.
 
 import logging
 
-from firepit.query import (
-    Query,
-    Projection,
-    Table,
-    Unique
-)
+from firepit.query import Query, Projection, Table, Unique
 
 _logger = logging.getLogger(__name__)
 
