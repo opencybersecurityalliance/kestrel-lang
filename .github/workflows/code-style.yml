@@ -32,4 +32,4 @@ jobs:
           python -m pip install black
           python -m pip install .
       - name: Code style check
-        run: python -m black --check src/
+        run: black --check src/

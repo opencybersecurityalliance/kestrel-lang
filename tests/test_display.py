@@ -30,7 +30,6 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
     correct_dict = {
         "display": "execution summary",
         "data": {
-            "execution time": 1,
             "variables updated": [
                 {
                     "VARIABLE": "newvar",
@@ -44,6 +43,7 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
         },
     }
     output_dict = d[0].to_dict()
+    del output_dict["data"]["execution time"]
     assert output_dict == correct_dict
 
 
@@ -61,7 +61,6 @@ exp = GET process from newvar WHERE [process:name = 'explorer.exe']
     correct_dict = {
         "display": "execution summary",
         "data": {
-            "execution time": 1,
             "variables updated": [
                 {
                     "VARIABLE": "newvar",
@@ -82,4 +81,5 @@ exp = GET process from newvar WHERE [process:name = 'explorer.exe']
         },
     }
     output_dict = d[0].to_dict()
+    del output_dict["data"]["execution time"]
     assert output_dict == correct_dict

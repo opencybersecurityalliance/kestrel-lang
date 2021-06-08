@@ -230,10 +230,8 @@ def get(stmt, session):
         output = _output
 
         if session.config["prefetch"]["get"] and len(_output):
-
             prefetch_ret_var_name = return_var_name + "_prefetch"
-
-            pattern_pf = _prefetch(
+            prefetch_ret_entity_table = _prefetch(
                 return_type,
                 prefetch_ret_var_name,
                 local_var_name,
@@ -245,20 +243,16 @@ def get(stmt, session):
                 session.session_id,
                 session.data_source_manager,
             )
+        else:
+            prefetch_ret_entity_table = None
 
-            if pattern_pf:
-                # this is a fix when the unique identifier in
-                # `kestrel.codegen.relations.stix_2_0_identical_mapping` is
-                # missing, especially for process.
-
-                # TODO: this or_pattern() code can be removed when we have
-                # better logic of unique identifier of entities.
-
-                full_pat = or_patterns([pattern, pattern_pf])
-                session.store.extract(return_var_name, return_type, None, full_pat)
-                output = new_var(
-                    session.store, return_var_name, [], stmt, session.symtable
-                )
+        if prefetch_ret_entity_table:
+            session.store.merge(
+                return_var_name, [local_var_name, prefetch_ret_entity_table]
+            )
+            output = new_var(session.store, return_var_name, [], stmt, session.symtable)
+        else:
+            output = new_var(session.store, local_var_name, [], stmt, session.symtable)
 
     else:
         raise KestrelInternalError(f"unknown type of source in {str(stmt)}")
@@ -370,9 +364,10 @@ def find(stmt, session):
 
         # Second, prefetch all records of the entities and associated entities
         if session.config["prefetch"]["find"] and len(_output) and _output.data_source:
-            if _prefetch(
+            prefetch_ret_var_name = return_var_name + "_prefetch"
+            prefetch_ret_entity_table = _prefetch(
                 return_type,
-                return_var_name,
+                prefetch_ret_var_name,
                 local_var_name,
                 time_range,
                 start_offset,
@@ -381,10 +376,17 @@ def find(stmt, session):
                 session.store,
                 session.session_id,
                 session.data_source_manager,
-            ):
-                output = new_var(
-                    session.store, return_var_name, [], stmt, session.symtable
-                )
+            )
+        else:
+            prefetch_ret_entity_table = None
+
+        if prefetch_ret_entity_table:
+            session.store.merge(
+                return_var_name, [local_var_name, prefetch_ret_entity_table]
+            )
+            output = new_var(session.store, return_var_name, [], stmt, session.symtable)
+        else:
+            output = new_var(session.store, local_var_name, [], stmt, session.symtable)
 
     return output, None
 
@@ -487,27 +489,25 @@ def _prefetch(
         session_id (str): session ID.
 
     Returns:
-        [str]: pattern if the prefetch is performed.
+        str: the entity table in store if the prefetch is performed else None.
     """
-    # only need to return bool in the future
 
-    pattern_body = compile_identical_entity_search_pattern(return_type, input_var_name)
+    pattern_body = compile_identical_entity_search_pattern(
+        input_var_name, symtable[input_var_name]
+    )
 
-    if pattern_body:
-        # this may fail if the attribute in `stix_2_0_identical_mapping` does not exists
-        # this is important since STIX does not have any mandatory attributes for process/file
-        remote_pattern = build_pattern(
-            pattern_body, time_range, start_offset, end_offset, symtable, store
-        )
+    remote_pattern = build_pattern(
+        pattern_body, time_range, start_offset, end_offset, symtable, store
+    )
 
-        if remote_pattern:
-            data_source = symtable[input_var_name].data_source
-            resp = ds_manager.query(data_source, remote_pattern, session_id)
-            query_id = resp.load_to_store(store)
+    if remote_pattern:
+        data_source = symtable[input_var_name].data_source
+        resp = ds_manager.query(data_source, remote_pattern, session_id)
+        query_id = resp.load_to_store(store)
 
-            # build the return_var_name view in store
-            store.extract(return_var_name, return_type, None, remote_pattern)
+        # build the return_var_name view in store
+        store.extract(return_var_name, return_type, query_id, remote_pattern)
 
-            return remote_pattern
+        return return_var_name
 
     return None
