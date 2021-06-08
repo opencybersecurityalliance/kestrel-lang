@@ -40,4 +40,4 @@ jobs:
           python -m pip install pytest
           python -m pip install .
       - name: Unit testing
-        run: python -m pytest
+        run: pytest -vv

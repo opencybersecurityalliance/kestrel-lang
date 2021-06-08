@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.4 (2021-06-08)
+==================
+
+Added
+-----
+
+- GitHub action for pull requests
+    - Unit testing
+    - Code style check
+    - Unused imports check
+- GitHub issue templates
+
+Changed
+-------
+
+- More comprehensive entity identification logic
+- Use firepit.merge() to implement prefetch merge
+- Typo fix in doc
+
 1.0.3 (2021-05-31)
 ==================
 

@@ -25,7 +25,6 @@ An analytics using this interface should follow the rules:
 import docker
 import logging
 import pandas
-import pickle
 
 from kestrel.analytics import AbstractAnalyticsInterface
 from kestrel.exceptions import (

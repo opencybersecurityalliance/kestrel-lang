@@ -8,6 +8,8 @@ for more details.
 
 import logging
 
+from firepit.query import Query, Projection, Table, Unique
+
 _logger = logging.getLogger(__name__)
 
 stix_2_0_ref_mapping = {
@@ -61,8 +63,9 @@ stix_2_0_ref_mapping = {
     ("windows-service-ext", "loaded", "user-account"): (["creator_user_ref"], True),
 }
 
+# the first available attribute will be used to uniquely identify the entity
 stix_2_0_identical_mapping = {
-    # entity-type: combination of attributes used for identical entity lookup
+    # entity-type: id attributes candidates
     "directory": ("path",),
     "domain-name": ("value",),
     "email-addr": ("value",),
@@ -74,7 +77,7 @@ stix_2_0_identical_mapping = {
     # `pid` is optional in STIX standard
     # `first_observed` cannot be used since it may be wrong (derived from observation)
     # `command_line` or `name` may not be in data and cannot be used
-    "process": ("pid",),
+    "process": ("pid", "name"),
     "software": ("name",),
     "url": ("value",),
     "user-account": ("user_id",),  # optional in STIX standard
@@ -102,6 +105,31 @@ all_relations = list(
 all_entity_types = list(
     set([x[ind] for x in stix_2_0_ref_mapping.keys() for ind in [0, 2]])
 )
+
+
+def get_entity_id_attribute(variable):
+    # this function should always return something
+    # if no entity id attribute found, fall back to record "id" by default
+    # this works for:
+    #   - no appriparite identifier attribute found given specific data
+    #   - "network-traffic" (not in stix_2_0_identical_mapping)
+    id_attr = "id"
+
+    if variable.type in stix_2_0_identical_mapping:
+        available_attributes = variable.store.columns(variable.entity_table)
+        for attr in stix_2_0_identical_mapping[variable.type]:
+            if attr in available_attributes:
+                query = Query()
+                query.append(Table(variable.entity_table))
+                query.append(Projection([attr]))
+                query.append(Unique())
+                rows = variable.store.run_query(query).fetchall()
+                all_values = [row[attr] for row in rows if row[attr]]
+                if all_values:
+                    id_attr = attr
+                    break
+
+    return id_attr
 
 
 def are_entities_associated_with_x_ibm_event(entity_types):
@@ -133,15 +161,10 @@ def compile_specific_relation_to_pattern(
     return pattern
 
 
-def compile_identical_entity_search_pattern(entity_type, var_name):
-    comp_exps = []
-    if entity_type in stix_2_0_identical_mapping:
-        for attribute in stix_2_0_identical_mapping[entity_type]:
-            comp_exps.append(f"{entity_type}:{attribute} = {var_name}.{attribute}")
-        pattern = "[" + " AND ".join(comp_exps) + "]"
-        _logger.debug(f"identical entity search pattern compiled: {pattern}")
-    else:
-        pattern = None
+def compile_identical_entity_search_pattern(var_name, var_struct):
+    attribute = get_entity_id_attribute(var_struct)
+    pattern = f"[{var_struct.type}:{attribute} = {var_name}.{attribute}]"
+    _logger.debug(f"identical entity search pattern compiled: {pattern}")
     return pattern
 
 
