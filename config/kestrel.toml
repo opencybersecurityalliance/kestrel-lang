@@ -5,6 +5,7 @@
 
 [session]
 local_database_path = "local.db"
+debug_env_var_name = "KESTREL_DEBUG"
 
 [language]
 default_variable = "_"
@@ -13,6 +14,7 @@ default_sort_order = "desc"
 [stixquery]
 timerange_start_offset = -300 # seconds
 timerange_stop_offset = 300 # seconds
+support_id = false # STIX 2.0 does not support unique ID
 
 [prefetch]
 # prefetch all records/observations for entities

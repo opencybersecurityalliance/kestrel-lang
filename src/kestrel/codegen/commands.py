@@ -242,6 +242,7 @@ def get(stmt, session):
                 session.store,
                 session.session_id,
                 session.data_source_manager,
+                session.config["stixquery"]["support_id"],
             )
         else:
             prefetch_ret_entity_table = None
@@ -376,6 +377,7 @@ def find(stmt, session):
                 session.store,
                 session.session_id,
                 session.data_source_manager,
+                session.config["stixquery"]["support_id"],
             )
         else:
             prefetch_ret_entity_table = None
@@ -456,6 +458,7 @@ def _prefetch(
     store,
     session_id,
     ds_manager,
+    does_support_id,
 ):
     """prefetch identical entities and associated entities.
 
@@ -488,26 +491,29 @@ def _prefetch(
 
         session_id (str): session ID.
 
+        does_support_id (bool): whether "id" can be an attribute in data source query.
+
     Returns:
         str: the entity table in store if the prefetch is performed else None.
     """
 
     pattern_body = compile_identical_entity_search_pattern(
-        input_var_name, symtable[input_var_name]
+        input_var_name, symtable[input_var_name], does_support_id
     )
 
-    remote_pattern = build_pattern(
-        pattern_body, time_range, start_offset, end_offset, symtable, store
-    )
+    if pattern_body:
+        remote_pattern = build_pattern(
+            pattern_body, time_range, start_offset, end_offset, symtable, store
+        )
 
-    if remote_pattern:
-        data_source = symtable[input_var_name].data_source
-        resp = ds_manager.query(data_source, remote_pattern, session_id)
-        query_id = resp.load_to_store(store)
+        if remote_pattern:
+            data_source = symtable[input_var_name].data_source
+            resp = ds_manager.query(data_source, remote_pattern, session_id)
+            query_id = resp.load_to_store(store)
 
-        # build the return_var_name view in store
-        store.extract(return_var_name, return_type, query_id, remote_pattern)
+            # build the return_var_name view in store
+            store.extract(return_var_name, return_type, query_id, remote_pattern)
 
-        return return_var_name
+            return return_var_name
 
     return None

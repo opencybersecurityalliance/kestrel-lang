@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.5 (2021-06-10)
+==================
+
+Fixed
+-----
+
+- Command FIND with network-traffic return gives exception #44
+
+Added
+-----
+
+- Debug flag from environment variable
+- Hunting GIF in README
+
 1.0.4 (2021-06-08)
 ==================
 

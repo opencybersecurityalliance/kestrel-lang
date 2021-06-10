@@ -271,3 +271,8 @@ def test_session_do_complete_timestamp(fake_bundle_file, time_string, suffix_ts)
         script = f"""{time_string}"""
         result = session.do_complete(script, len(script))
         assert result == suffix_ts
+
+def test_session_debug_from_env():
+    os.environ["KESTREL_DEBUG"] = "something"
+    with Session() as session:
+        assert session.debug_mode == True

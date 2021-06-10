@@ -161,9 +161,14 @@ def compile_specific_relation_to_pattern(
     return pattern
 
 
-def compile_identical_entity_search_pattern(var_name, var_struct):
+def compile_identical_entity_search_pattern(var_name, var_struct, does_support_id):
+    # "id" attribute may not be available for STIX 2.0 via STIX-shifter
+    # so `does_support_id` is set to False in default kestrel config file
     attribute = get_entity_id_attribute(var_struct)
-    pattern = f"[{var_struct.type}:{attribute} = {var_name}.{attribute}]"
+    if attribute == "id" and not does_support_id:
+        pattern = None
+    else:
+        pattern = f"[{var_struct.type}:{attribute} = {var_name}.{attribute}]"
     _logger.debug(f"identical entity search pattern compiled: {pattern}")
     return pattern
 
