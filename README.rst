@@ -151,8 +151,10 @@ Find more at `Kestrel documentation hub`_.
 Connecting With The Community
 =============================
 
-Quick questions? Like to meet other users? Want to contribute? Join our
-*Kestrel slack channel* at `Open Cybersecurity Alliance slack workspace`_.
+Quick questions? Like to meet other users? Want to contribute?
+
+Join our *Kestrel slack channel* at `Open Cybersecurity Alliance slack
+workspace`_.
 
 .. _Kestrel documentation hub: https://kestrel.readthedocs.io/
 .. _pip: https://pip.pypa.io/
