@@ -174,7 +174,12 @@ class Session(object):
         else:
             self.session_id = str(uuid.uuid4())
 
-        self.debug_mode = debug_mode
+        self.debug_mode = (
+            True
+            if debug_mode
+            or os.getenv(self.config["session"]["debug_env_var_name"], False)
+            else False
+        )
 
         # default value of runtime_directory ownership
         self.runtime_directory_is_owned_by_upper_layer = False

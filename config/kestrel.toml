@@ -5,6 +5,7 @@
 
 [session]
 local_database_path = "local.db"
+debug_env_var_name = "KESTREL_DEBUG"
 
 [language]
 default_variable = "_"
