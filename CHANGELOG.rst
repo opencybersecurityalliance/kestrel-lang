@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+Unreleased
+==========
+
+Fixed
+-----
+
+- Command FIND with network-traffic return gives exception (#44)
+
 1.0.4 (2021-06-08)
 ==================
 
