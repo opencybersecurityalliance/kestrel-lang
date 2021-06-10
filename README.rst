@@ -3,16 +3,20 @@ Kestrel Threat Hunting Language
 ===============================
 
 .. image:: https://img.shields.io/pypi/pyversions/kestrel-lang
-        :target: https://pypi.python.org/pypi/kestrel-lang/
+        :target: https://www.python.org/
+        :alt: Python 3
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
         :target: https://github.com/psf/black
+        :alt: Code Style: Black
 
 .. image:: https://img.shields.io/pypi/v/kestrel-lang
-        :target: https://pypi.python.org/pypi/kestrel-lang/
+        :target: https://pypi.python.org/pypi/kestrel-lang
+        :alt: Latest Version
 
 .. image:: https://img.shields.io/pypi/dm/kestrel-lang
-        :target: https://pypi.python.org/pypi/kestrel-lang/
+        :target: https://pypistats.org/packages/kestrel-lang
+        :alt: PyPI Downloads
 
 .. image:: https://readthedocs.org/projects/kestrel/badge/?version=latest
         :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
@@ -20,10 +24,9 @@ Kestrel Threat Hunting Language
 
 |
 
-What is Kestrel? Why we need it? How to hunt with XDR support? What is the
-science behind it?
-
-You can find all the answers at `Kestrel documentation hub`_. A quick primer is below.
+.. image:: https://github.com/subbyte/kestrel-gif/blob/main/hunt01.gif
+   :width: 100%
+   :alt: Kestrel Hunting in Action.
 
 Overview
 ========
@@ -148,11 +151,12 @@ Find more at `Kestrel documentation hub`_.
 Connecting With The Community
 =============================
 
-Quick questions? Like to meet other users? Want to contribute? Join our `Kestrel slack workspace`_.
+Quick questions? Like to meet other users? Want to contribute? Join our
+*Kestrel slack channel* at `Open Cybersecurity Alliance slack workspace`_.
 
 .. _Kestrel documentation hub: https://kestrel.readthedocs.io/
-.. _pip: https://pip.pypa.io
+.. _pip: https://pip.pypa.io/
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _Jupyter Notebook: https://jupyter.org/
-.. _Kestrel slack workspace: https://kestrel-lang.slack.com/
+.. _Open Cybersecurity Alliance slack workspace: https://open-cybersecurity.slack.com/
