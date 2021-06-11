@@ -91,7 +91,7 @@ environment`_.
 
 .. code-block:: console
 
-    $ git clone https://github.com/IBM/kestrel-analytics.git
+    $ git clone https://github.com/opencybersecurityalliance/kestrel-analytics.git
 
 Hello World Hunt
 ================

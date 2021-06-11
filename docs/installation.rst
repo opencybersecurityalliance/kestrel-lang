@@ -53,7 +53,7 @@ Source Code
 
 .. code-block:: console
 
-    $ git clone git://github.com/IBM/kestrel-lang
+    $ git clone git://github.com/opencybersecurityalliance/kestrel-lang
     $ cd kestrel-lang
 
 3. (optional) switch to the `develop` branch if you want the nightly built version:
@@ -98,7 +98,7 @@ Kestrel runtime currently supports three front ends (see architecture figure in 
 .. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
-.. _Github repo: https://github.com/IBM/kestrel-lang
-.. _kestrel-jupyter: http://github.com/IBM/kestrel-jupyter
+.. _Github repo: https://github.com/opencybersecurityalliance/kestrel-lang
+.. _kestrel-jupyter: http://github.com/opencybersecurityalliance/kestrel-jupyter
 .. _Jupyter Notebook: https://jupyter.org/
 .. _magic command: https://ipython.readthedocs.io/en/stable/interactive/magics.html
