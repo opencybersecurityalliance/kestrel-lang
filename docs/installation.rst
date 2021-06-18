@@ -8,14 +8,14 @@ Notebook kernel.
 Operating Systems
 =================
 
-Currently Kestrel supports to be installed and executed on Linux and macOS.
+Currently, Kestrel is supported on Linux and macOS.
 
 Requirements
 ============
 
 This project builds on Python 3. Refer to the `Python installation guide`_ if you do not have Python 3.
 
-The preferred way to install Kestrel is via `pip`_. Please upgrade `pip`_ to the latest version before install:
+The preferred way to install Kestrel is with `pip`_. You must upgrade `pip`_ to the latest version before you install:
 
 .. code-block:: console
 
@@ -24,9 +24,9 @@ The preferred way to install Kestrel is via `pip`_. Please upgrade `pip`_ to the
 Runtime Installation
 ====================
 
-One can install Kestrel runtime from `stable release`_ or `source code`_.
+You can install Kestrel runtime from `stable release`_ or `source code`_.
 Either way installs all packages in the ``kestrel-lang`` repository, and
-dependent packages such as ``firepit`` and ``stix-shifter``. Check the
+dependent packages, such as ``firepit`` and ``stix-shifter``. See the
 architecture section in :doc:`overview` to understand more.
 
 You can install as a normal user, root, or in a `Python virtual environment`_.
@@ -43,26 +43,26 @@ Run this command in your terminal:
 Source Code
 -----------
 
-1. install and upgrade Python building packages ``setuptools`` and ``wheel``:
+1. Install and upgrade Python building packages ``setuptools`` and ``wheel``:
 
 .. code-block:: console
 
     $ pip install --upgrade pip setuptools wheel
 
-2. clone the source from the `Github repo`_:
+2. Clone the source from the `Github repo`_:
 
 .. code-block:: console
 
     $ git clone git://github.com/IBM/kestrel-lang
     $ cd kestrel-lang
 
-3. (optional) switch to the `develop` branch if you want the nightly built version:
+3. (Optional) Switch to the `develop` branch if you want the nightly built version:
 
 .. code-block:: console
 
     $ git checkout develop
 
-4. install all packages from the repo:
+4. Install all packages from the repo:
 
 .. code-block:: console
 
@@ -73,16 +73,16 @@ Runtime Front Ends
 
 Kestrel runtime currently supports three front ends (see architecture figure in :doc:`overview`):
 
-1. Command line execution utility ``kestrel``: this is installed with the
+1. Command-line execution utility ``kestrel``: Installed with the
    package ``kestrel``. 
 
 .. code-block:: console
 
     $ kestrel [-h] [-v] [--debug] hunt101.hf
 
-2. Kestrel Jupyter Notebook kernel: need to install and setup the
+2. Kestrel Jupyter Notebook kernel: Must install and set up the
    `kestrel-jupyter`_ package (`Jupyter Notebook`_ dependencies will be
-   automatically installed if not exist):
+   automatically installed if they do not exist):
 
 .. code-block:: console
 
