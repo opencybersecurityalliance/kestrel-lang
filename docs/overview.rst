@@ -5,12 +5,12 @@ What is Kestrel?
 Dive into the essence of cyber threat hunting, think about improving it, and
 introduce Kestrel.
 
-Cyber Threat Hunting
+Cyberthreat Hunting
 ====================
 
-Cyber threat hunting is the planning and developing of a threat discovery program on
-an ad hoc basis against new and customized advanced persistent threats (APT). Cyber threat hunting
-is comprised of several actvities such as:
+Cyberthreat hunting is the planning and developing of a threat discovery program on
+an ad hoc basis against new and customized advanced persistent threats (APT). Cyberthreat hunting
+is comprised of several activities such as:
 
 1. Understanding the security measurements in the target environment.
 2. Thinking about potential threats escaping existing defenses.
@@ -24,7 +24,7 @@ with a combination of data source queries, complex data processing, machine
 learning testing, threat intelligence enrichment, proprietary detection logic,
 and more. Threat hunters take advantage of scripting languages, spreadsheets,
 whiteboards, and other tools to plan and execute their hunts. In traditional
-cyber threat hunting, many pieces of hunts are written against specific data
+cyberthreat hunting, many pieces of hunts are written against specific data
 sources and data types, which makes the domain knowledge in them not reusable,
 and hunters need to express the same knowledge again and again for different
 hunts.
@@ -58,7 +58,7 @@ Do Not Repeat Yourself
 
 Reading carefully, you will find the examples of repeats are actually not
 literally repeating. Each repeat is a little different from its
-siblings due to their different execution environments. We need to take it a 
+siblings due to their different execution environments. We need to take it a
 little bit further to find what is repeated and how to not repeat ourselves.
 
 Two Types of Questions
@@ -113,17 +113,17 @@ execution instructions specified by different hunting platforms.
 We know that machines are good at solving translation problems with well-defined
 grammars fast.
 
-Why not create an *efficient cyber threat hunting symbiosis* with humans and
+Why not create an *efficient cyberthreat hunting symbiosis* with humans and
 machines to ask and answer different types of hunting questions and enjoy their
 strengths and values?
 
 Introducing Kestrel
 ===================
 
-Kestrel is introduced as a layer of abstraction to stop the repetiton involved in
-cyber threat hunting.
+Kestrel provides a layer of abstraction to stop the repetition involved in
+cyberthreat hunting.
 
-- Kestrel language: a threat hunting language for a human to express *what to
+- Kestrel language: A threat hunting language for a human to express *what to
   hunt*.
 
     - Expressing the knowledge of *what* in patterns, analytics, and hunt flows.
@@ -133,7 +133,7 @@ cyber threat hunting.
     - Applying existing public and proprietary detection logic as analytics.
     - Reusing and sharing individual hunting steps and entire hunt books.
 
-- Kestrel runtime: a machine interpreter that deals with *how to hunt*.
+- Kestrel runtime: A machine interpreter that deals with *how to hunt*.
 
     - Compiling the *what* against specific hunting platform instructions.
     - Executing the compiled code locally and remotely.
@@ -157,7 +157,7 @@ The entire Kestrel runtime consists of the following Python packages:
 
 - ``firepit`` (in *firepit* repository): The Kestrel internal data storage
   ingesting data from data sources, caching related data, and linking records
-  against each Kestrel variable. 
+  against each Kestrel variable.
 
 - ``kestrel_datasource_stixshifter`` (in *kestrel-lang* repository): The
   STIX-Shifter data source interface for managing data sources via
