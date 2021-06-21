@@ -22,11 +22,16 @@ Kestrel Threat Hunting Language
         :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
+.. image:: https://img.shields.io/badge/demo-released-blue
+        :target: https://www.youtube.com/watch?v=tASFWZfD7l8
+        :alt: Released Demo
+
 |
 
 .. image:: https://github.com/subbyte/kestrel-gif/blob/main/hunt01.gif
    :width: 100%
-   :alt: Kestrel Hunting in Action.
+   :target: https://www.youtube.com/watch?v=tASFWZfD7l8
+   :alt: Kestrel Hunting Demo
 
 Overview
 ========
@@ -148,6 +153,15 @@ Hunting In The Real World
 
 Find more at `Kestrel documentation hub`_.
 
+Demo
+====
+
+In the 15 minutes `hunting demo`_, we did a cross-host hunt with Kestrel,
+starting from a Linux server with a TTP pattern and gradually discovering an
+entire APT with multiple phases. We cross-correlated EDR and NDR data, and
+executed Kestrel analytics to add threat intelligence (TI) and empower the hunt
+with machine learning (ML) models trained for the customer's network.
+
 Connecting With The Community
 =============================
 
@@ -162,3 +176,4 @@ workspace`_.
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _Jupyter Notebook: https://jupyter.org/
 .. _Open Cybersecurity Alliance slack workspace: https://open-cybersecurity.slack.com/
+.. _hunting demo: https://www.youtube.com/watch?v=tASFWZfD7l8
