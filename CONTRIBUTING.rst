@@ -80,7 +80,7 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated.
 3. The pull request should work for Python 3.6 and 3.8.
 
-.. _Kestrel issue tracker: http://github.com/IBM/kestrel-lang/issues
+.. _Kestrel issue tracker: https://github.com/opencybersecurityalliance/kestrel-lang/issues
 .. _Symbol Naming Convention: https://google.github.io/styleguide/pyguide.html#3164-guidelines-derived-from-guidos-recommendations
 .. _black: https://github.com/psf/black
 .. _branching model: https://nvie.com/posts/a-successful-git-branching-model
