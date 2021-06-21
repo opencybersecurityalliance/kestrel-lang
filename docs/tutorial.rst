@@ -59,7 +59,7 @@ This is the batch execution mode of Kestrel. The hunt flow will be executed as
 a whole and all results are printed at the end of the execution.
 
 ::
-    
+
            name pid
      chrome.exe 205
     firefox.exe 201
@@ -124,7 +124,7 @@ Creating A Hunt Book
    only, and then show the results.
 
 ::
-    
+
     firefox = GET process FROM browsers WHERE [process:pid = '201']
     DISP firefox ATTR name, pid
 
@@ -166,7 +166,7 @@ Option 1: Sysmon + Elasticsearch
 `Sysmon`_ is a popular host monitor, but it is not a full monitoring
 stack, meaning that it does not store data or handle queries. To create the queryable stack
 for Kestrel, set up an `Elasticsearch`_ instance to store the monitored
-data. 
+data.
 
 1. Install Sysmon on a host to monitor it.
 
@@ -185,7 +185,7 @@ data.
 Option 2: CarbonBlack
 ^^^^^^^^^^^^^^^^^^^^^
 
-CarbonBlack provides full monitoring and data access stack, which can be
+CarbonBlack provides a full monitoring and data access stack, which can be
 directly used by STIX-Shifter and Kestrel.
 
 The only task is to get an API key of the CarbonBlack Response or CarbonBlack
@@ -277,7 +277,7 @@ all data on the day May 6, 2021. You need to use ISO timestamp and both
 to complete it. For more information, see the command:GET section in
 :doc:`language`.
 
-**[Python Version Issue]** STIX-Shifter have compatible issues with Python >
+**[Python Version Issue]** STIX-Shifter has compatibility issues with Python >
 3.6. Test STIX-Shifter manually if Kestrel encounters a data source issue and
 suggests so. If the Python version is the issue, you might need to install Python
 3.6, for example, ``sudo dnf install python3.6``, and create `Python virtual
@@ -313,12 +313,12 @@ After execution of each cell, Kestrel will give a summary on new variables such
 as how many entities and records are associated with it. For definitions of
 entity and record, see :doc:`language`. The summary also shows how
 many related records are returned from a data source and cached by Kestrel for
-future use, for example, `Finding Connected Entities`_. An example: when asking the
+future use, for example, `Finding Connected Entities`_. For example, when asking the
 TTP pattern above, the Sysflow data source also returns some
 network traffic associated with the processes in the returned variable
 ``exp_node``. Kestrel caches it and gives the information in the summary.
 
-Now that you have some entities back from data sources, you may be wondering what's
+Now that you have some entities back from data sources, you might be wondering what's
 in ``exp_node``. You need to have some hunt steps to inspect the Kestrel
 variables.  The most basic ones are ``INFO`` and ``DISP``, which shows the
 attributes and statistics of a variable as well as displays entities in it,
@@ -330,7 +330,7 @@ Connecting Hunt Steps
 The power of hunting comes from the composition of hunt steps into large and
 dynamic hunt flows. Generally, you can use a Kestrel variable in any following
 command in the same notebook or same Kestrel session. There are two common ways
-to do so:
+to do this:
 
 Finding Connected Entities
 --------------------------
@@ -348,7 +348,7 @@ through ``elastic_ecs`` STIX-Shifter connector. Read more in :doc:`language`.
    :width: 90%
    :alt: Using a FIND command.
 
-Referring Kestrel Variables in GET
+Referring to Kestrel Variables in GET
 ----------------------------------
 
 Another common way to link entities in hunt flows is to write a new ``GET``
@@ -369,8 +369,8 @@ related network traffic and print out the information. The network traffic
 shows a proxy server as the destination IP.
 
 To get the real destination IP addresses, you need to ask the proxy server or
-the SIEM system that stores the proxy logs, for example, `siemq` (QRadar) as 
-provided to Kestrel in `STIX-Shifter Setup`_. This is an XDR hunt that go across
+the SIEM system that stores the proxy logs, for example, `siemq` (QRadar) as
+provided to Kestrel in `STIX-Shifter Setup`_. This is an XDR hunt that goes across
 host/EDR to SIEM/firewall.
 
 Write the ``GET`` in the second notebook cell. In the ``WHERE`` clause,
@@ -379,7 +379,7 @@ will derive the time range for the ``GET``, which makes the relationship
 resolution unique. Lastly, show the other half of the proxy traffic to the
 Internet using ``DISP``.
 
-Applying An Analytics
+Applying an Analytics
 =====================
 
 You can apply any external analyzing or detection logic to add new attributes
@@ -405,7 +405,7 @@ to its source code and run the command:
 
     $ docker build -t kestrel-analytics-pinip .
 
-Run An Analytics
+Run an Analytics
 ----------------
 
 Apply the analytics you built on the variable ``proxynt`` from `Referring
@@ -447,10 +447,10 @@ Forking and Merging Hunt Flows
 ==============================
 
 Threat hunters might come up with different threat hypotheses to verify from time
-to time. And you can fork a hunt flow by run a command with a previously used
+to time. And you can fork a hunt flow by running a command with a previously used
 Kestrel variable---the variable that is used in multiple commands are the point of
 fork. It is simple to merge hunt flows by merging variables like ``newvar =
-varA + varB + varC``. Read more about composable hunt flow in :doc:`language`.
+varA + varB + varC``. Read more about composable hunt flows in :doc:`language`.
 
 More About The Language
 =======================
@@ -458,7 +458,7 @@ More About The Language
 Congratulations! You finished this challenging full Kestrel tutorial.
 
 To learn more about the language terms, concepts, syntax, and semantics for
-writing composable hunt flows, please go to :doc:`language`.
+writing composable hunt flows, see :doc:`language`.
 
 .. _pip: https://pip.pypa.io
 .. _Python 3: http://docs.python-guide.org/en/latest/starting/installation/
