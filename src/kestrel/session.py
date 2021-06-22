@@ -492,7 +492,7 @@ class Session(object):
         else:
             config = configs.pop(0)
             for c in configs:
-                for domain,mappings in c.items():
+                for domain, mappings in c.items():
                     if domain in config:
                         config[domain].update(mappings)
                     else:
