@@ -4,7 +4,7 @@ import os
 import logging
 
 from kestrel.session import Session
-from kestrel_jupyter_kernel.config import DEBUG, LOG_FILE_NAME
+from kestrel_jupyter_kernel.config import LOG_FILE_NAME
 
 
 class KestrelKernel(Kernel):
@@ -17,8 +17,9 @@ class KestrelKernel(Kernel):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.kestrel_session = Session(debug_mode=DEBUG)
+        self.kestrel_session = Session()
         _set_logging(
+            self.kestrel_session.debug_mode,
             os.path.join(self.kestrel_session.runtime_directory, LOG_FILE_NAME)
         )
 
@@ -64,10 +65,10 @@ class KestrelKernel(Kernel):
         super()._at_shutdown()
 
 
-def _set_logging(log_file_path):
+def _set_logging(debug_flag, log_file_path):
     logging.basicConfig(
         format="%(asctime)s %(levelname)s %(name)s %(message)s",
         datefmt="%H:%M:%S",
-        level=logging.DEBUG if DEBUG else logging.INFO,
+        level=logging.DEBUG if debug_flag else logging.INFO,
         handlers=[logging.FileHandler(log_file_path)],
     )
