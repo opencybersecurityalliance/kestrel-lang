@@ -14,6 +14,10 @@ Fixed
 
 - Debug flag passing bug.
 
+Added
+-----
+
+- Publishing-to-PyPI github workflow
 
 1.0.0 (2021-05-18)
 ==================
