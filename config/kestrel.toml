@@ -1,5 +1,8 @@
 # Kestrel Core Configuration File
 #
+# This config file should be a two-level dictionary.
+# No more levels are allowed.
+#
 # The user config (if exists) will override the system config
 # - user config: ~/.config/kestrel/kestrel.toml
 

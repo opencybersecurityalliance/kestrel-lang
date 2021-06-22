@@ -492,7 +492,11 @@ class Session(object):
         else:
             config = configs.pop(0)
             for c in configs:
-                config.update(c)
+                for domain,mappings in c.items():
+                    if domain in config:
+                        config[domain].update(mappings)
+                    else:
+                        config[domain] = mappings
 
         _logger.debug(f"Configuration loaded: {config}")
 
