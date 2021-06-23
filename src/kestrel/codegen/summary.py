@@ -1,3 +1,4 @@
+from firepit.exceptions import InvalidAttr
 from firepit.query import (
     Query,
     Projection,
@@ -79,7 +80,7 @@ def _get_variable_query_ids(variable):
         try:
             rows = variable.store.run_query(query).fetchall()
             query_ids = [r["query_id"] for r in rows]
-        except firepit.exceptions.InvalidAttr:
+        except InvalidAttr:
             pass
     return query_ids
 
