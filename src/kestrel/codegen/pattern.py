@@ -52,8 +52,9 @@ def build_pattern(
 
     pattern_body = raw_pattern_body
 
+    _logger.debug(f"building pattern for: {raw_pattern_body}")
+
     if references:
-        _logger.debug(f"build pattern for: {raw_pattern_body}")
         _logger.debug(f"references found: {list(references.keys())}")
 
         var_attr_to_vals_str = _dereference_multiple_variables(
@@ -120,12 +121,15 @@ def _dereference_variable(store, symtable, var_name, attributes):
     try:
         store_return = store.lookup(var_entity_table, attr_line)
     except InvalidAttr as e:
+        _logger.error(f"cannot deref {attr_line}. Invalid attribute in firepit.")
         raise InvalidAttribute(e.message)
+
     attr_to_values = {k: [] for k in attributes}
     for row in store_return:
         for k, v in row.items():
             if v and v not in attr_to_values[k]:
                 attr_to_values[k].append(v)
+
     for k, v in attr_to_values.items():
         if not v:
             raise InvalidAttribute(var_name + "." + k)

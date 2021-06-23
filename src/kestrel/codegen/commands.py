@@ -353,9 +353,11 @@ def find(stmt, session):
 
         local_pattern = or_patterns([local_pattern, event_pattern])
         if not local_pattern:
-            _logger.info(f'no relation "{relation}" on this dataset')
+            _logger.warning(f'no relation "{relation}" on this dataset')
+            raise NoRelationalEntityFound(return_type, input_var_name)
 
         # by default, `session.store.extract` will generate new entity_table named `local_var_name`
+        # `extract` does not support the case both query_id and pattern are None
         session.store.extract(local_var_name, return_type, None, local_pattern)
 
         _output = new_var(session.store, local_var_name, [], stmt, session.symtable)
