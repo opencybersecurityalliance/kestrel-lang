@@ -354,13 +354,16 @@ def find(stmt, session):
         local_pattern = or_patterns([local_pattern, event_pattern])
         if not local_pattern:
             _logger.warning(f'no relation "{relation}" on this dataset')
-            raise NoRelationalEntityFound(return_type, input_var_name)
 
         # by default, `session.store.extract` will generate new entity_table named `local_var_name`
         # `extract` does not support the case both query_id and pattern are None
-        session.store.extract(local_var_name, return_type, None, local_pattern)
+        if local_pattern:
+            session.store.extract(local_var_name, return_type, None, local_pattern)
+            local_var_table = local_var_name
+        else:
+            local_var_table = None
 
-        _output = new_var(session.store, local_var_name, [], stmt, session.symtable)
+        _output = new_var(session.store, local_var_table, [], stmt, session.symtable)
 
         # default output without remote query
         output = _output
@@ -389,8 +392,6 @@ def find(stmt, session):
                 return_var_name, [local_var_name, prefetch_ret_entity_table]
             )
             output = new_var(session.store, return_var_name, [], stmt, session.symtable)
-        else:
-            output = new_var(session.store, local_var_name, [], stmt, session.symtable)
 
     return output, None
 

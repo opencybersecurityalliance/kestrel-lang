@@ -132,14 +132,6 @@ class MissingEntityType(KestrelException):
         )
 
 
-class NoRelationalEntityFound(KestrelException):
-    def __init__(self, return_type, input_var):
-        super().__init__(
-            f'zero {return_type} found from "{input_var}" in the data source',
-            "try exploring other relations",
-        )
-
-
 ################################################################
 #                     Data Source Errors
 ################################################################
