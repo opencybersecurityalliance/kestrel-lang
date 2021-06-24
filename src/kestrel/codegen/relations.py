@@ -6,6 +6,9 @@ for more details.
 
 """
 
+import dateutil.parser
+import datetime
+from collections import defaultdict
 import logging
 
 from firepit.query import Query, Projection, Table, Unique
@@ -220,3 +223,50 @@ def _generate_paramstix_comparison_expressions(
             comp_exps.append(f"{return_type}:id = {input_var_name}.{stix_ref}.id")
 
     return comp_exps
+
+
+def filter_relational_process_by_time(
+    local_var, prefetch_entity_table, store, start_offset, stop_offset
+):
+    id_attr = get_entity_id_attribute(local_var)
+
+    query_ref = Query()
+    query_ref.append(Table(local_var.entity_table))
+    query_ref.append(Projection([id_attr, "first_observed", "last_observed"]))
+    ref_rows = local_var.store.run_query(query_ref).fetchall()
+
+    entity_timerange_candidates = defaultdict(list)
+    entity_timerange = {}
+
+    for row in ref_rows:
+        if row[id_attr]:
+            entity_timerange_candidates[row[id_attr]].append(
+                (row["first_observed"], row["last_observed"])
+            )
+
+    for eid, ranges in entity_timerange_candidates.items():
+        start_times, end_times = zip(*ranges)
+        start_time = min(
+            map(dateutil.parser.isoparse, start_times)
+        ) + datetime.timedelta(seconds=start_offset)
+        end_time = max(map(dateutil.parser.isoparse, end_times)) + datetime.timedelta(
+            seconds=stop_offset
+        )
+        entity_timerange[eid] = (start_time, end_time)
+
+    query_fil = Query()
+    query_fil.append(Table(prefetch_entity_table))
+    query_fil.append(Projection(["id", id_attr, "first_observed", "last_observed"]))
+    fil_rows = store.run_query(query_fil).fetchall()
+
+    filtered_ids = []
+
+    for row in fil_rows:
+        if row[id_attr]:
+            ref_start_time, ref_end_time = entity_timerange[row[id_attr]]
+            fil_start_time = dateutil.parser.isoparse(row["first_observed"])
+            fil_end_time = dateutil.parser.isoparse(row["last_observed"])
+            if fil_start_time > ref_start_time and fil_end_time < ref_end_time:
+                filtered_ids.append(row["id"])
+
+    return filtered_ids
