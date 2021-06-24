@@ -105,6 +105,10 @@ def build_pattern(
     return pattern
 
 
+def build_pattern_from_ids(return_type, ids):
+    return "[" + return_type + ":id IN (" + ", ".join(map(_type_value, ids)) + ")]"
+
+
 def _dereference_multiple_variables(store, symtable, references):
     return {
         var + "." + attr: "(" + ", ".join(map(_type_value, vals)) + ")"
