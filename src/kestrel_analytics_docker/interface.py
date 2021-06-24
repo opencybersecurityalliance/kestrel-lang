@@ -100,7 +100,10 @@ class DockerInterface(AbstractAnalyticsInterface):
 
         # format env vars
         if parameters:
-            env = {k: ','.join(v) if isinstance(v, list) else v for k, v in parameters.items()}
+            env = {
+                k: ",".join(v) if isinstance(v, list) else v
+                for k, v in parameters.items()
+            }
         else:
             env = None
 
