@@ -23,5 +23,7 @@ support_id = false # STIX 2.0 does not support unique ID
 # prefetch all records/observations for entities
 get = true
 find = true
-search_timerange_start_offset = -300 # seconds
-search_timerange_stop_offset = 10800 # seconds
+process_name_change_timerange_start_offset = -5 # seconds
+process_name_change_timerange_stop_offset = 5 # seconds
+process_lifespan_start_offset = -10800 # seconds
+process_lifespan_stop_offset = 10800 # seconds
