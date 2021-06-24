@@ -39,7 +39,7 @@ from kestrel.codegen.relations import (
     compile_x_ibm_event_search_flow_in_pattern,
     compile_x_ibm_event_search_flow_out_pattern,
     are_entities_associated_with_x_ibm_event,
-    filter_relational_process_by_time,
+    fine_grained_relational_process_filtering,
     get_entity_id_attribute,
 )
 
@@ -551,7 +551,7 @@ def _filter_prefetched_process(
     prefetch_filtered_var_name = return_var_name + "_prefetch_filtered"
     start_offset = session.config["prefetch"]["search_timerange_start_offset"]
     stop_offset = session.config["prefetch"]["search_timerange_stop_offset"]
-    entity_ids = filter_relational_process_by_time(
+    entity_ids = fine_grained_relational_process_filtering(
         local_var,
         prefetched_entity_table,
         session.store,
@@ -559,5 +559,9 @@ def _filter_prefetched_process(
         stop_offset,
     )
     id_pattern = build_pattern_from_ids(return_type, entity_ids)
-    session.store.extract(prefetch_filtered_var_name, return_type, None, id_pattern)
-    return prefetch_filtered_var_name
+    if id_pattern:
+        session.store.extract(prefetch_filtered_var_name, return_type, None, id_pattern)
+        return prefetch_filtered_var_name
+    else:
+        _logger.warning("no prefetched process found after filtering")
+        return None

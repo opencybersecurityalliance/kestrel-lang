@@ -225,48 +225,55 @@ def _generate_paramstix_comparison_expressions(
     return comp_exps
 
 
-def filter_relational_process_by_time(
+def fine_grained_relational_process_filtering(
     local_var, prefetch_entity_table, store, start_offset, stop_offset
 ):
-    id_attr = get_entity_id_attribute(local_var)
-
     query_ref = Query()
     query_ref.append(Table(local_var.entity_table))
-    query_ref.append(Projection([id_attr, "first_observed", "last_observed"]))
+    query_ref.append(Projection(["pid", "name", "first_observed", "last_observed"]))
     ref_rows = local_var.store.run_query(query_ref).fetchall()
 
-    entity_timerange_candidates = defaultdict(list)
-    entity_timerange = {}
+    entities = defaultdict(list)
 
     for row in ref_rows:
-        if row[id_attr]:
-            entity_timerange_candidates[row[id_attr]].append(
-                (row["first_observed"], row["last_observed"])
+        if row["pid"]:
+            process_name = row["name"]
+            process_start_time = dateutil.parser.isoparse(
+                row["first_observed"]
+            ) + datetime.timedelta(seconds=start_offset)
+            process_end_time = dateutil.parser.isoparse(
+                row["last_observed"]
+            ) + datetime.timedelta(seconds=stop_offset)
+            entities[row["pid"]].append(
+                (process_name, process_start_time, process_end_time)
             )
-
-    for eid, ranges in entity_timerange_candidates.items():
-        start_times, end_times = zip(*ranges)
-        start_time = min(
-            map(dateutil.parser.isoparse, start_times)
-        ) + datetime.timedelta(seconds=start_offset)
-        end_time = max(map(dateutil.parser.isoparse, end_times)) + datetime.timedelta(
-            seconds=stop_offset
-        )
-        entity_timerange[eid] = (start_time, end_time)
 
     query_fil = Query()
     query_fil.append(Table(prefetch_entity_table))
-    query_fil.append(Projection(["id", id_attr, "first_observed", "last_observed"]))
+    query_fil.append(
+        Projection(["id", "pid", "name", "first_observed", "last_observed"])
+    )
     fil_rows = store.run_query(query_fil).fetchall()
 
     filtered_ids = []
 
     for row in fil_rows:
-        if row[id_attr]:
-            ref_start_time, ref_end_time = entity_timerange[row[id_attr]]
+        if row["pid"]:
             fil_start_time = dateutil.parser.isoparse(row["first_observed"])
             fil_end_time = dateutil.parser.isoparse(row["last_observed"])
-            if fil_start_time > ref_start_time and fil_end_time < ref_end_time:
-                filtered_ids.append(row["id"])
+            fil_process_name = row["name"]
+            for ref_process_name, ref_start_time, ref_end_time in entities[row["pid"]]:
+                if (
+                    fil_process_name == ref_process_name
+                    or (
+                        fil_start_time > ref_start_time
+                        and fil_start_time < ref_end_time
+                    )
+                    or (fil_end_time > ref_start_time and fil_end_time < ref_end_time)
+                ):
+                    filtered_ids.append(row["id"])
+                    break
 
+    if not filtered_ids:
+        raise Exception("halt")
     return filtered_ids
