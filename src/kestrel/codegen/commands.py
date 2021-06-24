@@ -549,14 +549,11 @@ def _filter_prefetched_process(
     return_var_name, session, local_var, prefetched_entity_table, return_type
 ):
     prefetch_filtered_var_name = return_var_name + "_prefetch_filtered"
-    start_offset = session.config["prefetch"]["search_timerange_start_offset"]
-    stop_offset = session.config["prefetch"]["search_timerange_stop_offset"]
     entity_ids = fine_grained_relational_process_filtering(
         local_var,
         prefetched_entity_table,
         session.store,
-        start_offset,
-        stop_offset,
+        session.config["prefetch"],
     )
     id_pattern = build_pattern_from_ids(return_type, entity_ids)
     if id_pattern:
