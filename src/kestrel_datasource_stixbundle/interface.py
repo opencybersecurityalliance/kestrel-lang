@@ -51,12 +51,12 @@ class StixBundleInterface(AbstractDataSourceInterface):
         if scheme == "file":
             try:
                 with open(data_path, "r") as f:
-                    data = f.read()
+                    bundle_in = json.load(f)
             except Exception:
                 raise DataSourceConnectionError(uri)
         elif scheme == "http" or scheme == "https":
             try:
-                data = requests.get(uri)
+                bundle_in = requests.get(uri).json()
             except requests.exceptions.ConnectionError:
                 raise DataSourceConnectionError(uri)
         else:
@@ -64,7 +64,6 @@ class StixBundleInterface(AbstractDataSourceInterface):
                 f"interface {__package__} should not process scheme {scheme}"
             )
 
-        bundle_in = json.loads(data)
         bundle_out = {}
         for prop, val in bundle_in.items():
             if prop == "objects":

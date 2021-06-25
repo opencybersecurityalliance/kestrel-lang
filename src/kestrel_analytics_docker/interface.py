@@ -98,12 +98,21 @@ class DockerInterface(AbstractAnalyticsInterface):
                 f"{container_name} is not an avaliable docker container.",
             )
 
+        # format env vars
+        if parameters:
+            env = {
+                k: ",".join(v) if isinstance(v, list) else v
+                for k, v in parameters.items()
+            }
+        else:
+            env = None
+
         # the execution of the container
         try:
             dclient.containers.run(
                 container_name,
                 volumes={str(shared_dir): {"bind": "/data", "mode": "rw"}},
-                environment=parameters,
+                environment=env,
             )
         except docker.errors.ContainerError as e:
             error = str(e)

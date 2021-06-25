@@ -30,7 +30,7 @@ from kestrel.symboltable import new_var
 from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.codegen.data import load_data, load_data_file, dump_data_to_file
 from kestrel.codegen.display import DisplayDataframe, DisplayDict
-from kestrel.codegen.pattern import build_pattern, or_patterns
+from kestrel.codegen.pattern import build_pattern, or_patterns, build_pattern_from_ids
 from kestrel.codegen.relations import (
     generic_relations,
     compile_generic_relation_to_pattern,
@@ -39,6 +39,8 @@ from kestrel.codegen.relations import (
     compile_x_ibm_event_search_flow_in_pattern,
     compile_x_ibm_event_search_flow_out_pattern,
     are_entities_associated_with_x_ibm_event,
+    fine_grained_relational_process_filtering,
+    get_entity_id_attribute,
 )
 
 _logger = logging.getLogger(__name__)
@@ -244,6 +246,15 @@ def get(stmt, session):
                 session.data_source_manager,
                 session.config["stixquery"]["support_id"],
             )
+
+            if return_type == "process" and get_entity_id_attribute(_output) != "id":
+                prefetch_ret_entity_table = _filter_prefetched_process(
+                    return_var_name,
+                    session,
+                    _output,
+                    prefetch_ret_entity_table,
+                    return_type,
+                )
         else:
             prefetch_ret_entity_table = None
 
@@ -353,12 +364,17 @@ def find(stmt, session):
 
         local_pattern = or_patterns([local_pattern, event_pattern])
         if not local_pattern:
-            _logger.info(f'no relation "{relation}" on this dataset')
+            _logger.warning(f'no relation "{relation}" on this dataset')
 
         # by default, `session.store.extract` will generate new entity_table named `local_var_name`
-        session.store.extract(local_var_name, return_type, None, local_pattern)
+        # `extract` does not support the case both query_id and pattern are None
+        if local_pattern:
+            session.store.extract(local_var_name, return_type, None, local_pattern)
+            local_var_table = local_var_name
+        else:
+            local_var_table = None
 
-        _output = new_var(session.store, local_var_name, [], stmt, session.symtable)
+        _output = new_var(session.store, local_var_table, [], stmt, session.symtable)
 
         # default output without remote query
         output = _output
@@ -379,6 +395,18 @@ def find(stmt, session):
                 session.data_source_manager,
                 session.config["stixquery"]["support_id"],
             )
+
+            # special handling for process to filter out impossible relational processes
+            # this is needed since STIX 2.0 does not have mandatory fields for
+            # process and field like `pid` is not unique
+            if return_type == "process" and get_entity_id_attribute(_output) != "id":
+                prefetch_ret_entity_table = _filter_prefetched_process(
+                    return_var_name,
+                    session,
+                    _output,
+                    prefetch_ret_entity_table,
+                    return_type,
+                )
         else:
             prefetch_ret_entity_table = None
 
@@ -387,8 +415,6 @@ def find(stmt, session):
                 return_var_name, [local_var_name, prefetch_ret_entity_table]
             )
             output = new_var(session.store, return_var_name, [], stmt, session.symtable)
-        else:
-            output = new_var(session.store, local_var_name, [], stmt, session.symtable)
 
     return output, None
 
@@ -517,3 +543,22 @@ def _prefetch(
             return return_var_name
 
     return None
+
+
+def _filter_prefetched_process(
+    return_var_name, session, local_var, prefetched_entity_table, return_type
+):
+    prefetch_filtered_var_name = return_var_name + "_prefetch_filtered"
+    entity_ids = fine_grained_relational_process_filtering(
+        local_var,
+        prefetched_entity_table,
+        session.store,
+        session.config["prefetch"],
+    )
+    id_pattern = build_pattern_from_ids(return_type, entity_ids)
+    if id_pattern:
+        session.store.extract(prefetch_filtered_var_name, return_type, None, id_pattern)
+        return prefetch_filtered_var_name
+    else:
+        _logger.warning("no prefetched process found after filtering")
+        return None

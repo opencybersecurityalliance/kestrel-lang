@@ -1,3 +1,4 @@
+from firepit.exceptions import InvalidAttr
 from firepit.query import (
     Query,
     Projection,
@@ -69,16 +70,18 @@ def gen_variable_summary(var_name, var_struct):
 
 
 def _get_variable_query_ids(variable):
+    query_ids = []
     if variable.entity_table:
         query = Query()
         query.append(Table("__queries"))
         query.append(Join(variable.entity_table, "sco_id", "=", "id"))
         query.append(Projection(["query_id"]))
         query.append(Unique())
-        rows = variable.store.run_query(query).fetchall()
-        query_ids = [r["query_id"] for r in rows]
-    else:
-        query_ids = []
+        try:
+            rows = variable.store.run_query(query).fetchall()
+            query_ids = [r["query_id"] for r in rows]
+        except InvalidAttr:
+            pass
     return query_ids
 
 

@@ -2,7 +2,7 @@
 // Kestrel Grammar
 //
 
-start: statement+
+start: statement*
 
 //
 // If no VARIABLE is given, default to _ in post-parsing

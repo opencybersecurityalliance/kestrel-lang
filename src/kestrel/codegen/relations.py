@@ -6,6 +6,9 @@ for more details.
 
 """
 
+import dateutil.parser
+import datetime
+from collections import defaultdict
 import logging
 
 from firepit.query import Query, Projection, Table, Unique
@@ -220,3 +223,79 @@ def _generate_paramstix_comparison_expressions(
             comp_exps.append(f"{return_type}:id = {input_var_name}.{stix_ref}.id")
 
     return comp_exps
+
+
+def fine_grained_relational_process_filtering(
+    local_var, prefetch_entity_table, store, config
+):
+
+    _logger.debug(
+        f"start fine-grained relational process filtering for prefetched table: {prefetch_entity_table}"
+    )
+
+    query_ref = Query()
+    query_ref.append(Table(local_var.entity_table))
+    query_ref.append(Projection(["pid", "name", "first_observed", "last_observed"]))
+    ref_rows = local_var.store.run_query(query_ref).fetchall()
+
+    entities = defaultdict(list)
+
+    for row in ref_rows:
+        if row["pid"]:
+            process_name = row["name"]
+            process_start_time = dateutil.parser.isoparse(row["first_observed"])
+            process_end_time = dateutil.parser.isoparse(row["last_observed"])
+            entities[row["pid"]].append(
+                (process_name, process_start_time, process_end_time)
+            )
+
+    query_fil = Query()
+    query_fil.append(Table(prefetch_entity_table))
+    query_fil.append(
+        Projection(["id", "pid", "name", "first_observed", "last_observed"])
+    )
+    fil_rows = store.run_query(query_fil).fetchall()
+
+    filtered_ids = []
+
+    pnc_start_offset = datetime.timedelta(
+        seconds=config["process_name_change_timerange_start_offset"]
+    )
+    pnc_stop_offset = datetime.timedelta(
+        seconds=config["process_name_change_timerange_stop_offset"]
+    )
+    pls_start_offset = datetime.timedelta(
+        seconds=config["process_lifespan_start_offset"]
+    )
+    pls_stop_offset = datetime.timedelta(seconds=config["process_lifespan_stop_offset"])
+
+    for row in fil_rows:
+        if row["pid"]:
+            fil_start_time = dateutil.parser.isoparse(row["first_observed"])
+            fil_end_time = dateutil.parser.isoparse(row["last_observed"])
+            fil_process_name = row["name"]
+            for ref_process_name, ref_start_time, ref_end_time in entities[row["pid"]]:
+                if (
+                    (
+                        fil_process_name
+                        and fil_process_name == ref_process_name
+                        and fil_start_time > ref_start_time + pls_start_offset
+                        and fil_start_time < ref_end_time + pls_stop_offset
+                    )
+                    or (
+                        fil_start_time > ref_start_time + pnc_start_offset
+                        and fil_start_time < ref_end_time + pnc_stop_offset
+                    )
+                    or (
+                        fil_end_time > ref_start_time + pnc_start_offset
+                        and fil_end_time < ref_end_time + pnc_stop_offset
+                    )
+                ):
+                    filtered_ids.append(row["id"])
+                    break
+
+    _logger.debug(
+        f"found {len(filtered_ids)} out of {len(fil_rows)} to be true relational process records."
+    )
+
+    return filtered_ids
