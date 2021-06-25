@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.6 (2021-06-24)
+==================
+
+Fixed
+-----
+
+- Config override bug
+- STIX bundle data source bug with HTTP/HTTPS
+- GROUP BY error without id #43
+- Cannot execute all-comment code block #50
+- Inappropriate error for non-existence relation #51
+
+Changed
+-------
+
+- Improved ``.gitignore``
+- Comprehensive process entity recognition #53
+- Updated parameter handling in docker analytics interface #49
+
 1.0.5 (2021-06-10)
 ==================
 
