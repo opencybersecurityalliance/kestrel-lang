@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+
 1.0.6 (2021-06-24)
 ==================
 
