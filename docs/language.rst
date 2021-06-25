@@ -15,12 +15,12 @@ A record, log, or observation yielded by a host or network monitoring system.
 Usually a record contains information of an activity that is worth recording.
 For example:
 
-    - an ssh login attempt with root
-    - a user login and logout
-    - a process forking another process
-    - a network connection initialized by a process
-    - a process loading a dynamic loaded library
-    - a process reading a sensitive file
+    - An ssh login attempt with root
+    - A user login and logout
+    - A process forking another process
+    - A network connection initialized by a process
+    - A process loading a dynamic loaded library
+    - A process reading a sensitive file
 
 Formally defined, a record is a piece of machine-generated data that is part of
 a telemetry of the monitored host or network. Different monitoring systems
@@ -51,9 +51,9 @@ monitor. For example:
     - An IDS alert observation may contain two entities: the incoming IP
       and the target host.
 
-Not only a record can contain multiple entities, but also the same entity
-identified by the same monitor may appear in different records. Some monitor
-generates an universal identifier for an entity they track, i.e., UUID/GUID,
+Not only can a record contain multiple entities, but the same entity
+identified by the same monitor may appear in different records. Some monitors
+generate a universal identifier for an entity they track, i.e., UUID/GUID,
 but this does not always hold. In addition, the description of an entity in a
 record may be very incomplete due to the limited monitoring capability, data
 aggregation, or software bug.
@@ -61,12 +61,12 @@ aggregation, or software bug.
 Hunt
 ----
 
-A cyber threat hunt is a procedure to find a set of entities in the monitored
-environment that associates with a cyber threat.
+A cyberthreat hunt is a procedure to find a set of entities in the monitored
+environment that associates with a cyberthreat.
 
 A comprehensive hunt or threat discovery finds a set of entities with their
-relations, e.g., control and data flows among them, as a graph that associates
-with a cyber threat. The comprehensive hunting definition assumes fully
+relations, for example, control and data flows among them, as a graph that associates
+with a cyberthreat. The comprehensive hunting definition assumes fully
 connected telemetry data provided by monitoring systems and is discussed in the
 :doc:`theory`.
 
@@ -91,14 +91,14 @@ A step in a hunt usually performs one of the four atom hunting operations:
        showing values of specified attributes of a set of entities.
 
     #. Flow-control: *merge or split hunt flows*. For example, merge the
-       results of two hunt flows to apply same hunt steps afterwords, or to
+       results of two hunt flows to apply the same hunt steps afterwords, or to
        fork a hunt flow branch for developing a variant of the threat
        hypothesis.
 
 Hunt Flow
 ---------
 
-The control flow of a hunt. A hunt flow composes a series of hunt steps,
+The control flow of a hunt. A hunt flow comprises a series of hunt steps,
 computing multiple sets of entities, and deriving new sets of entities based on
 previous ones. Finally, a hunt flow reveals all sets of entities that are
 associated with a threat.
@@ -111,28 +111,28 @@ Hunt Book
 ---------
 
 A hunt flow combined with its execution results in a notebook format.  Usually
-we refer to a saved Jupyter notebook of a Kestrel hunt as a hunt book, which
+a saved Jupyter notebook of a Kestrel hunt is referred to as a hunt book, which
 contains the hunt flow in blocks and its execution results displayed in text,
 tables, graphs, and other multi-media forms.
 
 Key Concepts
 ============
 
-Kestrel brings two key concepts to cyber threat hunting.
+Kestrel brings two key concepts to cyberthreat hunting.
 
 Entity-Based Reasoning
 ----------------------
 
-Human understands threats and hunting upon entities, e.g., malware, malicious
-process, C&C host. As a language for threat hunters to express *what to hunt*,
+Humans understand threats and hunting upon entities, such as, malware, malicious
+process, and C&C host. As a language for threat hunters to express *what to hunt*,
 Kestrel helps hunters to organize their thoughts about threat hypotheses around
 entities. Kestrel runtime assembles entities with pieces of information in
 different records that describes different aspects of the entities. It also
 proactively asks data sources to get information about entities. With this
-design, threat hunters always have all information available about the entities
-they are focusing, and can confidently create and revise threat hypotheses
-based on the entities and their connected entities. In the meanwhile, threat
-hunters do not need to spend time stitching and correlate records since most of
+design, threat hunters always have all of the information available about the entities
+they are focusing on, and can confidently create and revise threat hypotheses
+based on the entities and their connected entities. Meanwhile, threat
+hunters do not need to spend time stitching and correlating records since most of
 this tedious work on *how to hunt* is solved by Kestrel runtime.
 
 Composable Hunt Flow
@@ -143,7 +143,7 @@ power of hunting. The secret sauce to achieve both is the idea of composability
 from functional programming.
 
 To compose hunt flows freely, Kestrel defines a common data model around
-entities, i.e., Kestrel variables, as the input and output of every hunt step.
+entities, that is, Kestrel variables, as the input and output of every hunt step.
 Every hunt step yields a Kestrel variable (or None), which can be the input of
 another hunt step. In addition to freely pipe hunt steps to compose hunt flows,
 Kestrel also enables hunt flows forking and merging:
@@ -163,8 +163,8 @@ Kestrel Variable
 ================
 
 A Kestrel variable is a list of homogeneous entities---all entities in a
-variable share the same type, e.g., ``process``, ``network-traffic``, ``file``.
-Each type of entities has its specialized attributes, e.g., ``process`` has
+variable share the same type, for example, ``process``, ``network-traffic``, ``file``.
+Each type of entities has its specialized attributes, for example, ``process`` has
 ``pid``, ``network-traffic`` has ``dst_port``, ``file`` has ``hashes``.
 
 When using the STIX-Shifter_ data source interface, Kestrel loads `STIX Cyber
@@ -175,7 +175,7 @@ available attributes actually depends on the exact data source.
 
 The naming rule of a Kestrel variable follows the variable naming rule in C
 language: a variable starts with an alphabet or underscore ``_``, followed by
-any combination of alphabet, digit, and underscore. There is no length limit,
+any combination of alphabet, digit, and underscore. There is no length limit
 and a variable name is case sensitive.
 
 Unlike immutable variables in pure functional programming languages, variables
@@ -202,7 +202,7 @@ follows:
    :width: 40%
    :alt: Kestrel hunt step model.
 
-A command takes in one or more variables and maybe some metadata, e.g., the
+A command takes in one or more variables and maybe some metadata, for example, the
 path of a data source, the attributes to display, or the arguments to
 analytics. In general, the command can either yield nothing, a variable, a
 display object, or both a variable and a display object.
@@ -211,9 +211,9 @@ display object, or both a variable and a display object.
   consumed and yielded by commands play the key role to connect different hunt
   steps (commands) into hunt flows.
 
-- A display object is something to be displayed by a Kestrel front-end, e.g.,
-  Jupyter Notebook. It is not consumed by any following hunt steps. It only
-  presents information from a hunt step to the user, e.g., a tabular display of
+- A display object is something to be displayed by a Kestrel front end, for example,
+  a Jupyter Notebook. It is not consumed by any of the following hunt steps. It only
+  presents information from a hunt step to the user, such as a tabular display of
   entities in a variable, or an interactive visualization of entities.
 
 +---------+----------------+---------------+----------------+---------------+
@@ -263,8 +263,8 @@ Syntax
 
 - The pool of entities should be specified in the ``FROM`` clause of ``GET``.
 
-    - The pool can be a data source, e.g., a data lake where monitored logs are
-      stored, an EDR, a firewall, an IDS, a proxy server, a SIEM system. In
+    - The pool can be a data source, for example, a data lake where monitored logs are
+      stored, an EDR, a firewall, an IDS, a proxy server, or a SIEM system. In
       this case, the user needs to know the identifier of the data source (more
       in section `Data And Analytics Interfaces`_). For example:
 
@@ -302,23 +302,23 @@ Syntax
     - The time range, when used, should always have both ``START`` and
       ``STOP``.
 
-    - Time range inference: if one or more Kestrel variables are referred in
+    - Time range inference: If one or more Kestrel variables are referred in
       the STIX pattern, Kestrel runtime infers the time range from all entities
       in the referred variables.
 
-    - Time range override: if a user provides time range at the same time, it
+    - Time range override: If a user provides time range at the same time, it
       overrides the inferred time range if any.
 
-    - Missing time range: if no time range provided or inferred in a ``GET``
+    - Missing time range: If no time range provided or inferred in a ``GET``
       command, it depends on the data source interface to decide how to handle
       it. For example, the STIX-Shifter interface will use last five minutes as
       the time range if not specified.
 
-- Syntax sugar: if the entity pool in ``GET`` is a data source and it is the
+- Syntax sugar: If the entity pool in ``GET`` is a data source and it is the
   same as the data source used in a previous ``GET`` command, the ``FROM``
   clause can be omitted. Kestrel runtime completes the ``FROM`` clause for a
   ``GET`` command (if it is omitted) using the last *data source* in the
-  execution. Variable entity pool are not used. See an example (the last one)
+  execution. The variable entity pool is not used. See an example (the last one)
   below.
 
 Examples
@@ -368,19 +368,19 @@ entity-relation chart:
    :width: 100%
    :alt: Entity relationship.
 
-To find child processes of processes in a variable ``varA``, one can look up
+To find child processes of processes in a variable ``varA``, you can look up
 the entity-relation chart and get relation ``CREATED BY``, then write the
 command ``varB = FIND process CREATED BY varA``.
 
 The optional time range works similar to that in the STIX pattern of ``GET``.
-However, it is not oftenly used in ``FIND`` since ``FIND`` always has an input
-variable to infer time range. If the user wants Kestrel to search for a
+However, it is not often used in ``FIND`` since ``FIND`` always has an input
+variable to infer time range. If you want Kestrel to search for a
 specific time range instead of the inferred range, use ``START/STOP``.
 
 Examples
 ^^^^^^^^
 ::
-    
+
     # find parent processes of processes in procs
     parent_procs = FIND process CREATED procs
 
@@ -411,13 +411,13 @@ Relation With GET
 Both ``FIND`` and ``GET`` are *retrieval* hunt steps. ``GET`` is the most
 fundamental retrieval hunt step. And ``FIND`` provides a layer of abstraction
 to retrieve connected entities more easily than using the raw ``GET`` for this,
-i.e., ``FIND`` can be replaced by ``GET`` in theory with some knowledge of *how
+that is, ``FIND`` can be replaced by ``GET`` in theory with some knowledge of *how
 to hunt*. Kestrel tries to focus threat hunters on *what to hunt* and automate
 the generation of *how to hunt* (see :doc:`overview`). Finding connected
 entities requires knowledge on how the underlying records are connected, and
 Kestrel resolves the how for users with the command ``FIND``.
 
-In theory, one can replace ``FIND`` with ``GET`` and a parameterized STIX
+In theory, you can replace ``FIND`` with ``GET`` and a parameterized STIX
 pattern when knowing how the underlying records are connected. In reality, this
 is not possible with STIX pattern in ``GET``.
 
@@ -426,12 +426,12 @@ is not possible with STIX pattern in ``GET``.
   ``*_ref`` attributes in STIX 2.0. It can also be recorded via a hidden object
   like the *SRO* object in STIX 2.1.
 
-- STIX pattern does not allow reference to an object directly, e.g.,
+- STIX pattern does not allow reference to an object directly, for example,
   ``[process:parent_ref = xxx]`` is not a valid STIX pattern. Also one cannot
   use ``[process:parent_ref.id = xxx.id]`` since the ``id`` of entities are not
   persistent across different records/observations.
 
-- STIX pattern does not support expressing one-to-many mapping, e.g., there is
+- STIX pattern does not support expressing one-to-many mapping, for example, there is
   a reference ``opened_connection_refs`` in a process record, but there is no
   way to express all ``network-traffic`` entities referred in that list.
 
@@ -485,7 +485,7 @@ The given data can either be:
   same set of keys, which are attributes of the entities. If ``type`` is
   not provided as a key, ``returned_entity_type`` is required.
 
-The given data should follow JSON format, e.g., using double quotes around a
+The given data should follow JSON format, for example, using double quotes around a
 string. This is different from a string in STIX pattern, which is surrounded by
 single quotes.
 
@@ -495,7 +495,7 @@ Examples
 
     # create a list of processes with their names
     newprocs = NEW process ["cmd.exe", "explorer.exe", "google-chrome.exe"]
- 
+
     # create a list of processes with a list of dictionaries
     newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
                  , {"type": "process", "name": "explorer.exe", "pid": "99"}
@@ -510,9 +510,9 @@ APPLY
 -----
 
 The command ``APPLY`` is an *enrichment* hunt step to compute and add
-attributes to Kestrel variables. Enrichment here includes the computation of
-enriched data, e.g., malware detection analytics, and associating the data to
-the entities, e.g., adding the detection labels to the entities.
+attributes to Kestrel variables. Enrichment, in this context, includes the computation of
+enriched data, such as malware detection analytics, and associating the data to
+the entities, such as adding the detection labels to the entities.
 
 Syntax
 ^^^^^^
@@ -520,56 +520,56 @@ Syntax
 
     APPLY analytics_identifier ON var1, var2, ... WITH x=1, y=abc
 
-- Input: the command takes in one or multiple variables.
+- Input: The command takes in one or multiple variables.
 
-- Execution: the command executes the analytics specified by
+- Execution: The command executes the analytics specified by
   ``analytics_identifier`` like ``docker://ip_domain_enrichment`` or
   ``docker://pin_ip_on_map``.
 
-  There is no limitation what an analytics could do besides the input and
+  There is no limitation for what an analytics could do besides the input and
   output specified by its corresponding Kestrel analytics interface (see `Data
   And Analytics Interfaces`_).
 
-  An analytics could run entire locally and just do a table look-up. It could
-  reach out to the Internet like the VirusTotal servers. It could perform
+  An analytics could run entirely locally and then just do a table lookup. It could
+  reach out to the internet like the VirusTotal servers. It could perform
   real-time behavior analysis of binary samples. Based on specific analytics
-  interface, some analytics can run entirely in the cloud, and the interface
+  interfaces, some analytics can run entirely in the cloud, and the interface
   harvests the results to local Kestrel runtime.
 
   Threat hunters can quickly wrap an existing security program/module into a
   Kestrel analytics. For example, creating a Kestrel analytics as a docker
   container and utilizing the existing Kestrel Docker Analytics Interface
-  (check :doc:`source/kestrel_analytics_docker.interface`). Users can also
+  (check :doc:`source/kestrel_analytics_docker.interface`). You can also
   easily develop new analytics interfaces to provide special running
   environments (check :doc:`source/kestrel.analytics.interface`).
 
-- Output: the executed analytics could yield either *(a)* data for variable
+- Output: The executed analytics could yield either *(a)* data for variable
   updates, or *(b)* a display object, or both. The ``APPLY`` command passes
   the impacts to the Kestrel session:
-    
-    - Updated variable(s): the most common enrichment is adding/updating
-      attributes to input variables (existing entities). The attributes can be
+
+    - Updated variable(s): The most common enrichment is adding/updating
+      attributes to input variables (existing entities). The attributes can be,
       yet not limited to:
 
-        - Detection results: the analytics performs threat detection on the
+        - Detection results: The analytics performs threat detection on the
           given entities. The results can be any scalar values such as strings,
-          integers, floats. For example, malware labels and their families
+          integers, or floats. For example, malware labels and their families
           could be strings, suspicious scores could be integers, and likelihood
           could be floats. Numerical data can be used by later Kestrel commands
           such as ``SORT``. Any new attributes can be used in the ``WHERE``
           clause of the following ``GET`` commands to pick a subset of
           entities.
 
-        - Threat Intelligence (TI) information: commonly known as TI
-          enrichment, e.g., Indicator of Comprise (IoC) tags. 
+        - Threat Intelligence (TI) information: Commonly known as TI
+          enrichment, for example, Indicator of Comprise (IoC) tags.
 
-        - Generic information: the analytics can add generic information that
+        - Generic information: The analytics can add generic information that
           is not TI-specific, such as adding software description as new
           attributes to ``software`` entities based on their ``name``
           attributes.
 
-    - Kestrel display object: an analytics can also yield a display object for
-      the front-end to show. Visualization analytics yield such data such as
+    - Kestrel display object: An analytics can also yield a display object for
+      the front end to show. Visualization analytics yield such data such as
       our ``docker://pin_ip`` analytics that looks up the geolocation of IP
       addresses in ``network-traffic`` or ``ipv4-addr`` entities and pin them
       on a map, which can be shown in Jupyter Notebooks.
@@ -642,7 +642,7 @@ DISP
 
 The command ``DISP`` is an *inspection* hunt step to print attribute values of
 entities in a Kestrel variable. The command returns a tabular display object to
-a front-end, e.g., Jupyter Notebook.
+a front end, for example, Jupyter Notebook.
 
 Syntax
 ^^^^^^
@@ -650,7 +650,7 @@ Syntax
 
     DISP varx [ATTR attribute1, attribute2, ...]
 
-- The optional clause ``ATTR`` specifies which list of attributes the user
+- The optional clause ``ATTR`` specifies which list of attributes you
   would like to print. If omitted, Kestrel will output all attributes.
 
 - The command deduplicates rows. All rows in the display object are distinct.
@@ -659,7 +659,7 @@ Syntax
   in the variable. Some records may miss attributes that other records have,
   and it is common to see empty fields in the table printed.
 
-- If not familiar with the data, a user can use ``INFO`` to list all attributes
+- If you are not familiar with the data, you can use ``INFO`` to list all attributes
   and pick up some attributes to write the ``DISP`` command and ``ATTR``
   clause.
 
@@ -678,8 +678,8 @@ Examples
 SORT
 ----
 
-The command ``SORT`` is an *inspection* hunt step to reorder of entities in a
-Kestrel variable and output the same set of entities with new order to a new
+The command ``SORT`` is an *inspection* hunt step to reorder entities in a
+Kestrel variable and output the same set of entities with the new order to a new
 variable.
 
 Syntax
@@ -717,7 +717,7 @@ Syntax
 
     aggr_var = GROUP varx BY attribute
 
-- Currently the command only support aggregation by one attribute.
+- Currently, the command only supports aggregation by one attribute.
 
 - Attributes of the returned entities are decorated with a prefix ``unique_``
   such as ``unique_pid`` instead of ``pid``.
@@ -752,7 +752,7 @@ Syntax
     - ``.parquet``: parquet file.
     - ``.parquet.gz``: gzipped parquet file.
 
-- It is useful to save a Kestrel variable into file for analytics development.
+- It is useful to save a Kestrel variable into a file for analytics development.
   The docker analytics interface actually does the same to prepare the input
   for a docker container.
 
@@ -786,7 +786,7 @@ Syntax
   ``type`` column in the data, the returned entity type should be specified in
   the ``AS`` clause.
 
-- Using ``SAVE`` and ``LOAD``, a user can transfer data between hunts.
+- Using ``SAVE`` and ``LOAD``, you can transfer data between hunts.
 
 - A user can ``LOAD`` external Threat Intelligence (TI) records into a Kestrel
   variable.
@@ -901,17 +901,17 @@ Data And Analytics Interfaces
 Kestrel aims to keep it open and easy to add data source and analytics---not
 only adding data source through the STIX-Shifter interface and adding analytics
 through the docker interface, but even keeping the interfaces open and
-extensible. A user may start with a STIX-Shifter data source, and then want to
+extensible. You might start with a STIX-Shifter data source, and then want to
 add another data source which already splits STIX observations---no
-STIX-Shifter is needed. The user may generate this capability to develop a data
-source interface in parallel to STIX-Shifter and handles data from multiple
-EDRs and SIEMs in his/her environment. Similar concepts applies to analytics.
-A user may start with writing Kestrel analytics in docker containers, but then
-need to develop analytics around code that is executing in the cloud. We need
-the power to quickly adding analytics interfaces besides the docker one shipped
-with Kestrel.
+STIX-Shifter is needed. You can generate this capability to develop a data
+source interface in parallel to STIX-Shifter and handle data from multiple
+EDRs and SIEMs in your environment. Similar concepts apply to analytics.
+You might start with writing Kestrel analytics in docker containers, but then
+need to develop analytics around code that is executing in the cloud. What is
+needed is the power to quickly add analytics interfaces besides the docker
+one that is shipped with Kestrel.
 
-To address the need of quickly developing new interfaces for data sources and
+To quickly develop new interfaces for data sources and
 analytics, Kestrel abstracts the connection to data source and analytics with
 two layers: Kestrel runtime communicates with interfaces and the interfaces
 communicate with the data sources or analytics. Both data source and analytics
@@ -923,7 +923,7 @@ the rules in :doc:`source/kestrel.datasource.interface` and
    :width: 100%
    :alt: Interface Illustration.
 
-Each interface has one or multiple schema strings, e.g., ``stixshifter://`` for
+Each interface has one or multiple schema strings, for example, ``stixshifter://`` for
 the STIX-Shifter interface and ``docker://`` for the docker analytics
 interface. To use a specific data source or analytics, a user specifies an
 identifier of the data source or analytics as ``schema://name`` where ``name``
