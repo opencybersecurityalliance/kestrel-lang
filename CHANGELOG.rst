@@ -6,13 +6,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
-Unreleased
-==========
+1.0.7 (2021-06-29)
+==================
 
 Changed
 -------
 
 - Documentation grammar and style improvements
+
+Added
+-----
+
+- Syntax sugar: omitted schema inference (data source and analytics) if only one schema
+- Temporary store view removal if not in debug mode #63
 
 1.0.6 (2021-06-24)
 ==================
