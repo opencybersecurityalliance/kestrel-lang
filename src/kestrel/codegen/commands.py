@@ -228,7 +228,9 @@ def get(stmt, session):
         query_id = rs.load_to_store(session.store)
         session.store.extract(local_var_table, return_type, query_id, pattern)
         _output = new_var(session.store, local_var_table, [], stmt, session.symtable)
-        _logger.debug(f"native GET pattern executed and DB view {local_var_table} extracted.")
+        _logger.debug(
+            f"native GET pattern executed and DB view {local_var_table} extracted."
+        )
 
         if session.config["prefetch"]["get"] and len(_output):
             prefetch_ret_var_table = return_var_table + "_prefetch"
@@ -258,7 +260,9 @@ def get(stmt, session):
             prefetch_ret_entity_table = None
 
         if prefetch_ret_entity_table:
-            _logger.debug(f"merge {local_var_table} and {prefetch_ret_entity_table} into {return_var_table}.")
+            _logger.debug(
+                f"merge {local_var_table} and {prefetch_ret_entity_table} into {return_var_table}."
+            )
             session.store.merge(
                 return_var_table, [local_var_table, prefetch_ret_entity_table]
             )
@@ -271,7 +275,9 @@ def get(stmt, session):
                     _logger.debug(f"remove temp store view {v}.")
                     session.store.remove_view(v)
         else:
-            _logger.debug(f'prefetch return None, just rename native GET pattern matching results into "{return_var_table}".')
+            _logger.debug(
+                f'prefetch return None, just rename native GET pattern matching results into "{return_var_table}".'
+            )
             session.store.rename_view(local_var_table, return_var_table)
 
         output = new_var(session.store, return_var_table, [], stmt, session.symtable)
@@ -424,7 +430,9 @@ def find(stmt, session):
                 prefetch_ret_entity_table = None
 
             if prefetch_ret_entity_table:
-                _logger.debug(f"merge {local_var_table} and {prefetch_ret_entity_table} into {return_var_table}.")
+                _logger.debug(
+                    f"merge {local_var_table} and {prefetch_ret_entity_table} into {return_var_table}."
+                )
                 session.store.merge(
                     return_var_table, [local_var_table, prefetch_ret_entity_table]
                 )
@@ -441,7 +449,9 @@ def find(stmt, session):
                         _logger.debug(f"remove temp store view {v}.")
                         session.store.remove_view(v)
             else:
-                _logger.debug(f'prefetch return None, just rename native GET pattern matching results into "{return_var_table}".')
+                _logger.debug(
+                    f'prefetch return None, just rename native GET pattern matching results into "{return_var_table}".'
+                )
                 session.store.rename_view(local_var_table, return_var_table)
 
         else:
