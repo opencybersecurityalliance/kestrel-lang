@@ -179,7 +179,7 @@ def test_disp_column_order(fake_bundle_file, caplog):
 
 
 def test_get_set_variable(fake_bundle_file):
-    with Session(debug_mode=True) as session:
+    with Session() as session:
         # Create a normal var
         script = f"x = get ipv4-addr from file://{fake_bundle_file} where [ipv4-addr:value = '192.168.121.121']"
         execute(session, script)

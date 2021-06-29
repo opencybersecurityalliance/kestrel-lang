@@ -228,6 +228,7 @@ def get(stmt, session):
         query_id = rs.load_to_store(session.store)
         session.store.extract(local_var_table, return_type, query_id, pattern)
         _output = new_var(session.store, local_var_table, [], stmt, session.symtable)
+        _logger.debug(f"native GET pattern executed and DB view {local_var_table} extracted.")
 
         if session.config["prefetch"]["get"] and len(_output):
             prefetch_ret_var_table = return_var_table + "_prefetch"
@@ -257,6 +258,7 @@ def get(stmt, session):
             prefetch_ret_entity_table = None
 
         if prefetch_ret_entity_table:
+            _logger.debug(f"merge {local_var_table} and {prefetch_ret_entity_table} into {return_var_table}.")
             session.store.merge(
                 return_var_table, [local_var_table, prefetch_ret_entity_table]
             )
@@ -265,8 +267,11 @@ def get(stmt, session):
                     [local_var_table, prefetch_ret_entity_table, prefetch_ret_var_table]
                 )
             ):
-                session.store.remove_view(v)
+                if not session.debug_mode:
+                    _logger.debug(f"remove temp store view {v}.")
+                    session.store.remove_view(v)
         else:
+            _logger.debug(f'prefetch return None, just rename native GET pattern matching results into "{return_var_table}".')
             session.store.rename_view(local_var_table, return_var_table)
 
         output = new_var(session.store, return_var_table, [], stmt, session.symtable)
@@ -345,7 +350,9 @@ def find(stmt, session):
                         _symtable,
                         session.store,
                     )
-                    session.store.remove_view(local_var_event_name)
+                    if not session.debug_mode:
+                        _logger.debug(f"remove temp store view {local_var_event_name}.")
+                        session.store.remove_view(local_var_event_name)
 
                 except InvalidAttribute:
                     _logger.warning(
@@ -417,6 +424,7 @@ def find(stmt, session):
                 prefetch_ret_entity_table = None
 
             if prefetch_ret_entity_table:
+                _logger.debug(f"merge {local_var_table} and {prefetch_ret_entity_table} into {return_var_table}.")
                 session.store.merge(
                     return_var_table, [local_var_table, prefetch_ret_entity_table]
                 )
@@ -429,8 +437,11 @@ def find(stmt, session):
                         ]
                     )
                 ):
-                    session.store.remove_view(v)
+                    if not session.debug_mode:
+                        _logger.debug(f"remove temp store view {v}.")
+                        session.store.remove_view(v)
             else:
+                _logger.debug(f'prefetch return None, just rename native GET pattern matching results into "{return_var_table}".')
                 session.store.rename_view(local_var_table, return_var_table)
 
         else:
@@ -546,6 +557,8 @@ def _prefetch(
         str: the entity table in store if the prefetch is performed else None.
     """
 
+    _logger.debug(f"prefetch {return_type} to extend {input_var_name}.")
+
     pattern_body = compile_identical_entity_search_pattern(
         input_var_name, symtable[input_var_name], does_support_id
     )
@@ -563,14 +576,19 @@ def _prefetch(
             # build the return_var_name view in store
             store.extract(return_var_name, return_type, query_id, remote_pattern)
 
+            _logger.debug(f"prefetch successful.")
             return return_var_name
 
+    _logger.warning(f"prefetch return empty.")
     return None
 
 
 def _filter_prefetched_process(
     return_var_name, session, local_var, prefetched_entity_table, return_type
 ):
+
+    _logger.debug(f"filter prefetched {return_type} for {prefetched_entity_table}.")
+
     prefetch_filtered_var_name = return_var_name + "_prefetch_filtered"
     entity_ids = fine_grained_relational_process_filtering(
         local_var,
@@ -581,7 +599,8 @@ def _filter_prefetched_process(
     id_pattern = build_pattern_from_ids(return_type, entity_ids)
     if id_pattern:
         session.store.extract(prefetch_filtered_var_name, return_type, None, id_pattern)
+        _logger.debug(f"filter successful.")
         return prefetch_filtered_var_name
     else:
-        _logger.warning("no prefetched process found after filtering")
+        _logger.warning("no prefetched process found after filtering.")
         return None
