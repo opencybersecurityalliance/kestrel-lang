@@ -27,7 +27,10 @@ class AnalyticsManager:
         return self.scheme_to_interface[scheme].list_analytics()
 
     def execute(self, uri, argument_variables, session_id, parameters):
-        scheme = uri.split("://")[0]
+        scheme, _, path = uri.rpartition("://")
+        if not scheme and len(self.schemes()) == 1:
+            # If there's only 1 and use didn't specify, use it
+            scheme = self.schemes()[0]
         scheme = scheme.lower()
         if scheme not in self.scheme_to_interface:
             raise AnalyticsInterfaceNotFound(scheme)
