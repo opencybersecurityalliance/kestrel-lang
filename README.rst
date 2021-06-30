@@ -28,7 +28,7 @@ Kestrel Threat Hunting Language
 
 |
 
-.. image:: https://github.com/subbyte/kestrel-gif/blob/main/hunt01.gif
+.. image:: https://raw.githubusercontent.com/subbyte/kestrel-gif/main/hunt01.gif
    :width: 100%
    :target: https://www.youtube.com/watch?v=tASFWZfD7l8
    :alt: Kestrel Hunting Demo
@@ -42,7 +42,7 @@ possible to codify resuable hunting knowledge in a composable and sharable
 manner. And Kestrel runtime figures out *how to hunt* for hunters to make cyber
 threat hunting less tedious and more efficient.
 
-.. image:: docs/images/overview.png
+.. image:: https://raw.githubusercontent.com/opencybersecurityalliance/kestrel-lang/release/docs/images/overview.png
    :width: 100%
    :alt: Kestrel overview.
 
