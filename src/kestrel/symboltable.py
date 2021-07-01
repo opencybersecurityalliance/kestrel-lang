@@ -15,6 +15,8 @@ class VarStruct:
         entity_type,
         dep_vars,
         data_source,
+        length=None,
+        records_count=None,
     ):
         self.store = store
 
@@ -28,10 +30,16 @@ class VarStruct:
         self.type = entity_type
 
         # how many entities/SCOs in the variable
-        self.length = get_variable_entity_count(self)
-        self.records_count = (
-            self.store.count(self.entity_table) if self.entity_table else 0
-        )
+        if length is not None:
+            self.length = length
+        else:
+            self.length = get_variable_entity_count(self)
+        if records_count is not None:
+            self.records_count = records_count
+        else:
+            self.records_count = (
+                self.store.count(self.entity_table) if self.entity_table else 0
+            )
 
         # TODO: cache of attributes for fast code completion request
         self.attributes = []
@@ -78,6 +86,8 @@ class VarStruct:
             "type",
             "dependent_variables",
             "data_source",
+            "length",
+            "records_count"
         ]:
             yield attr, getattr(self, attr)
 
