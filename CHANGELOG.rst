@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.8 (2021-07-01)
+==================
+
+Changed
+-------
+
+- Command fix in documentation
+- VarStruct init with pre-calculated parameters
+
 1.0.7 (2021-06-29)
 ==================
 
