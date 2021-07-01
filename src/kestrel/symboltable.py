@@ -87,7 +87,7 @@ class VarStruct:
             "dependent_variables",
             "data_source",
             "length",
-            "records_count"
+            "records_count",
         ]:
             yield attr, getattr(self, attr)
 
