@@ -87,7 +87,7 @@ Kestrel runtime currently supports three front ends (see architecture figure in 
 .. code-block:: console
 
     $ pip install kestrel-jupyter
-    $ python -m thl_jupyter_kernel.setup
+    $ python -m kestrel_jupyter_kernel.setup
 
 3. Python API:
 
