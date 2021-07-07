@@ -13,6 +13,8 @@ debug_env_var_name = "KESTREL_DEBUG"
 [language]
 default_variable = "_"
 default_sort_order = "desc"
+default_datasource_schema = "stixshifter"
+default_analytics_schema = "docker"
 
 [stixquery]
 timerange_start_offset = -300 # seconds

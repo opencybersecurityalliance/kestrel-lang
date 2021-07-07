@@ -1,5 +1,6 @@
 import importlib
 import pkgutil
+import logging
 import inspect
 import sys
 from kestrel.analytics import AbstractAnalyticsInterface
@@ -9,13 +10,20 @@ from kestrel.exceptions import (
     ConflictingAnalyticsInterfaceScheme,
 )
 
+_logger = logging.getLogger(__name__)
+
 
 class AnalyticsManager:
-    def __init__(self):
+    def __init__(self, default_schema):
         self.scheme_to_interface = {}
         interfaces = _load_analytics_interfaces()
         for i in interfaces:
             self.scheme_to_interface.update({s: i for s in i.schemes()})
+
+        self.default_schema = default_schema
+        if default_schema not in self.scheme_to_interface:
+            _logger.error(f"default analytics schema {default_schema} not found.")
+            raise AnalyticsInterfaceNotFound(default_schema)
 
     def schemes(self):
         return list(self.scheme_to_interface.keys())
@@ -27,10 +35,14 @@ class AnalyticsManager:
         return self.scheme_to_interface[scheme].list_analytics()
 
     def execute(self, uri, argument_variables, session_id, parameters):
-        scheme, _, path = uri.rpartition("://")
-        if not scheme and len(self.schemes()) == 1:
+        scheme, splitter, path = uri.rpartition("://")
+        if not scheme:
             # If there's only 1 and use didn't specify, use it
-            scheme = self.schemes()[0]
+            scheme = self.default_schema
+            if not splitter:
+                uri = self.default_schema + "://" + uri
+            else:
+                uri = self.default_schema + uri
         scheme = scheme.lower()
         if scheme not in self.scheme_to_interface:
             raise AnalyticsInterfaceNotFound(scheme)
