@@ -66,7 +66,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
     @staticmethod
     def query(uri, pattern, session_id=None):
         """Query a stixshifter data source."""
-        scheme, profile = uri.split("://")
+        scheme, _, profile = uri.rpartition("://")
 
         if scheme != "stixshifter":
             raise DataSourceManagerInternalError(

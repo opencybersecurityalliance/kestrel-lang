@@ -231,8 +231,12 @@ class Session(object):
         # {"var": VarStruct}
         self.symtable = {}
 
-        self.data_source_manager = DataSourceManager()
-        self.analytics_manager = AnalyticsManager()
+        self.data_source_manager = DataSourceManager(
+            self.config["language"]["default_datasource_schema"]
+        )
+        self.analytics_manager = AnalyticsManager(
+            self.config["language"]["default_analytics_schema"]
+        )
         iso_ts_regex = r"\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}Z?)?)?)?)?)?"
         self._iso_ts = re.compile(iso_ts_regex)
 
