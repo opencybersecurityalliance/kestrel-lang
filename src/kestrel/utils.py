@@ -11,6 +11,8 @@ def config_paths():
     paths = [
         # pip install with root
         pathlib.Path("/") / KESTREL_CONFIG,
+        pathlib.Path("/usr/etc") / KESTREL_CONFIG,
+        pathlib.Path("/usr/local/etc") / KESTREL_CONFIG,
         # pip install in venv
         pathlib.Path(os.getenv("VIRTUAL_ENV", "")) / "etc" / KESTREL_CONFIG,
         # conda environment install
