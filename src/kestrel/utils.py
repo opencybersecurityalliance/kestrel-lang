@@ -10,7 +10,7 @@ def config_paths():
     # latter ones will override former ones
     paths = [
         # pip install with root
-        pathlib.Path("/") / KESTREL_CONFIG,
+        pathlib.Path("/etc") / KESTREL_CONFIG,
         pathlib.Path("/usr/etc") / KESTREL_CONFIG,
         pathlib.Path("/usr/local/etc") / KESTREL_CONFIG,
         # pip install in venv
