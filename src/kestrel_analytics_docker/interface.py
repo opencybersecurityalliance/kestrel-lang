@@ -69,7 +69,7 @@ class DockerInterface(AbstractAnalyticsInterface):
     def execute(uri, argument_variables, session_id=None, parameters=None):
         """Execute an analytics."""
 
-        scheme, analytics_name = uri.split("://")
+        scheme, _, analytics_name = uri.rpartition("://")
         container_name = DOCKER_IMAGE_PREFIX + analytics_name
 
         if scheme != "docker":

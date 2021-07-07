@@ -40,7 +40,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
 
     @staticmethod
     def query(uri, pattern, session_id=None):
-        scheme, data_path = uri.split("://")
+        scheme, _, data_path = uri.rpartition("://")
         pattern = fixup_pattern(pattern)
 
         ingestdir = _make_query_dir(uri)

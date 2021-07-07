@@ -6,6 +6,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.9 (2021-07-07)
+==================
+
+Added
+-----
+
+- Full default datasource/analytics schema support
+- Initial install-in-docker support #54
+
 1.0.8 (2021-07-01)
 ==================
 
