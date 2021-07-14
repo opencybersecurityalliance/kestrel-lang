@@ -4,6 +4,7 @@ import uuid
 
 
 KESTREL_CONFIG = pathlib.Path("kestrel") / "kestrel.toml"
+KESTREL_CONFIG_PATH_ENV_VAR = "KESTREL_CONFIG_PATH"
 
 
 def config_paths():
@@ -24,6 +25,10 @@ def config_paths():
         # user-defined configuration
         pathlib.Path(os.getenv("HOME", "")) / ".config" / KESTREL_CONFIG,
     ]
+
+    dynamic_config_file = os.getenv("KESTREL_CONFIG_PATH")
+    if dynamic_config_file:
+        paths.append(dynamic_config_file)
 
     path_dedups = []
     for path in paths:
