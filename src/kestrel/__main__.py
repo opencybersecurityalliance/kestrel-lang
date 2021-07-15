@@ -10,13 +10,17 @@ import os
 
 from kestrel.session import Session
 
+logfile = "session.log"
+
+_logger = logging.getLogger(__name__)
+
 
 def logging_setup(session, verbose_mode, debug_mode):
     # setup logging format, channel and granularity
     log_format = "%(asctime)s %(levelname)s %(name)s %(message)s"
     log_console = logging.StreamHandler()
     if session:
-        log_file_path = os.path.join(session.runtime_directory, "session.log")
+        log_file_path = os.path.join(session.runtime_directory, logfile)
         log_file = logging.FileHandler(log_file_path)
         log_handlers = [log_console, log_file] if verbose_mode else [log_file]
     else:
@@ -26,6 +30,7 @@ def logging_setup(session, verbose_mode, debug_mode):
         datefmt="%H:%M:%S",
         level=logging.DEBUG if debug_mode else logging.INFO,
         handlers=log_handlers,
+        force=True,
     )
 
 
@@ -43,6 +48,8 @@ if __name__ == "__main__":
 
     logging_setup(None, args.verbose, args.debug)
     with Session(debug_mode=args.debug) as session:
+        if not args.verbose:
+            _logger.debug(f"redirect logging to {logfile} in `/tmp/kestrel")
         logging_setup(session, args.verbose, args.debug)
         with open(args.huntflow, "r") as fp:
             huntflow = fp.read()
