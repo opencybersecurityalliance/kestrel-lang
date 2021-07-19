@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.10 (2021-07-19)
+===================
+
+Fixed
+-----
+
+- Missing log in command line mode #84
+- Typo in documentation
+
+Added
+-----
+
+- Select config file via environment variable #82
+
 1.0.9 (2021-07-07)
 ==================
 

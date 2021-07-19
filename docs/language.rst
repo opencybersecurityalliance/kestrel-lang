@@ -191,7 +191,7 @@ one of the four `hunt step`_ categories:
 
 #. Retrieval: ``GET``, ``FIND``, ``NEW``.
 #. Enrichment: ``APPLY``.
-#. Inspection: ``STAT``, ``DISP``, ``SORT``, ``GROUP``.
+#. Inspection: ``INFO``, ``DISP``, ``SORT``, ``GROUP``.
 #. Flow-control: ``SAVE``, ``LOAD``, ``COPY``, ``MERGE``, ``JOIN``.
 
 To achieve `composable hunt flow`_ and allow threat hunters to compose hunt
@@ -227,7 +227,7 @@ display object, or both a variable and a display object.
 +---------+----------------+---------------+----------------+---------------+
 | APPLY   | yes (multiple) | yes           | no (update)    | maybe         |
 +---------+----------------+---------------+----------------+---------------+
-| STAT    | yes            | no            | no             | yes           |
+| INFO    | yes            | no            | no             | yes           |
 +---------+----------------+---------------+----------------+---------------+
 | DISP    | yes            | maybe         | no             | yes           |
 +---------+----------------+---------------+----------------+---------------+
