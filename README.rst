@@ -157,7 +157,7 @@ cyberthreat hunting symbiosis`_, its design concepts like `entity-based
 reasoning`_ and `composable hunt flow`_, as well as a cross-host hunting demo
 with TTP pattern matching, provenance tracking, TI-enrichment, machine learning
 analytics, and more. Watch our session `The Game of Cyber Threat Hunting: The
-Return of the Fun`_ (30 minutes including the demo) or the `demo`_ alone (15
+Return of the Fun`_ (30 minutes with demo) or the `demo`_ alone (15
 minutes).
 
 Connecting With The Community
