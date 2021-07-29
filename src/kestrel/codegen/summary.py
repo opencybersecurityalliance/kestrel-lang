@@ -86,6 +86,7 @@ def _get_variable_query_ids(variable):
 
 
 def get_variable_entity_count(variable):
+    entity_count = 0
     if variable.entity_table:
         query = Query()
         query.append(Table(variable.entity_table))
@@ -93,8 +94,9 @@ def get_variable_entity_count(variable):
         query.append(Projection([entity_id_attr]))
         query.append(Unique())
         query.append(Count())
-        rows = variable.store.run_query(query).fetchall()
-        entity_count = rows[0]["count"] if rows else 0
-    else:
-        entity_count = 0
+        try:
+            rows = variable.store.run_query(query).fetchall()
+            entity_count = rows[0]["count"] if rows else 0
+        except InvalidAttr:
+            pass
     return entity_count
