@@ -232,7 +232,7 @@ class ConflictingAnalyticsInterfaceScheme(KestrelException):
 
 class InvalidAnalyticsInput(KestrelException):
     def __init__(self, type_received, types_expected):
-        typelist = ', '.join(types_expected)
+        typelist = ", ".join(types_expected)
         super().__init__(
             f'received unsupported type "{type_received}"; expected one of "{typelist}"'
         )
