@@ -228,3 +228,11 @@ class ConflictingAnalyticsInterfaceScheme(KestrelException):
             f'conflicting analytics interface scheme "{scheme}" between "{itf_a.__module__}" and "{itf_b.__module__}"',
             "uninstall one of the analytics interfaces",
         )
+
+
+class InvalidAnalyticsInput(KestrelException):
+    def __init__(self, type_received, types_expected):
+        typelist = ', '.join(types_expected)
+        super().__init__(
+            f'received unsupported type "{type_received}"; expected one of "{typelist}"'
+        )
