@@ -6,6 +6,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.11 (2021-08-03)
+===================
+
+Fixed
+-----
+
+- NaN to None in loading data
+- Catch InvalidAttr in summary.py
+
+Added
+-----
+
+- InvalidAnalyticsInput exception 
+- MacOS with Python 3.9 testing environment
+- RSA link to README
+
 1.0.10 (2021-07-19)
 ===================
 
