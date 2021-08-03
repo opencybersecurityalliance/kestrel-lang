@@ -23,7 +23,7 @@ def load_data(
         entity_type = input_entity_type
     else:
         # load any table-like input data with header information
-        dataframe = pd.DataFrame(data)
+        dataframe = pd.DataFrame(data).replace({pd.NA: None})
         entity_type = _extract_uniform_type(dataframe, input_entity_type)
         data = dataframe.to_dict(orient="records")
 

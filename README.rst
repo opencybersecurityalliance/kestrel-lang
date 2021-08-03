@@ -22,10 +22,6 @@ Kestrel Threat Hunting Language
         :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://img.shields.io/badge/demo-released-blue
-        :target: https://www.youtube.com/watch?v=tASFWZfD7l8
-        :alt: Released Demo
-
 |
 
 .. image:: https://raw.githubusercontent.com/subbyte/kestrel-gif/main/hunt01.gif
@@ -153,14 +149,16 @@ Hunting In The Real World
 
 Find more at `Kestrel documentation hub`_.
 
-Demo
-====
+RSA Presentation And Demo
+=========================
 
-In the 15 minutes `hunting demo`_, we did a cross-host hunt with Kestrel,
-starting from a Linux server with a TTP pattern and gradually discovering an
-entire APT with multiple phases. We cross-correlated EDR and NDR data, and
-executed Kestrel analytics to add threat intelligence (TI) and empower the hunt
-with machine learning (ML) models trained for the customer's network.
+Kestrel is introduced at RSA Conference 2021 with its goal of an `efficient
+cyberthreat hunting symbiosis`_, its design concepts like `entity-based
+reasoning`_ and `composable hunt flow`_, as well as a cross-host hunting demo
+with TTP pattern matching, provenance tracking, TI-enrichment, machine learning
+analytics, and more. Watch our session `The Game of Cyber Threat Hunting: The
+Return of the Fun`_ (30 minutes with demo) or the `demo`_ alone (15
+minutes).
 
 Connecting With The Community
 =============================
@@ -176,4 +174,8 @@ workspace`_.
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _Jupyter Notebook: https://jupyter.org/
 .. _Open Cybersecurity Alliance slack workspace: https://open-cybersecurity.slack.com/
-.. _hunting demo: https://www.youtube.com/watch?v=tASFWZfD7l8
+.. _efficient cyberthreat hunting symbiosis: https://kestrel.readthedocs.io/en/latest/overview.html#human-machine
+.. _demo: https://www.youtube.com/watch?v=tASFWZfD7l8
+.. _entity-based reasoning: https://kestrel.readthedocs.io/en/latest/language.html#entity-based-reasoning
+.. _composable hunt flow: https://kestrel.readthedocs.io/en/latest/language.html#composable-hunt-flow
+.. _The Game of Cyber Threat Hunting\: The Return of the Fun: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
