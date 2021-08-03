@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.12 (2021-08-03)
+===================
+
+Fixed
+-----
+
+- Display formatting of exceptions
+
 1.0.11 (2021-08-03)
 ===================
 
