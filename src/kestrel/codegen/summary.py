@@ -54,6 +54,7 @@ def gen_variable_summary(var_name, var_struct):
                 query.append(Table(table))
                 query.append(Join("__queries", "id", "=", "sco_id"))
                 query.append(query_ids_filter)
+                query.append(Unique())
                 query.append(Count())
                 result = var_struct.store.run_query(query).fetchall()
                 count = result[0]["count"]
