@@ -30,7 +30,6 @@ def logging_setup(session, verbose_mode, debug_mode):
         datefmt="%H:%M:%S",
         level=logging.DEBUG if debug_mode else logging.INFO,
         handlers=log_handlers,
-        force=True,
     )
 
 
