@@ -287,11 +287,17 @@ class Session(object):
                 self.config["language"]["default_sort_order"],
             )
         except lark.UnexpectedEOF as err:
-            raise KestrelSyntaxError(err.line, err.column, "end of line", "", err.expected)
+            raise KestrelSyntaxError(
+                err.line, err.column, "end of line", "", err.expected
+            )
         except lark.UnexpectedCharacters as err:
-            raise KestrelSyntaxError(err.line, err.column, "character", err.char, err.allowed)
+            raise KestrelSyntaxError(
+                err.line, err.column, "character", err.char, err.allowed
+            )
         except lark.UnexpectedToken as err:
-            raise KestrelSyntaxError(err.line, err.column, "token", err.token, err.accepts or err.expected)
+            raise KestrelSyntaxError(
+                err.line, err.column, "token", err.token, err.accepts or err.expected
+            )
         return ast
 
     def get_variable_names(self):

@@ -53,7 +53,11 @@ class KestrelSyntaxError(KestrelException):
         self.invalid_term_type = invalid_term_type
         self.invalid_term_value = invalid_term_value
         self.expected = list(expected)
-        self._expects_str = f'expects "{self.expected[0]}"' if len(self.expected) == 1 else f"expects one of {self.expected}"
+        self._expects_str = (
+            f'expects "{self.expected[0]}"'
+            if len(self.expected) == 1
+            else f"expects one of {self.expected}"
+        )
         super().__init__(
             f'invalid {self.invalid_term_type} "{self.invalid_term_value}" at line {self.line} column {self.column}, {self._expects_str}',
             "rewrite the failed statement",
