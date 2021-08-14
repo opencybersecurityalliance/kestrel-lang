@@ -13,11 +13,11 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
              ]
 """
         d = s.execute(stmt)
-        out = s.execute('DISP newvar')
+        out = s.execute("DISP newvar")
         data = out[0].to_dict()
 
 
 def test_disp_no_vars():
     with Session() as s:
         with pytest.raises(VariableNotExist):
-            s.execute('DISP newvar')
+            s.execute("DISP newvar")

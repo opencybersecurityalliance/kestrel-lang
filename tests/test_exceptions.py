@@ -15,18 +15,34 @@ def fake_bundle_file():
 
 def test_unexpected_chars(fake_bundle_file):
     with Session(debug_mode=True) as session:
-        with pytest.raises(KestrelSyntaxError) as e:
+        with pytest.raises(KestrelSyntaxError) as einfo:
             session.execute(
-                "get ? network-traffic" f" from file://{fake_bundle_file}" " where"
+                f"get ? network-traffic from file://{fake_bundle_file} where"
             )
-        print(e)
+        err = einfo.value
+        assert err.line == 1
+        assert err.column == 5
+        assert err.expected == ["ENTITY_TYPE"]
 
 
 def test_unexpected_token(fake_bundle_file):
     with Session(debug_mode=True) as session:
-        with pytest.raises(KestrelSyntaxError) as e:
-            session.execute("get " f" from file://{fake_bundle_file}" " where")
-        print(e)
+        with pytest.raises(KestrelSyntaxError) as einfo:
+            session.execute(f"get from file://{fake_bundle_file} where")
+        err = einfo.value
+        assert err.line == 1
+        assert err.column == 10
+        assert set(err.expected) == set(["FROM", "WHERE"])
+
+
+def test_unexpected_eol(fake_bundle_file):
+    with Session(debug_mode=True) as session:
+        with pytest.raises(KestrelSyntaxError) as einfo:
+            session.execute(f"get process from file://{fake_bundle_file}")
+        err = einfo.value
+        assert err.line == 1
+        assert err.column == 18
+        assert err.expected == ["WHERE"]
 
 
 def test_garbage():
