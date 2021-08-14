@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.13 (2021-08-13)
+===================
+
+Fixed
+-----
+
+- Single quotes support in STIX patterns to fix #95
+- Variable summary deduplication
+
+Added
+-----
+
+- Expected components in syntax error messages
+
 1.0.12 (2021-08-03)
 ===================
 
