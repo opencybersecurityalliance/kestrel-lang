@@ -305,7 +305,7 @@ def find(stmt, session):
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
 
-    if return_type not in session.store.tables():
+    if return_type not in session.store.types():
         # return empty variable
         output = new_var(session.store, None, [], stmt, session.symtable)
 
@@ -321,7 +321,7 @@ def find(stmt, session):
             )
 
             if (
-                event_type in session.store.tables()
+                event_type in session.store.types()
                 and are_entities_associated_with_x_ibm_event([input_type, return_type])
                 and input_type != return_type
             ):

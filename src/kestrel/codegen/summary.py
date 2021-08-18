@@ -43,29 +43,28 @@ def gen_variable_summary(var_name, var_struct):
     ):
         is_from_direct_datasource = True
 
-    for table in var_struct.store.tables():
+    for entity_type in var_struct.store.types():
 
-        if table in all_entity_types:
-            count = 0
+        count = 0
 
-            if query_ids and is_from_direct_datasource:
-                query_ids_filter = Filter([Predicate("query_id", "IN", query_ids)])
-                query = Query()
-                query.append(Table(table))
-                query.append(Join("__queries", "id", "=", "sco_id"))
-                query.append(query_ids_filter)
-                query.append(Unique())
-                query.append(Count())
-                result = var_struct.store.run_query(query).fetchall()
-                count = result[0]["count"]
-                if table == var_struct.type and count:
-                    count = count - len(var_struct)
-                    if count < 0:
-                        raise KestrelInternalError(
-                            f"impossible count regarding variable {var_name} and table {table}"
-                        )
+        if query_ids and is_from_direct_datasource:
+            query_ids_filter = Filter([Predicate("query_id", "IN", query_ids)])
+            query = Query()
+            query.append(Table(entity_type))
+            query.append(Join("__queries", "id", "=", "sco_id"))
+            query.append(query_ids_filter)
+            query.append(Unique())
+            query.append(Count())
+            result = var_struct.store.run_query(query).fetchall()
+            count = result[0]["count"]
+            if entity_type == var_struct.type and count:
+                count = count - len(var_struct)
+                if count < 0:
+                    raise KestrelInternalError(
+                        f"impossible count regarding variable {var_name} and type {entity_type}"
+                    )
 
-            summary[f"{table}*"] = count
+        summary[f"{entity_type}*"] = count
 
     return summary, footnote
 
