@@ -81,9 +81,12 @@ STIXPATTERNBODY: "[" /.+/ "]" | "(" /.+/ ")"
 
 ISOTIMESTAMP: /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(\.\d+)?Z/
 
-VARDATA: "[" (QSTRING ("," QSTRING)* | DICT ("," DICT)*) "]"
-QSTRING: /\s*"[^"]+"\s*/
-DICT: WS* "{" (QSTRING ":" QSTRING) ("," QSTRING ":" QSTRING)* "}" WS*
+// manually add `WS*` since `%ignore WS` doesn't apply to spaces inside terminals
+// https://github.com/lark-parser/lark/issues/99
+QSTRING: WS* ESCAPED_STRING WS*
+JSON_VALUE: WS* (ESCAPED_STRING|NUMBER) WS*
+VARDATA: "[" (QSTRING ("," QSTRING)* | JSON_DICT ("," JSON_DICT)*) "]"
+JSON_DICT: WS* "{" (QSTRING ":" JSON_VALUE) ("," QSTRING ":" JSON_VALUE)* "}" WS*
 
 RELATION: WORD
 
