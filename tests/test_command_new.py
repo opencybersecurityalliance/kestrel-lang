@@ -74,7 +74,6 @@ def test_new_list_of_strings_without_type_to_fail():
             s.execute(stmt)
 
 
-@pytest.mark.skip("Need grammar update to get this to pass")
 def test_new_with_int_pid():
     with Session() as s:
         stmt = """
