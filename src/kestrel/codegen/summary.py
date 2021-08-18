@@ -10,7 +10,7 @@ from firepit.query import (
     Join,
 )
 from collections import OrderedDict
-from kestrel.codegen.relations import all_entity_types, get_entity_id_attribute
+from kestrel.codegen.relations import get_entity_id_attribute
 from kestrel.exceptions import KestrelInternalError
 
 
