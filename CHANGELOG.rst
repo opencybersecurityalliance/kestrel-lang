@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.1.0 (2021-08-18)
+===================
+
+Added
+-----
+
+- firepit API upgrade to support aggregated entities
+- Integer/float support as JSON value in command NEW
+
+Changed
+-------
+
+- Documentation update on command SORT/GROUP regarding aggregated entities
+
 1.0.14 (2021-08-18)
 ===================
 
