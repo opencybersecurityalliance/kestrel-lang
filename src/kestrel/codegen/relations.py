@@ -105,10 +105,6 @@ all_relations = list(
     set([x[1] for x in stix_2_0_ref_mapping.keys() if x[1]] + generic_relations)
 )
 
-all_entity_types = list(
-    set([x[ind] for x in stix_2_0_ref_mapping.keys() for ind in [0, 2]])
-)
-
 
 def get_entity_id_attribute(variable):
     # this function should always return something
