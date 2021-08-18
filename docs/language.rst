@@ -80,6 +80,12 @@ A step in a hunt usually performs one of the four atom hunting operations:
        data, or can be quickly picked up at any cache layer on the path
        from the user to a data source.
 
+    #. Transformation: *deriving different forms of entities*. Within a basic
+       entity type such as *network-traffic*, threat hunters can perform simple
+       transformation such as sampling or aggregating them based on their
+       attributes. The results are special *network-traffic* with aggregated
+       fields.
+
     #. Enrichment: *adding information to a set of entities*. Computing
        attributes or labels for a set of entities and attach them to the
        entities. The attributes can be context such as domain name for an
@@ -190,8 +196,9 @@ A Kestrel command describes a `hunt step`_. All Kestrel commands can be put in
 one of the four `hunt step`_ categories:
 
 #. Retrieval: ``GET``, ``FIND``, ``NEW``.
+#. Transformation: ``SORT``, ``GROUP``.
 #. Enrichment: ``APPLY``.
-#. Inspection: ``INFO``, ``DISP``, ``SORT``, ``GROUP``.
+#. Inspection: ``INFO``, ``DISP``.
 #. Flow-control: ``SAVE``, ``LOAD``, ``COPY``, ``MERGE``, ``JOIN``.
 
 To achieve `composable hunt flow`_ and allow threat hunters to compose hunt
@@ -678,7 +685,7 @@ Examples
 SORT
 ----
 
-The command ``SORT`` is an *inspection* hunt step to reorder entities in a
+The command ``SORT`` is a *transformation* hunt step to reorder entities in a
 Kestrel variable and output the same set of entities with the new order to a new
 variable.
 
@@ -708,8 +715,9 @@ Examples
 GROUP
 -----
 
-The command ``GROUP`` is an *inspection* hunt step to group entities and add
-aggregated attributes for further inspection such as ``INFO`` and ``DISP``.
+The command ``GROUP`` is a *transformation* hunt step to group entities based
+on one or more attributes as well as computing aggregated attributes for the
+aggregated entities.
 
 Syntax
 ^^^^^^
