@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.14 (2021-08-18)
+===================
+
+Changed
+-------
+
+- firepit version specification before API updates
+
 1.0.13 (2021-08-13)
 ===================
 
