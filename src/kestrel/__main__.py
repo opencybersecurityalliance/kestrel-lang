@@ -37,6 +37,7 @@ def logging_setup(session, verbose_mode, debug_mode):
         handlers=log_handlers,
     )
 
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Kestrel Interpreter")
