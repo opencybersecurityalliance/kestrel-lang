@@ -39,7 +39,7 @@ def or_patterns(patterns):
         _logger.debug(f"or pattern merged: {final_pattern}")
     else:
         final_pattern = None
-        _logger.warning(f"all None patterns input into or_patterns()")
+        _logger.info(f"all None patterns input into or_patterns()")
 
     return final_pattern
 
@@ -100,7 +100,7 @@ def build_pattern(
         _logger.debug(f'final pattern assembled: "{pattern}"')
     else:
         pattern = None
-        _logger.warning(f"empty pattern assembled")
+        _logger.info(f"empty pattern assembled")
 
     return pattern
 
@@ -128,7 +128,7 @@ def _dereference_variable(store, symtable, var_name, attributes):
     try:
         store_return = store.lookup(var_entity_table, attr_line)
     except InvalidAttr as e:
-        _logger.error(f"cannot deref {attr_line}. Invalid attribute in firepit.")
+        _logger.warning(f"cannot deref {attr_line}. Invalid attribute in firepit.")
         raise InvalidAttribute(e.message)
 
     attr_to_values = {k: [] for k in attributes}

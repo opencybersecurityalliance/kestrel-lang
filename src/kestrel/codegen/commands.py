@@ -456,7 +456,7 @@ def find(stmt, session):
 
         else:
             return_var_table = None
-            _logger.warning(f'no relation "{relation}" on this dataset')
+            _logger.info(f'no relation "{relation}" on this dataset')
 
         output = new_var(session.store, return_var_table, [], stmt, session.symtable)
 
@@ -589,7 +589,7 @@ def _prefetch(
             _logger.debug(f"prefetch successful.")
             return return_var_name
 
-    _logger.warning(f"prefetch return empty.")
+    _logger.info(f"prefetch return empty.")
     return None
 
 
@@ -612,5 +612,5 @@ def _filter_prefetched_process(
         _logger.debug(f"filter successful.")
         return prefetch_filtered_var_name
     else:
-        _logger.warning("no prefetched process found after filtering.")
+        _logger.info("no prefetched process found after filtering.")
         return None
