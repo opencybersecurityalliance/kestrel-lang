@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+Unreleased
+==========
+
+Fixed
+-----
+
+- Python 3.6 support on command line utility #97
+
 1.1.0 (2021-08-18)
 ===================
 
