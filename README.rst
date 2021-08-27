@@ -166,8 +166,8 @@ Kestrel Hunting Blogs
 #. `Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks`_
 #. `Practicing Backward And Forward Tracking Hunts on A Windows Host`_
 
-Kestrel Huntflow/Huntbook Repo
-==============================
+Kestrel Huntbook/Analytics Repo
+===============================
 
 - `Kestrel huntbook repo`_
 - `Kestrel analytics repo`_
