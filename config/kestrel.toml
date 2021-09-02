@@ -9,6 +9,7 @@
 [session]
 local_database_path = "local.db"
 debug_env_var_name = "KESTREL_DEBUG"
+show_execution_summary = true
 
 [language]
 default_variable = "_"
