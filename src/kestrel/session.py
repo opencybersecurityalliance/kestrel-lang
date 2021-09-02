@@ -468,7 +468,7 @@ class Session(object):
         end_exec_ts = time.time()
         execution_time_sec = math.ceil(end_exec_ts - start_exec_ts)
 
-        if new_vars:
+        if self.config["session"]["show_execution_summary"] and new_vars:
             vars_summary = [
                 gen_variable_summary(vname, self.symtable[vname]) for vname in new_vars
             ]
