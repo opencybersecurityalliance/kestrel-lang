@@ -55,9 +55,9 @@ requirement are:
 Runtime Installation
 ====================
 
-You can install Kestrel runtime from `stable release`_ or `source code`_
-(nightly built version). Either way installs all packages in the
-``kestrel-lang`` repository, and dependent packages, such as `firepit`_ and
+You can install Kestrel runtime from `stable release`_ or `source code (nightly
+built version)`_ (nightly built version). Either way installs all packages in
+the ``kestrel-lang`` repository, and dependent packages, such as ``firepit`` and
 ``stix-shifter``. See the architecture section in :doc:`overview` to understand
 more.
 
