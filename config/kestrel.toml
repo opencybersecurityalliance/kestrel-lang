@@ -8,7 +8,8 @@
 
 [session]
 local_database_path = "local.db"
-debug_env_var_name = "KESTREL_DEBUG"
+cache_directory_prefix = "kestrel-session-" # under system temp directory
+show_execution_summary = true
 
 [language]
 default_variable = "_"
@@ -29,3 +30,9 @@ process_name_change_timerange_start_offset = -5 # seconds
 process_name_change_timerange_stop_offset = 5 # seconds
 process_lifespan_start_offset = -10800 # seconds
 process_lifespan_stop_offset = 10800 # seconds
+
+[debug]
+env_var = "KESTREL_DEBUG" # debug mode if the environment variable exists
+cache_directory = "kestrel" # under system temp directory
+session_exit_marker = "session.exited"
+maximum_exited_session = 3

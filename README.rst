@@ -147,7 +147,7 @@ Hunting In The Real World
 #. How to apply pre-built analytics?
 #. How to fork and merge hunt flows?
 
-Find more at `Kestrel documentation hub`_.
+Find more at `Kestrel documentation hub`_ and `Kestrel blogs at OCA`_.
 
 RSA Presentation And Demo
 =========================
@@ -160,6 +160,18 @@ analytics, and more. Watch our session `The Game of Cyber Threat Hunting: The
 Return of the Fun`_ (30 minutes with demo) or the `demo`_ alone (15
 minutes).
 
+Kestrel Hunting Blogs
+=====================
+
+#. `Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks`_
+#. `Practicing Backward And Forward Tracking Hunts on A Windows Host`_
+
+Kestrel Huntbook/Analytics Repo
+===============================
+
+- `Kestrel huntbook repo`_
+- `Kestrel analytics repo`_
+
 Connecting With The Community
 =============================
 
@@ -169,6 +181,7 @@ Join our *Kestrel slack channel* at `Open Cybersecurity Alliance slack
 workspace`_.
 
 .. _Kestrel documentation hub: https://kestrel.readthedocs.io/
+.. _Kestrel blogs at OCA: https://opencybersecurityalliance.org/posts/
 .. _pip: https://pip.pypa.io/
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
@@ -179,3 +192,7 @@ workspace`_.
 .. _entity-based reasoning: https://kestrel.readthedocs.io/en/latest/language.html#entity-based-reasoning
 .. _composable hunt flow: https://kestrel.readthedocs.io/en/latest/language.html#composable-hunt-flow
 .. _The Game of Cyber Threat Hunting\: The Return of the Fun: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
+.. _Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks: https://opencybersecurityalliance.org/posts/kestrel-2021-07-26/
+.. _Practicing Backward And Forward Tracking Hunts on A Windows Host: https://opencybersecurityalliance.org/posts/kestrel-2021-08-16/
+.. _Kestrel huntbook repo: https://github.com/opencybersecurityalliance/kestrel-huntbook
+.. _Kestrel analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics

@@ -176,8 +176,7 @@ class Session(object):
 
         self.debug_mode = (
             True
-            if debug_mode
-            or os.getenv(self.config["session"]["debug_env_var_name"], False)
+            if debug_mode or os.getenv(self.config["debug"]["env_var"], False)
             else False
         )
 
@@ -193,7 +192,9 @@ class Session(object):
                 pathlib.Path(runtime_dir).mkdir(parents=True, exist_ok=True)
             self.runtime_directory = runtime_dir
         else:
-            tmp_dir = sys_tmp_dir / ("kestrel-session-" + self.session_id)
+            tmp_dir = sys_tmp_dir / (
+                self.config["session"]["cache_directory_prefix"] + self.session_id
+            )
             self.runtime_directory = tmp_dir.resolve()
             if tmp_dir.exists():
                 if tmp_dir.is_dir():
@@ -212,7 +213,9 @@ class Session(object):
                 tmp_dir.mkdir(parents=True, exist_ok=True)
 
         if self.debug_mode:
-            runtime_directory_master = sys_tmp_dir / "kestrel"
+            runtime_directory_master = (
+                sys_tmp_dir / self.config["debug"]["cache_directory"]
+            )
             if runtime_directory_master.exists():
                 runtime_directory_master.unlink()
             runtime_directory_master.symlink_to(self.runtime_directory)
@@ -406,8 +409,12 @@ class Session(object):
         Only needed for non-context-managed sessions.
         """
         del self.store
-        if not self.runtime_directory_is_owned_by_upper_layer and not self.debug_mode:
-            shutil.rmtree(self.runtime_directory)
+        if not self.runtime_directory_is_owned_by_upper_layer:
+            if self.debug_mode:
+                self._leave_exit_marker()
+                self._remove_obsolete_debug_folders()
+            else:
+                shutil.rmtree(self.runtime_directory)
 
     def _execute_ast(self, ast):
         displays = []
@@ -468,7 +475,7 @@ class Session(object):
         end_exec_ts = time.time()
         execution_time_sec = math.ceil(end_exec_ts - start_exec_ts)
 
-        if new_vars:
+        if self.config["session"]["show_execution_summary"] and new_vars:
             vars_summary = [
                 gen_variable_summary(vname, self.symtable[vname]) for vname in new_vars
             ]
@@ -513,6 +520,32 @@ class Session(object):
         _logger.debug(f"Configuration loaded: {config}")
 
         return config
+
+    def _leave_exit_marker(self):
+        exit_marker = os.path.join(
+            self.runtime_directory, self.config["debug"]["session_exit_marker"]
+        )
+        with open(exit_marker, "w"):
+            pass
+
+    def _remove_obsolete_debug_folders(self):
+        # will only clean debug cache directories under system temp directory
+
+        # [(cache_dir, timestamp)]
+        exited_sessions = []
+
+        for x in pathlib.Path(tempfile.gettempdir()).iterdir():
+            if x.is_dir() and x.parts[-1].startswith(
+                self.config["session"]["cache_directory_prefix"]
+            ):
+                marker = x / self.config["debug"]["session_exit_marker"]
+                if marker.exists():
+                    exited_sessions.append((x, marker.stat().st_mtime))
+
+        # preserve the newest self.config["debug"]["maximum_exited_session"] debug sessions
+        exited_sessions.sort(key=lambda x: x[1])
+        for x, _ in exited_sessions[: -self.config["debug"]["maximum_exited_session"]]:
+            shutil.rmtree(x)
 
     def _get_complete_timestamp(self, ts_str):
         valid_ts_formats = [

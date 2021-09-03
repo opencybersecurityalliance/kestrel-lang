@@ -25,12 +25,16 @@ def logging_setup(session, verbose_mode, debug_mode):
         log_handlers = [log_console, log_file] if verbose_mode else [log_file]
     else:
         log_handlers = [log_console]
+    # remove existing handlers attached to root logger
+    root_logger = logging.getLogger()
+    for h in root_logger.handlers[:]:
+        root_logger.removeHandler(h)
+        h.close()
     logging.basicConfig(
         format=log_format,
         datefmt="%H:%M:%S",
         level=logging.DEBUG if debug_mode else logging.INFO,
         handlers=log_handlers,
-        force=True,
     )
 
 

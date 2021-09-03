@@ -6,6 +6,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.1.1 (2021-09-03)
+==================
+
+Added
+-----
+
+- Minimal dependent package versions #67
+- Configration option to disable execution summary display #86
+- Auto-removal of obsolete session caches #34
+- SQLite requirement in installation documentation
+
+Fixed
+-----
+
+- Python 3.6 support on command line utility #97
+
+Changed
+-------
+
+- Adjusting logging message levels to avoid confusion
+
 1.1.0 (2021-08-18)
 ===================
 

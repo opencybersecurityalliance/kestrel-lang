@@ -349,7 +349,7 @@ through ``elastic_ecs`` STIX-Shifter connector. Read more in :doc:`language`.
    :alt: Using a FIND command.
 
 Referring to Kestrel Variables in GET
-----------------------------------
+-------------------------------------
 
 Another common way to link entities in hunt flows is to write a new ``GET``
 command with referred variables. You can either ``GET`` new entities within an
@@ -408,7 +408,7 @@ to its source code and run the command:
 Run an Analytics
 ----------------
 
-Apply the analytics you built on the variable ``proxynt`` from `Referring
+Apply the analytics you built on the variable ``proxynt`` from `Referring to
 Kestrel Variables in GET`_ to pin IP addresses found in the variable onto a
 map. Before you finish typing the command, you can pause halfway at ``APPLY
 docker://`` and press ``TAB`` to list all available analytics from the Kestrel
