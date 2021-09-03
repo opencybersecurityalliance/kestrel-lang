@@ -40,8 +40,9 @@ your ``sqlite3`` version and upgrade ``sqlite3`` if needed.
 
     $ sqlite3 --version
 
-Among popular Linux distributions, the minimal versions that are known to
-satisfy the ``sqlite3`` version requirement are:
+Among popular Linux distributions, the minimal distribution versions with
+out-of-box Linux installations that satisfy the ``sqlite3`` version
+requirement are:
 
 - Archlinux
 - Debian 10
@@ -56,7 +57,7 @@ Runtime Installation
 
 You can install Kestrel runtime from `stable release`_ or `source code`_.
 Either way installs all packages in the ``kestrel-lang`` repository, and
-dependent packages, such as `firepit` and ``stix-shifter``. See the
+dependent packages, such as `firepit`_ and ``stix-shifter``. See the
 architecture section in :doc:`overview` to understand more.
 
 It is a good practice to install Kestrel in a `Python virtual environment`_.
