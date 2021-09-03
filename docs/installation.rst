@@ -55,10 +55,11 @@ requirement are:
 Runtime Installation
 ====================
 
-You can install Kestrel runtime from `stable release`_ or `source code`_.
-Either way installs all packages in the ``kestrel-lang`` repository, and
-dependent packages, such as `firepit`_ and ``stix-shifter``. See the
-architecture section in :doc:`overview` to understand more.
+You can install Kestrel runtime from `stable release`_ or `source code`_
+(nightly built version). Either way installs all packages in the
+``kestrel-lang`` repository, and dependent packages, such as `firepit`_ and
+``stix-shifter``. See the architecture section in :doc:`overview` to understand
+more.
 
 It is a good practice to install Kestrel in a `Python virtual environment`_.
 You can easily setup and activate one named *huntingspace*:
@@ -77,8 +78,8 @@ Run this command in your terminal:
 
     $ pip install kestrel-lang
 
-Source Code
------------
+Source Code (Nightly Built Version)
+-----------------------------------
 
 1. Install and upgrade Python building packages ``setuptools`` and ``wheel``:
 
@@ -93,13 +94,7 @@ Source Code
     $ git clone git://github.com/opencybersecurityalliance/kestrel-lang
     $ cd kestrel-lang
 
-3. (Optional) Switch to the `develop` branch if you want the nightly built version:
-
-.. code-block:: console
-
-    $ git checkout develop
-
-4. Install all packages from the repo:
+3. Install all packages from the repo:
 
 .. code-block:: console
 
