@@ -90,9 +90,11 @@ def _get_variable_query_ids(variable):
 def get_variable_entity_count(variable):
     entity_count = 0
     if variable.entity_table:
+        entity_id_attr = get_entity_id_attribute(variable)
+        if entity_id_attr not in variable.store.columns(variable.entity_table):
+            return 0
         query = Query()
         query.append(Table(variable.entity_table))
-        entity_id_attr = get_entity_id_attribute(variable)
         query.append(Projection([entity_id_attr]))
         query.append(Unique())
         query.append(Count())
