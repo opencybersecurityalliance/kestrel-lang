@@ -72,12 +72,9 @@ def _default_output(func):
 def _guard_empty_input(func):
     @functools.wraps(func)
     def wrapper(stmt, session):
-        input_len_dict = {
-            v: get_entity_len(v, session.symtable)
-            for v in get_all_input_var_names(stmt)
-        }
-        for v, size in input_len_dict.items():
-            if size == 0:
+        for varname in get_all_input_var_names(stmt):
+            v = session.symtable[varname]
+            if v.length + v.records_count == 0:
                 raise EmptyInputVariable(v)
         else:
             return func(stmt, session)
