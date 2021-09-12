@@ -25,7 +25,7 @@ from collections import OrderedDict
 
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts
 from kestrel.exceptions import *
-from kestrel.semantics import get_entity_table, get_entity_type, get_entity_len
+from kestrel.semantics import get_entity_table, get_entity_type
 from kestrel.symboltable import new_var
 from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.codegen.data import load_data, load_data_file, dump_data_to_file
@@ -72,12 +72,9 @@ def _default_output(func):
 def _guard_empty_input(func):
     @functools.wraps(func)
     def wrapper(stmt, session):
-        input_len_dict = {
-            v: get_entity_len(v, session.symtable)
-            for v in get_all_input_var_names(stmt)
-        }
-        for v, size in input_len_dict.items():
-            if size == 0:
+        for varname in get_all_input_var_names(stmt):
+            v = session.symtable[varname]
+            if v.length + v.records_count == 0:
                 raise EmptyInputVariable(v)
         else:
             return func(stmt, session)
