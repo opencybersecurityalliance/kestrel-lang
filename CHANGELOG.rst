@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.1.2 (2021-09-13)
+==================
+
+Fixed
+-----
+
+- Aggregated entity recognition in a variable after command GROUP
+
 1.1.1 (2021-09-03)
 ==================
 
