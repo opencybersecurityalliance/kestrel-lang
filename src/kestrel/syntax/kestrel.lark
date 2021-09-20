@@ -41,7 +41,7 @@ join: "join"i VARIABLE "," VARIABLE ("by"i STIXPATH "," STIXPATH)?
 
 sort: "sort"i VARIABLE "by"i STIXPATH (ASC|DESC)?
 
-group: "group"i VARIABLE "by"i STIXPATH
+group: "group"i VARIABLE "by"i path_list ("with"i agg_list)?
 
 load: "load"i DUMPPATH ("as"i ENTITY_TYPE)?
 
@@ -63,6 +63,14 @@ endtime: "STOP" "t'" ISOTIMESTAMP "'"
 
 variables: VARIABLE ("," VARIABLE)*
 
+path_list: STIXPATH ("," STIXPATH)* -> valuelist
+
+agg_list: agg ("," agg)*
+
+agg: FUNCNAME "(" STIXPATH ")" ("AS"i alias)?
+
+?alias: CNAME
+
 VARIABLE: CNAME
 ENTITY_TYPE: LETTER ("_"|LETTER|DIGIT|"-")*
 ANALYTICS: (LETTER|DIGIT|/[-_.:\/]/)+
@@ -76,6 +84,14 @@ DESC: "desc"i
 REVERSED: "by"i
 COMMENT: /#.*/
 URI: PATH
+
+FUNCNAME: (MIN|MAX|SUM|AVG|COUNT|NUNIQUE)
+MIN: "min"i
+MAX: "max"i
+SUM: "sum"i
+AVG: "avg"i
+COUNT: "count"i
+NUNIQUE: "nunique"i
 
 STIXPATTERNBODY: "[" /.+/ "]" | "(" /.+/ ")"
 

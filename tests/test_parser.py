@@ -89,3 +89,76 @@ def test_apply_params_with_decimal_and_dots():
 def test_apply_params_no_equals():
     with pytest.raises(UnexpectedToken):
         parse("apply xyz://my_analytic on foo with x=1, y")
+
+
+def test_grouping_0():
+    results = parse("y = group x by foo")
+    result = results[0]
+    print(result)
+    assert result["command"] == "group"
+    assert result["input"] == "x"
+    assert result["paths"] == ["foo"]
+    assert "aggregations" not in result
+
+
+def test_grouping_1():
+    results = parse("y = group x by foo with sum(baz)")
+    result = results[0]
+    print(result)
+    assert result["command"] == "group"
+    assert result["input"] == "x"
+    assert result["paths"] == ["foo"]
+    assert result["aggregations"] == [
+        {
+            'attr': 'baz',
+            'func': 'sum',
+            'alias': 'sum_baz'
+        },
+    ]
+
+
+def test_grouping_2():
+    results = parse("y = group x BY foo, bar WITH MAX(baz) AS biggest, MIN(blah)")
+    result = results[0]
+    print(result)
+    assert result["command"] == "group"
+    assert result["input"] == "x"
+    assert result["paths"] == ["foo", "bar"]
+    assert result["aggregations"] == [
+        {
+            'attr': 'baz',
+            'func': 'max',
+            'alias': 'biggest'
+        },
+        {
+            'attr': 'blah',
+            'func': 'min',
+            'alias': 'min_blah'
+        },
+    ]
+
+
+def test_grouping_3():
+    results = parse("y = group x by foo with avg(bar), count(baz), max(blah) as whatever")
+    result = results[0]
+    print(result)
+    assert result["command"] == "group"
+    assert result["input"] == "x"
+    assert result["paths"] == ["foo"]
+    assert result["aggregations"] == [
+        {
+            'attr': 'bar',
+            'func': 'avg',
+            'alias': 'avg_bar'
+        },
+        {
+            'attr': 'baz',
+            'func': 'count',
+            'alias': 'count_baz'
+        },
+        {
+            'attr': 'blah',
+            'func': 'max',
+            'alias': 'whatever'
+        },
+    ]
