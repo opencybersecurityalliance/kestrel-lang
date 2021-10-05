@@ -115,11 +115,17 @@ class _PostParsing(Transformer):
             return {"command": "join", "input": _first(args), "input_2": _second(args)}
 
     def group(self, args):
-        return {
+        # args[1] was already transformed by path_list/valuelist
+        cols = _normalize_paths(args[1])
+        result = {
             "command": "group",
-            "path": _extract_stixpath(args),
+            "paths": cols,
             "input": _extract_var(args, self.default_variable),
         }
+        aggregations = args[2] if len(args) > 2 else None
+        if aggregations:
+            result["aggregations"] = aggregations
+        return result
 
     def sort(self, args):
         return {
@@ -187,6 +193,14 @@ class _PostParsing(Transformer):
 
     def number(self, args):
         return {args[0].value: ast.literal_eval(args[1].value)}
+
+    def agg_list(self, args):
+        return [arg for arg in args]
+
+    def agg(self, args):
+        func = args[0].value.lower()
+        alias = args[2].value if len(args) > 2 else f"{func}_{args[1].value}"
+        return {"func": func, "attr": args[1].value, "alias": alias}
 
 
 def _first(args):
@@ -285,3 +299,15 @@ def _merge_args(arg_type, args):
         for t in arg.children:
             items.update(t)
     return items
+
+
+def _normalize_paths(stixpaths):
+    if isinstance(stixpaths, str):
+        stixpaths = [stixpaths]
+    # Sanitize paths
+    cols = []
+    for stixpath in stixpaths:
+        sco_type, _, prop = stixpath.rpartition(":")
+        # We should probably verify sco_type here
+        cols.append(prop)
+    return cols

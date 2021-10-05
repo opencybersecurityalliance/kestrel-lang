@@ -723,12 +723,25 @@ Syntax
 ^^^^^^
 ::
 
-    aggr_var = GROUP varx BY attribute
+    aggr_var = GROUP varx BY attr1, attr2... [WITH aggr_fun(attr3) [AS alias], ...]
 
-- Currently, the command only supports aggregation by one attribute.
+- If no aggregation functions are specified, they will be chosen
+  automatically.  In that case, attributes of the returned entities
+  are decorated with a prefix ``unique_`` such as ``unique_pid``
+  instead of ``pid``.
 
-- Attributes of the returned entities are decorated with a prefix ``unique_``
-  such as ``unique_pid`` instead of ``pid``.
+- When aggregations are specified without ``alias``, aggregated
+  attributes will be prefixed with the aggregation function such as
+  ``min_first_observed``.
+
+- Support aggregation functions:
+
+  - ``MIN``: minimum value
+  - ``MAX``: maximum value
+  - ``AVG``: average value
+  - ``SUM``: sum of values
+  - ``COUNT``: count of non-null values
+  - ``NUNIQUE``: count of unique values
 
 Examples
 ^^^^^^^^
