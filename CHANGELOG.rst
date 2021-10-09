@@ -6,6 +6,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.1.3 (2021-10-08)
+==================
+
+Added
+-----
+
+- GROUP BY multiple attributes
+- Aggregation function in GROUP BY
+- Support alias in GROUP BY
+- New test cases for GROUP BY
+- Documentation update for GROUP BY
+
 1.1.2 (2021-09-13)
 ==================
 

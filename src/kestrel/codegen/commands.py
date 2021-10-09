@@ -23,6 +23,8 @@ import logging
 import itertools
 from collections import OrderedDict
 
+from firepit.query import Aggregation, Group, Query, Table
+
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts
 from kestrel.exceptions import *
 from kestrel.semantics import get_entity_table, get_entity_type
@@ -178,7 +180,7 @@ def info(stmt, session):
 
 @_debug_logger
 def disp(stmt, session):
-    if len(session.symtable[stmt["input"]]) > 0:
+    if session.symtable[stmt["input"]].entity_table:
         content = session.store.lookup(
             get_entity_table(stmt["input"], session.symtable),
             stmt["attrs"],
@@ -477,12 +479,13 @@ def join(stmt, session):
 @_default_output
 @_guard_empty_input
 def group(stmt, session):
-    session.store.assign(
-        stmt["output"],
-        get_entity_table(stmt["input"], session.symtable),
-        op="group",
-        by=stmt["path"],
+    query = Query(
+        [Table(get_entity_table(stmt["input"], session.symtable)), Group(stmt["paths"])]
     )
+    if "aggregations" in stmt:
+        aggs = [(i["func"], i["attr"], i["alias"]) for i in stmt["aggregations"]]
+        query.append(Aggregation(aggs))
+    session.store.assign_query(stmt["output"], query)
 
 
 @_debug_logger
