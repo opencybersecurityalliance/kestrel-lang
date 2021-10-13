@@ -3,10 +3,7 @@ import json
 import os
 
 from kestrel.session import Session
-from kestrel.exceptions import MissingEntityType
 
-sf_sb1 = {"host": "https://raw.githubusercontent.com/opencybersecurityalliance/stix-shifter/develop/data/cybox/carbon_black/cb_observed_156.json"}
-sf_sb2 = {"host": "https://raw.githubusercontent.com/opencybersecurityalliance/stix-shifter/develop/data/cybox/qradar/qradar_custom_process_observable.json"}
 
 @pytest.fixture()
 def file_stix_bundles():
