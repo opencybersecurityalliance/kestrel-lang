@@ -113,7 +113,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         status = transmission.status(search_id)
                         if status["success"]:
                             while (
-                                status["progress"] < 100 and status["status"] == "RUNNING"
+                                status["progress"] < 100
+                                and status["status"] == "RUNNING"
                             ):
                                 status = transmission.status(search_id)
                         else:
@@ -145,7 +146,11 @@ class StixShifterInterface(AbstractDataSourceInterface):
                     raise DataSourceError("STIX-shifter transmission.query() failed")
 
             stixbundle = translation.translate(
-                connector_name, "results", query_metadata, json.dumps(connector_results), {}
+                connector_name,
+                "results",
+                query_metadata,
+                json.dumps(connector_results),
+                {},
             )
 
             with ingestfile.open("w") as ingest:
@@ -202,7 +207,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 f'invalid {env_conn_name} environment variable: no "host" field',
             )
 
-        if "port" not in connection and connector_name != 'stix_bundle':
+        if "port" not in connection and connector_name != "stix_bundle":
             raise InvalidDataSource(
                 profile_name,
                 "stixshifter",

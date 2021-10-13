@@ -72,7 +72,9 @@ class StixBundleInterface(AbstractDataSourceInterface):
                 if prop == "objects":
                     bundle_out[prop] = []
                     for obj in val:
-                        if obj["type"] != "observed-data" or match(pattern, [obj], False):
+                        if obj["type"] != "observed-data" or match(
+                            pattern, [obj], False
+                        ):
                             bundle_out[prop].append(obj)
                 else:
                     bundle_out[prop] = val
