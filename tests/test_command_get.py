@@ -56,7 +56,8 @@ def test_get_multiple_file_stix_bundles(file_stix_bundles):
 
 def test_get_single_stixshifter_stix_bundle(set_stixshifter_stix_bundles):
     with Session() as s:
-        stmt = f"var = GET process FROM stixshifter://HOST2 WHERE [ipv4-addr:value = '127.0.0.1']"
+        # default data source schema is stixshifter
+        stmt = "var = GET process FROM HOST2 WHERE [ipv4-addr:value = '127.0.0.1']"
 
         s.execute(stmt)
         v = s.get_variable("var")
@@ -68,7 +69,8 @@ def test_get_single_stixshifter_stix_bundle(set_stixshifter_stix_bundles):
 
 def test_get_multiple_stixshifter_stix_bundles(set_stixshifter_stix_bundles):
     with Session() as s:
-        stmt = f"var = GET process FROM stixshifter://HOST1,HOST2 WHERE [ipv4-addr:value = '127.0.0.1']"
+        # default data source schema is stixshifter
+        stmt = "var = GET process FROM HOST1,HOST2 WHERE [ipv4-addr:value = '127.0.0.1']"
 
         s.execute(stmt)
         v = s.get_variable("var")
