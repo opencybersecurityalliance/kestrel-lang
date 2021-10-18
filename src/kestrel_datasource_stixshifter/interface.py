@@ -99,51 +99,69 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 connector_name, "query", query_metadata, pattern, {}
             )
 
-            if "error" in dsl:
-                raise DataSourceError("STIX-shifter translation failed")
+        if "error" in dsl:
+            raise DataSourceError(
+                f"STIX-shifter translation failed with message: {dsl['error']}"
+            )
 
-            # query results should be put together; when translated to STIX, the relation between them will remain
-            connector_results = []
-            for query in dsl["queries"]:
-                search_meta_result = transmission.query(query)
-                if search_meta_result["success"]:
-                    search_id = search_meta_result["search_id"]
-                    if transmission.is_async():
-                        time.sleep(1)
-                        status = transmission.status(search_id)
-                        if status["success"]:
-                            while (
-                                status["progress"] < 100
-                                and status["status"] == "RUNNING"
-                            ):
-                                status = transmission.status(search_id)
-                        else:
-                            raise DataSourceError(
-                                "STIX-shifter transmission.status() failed"
-                            )
-
-                    result_retrieval_offset = 0
-                    has_remaining_results = True
-                    while has_remaining_results:
-                        result_batch = transmission.results(
-                            search_id, result_retrieval_offset, RETRIEVAL_BATCH_SIZE
+        # query results should be put together; when translated to STIX, the relation between them will remain
+        connector_results = []
+        for query in dsl["queries"]:
+            search_meta_result = transmission.query(query)
+            if search_meta_result["success"]:
+                search_id = search_meta_result["search_id"]
+                if transmission.is_async():
+                    time.sleep(1)
+                    status = transmission.status(search_id)
+                    if status["success"]:
+                        while (
+                            status["progress"] < 100 and status["status"] == "RUNNING"
+                        ):
+                            status = transmission.status(search_id)
+                    else:
+                        stix_shifter_error_msg = (
+                            status["error"]
+                            if "error" in status
+                            else "details not avaliable"
                         )
-                        if result_batch["success"]:
-                            new_entries = result_batch["data"]
-                            if new_entries:
-                                connector_results += new_entries
-                                result_retrieval_offset += RETRIEVAL_BATCH_SIZE
-                                if len(new_entries) < RETRIEVAL_BATCH_SIZE:
-                                    has_remaining_results = False
-                            else:
+                        raise DataSourceError(
+                            f"STIX-shifter transmission.status() failed with message: {stix_shifter_error_msg}"
+                        )
+
+                result_retrieval_offset = 0
+                has_remaining_results = True
+                while has_remaining_results:
+                    result_batch = transmission.results(
+                        search_id, result_retrieval_offset, RETRIEVAL_BATCH_SIZE
+                    )
+                    if result_batch["success"]:
+                        new_entries = result_batch["data"]
+                        if new_entries:
+                            connector_results += new_entries
+                            result_retrieval_offset += RETRIEVAL_BATCH_SIZE
+                            if len(new_entries) < RETRIEVAL_BATCH_SIZE:
                                 has_remaining_results = False
                         else:
-                            raise DataSourceError(
-                                "STIX-shifter transmission.results() failed"
-                            )
+                            has_remaining_results = False
+                    else:
+                        stix_shifter_error_msg = (
+                            result_batch["error"]
+                            if "error" in result_batch
+                            else "details not avaliable"
+                        )
+                        raise DataSourceError(
+                            f"STIX-shifter transmission.results() failed with message: {stix_shifter_error_msg}"
+                        )
 
-                else:
-                    raise DataSourceError("STIX-shifter transmission.query() failed")
+            else:
+                stix_shifter_error_msg = (
+                    search_meta_result["error"]
+                    if "error" in search_meta_result
+                    else "details not avaliable"
+                )
+                raise DataSourceError(
+                    f"STIX-shifter transmission.query() failed with message: {stix_shifter_error_msg}"
+                )
 
             stixbundle = translation.translate(
                 connector_name,
