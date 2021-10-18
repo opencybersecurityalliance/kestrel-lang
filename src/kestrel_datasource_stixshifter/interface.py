@@ -67,6 +67,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
     def query(uri, pattern, session_id=None):
         """Query a stixshifter data source."""
         scheme, _, profile = uri.rpartition("://")
+        profiles = profile.split(",")
 
         if scheme != "stixshifter":
             raise DataSourceManagerInternalError(
@@ -76,15 +77,15 @@ class StixShifterInterface(AbstractDataSourceInterface):
         ingestdir = mkdtemp()
         query_id = ingestdir.name
         bundles = []
-        profiles = profile.split(",")
-        for i in range(len(profiles)):
+        for i, profile in enumerate(profiles):
             (
                 connector_name,
                 connection_dict,
                 configuration_dict,
-            ) = StixShifterInterface._get_stixshifter_config(profiles[i])
+            ) = StixShifterInterface._get_stixshifter_config(profile)
 
-            ingestfile = ingestdir / f"data_{i}.json"
+            data_path_striped = ''.join(filter(str.isalnum, profile))
+            ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
             query_metadata = json.dumps(
                 {"id": "identity--" + query_id, "name": connector_name}
@@ -127,25 +128,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
                             raise DataSourceError(
                                 f"STIX-shifter transmission.status() failed with message: {stix_shifter_error_msg}"
                             )
-                # query results should be put together; when translated to STIX, the relation between them will remain
-                connector_results = []
-                for query in dsl["queries"]:
-                    search_meta_result = transmission.query(query)
-                    if search_meta_result["success"]:
-                        search_id = search_meta_result["search_id"]
-                        if transmission.is_async():
-                            time.sleep(1)
-                            status = transmission.status(search_id)
-                            if status["success"]:
-                                while (
-                                    status["progress"] < 100
-                                    and status["status"] == "RUNNING"
-                                ):
-                                    status = transmission.status(search_id)
-                            else:
-                                raise DataSourceError(
-                                    "STIX-shifter transmission.status() failed"
-                                )
 
                     result_retrieval_offset = 0
                     has_remaining_results = True

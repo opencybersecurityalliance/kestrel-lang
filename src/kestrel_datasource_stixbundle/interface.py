@@ -46,20 +46,21 @@ class StixBundleInterface(AbstractDataSourceInterface):
 
         ingestdir = _make_query_dir(uri)
         bundles = []
-        for i in range(len(data_paths)):
-            ingestfile = ingestdir / f"data_{i}.json"
+        for i, data_path in enumerate(data_paths):
+            data_path_striped = ''.join(filter(str.isalnum, data_path))
+            ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
             # TODO: keep files in LRU cache?
 
             if scheme == "file":
                 try:
-                    with open(data_paths[i], "r") as f:
+                    with open(data_path, "r") as f:
                         bundle_in = json.load(f)
                 except Exception:
                     raise DataSourceConnectionError(uri)
             elif scheme == "http" or scheme == "https":
                 try:
-                    bundle_in = requests.get(f"{scheme}://{data_paths[i]}").json()
+                    bundle_in = requests.get(f"{scheme}://{data_paths}").json()
                 except requests.exceptions.ConnectionError:
                     raise DataSourceConnectionError(uri)
             else:
