@@ -44,6 +44,7 @@ def test_group_src_dst(fake_bundle_file):
         assert "grps" in session.get_variable_names()
         grps = session.get_variable("grps")
         assert grps is not None
+        assert len(grps) == 94  # 94 unique src-dst pairs in test bundle
 
 
 @pytest.mark.parametrize(

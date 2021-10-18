@@ -48,3 +48,16 @@ procs = FIND process CREATED conns
     output_dict = summaries[0].to_dict()
     del output_dict["data"]["execution time"]
     assert output_dict == correct_dict
+
+
+def test_find_srcs(fake_bundle_file):
+    with Session() as s:
+        stmt = f"""
+conns = get network-traffic
+        from file://{fake_bundle_file}
+        where [network-traffic:dst_port = 22]
+srcs = FIND ipv4-addr CREATED conns
+"""
+        s.execute(stmt)
+        srcs = s.get_variable('srcs')
+        assert len(srcs) == 24

@@ -3,7 +3,6 @@ import datetime
 import logging
 import re
 
-from kestrel.utils import dedup_dicts
 from kestrel.semantics import get_entity_table
 from kestrel.syntax.paramstix import parse_extended_stix_pattern
 from kestrel.exceptions import (
@@ -84,10 +83,10 @@ def build_pattern(
                 time_range = (start_stix, stop_stix)
                 _logger.debug(f"pattern time range computed: {time_range}")
 
-            except InvalidAttribute:
+            except InvalidAttribute as e:
                 time_range = None
                 _logger.warning(
-                    f"pattern time range searching failed on variable {var_name}"
+                    f"pattern time range searching failed on variables {list(references.keys())}"
                 )
 
     if pattern_body:
@@ -134,7 +133,7 @@ def _dereference_variable(store, symtable, var_name, attributes):
     attr_to_values = {k: [] for k in attributes}
     for row in store_return:
         for k, v in row.items():
-            if v and v not in attr_to_values[k]:
+            if v is not None and v not in attr_to_values[k]:
                 attr_to_values[k].append(v)
 
     for k, v in attr_to_values.items():
@@ -153,15 +152,10 @@ def _get_variable_time_range(store, symtable, var_name):
         end (datetime.datetime): the time any entities is observed last.
 
     """
-    time_attr_line = ",".join(["first_observed", "last_observed"])
     var_entity_table = get_entity_table(var_name, symtable)
-    try:
-        store_return = store.lookup(var_entity_table, time_attr_line)
-    except InvalidAttr as e:
-        raise InvalidAttribute(e.message)
-    life_span = dedup_dicts(store_return)
-    start = min([dateutil.parser.isoparse(e["first_observed"]) for e in life_span])
-    end = max([dateutil.parser.isoparse(e["last_observed"]) for e in life_span])
+    summary = store.summary(var_entity_table)
+    start = dateutil.parser.isoparse(summary["first_observed"])
+    end = dateutil.parser.isoparse(summary["last_observed"])
     return start, end
 
 
