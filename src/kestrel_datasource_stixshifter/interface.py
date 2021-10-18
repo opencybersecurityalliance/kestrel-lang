@@ -97,7 +97,9 @@ class StixShifterInterface(AbstractDataSourceInterface):
         )
 
         if "error" in dsl:
-            raise DataSourceError("STIX-shifter translation failed")
+            raise DataSourceError(
+                f"STIX-shifter translation failed with message: {dsl['error']}"
+            )
 
         # query results should be put together; when translated to STIX, the relation between them will remain
         connector_results = []
@@ -114,8 +116,13 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         ):
                             status = transmission.status(search_id)
                     else:
+                        stix_shifter_error_msg = (
+                            status["error"]
+                            if "error" in status
+                            else "details not avaliable"
+                        )
                         raise DataSourceError(
-                            "STIX-shifter transmission.status() failed"
+                            f"STIX-shifter transmission.status() failed with message: {stix_shifter_error_msg}"
                         )
 
                 result_retrieval_offset = 0
@@ -134,12 +141,24 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         else:
                             has_remaining_results = False
                     else:
+                        stix_shifter_error_msg = (
+                            result_batch["error"]
+                            if "error" in result_batch
+                            else "details not avaliable"
+                        )
                         raise DataSourceError(
-                            "STIX-shifter transmission.results() failed"
+                            f"STIX-shifter transmission.results() failed with message: {stix_shifter_error_msg}"
                         )
 
             else:
-                raise DataSourceError("STIX-shifter transmission.query() failed")
+                stix_shifter_error_msg = (
+                    search_meta_result["error"]
+                    if "error" in search_meta_result
+                    else "details not avaliable"
+                )
+                raise DataSourceError(
+                    f"STIX-shifter transmission.query() failed with message: {stix_shifter_error_msg}"
+                )
 
         stixbundle = translation.translate(
             connector_name, "results", query_metadata, json.dumps(connector_results), {}
