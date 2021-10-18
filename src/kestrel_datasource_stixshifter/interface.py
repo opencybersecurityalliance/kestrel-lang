@@ -84,7 +84,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 configuration_dict,
             ) = StixShifterInterface._get_stixshifter_config(profile)
 
-            data_path_striped = ''.join(filter(str.isalnum, profile))
+            data_path_striped = "".join(filter(str.isalnum, profile))
             ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
             query_metadata = json.dumps(
@@ -116,7 +116,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         status = transmission.status(search_id)
                         if status["success"]:
                             while (
-                                status["progress"] < 100 and status["status"] == "RUNNING"
+                                status["progress"] < 100
+                                and status["status"] == "RUNNING"
                             ):
                                 status = transmission.status(search_id)
                         else:

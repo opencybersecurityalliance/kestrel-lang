@@ -47,7 +47,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
         ingestdir = _make_query_dir(uri)
         bundles = []
         for i, data_path in enumerate(data_paths):
-            data_path_striped = ''.join(filter(str.isalnum, data_path))
+            data_path_striped = "".join(filter(str.isalnum, data_path))
             ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
             # TODO: keep files in LRU cache?
