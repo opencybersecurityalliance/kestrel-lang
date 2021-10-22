@@ -457,7 +457,7 @@ class Session(object):
 
             # exception completion
             except StixPatternError as e:
-                raise InvalidStixPattern(e.stix)
+                raise InvalidStixPattern(e.stix) from e
 
             # post-processing: symbol table update
             if output_var_struct is not None:

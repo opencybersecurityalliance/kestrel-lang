@@ -1,3 +1,4 @@
+import json
 import os
 import pytest
 
@@ -8,6 +9,12 @@ from kestrel.session import Session
 def fake_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(cwd, "test_bundle.json")
+
+
+@pytest.fixture
+def proc_bundle_file():
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(cwd, "doctored-1k.json")
 
 
 def test_return_table_not_exist(fake_bundle_file):
@@ -61,3 +68,50 @@ srcs = FIND ipv4-addr CREATED conns
         s.execute(stmt)
         srcs = s.get_variable('srcs')
         assert len(srcs) == 24
+
+
+def test_find_procs(proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+procs = get process
+        from file://{proc_bundle_file}
+        where [process:name LIKE '%']
+conns = FIND network-traffic CREATED BY procs
+"""
+        s.execute(stmt)
+        conns = s.get_variable('conns')
+        assert len(conns) == 556
+
+
+def test_find_file_linked_to_process(proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+procs = get process
+        from file://{proc_bundle_file}
+        where [process:command_line LIKE 'wmic%']
+files = FIND file LINKED procs
+"""
+        s.execute(stmt)
+        procs = s.get_variable('procs')
+        print(json.dumps(procs, indent=4))
+        assert len(procs) == 7 * 3  # TEMP: 3 records per entity
+        files = s.get_variable('files')
+        print(json.dumps(files, indent=4))
+        assert len(files) == 6  #TODO: double check this count
+
+
+def test_find_file_loaded_by_process(proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+procs = get process
+        from file://{proc_bundle_file}
+        where [process:command_line LIKE 'wmic%']
+files = FIND file LOADED BY procs
+"""
+        s.execute(stmt)
+        procs = s.get_variable('procs')
+        print(json.dumps(procs, indent=4))
+        assert len(procs) == 7 * 3  # TEMP: 3 records per entity
+        files = s.get_variable('files')
+        print(json.dumps(files, indent=4))
+        assert len(files) == 1
