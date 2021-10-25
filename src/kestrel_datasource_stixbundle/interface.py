@@ -51,7 +51,6 @@ class StixBundleInterface(AbstractDataSourceInterface):
             ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
             # TODO: keep files in LRU cache?
-
             if scheme == "file":
                 try:
                     with open(data_path, "r") as f:
@@ -60,7 +59,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
                     raise DataSourceConnectionError(uri)
             elif scheme == "http" or scheme == "https":
                 try:
-                    bundle_in = requests.get(f"{scheme}://{data_paths}").json()
+                    bundle_in = requests.get(f"{scheme}://{data_path}").json()
                 except requests.exceptions.ConnectionError:
                     raise DataSourceConnectionError(uri)
             else:
