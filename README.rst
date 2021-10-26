@@ -165,21 +165,22 @@ Share Your Huntbook/Analytics
 Talks And Demos
 ===============
 
-Kestrel debuted at RSA Conference 2021 with its goal of an `efficient
-cyberthreat hunting symbiosis`_, its design concepts like `entity-based
-reasoning`_ and `composable hunt flow`_, as well as a cross-host hunting demo
-with TTP pattern matching, provenance tracking, TI-enrichment, machine learning
-analytics, and more. Watch our session `The Game of Cyber Threat Hunting: The
-Return of the Fun`_ (30 minutes with demo) or the `demo`_ alone (15 minutes).
+Kestrel was debuted at RSA Conference 2021 with its goal of an `efficient
+cyberthreat hunting symbiosis`_, its key design concepts `entity-based
+reasoning`_ and `composable hunt flow`_, as well as a small-enterprise APT
+hunting demo with TTP pattern matching, cross-host provenance tracking,
+TI-enrichment, machine learning analytics, and more. Watch our session `The
+Game of Cyber Threat Hunting: The Return of the Fun`_ (30 minutes with demo) or
+the `demo`_ alone (15 minutes).
 
 Kestrel was further introduced to the threat hunting community at `SANS Threat
 Hunting Summit 2021`_ in session `Compose Your Hunts With Reusable Knowledge
-and Share Your Huntbook With the Community`_ to facilitate hunting playbook
+and Share Your Huntbook With the Community`_ to facilitate huntbook
 composition, sharing, and reuse. The session started from 3 simple hunt step
 demos---TTP pattern matching, provenance tracking, and data visualization
-analytics---then went into comprehensive huntflow composition to convey the
-idea of hunting knowledge composition and reuse. The recording will be
-published by SANS.
+analytics---then went into comprehensive hunt flow composition to convey the
+idea of hunting knowledge composition and reuse. The recording is currently
+available at SANS library and will be published by SANS.
 
 Kestrel will be presented as part of the open hunting stack for hybrid cloud in
 Black Hat Europe Arsenal 2021 session: `An Open Stack for Threat Hunting in
@@ -193,8 +194,8 @@ Connecting With The Community
 
 Quick questions? Like to meet other users? Want to contribute?
 
-Get the `slack invitation`_ to `Open Cybersecurity
-Alliance workspace`_ and join our ``kestrel`` channel.
+Get a `slack invitation`_ to `Open Cybersecurity
+Alliance workspace`_ and join our *kestrel* channel.
 
 .. _Kestrel documentation hub: https://kestrel.readthedocs.io/
 .. _Kestrel blogs at OCA: https://opencybersecurityalliance.org/posts/
