@@ -22,7 +22,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ['3.6', '3.7', '3.8', '3.9']
+        python-version: ['3.6', '3.7', '3.8', '3.9]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python
@@ -35,5 +35,6 @@ jobs:
           python -m pip install --upgrade setuptools
           python -m pip install pytest
           python -m pip install .
+          python -m pip install stix-shifter-modules-stix_bundle
       - name: Unit testing
         run: pytest -vv

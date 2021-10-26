@@ -40,41 +40,47 @@ class StixBundleInterface(AbstractDataSourceInterface):
 
     @staticmethod
     def query(uri, pattern, session_id=None):
-        scheme, _, data_path = uri.rpartition("://")
+        scheme, _, data_paths = uri.rpartition("://")
+        data_paths = data_paths.split(",")
         pattern = fixup_pattern(pattern)
 
         ingestdir = _make_query_dir(uri)
-        ingestfile = ingestdir / "data.json"
+        bundles = []
+        for i, data_path in enumerate(data_paths):
+            data_path_striped = "".join(filter(str.isalnum, data_path))
+            ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
-        # TODO: keep files in LRU cache?
-
-        if scheme == "file":
-            try:
-                with open(data_path, "r") as f:
-                    bundle_in = json.load(f)
-            except Exception:
-                raise DataSourceConnectionError(uri)
-        elif scheme == "http" or scheme == "https":
-            try:
-                bundle_in = requests.get(uri).json()
-            except requests.exceptions.ConnectionError:
-                raise DataSourceConnectionError(uri)
-        else:
-            raise DataSourceManagerInternalError(
-                f"interface {__package__} should not process scheme {scheme}"
-            )
-
-        bundle_out = {}
-        for prop, val in bundle_in.items():
-            if prop == "objects":
-                bundle_out[prop] = []
-                for obj in val:
-                    if obj["type"] != "observed-data" or match(pattern, [obj], False):
-                        bundle_out[prop].append(obj)
+            # TODO: keep files in LRU cache?
+            if scheme == "file":
+                try:
+                    with open(data_path, "r") as f:
+                        bundle_in = json.load(f)
+                except Exception:
+                    raise DataSourceConnectionError(uri)
+            elif scheme == "http" or scheme == "https":
+                try:
+                    bundle_in = requests.get(f"{scheme}://{data_path}").json()
+                except requests.exceptions.ConnectionError:
+                    raise DataSourceConnectionError(uri)
             else:
-                bundle_out[prop] = val
+                raise DataSourceManagerInternalError(
+                    f"interface {__package__} should not process scheme {scheme}"
+                )
 
-        with ingestfile.open("w") as f:
-            json.dump(bundle_out, f)
+            bundle_out = {}
+            for prop, val in bundle_in.items():
+                if prop == "objects":
+                    bundle_out[prop] = []
+                    for obj in val:
+                        if obj["type"] != "observed-data" or match(
+                            pattern, [obj], False
+                        ):
+                            bundle_out[prop].append(obj)
+                else:
+                    bundle_out[prop] = val
 
-        return ReturnFromFile(ingestdir.name, [str(ingestfile.resolve())])
+            with ingestfile.open("w") as f:
+                json.dump(bundle_out, f)
+            bundles.append(str(ingestfile.resolve()))
+
+        return ReturnFromFile(ingestdir.name, bundles)

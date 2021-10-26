@@ -1,0 +1,241 @@
+{
+    "type": "bundle",
+    "id": "bundle--11e77454-448c-4229-9927-624b43826ad3",
+    "spec_version": "2.0",
+    "objects": [
+        {
+            "type": "identity",
+            "id": "identity--3532c56d-ea72-48be-a2ad-1a53f4c9c6d3",
+            "name": "CbCloud"
+        },
+        {
+            "id": "observed-data--7b5a131e-c9b9-4f32-b5fa-b5f48f9208f8",
+            "type": "observed-data",
+            "created_by_ref": "identity--3532c56d-ea72-48be-a2ad-1a53f4c9c6d3",
+            "created": "2021-08-05T13:03:25.634Z",
+            "modified": "2021-08-05T13:03:25.634Z",
+            "objects": {
+                "0": {
+                    "type": "x-cbcloud",
+                    "childproc_count": 0,
+                    "crossproc_count": 0,
+                    "device_external_ip": "192.168.100.212",
+                    "device_group_id": 0,
+                    "device_id": 27969112,
+                    "device_name": "windows10-lab1",
+                    "device_os": "WINDOWS",
+                    "device_timestamp": "2021-03-19T16:19:19.138Z",
+                    "filemod_count": 0,
+                    "modload_count": 0,
+                    "netconn_count": 0,
+                    "org_id": "MYORGIDX",
+                    "regmod_count": 0,
+                    "scriptload_count": 0
+                },
+                "1": {
+                    "type": "process",
+                    "x_unique_id": "MYORGIDX-01aac658-00001b7c-00000000-1d71cec2d7f188e",
+                    "name": "compattelrunner.exe",
+                    "binary_ref": "2",
+                    "pid": 7036
+                },
+                "2": {
+                    "type": "file",
+                    "name": "compattelrunner.exe",
+                    "hashes": {
+                        "SHA-256": "c0a5986a4dd6d7cacf09c5a980df634c44ff73028206d99cb561e64a74a0958a"
+                    },
+                    "parent_directory_ref": "7"
+                },
+                "3": {
+                    "type": "process",
+                    "parent_ref": "1",
+                    "command_line": "powershell.exe -ExecutionPolicy Restricted -Command $Res = 0; if((Get-WindowsOptionalFeature -Online -FeatureName IIS-WebServerRole).State -eq 'Enabled') { $Path = $env:windir + '\\system32\\inetsrv\\config\\applicationHost.Config'; if (Test-Path -Path $Path) { try { [XML]$Xml = Get-Content $Path } catch { $Res = 1 } }; } Write-Host 'Final result:',$Res",
+                    "x_unique_id": "MYORGIDX-01aac658-00001370-00000000-1d71cec444d7279",
+                    "name": "powershell.exe",
+                    "binary_ref": "4",
+                    "pid": 4976,
+                    "created": "2021-03-19T17:18:55.150Z",
+                    "creator_user_ref": "5"
+                },
+                "4": {
+                    "type": "file",
+                    "name": "powershell.exe",
+                    "hashes": {
+                        "MD5": "7353f60b1739074eb17c5f4dddefe239",
+                        "SHA-256": "de96a6e69944335375dc1ac238336066889d9ffc7d73628ef4fe1b1b160ab32c"
+                    },
+                    "parent_directory_ref": "6"
+                },
+                "5": {
+                    "type": "user-account",
+                    "user_id": "NT AUTHORITY\\SYSTEM"
+                },
+                "6": {
+                    "type": "directory",
+                    "path": "c:\\windows\\system32\\windowspowershell\\v1.0"
+                },
+                "7": {
+                    "type": "directory",
+                    "path": "c:\\windows\\system32"
+                }
+            },
+            "first_observed": "2021-03-19T16:19:19.138Z",
+            "last_observed": "2021-03-19T16:19:19.138Z",
+            "number_observed": 1
+        },
+        {
+            "id": "observed-data--292d681f-df32-47b7-a8b3-8aaae2b61618",
+            "type": "observed-data",
+            "created_by_ref": "identity--3532c56d-ea72-48be-a2ad-1a53f4c9c6d3",
+            "created": "2021-08-05T13:03:25.635Z",
+            "modified": "2021-08-05T13:03:25.635Z",
+            "objects": {
+                "0": {
+                    "type": "x-cbcloud",
+                    "childproc_count": 0,
+                    "crossproc_count": 0,
+                    "device_external_ip": "192.168.100.212",
+                    "device_group_id": 0,
+                    "device_id": 27969132,
+                    "device_name": "windows10-lab2",
+                    "device_os": "WINDOWS",
+                    "device_timestamp": "2021-03-19T19:03:54.637Z",
+                    "filemod_count": 0,
+                    "modload_count": 0,
+                    "netconn_count": 0,
+                    "org_id": "MYORGIDX",
+                    "regmod_count": 0,
+                    "scriptload_count": 0
+                },
+                "1": {
+                    "type": "process",
+                    "x_unique_id": "MYORGIDX-01aac66c-00001644-00000000-1d71cf28cfa1765",
+                    "name": "compattelrunner.exe",
+                    "binary_ref": "2",
+                    "pid": 5700
+                },
+                "2": {
+                    "type": "file",
+                    "name": "compattelrunner.exe",
+                    "hashes": {
+                        "SHA-256": "c0a5986a4dd6d7cacf09c5a980df634c44ff73028206d99cb561e64a74a0958a"
+                    },
+                    "parent_directory_ref": "7"
+                },
+                "3": {
+                    "type": "process",
+                    "parent_ref": "1",
+                    "command_line": "powershell.exe -ExecutionPolicy Restricted -Command $Res = 0; if((Get-WindowsOptionalFeature -Online -FeatureName IIS-WebServerRole).State -eq 'Enabled') { $Path = $env:windir + '\\system32\\inetsrv\\config\\applicationHost.Config'; if (Test-Path -Path $Path) { try { [XML]$Xml = Get-Content $Path } catch { $Res = 1 } }; } Write-Host 'Final result:',$Res",
+                    "x_unique_id": "MYORGIDX-01aac66c-00001790-00000000-1d71cf29b2fc9c3",
+                    "name": "powershell.exe",
+                    "binary_ref": "4",
+                    "pid": 6032,
+                    "created": "2021-03-19T19:03:54.198Z",
+                    "creator_user_ref": "5"
+                },
+                "4": {
+                    "type": "file",
+                    "name": "powershell.exe",
+                    "hashes": {
+                        "MD5": "7353f60b1739074eb17c5f4dddefe239",
+                        "SHA-256": "de96a6e69944335375dc1ac238336066889d9ffc7d73628ef4fe1b1b160ab32c"
+                    },
+                    "parent_directory_ref": "6"
+                },
+                "5": {
+                    "type": "user-account",
+                    "user_id": "NT AUTHORITY\\SYSTEM"
+                },
+                "6": {
+                    "type": "directory",
+                    "path": "c:\\windows\\system32\\windowspowershell\\v1.0"
+                },
+                "7": {
+                    "type": "directory",
+                    "path": "c:\\windows\\system32"
+                }
+            },
+            "first_observed": "2021-03-19T19:03:54.637Z",
+            "last_observed": "2021-03-19T19:03:54.637Z",
+            "number_observed": 1
+        },
+        {
+            "id": "observed-data--fbe8bf8b-fc2e-4268-b325-9a12b90f2b2c",
+            "type": "observed-data",
+            "created_by_ref": "identity--3532c56d-ea72-48be-a2ad-1a53f4c9c6d3",
+            "created": "2021-08-05T13:03:25.657Z",
+            "modified": "2021-08-05T13:03:25.657Z",
+            "objects": {
+                "0": {
+                    "type": "x-cbcloud",
+                    "childproc_count": 0,
+                    "crossproc_count": 0,
+                    "device_external_ip": "192.168.100.212",
+                    "device_group_id": 0,
+                    "device_id": 40017686,
+                    "device_internal_ip": "10.0.0.139",
+                    "device_name": "windows10-lab1",
+                    "device_os": "WINDOWS",
+                    "device_timestamp": "2021-03-19T22:39:10.117Z",
+                    "filemod_count": 0,
+                    "modload_count": 0,
+                    "netconn_count": 0,
+                    "org_id": "MYORGIDX",
+                    "regmod_count": 0,
+                    "scriptload_count": 0
+                },
+                "1": {
+                    "type": "process",
+                    "x_unique_id": "MYORGIDX-02629f16-00000608-00000000-1d71d10a09cc7c4",
+                    "name": "compattelrunner.exe",
+                    "binary_ref": "2",
+                    "pid": 1544
+                },
+                "2": {
+                    "type": "file",
+                    "name": "compattelrunner.exe",
+                    "hashes": {
+                        "SHA-256": "c0a5986a4dd6d7cacf09c5a980df634c44ff73028206d99cb561e64a74a0958a"
+                    },
+                    "parent_directory_ref": "7"
+                },
+                "3": {
+                    "type": "process",
+                    "parent_ref": "1",
+                    "command_line": "powershell.exe -ExecutionPolicy Restricted -Command $Res = 0; if((Get-WindowsOptionalFeature -Online -FeatureName IIS-WebServerRole).State -eq 'Enabled') { $Path = $env:windir + '\\system32\\inetsrv\\config\\applicationHost.Config'; if (Test-Path -Path $Path) { try { [XML]$Xml = Get-Content $Path } catch { $Res = 1 } }; } Write-Host 'Final result:',$Res",
+                    "x_unique_id": "MYORGIDX-02629f16-00000ad8-00000000-1d71d10acbe8a66",
+                    "name": "powershell.exe",
+                    "binary_ref": "4",
+                    "pid": 2776,
+                    "created": "2021-03-19T22:39:08.556Z",
+                    "creator_user_ref": "5"
+                },
+                "4": {
+                    "type": "file",
+                    "name": "powershell.exe",
+                    "hashes": {
+                        "MD5": "7353f60b1739074eb17c5f4dddefe239",
+                        "SHA-256": "de96a6e69944335375dc1ac238336066889d9ffc7d73628ef4fe1b1b160ab32c"
+                    },
+                    "parent_directory_ref": "6"
+                },
+                "5": {
+                    "type": "user-account",
+                    "user_id": "NT AUTHORITY\\SYSTEM"
+                },
+                "6": {
+                    "type": "directory",
+                    "path": "c:\\windows\\system32\\windowspowershell\\v1.0"
+                },
+                "7": {
+                    "type": "directory",
+                    "path": "c:\\windows\\system32"
+                }
+            },
+            "first_observed": "2021-03-19T22:39:10.117Z",
+            "last_observed": "2021-03-19T22:39:10.117Z",
+            "number_observed": 1
+        }
+    ]
+}
