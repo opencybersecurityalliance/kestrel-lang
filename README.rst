@@ -156,8 +156,8 @@ Kestrel Hunting Blogs
 #. `Practicing Backward And Forward Tracking Hunts on A Windows Host`_
 #. `Building Your Own Kestrel Analytics and Sharing With the Community`_
 
-Share Your Huntbook/Analytics
-=============================
+Sharing Your Huntbook/Analytics and Learning From the Community
+===============================================================
 
 - `Kestrel huntbook repo`_
 - `Kestrel analytics repo`_
