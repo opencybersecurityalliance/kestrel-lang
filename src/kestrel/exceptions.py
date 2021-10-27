@@ -171,7 +171,8 @@ class InvalidDataSource(KestrelException):
 class DataSourceError(KestrelException):
     def __init__(self, error):
         super().__init__(
-            f"data source internal error: {error}", "please test data source manually"
+            f"data source internal error: {error}",
+            "please check data source config or test the query manually",
         )
 
 

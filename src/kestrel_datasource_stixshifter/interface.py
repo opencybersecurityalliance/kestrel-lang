@@ -67,88 +67,117 @@ class StixShifterInterface(AbstractDataSourceInterface):
     def query(uri, pattern, session_id=None):
         """Query a stixshifter data source."""
         scheme, _, profile = uri.rpartition("://")
+        profiles = profile.split(",")
 
         if scheme != "stixshifter":
             raise DataSourceManagerInternalError(
                 f"interface {__package__} should not process scheme {scheme}"
             )
 
-        (
-            connector_name,
-            connection_dict,
-            configuration_dict,
-        ) = StixShifterInterface._get_stixshifter_config(profile)
-
         ingestdir = mkdtemp()
-        ingestfile = ingestdir / "data.json"
-
         query_id = ingestdir.name
-        query_metadata = json.dumps(
-            {"id": "identity--" + query_id, "name": connector_name}
-        )
+        bundles = []
+        for i, profile in enumerate(profiles):
+            (
+                connector_name,
+                connection_dict,
+                configuration_dict,
+            ) = StixShifterInterface._get_stixshifter_config(profile)
 
-        translation = stix_translation.StixTranslation()
-        transmission = stix_transmission.StixTransmission(
-            connector_name, connection_dict, configuration_dict
-        )
+            data_path_striped = "".join(filter(str.isalnum, profile))
+            ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
-        dsl = translation.translate(
-            connector_name, "query", query_metadata, pattern, {}
-        )
+            query_metadata = json.dumps(
+                {"id": "identity--" + query_id, "name": connector_name}
+            )
 
-        if "error" in dsl:
-            raise DataSourceError("STIX-shifter translation failed")
+            translation = stix_translation.StixTranslation()
+            transmission = stix_transmission.StixTransmission(
+                connector_name, connection_dict, configuration_dict
+            )
 
-        # query results should be put together; when translated to STIX, the relation between them will remain
-        connector_results = []
-        for query in dsl["queries"]:
-            search_meta_result = transmission.query(query)
-            if search_meta_result["success"]:
-                search_id = search_meta_result["search_id"]
-                if transmission.is_async():
-                    time.sleep(1)
-                    status = transmission.status(search_id)
-                    if status["success"]:
-                        while (
-                            status["progress"] < 100 and status["status"] == "RUNNING"
-                        ):
-                            status = transmission.status(search_id)
-                    else:
-                        raise DataSourceError(
-                            "STIX-shifter transmission.status() failed"
+            dsl = translation.translate(
+                connector_name, "query", query_metadata, pattern, {}
+            )
+
+            if "error" in dsl:
+                raise DataSourceError(
+                    f"STIX-shifter translation failed with message: {dsl['error']}"
+                )
+
+            # query results should be put together; when translated to STIX, the relation between them will remain
+            connector_results = []
+            for query in dsl["queries"]:
+                search_meta_result = transmission.query(query)
+                if search_meta_result["success"]:
+                    search_id = search_meta_result["search_id"]
+                    if transmission.is_async():
+                        time.sleep(1)
+                        status = transmission.status(search_id)
+                        if status["success"]:
+                            while (
+                                status["progress"] < 100
+                                and status["status"] == "RUNNING"
+                            ):
+                                status = transmission.status(search_id)
+                        else:
+                            stix_shifter_error_msg = (
+                                status["error"]
+                                if "error" in status
+                                else "details not avaliable"
+                            )
+                            raise DataSourceError(
+                                f"STIX-shifter transmission.status() failed with message: {stix_shifter_error_msg}"
+                            )
+
+                    result_retrieval_offset = 0
+                    has_remaining_results = True
+                    while has_remaining_results:
+                        result_batch = transmission.results(
+                            search_id, result_retrieval_offset, RETRIEVAL_BATCH_SIZE
                         )
-
-                result_retrieval_offset = 0
-                has_remaining_results = True
-                while has_remaining_results:
-                    result_batch = transmission.results(
-                        search_id, result_retrieval_offset, RETRIEVAL_BATCH_SIZE
-                    )
-                    if result_batch["success"]:
-                        new_entries = result_batch["data"]
-                        if new_entries:
-                            connector_results += new_entries
-                            result_retrieval_offset += RETRIEVAL_BATCH_SIZE
-                            if len(new_entries) < RETRIEVAL_BATCH_SIZE:
+                        if result_batch["success"]:
+                            new_entries = result_batch["data"]
+                            if new_entries:
+                                connector_results += new_entries
+                                result_retrieval_offset += RETRIEVAL_BATCH_SIZE
+                                if len(new_entries) < RETRIEVAL_BATCH_SIZE:
+                                    has_remaining_results = False
+                            else:
                                 has_remaining_results = False
                         else:
-                            has_remaining_results = False
-                    else:
-                        raise DataSourceError(
-                            "STIX-shifter transmission.results() failed"
-                        )
+                            stix_shifter_error_msg = (
+                                result_batch["error"]
+                                if "error" in result_batch
+                                else "details not avaliable"
+                            )
+                            raise DataSourceError(
+                                f"STIX-shifter transmission.results() failed with message: {stix_shifter_error_msg}"
+                            )
 
-            else:
-                raise DataSourceError("STIX-shifter transmission.query() failed")
+                else:
+                    stix_shifter_error_msg = (
+                        search_meta_result["error"]
+                        if "error" in search_meta_result
+                        else "details not avaliable"
+                    )
+                    raise DataSourceError(
+                        f"STIX-shifter transmission.query() failed with message: {stix_shifter_error_msg}"
+                    )
 
-        stixbundle = translation.translate(
-            connector_name, "results", query_metadata, json.dumps(connector_results), {}
-        )
+            stixbundle = translation.translate(
+                connector_name,
+                "results",
+                query_metadata,
+                json.dumps(connector_results),
+                {},
+            )
 
-        with ingestfile.open("w") as ingest:
-            json.dump(stixbundle, ingest, indent=4)
+            with ingestfile.open("w") as ingest:
+                json.dump(stixbundle, ingest, indent=4)
+            bundles.append(str(ingestfile.resolve()))
 
-        return ReturnFromFile(query_id, [str(ingestfile.resolve())])
+        return ReturnFromFile(query_id, bundles)
 
     @staticmethod
     def _get_stixshifter_config(profile_name):
@@ -198,7 +227,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 f'invalid {env_conn_name} environment variable: no "host" field',
             )
 
-        if "port" not in connection:
+        if "port" not in connection and connector_name != "stix_bundle":
             raise InvalidDataSource(
                 profile_name,
                 "stixshifter",
