@@ -306,6 +306,8 @@ def find(stmt, session):
 
     else:
         _symtable = {input_var_name: session.symtable[input_var_name]}
+        input_var_attrs = session.store.columns(input_type)
+        return_type_attrs = session.store.columns(return_type)
 
         # First, get information from local store
         if relation in generic_relations:
@@ -315,7 +317,13 @@ def find(stmt, session):
 
         else:
             rel_query = compile_specific_relation_to_query(
-                return_type, relation, input_type, is_reversed, input_var_name
+                return_type,
+                relation,
+                input_type,
+                is_reversed,
+                input_var_name,
+                input_var_attrs,
+                return_type_attrs,
             )
 
         # `session.store.assign_query` will generate new entity_table named `local_var_table`

@@ -13,7 +13,13 @@ from kestrel.codegen.relations import stix_2_0_ref_mapping
 
 
 def compile_specific_relation_to_query(
-    return_type, relation, input_type, is_reversed, input_var_name
+    return_type,
+    relation,
+    input_type,
+    is_reversed,
+    input_var_name,
+    input_var_attrs,
+    return_type_attrs,
 ):
     (entity_x, entity_y) = (
         (input_type, return_type) if is_reversed else (return_type, input_type)
@@ -21,29 +27,35 @@ def compile_specific_relation_to_query(
 
     stix_src_refs, stix_tgt_refs = stix_2_0_ref_mapping[(entity_x, relation, entity_y)]
 
-    if stix_src_refs:
-        # TODO: if there are multiple options, use first one found in DB
-        ref_name = stix_src_refs[0]  # TEMP: only look at first
+    for ref_name in stix_src_refs:
+        # if there are multiple options, use first one found in DB
+        (var_attr, ret_attr) = (ref_name, "id") if is_reversed else ("id", ref_name)
         if ref_name.endswith("_refs"):
             query = _generate_reflist_query(input_var_name, ref_name, entity_y)
+        elif var_attr in input_var_attrs and ret_attr in return_type_attrs:
+            query = _generate_ref_query(input_var_name, var_attr, return_type, ret_attr)
         else:
-            query = _generate_ref_query(input_var_name, ref_name, entity_y)
+            continue
         return query
 
-    if stix_tgt_refs:
-        # TODO: if there are multiple options, use first one found in DB
-        ref_name = stix_tgt_refs[0]  # TEMP: only look at first
+    for ref_name in stix_tgt_refs:
+        # if there are multiple options, use first one found in DB
+        (var_attr, ret_attr) = ("id", ref_name) if is_reversed else (ref_name, "id")
         if ref_name.endswith("_refs"):
             query = _generate_reflist_query(input_var_name, ref_name, entity_x)
+        elif var_attr in input_var_attrs and ret_attr in return_type_attrs:
+            query = _generate_ref_query(input_var_name, var_attr, return_type, ret_attr)
         else:
-            query = _generate_ref_query(input_var_name, ref_name, entity_x)
+            continue
         return query
+
+    return None
 
 
 def compile_generic_relation_to_query(return_type, input_type, input_var_name):
     return SQLQuery(
         f"""
-SELECT sco.*
+SELECT DISTINCT sco.*
  FROM __contains c
   JOIN "{return_type}" sco
    ON sco.id = c.target_ref
@@ -78,12 +90,12 @@ class SQLQuery(Query):
         return self.text, self.values
 
 
-def _generate_ref_query(input_var_name, ref_name, entity_y):
+def _generate_ref_query(input_var_name, var_attr, ret_type, ret_attr):
     return Query(
         [
             Table(input_var_name),
-            Join(entity_y, ref_name, "=", "id"),
-            Projection([Column("*", entity_y)]),  # All columns from entity_y
+            Join(ret_type, var_attr, "=", ret_attr),
+            Projection([Column("*", ret_type)]),  # All columns from ret_type
             Unique(),
         ]
     )

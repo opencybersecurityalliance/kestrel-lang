@@ -50,15 +50,12 @@ def gen_variable_summary(var_name, var_struct):
             count = 0
 
             if query_ids and is_from_direct_datasource:
-                query_ids_filter = Filter([Predicate("query_id", "IN", query_ids)])
                 query = Query(
                     [
                         Table(entity_type),
                         Join("__contains", "id", "=", "target_ref"),
                         Join("__queries", "source_ref", "=", "sco_id"),
-                        Filter(
-                            [Predicate("query_id", "IN", query_ids)]
-                        ),  # query_ids_filter,
+                        Filter([Predicate("query_id", "IN", query_ids)]),
                         Unique(),
                         Count(),
                     ]
