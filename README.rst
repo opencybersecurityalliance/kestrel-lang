@@ -64,7 +64,7 @@ threat hunting less tedious and more efficient.
 Installation
 ============
 
-Kestrel requires Python 3.x to run. Check `Python installation guide`_ if you
+Kestrel requires Python 3 to run. Check `Python installation guide`_ if you
 do not have Python. It is preferred to install Kestrel runtime using `pip`_,
 and it is preferred to install Kestrel runtime in a `Python virtual
 environment`_.
