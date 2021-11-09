@@ -155,6 +155,7 @@ Kestrel Hunting Blogs
 #. `Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks`_
 #. `Practicing Backward And Forward Tracking Hunts on A Windows Host`_
 #. `Building Your Own Kestrel Analytics and Sharing With the Community`_
+#. `Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow`_
 
 Learning/Sharing With the Community
 ===================================
@@ -212,6 +213,7 @@ Alliance workspace`_ and join our *kestrel* channel.
 .. _Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks: https://opencybersecurityalliance.org/posts/kestrel-2021-07-26/
 .. _Practicing Backward And Forward Tracking Hunts on A Windows Host: https://opencybersecurityalliance.org/posts/kestrel-2021-08-16/
 .. _Building Your Own Kestrel Analytics and Sharing With the Community: https://opencybersecurityalliance.org/posts/kestrel-custom-analytics/
+.. _Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
 .. _Kestrel huntbook repo: https://github.com/opencybersecurityalliance/kestrel-huntbook
 .. _Kestrel analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
 .. _SANS Threat Hunting Summit 2021: https://www.sans.org/blog/a-visual-summary-of-sans-threat-hunting-summit-2021/
