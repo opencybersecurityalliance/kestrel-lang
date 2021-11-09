@@ -69,37 +69,19 @@ do not have Python. It is preferred to install Kestrel runtime using `pip`_,
 and it is preferred to install Kestrel runtime in a `Python virtual
 environment`_.
 
-0. Update Python installer.
-
 .. code-block:: console
 
     $ pip install --upgrade pip setuptools wheel
-
-1. Install Kestrel runtime.
-
-.. code-block:: console
-
-    $ pip install kestrel-lang
-
-2. Install Kestrel Jupyter kernel if you use `Jupyter Notebook`_ to hunt.
-
-.. code-block:: console
-
     $ pip install kestrel-jupyter
     $ python -m kestrel_jupyter_kernel.setup
-
-3. (Optional) download Kestrel analytics examples for the ``APPLY`` hunt steps.
-
-.. code-block:: console
-
-    $ git clone https://github.com/opencybersecurityalliance/kestrel-analytics.git
+    $ jupyter notebook
 
 Hello World Hunt
 ================
 
 1. Copy the following 3-step hunt flow into your favorite text editor:
 
-.. code-block::
+.. code-block:: elixir
 
     # create four process entities in Kestrel and store them in the variable `proclist`
     proclist = NEW process [ {"name": "cmd.exe", "pid": "123"}
@@ -155,6 +137,7 @@ Kestrel Hunting Blogs
 #. `Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks`_
 #. `Practicing Backward And Forward Tracking Hunts on A Windows Host`_
 #. `Building Your Own Kestrel Analytics and Sharing With the Community`_
+#. `Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow`_
 
 Learning/Sharing With the Community
 ===================================
@@ -179,15 +162,14 @@ and Share Your Huntbook With the Community`_ to facilitate huntbook
 composition, sharing, and reuse. The session started from 3 simple hunt step
 demos---TTP pattern matching, provenance tracking, and data visualization
 analytics---then went into comprehensive hunt flow composition to convey the
-idea of hunting knowledge composition and reuse. The recording is currently
-available at SANS library and will be published by SANS.
+idea of hunting knowledge composition and reuse.
 
 Kestrel will be presented as part of the open hunting stack for hybrid cloud in
 Black Hat Europe Arsenal 2021 session: `An Open Stack for Threat Hunting in
 Hybrid Cloud With Connected Observability`_. We will hunt an APT in a hybrid
 cloud that is a variant of a typical supply chain attack yet implemented in a
 more stealthy manner. The open stack consisting of Kestrel, `SysFlow`_, and
-other open-source projects will be presented. 
+other open-source projects will be presented.
 
 Connecting With The Community
 =============================
@@ -213,9 +195,10 @@ Alliance workspace`_ and join our *kestrel* channel.
 .. _Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks: https://opencybersecurityalliance.org/posts/kestrel-2021-07-26/
 .. _Practicing Backward And Forward Tracking Hunts on A Windows Host: https://opencybersecurityalliance.org/posts/kestrel-2021-08-16/
 .. _Building Your Own Kestrel Analytics and Sharing With the Community: https://opencybersecurityalliance.org/posts/kestrel-custom-analytics/
+.. _Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
 .. _Kestrel huntbook repo: https://github.com/opencybersecurityalliance/kestrel-huntbook
 .. _Kestrel analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
-.. _SANS Threat Hunting Summit 2021: https://www.sans.org/cyber-security-summit/
-.. _Compose Your Hunts With Reusable Knowledge and Share Your Huntbook With the Community: https://www.sans.org/blog/a-visual-summary-of-sans-threat-hunting-summit-2021/
+.. _SANS Threat Hunting Summit 2021: https://www.sans.org/blog/a-visual-summary-of-sans-threat-hunting-summit-2021/
+.. _Compose Your Hunts With Reusable Knowledge and Share Your Huntbook With the Community: https://www.youtube.com/watch?v=gyY5DAWLwT0
 .. _An Open Stack for Threat Hunting in Hybrid Cloud With Connected Observability: https://www.blackhat.com/eu-21/arsenal/schedule/index.html#an-open-stack-for-threat-hunting-in-hybrid-cloud-with-connected-observability-25112
 .. _SysFlow: https://github.com/sysflow-telemetry

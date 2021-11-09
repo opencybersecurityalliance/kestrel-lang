@@ -16,7 +16,7 @@ install Kestrel is to use pip:
 
 .. code-block:: console
 
-    $ pip install --upgrade pip
+    $ pip install --upgrade pip setuptools wheel
     $ pip install kestrel-lang
 
 If you need more control, check out the following guide on :doc:`installation` for more details.
@@ -200,8 +200,8 @@ STIX-Shifter is automatically installed when installing ``kestrel``. However,
 you need to install additional STIX-Shifter connector packages for each
 specific data sources. Example connectors:
 
-- Sysmon data in Elasticsearch: ``stix-shifter-modules-elastic_ecs``.
-- Sysflow data in Elasticsearch: ``stix-shifter-modules-elastic_ecs``.
+- Sysmon data in Elasticsearch: ``stix-shifter-modules-elastic-ecs``.
+- Sysflow data in Elasticsearch: ``stix-shifter-modules-elastic-ecs``.
 - CarbonBlack Response: ``stix-shifter-modules-carbonblack``.
 - CarbonBlack Cloud: ``stix-shifter-modules-cbcloud``.
 - IBM QRadar: ``stix-shifter-modules-qradar``.
@@ -210,7 +210,7 @@ For example, to access Sysmon data in Elasticsearch, install the corresponding c
 
 .. code-block:: console
 
-    $ pip install stix-shifter-modules-elastic_ecs
+    $ pip install stix-shifter-modules-elastic-ecs
 
 Suppose you set up an Elasticsearch server at ``elastic.securitylog.company.com``
 with default port ``9200``. You would add the Sysmon monitored host to it as index
