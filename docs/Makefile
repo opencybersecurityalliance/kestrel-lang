@@ -11,7 +11,7 @@ SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = _build
 
-clean :
+clean:
 	rm -r "$(BUILDDIR)"
 
 # Put it first so that "make" without argument is like "make help".
