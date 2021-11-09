@@ -81,7 +81,7 @@ Hello World Hunt
 
 1. Copy the following 3-step hunt flow into your favorite text editor:
 
-.. code-block::
+.. code-block:: elixir
 
     # create four process entities in Kestrel and store them in the variable `proclist`
     proclist = NEW process [ {"name": "cmd.exe", "pid": "123"}
