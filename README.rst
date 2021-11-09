@@ -69,30 +69,12 @@ do not have Python. It is preferred to install Kestrel runtime using `pip`_,
 and it is preferred to install Kestrel runtime in a `Python virtual
 environment`_.
 
-0. Update Python installer.
-
 .. code-block:: console
 
     $ pip install --upgrade pip setuptools wheel
-
-1. Install Kestrel runtime.
-
-.. code-block:: console
-
-    $ pip install kestrel-lang
-
-2. Install Kestrel Jupyter kernel if you use `Jupyter Notebook`_ to hunt.
-
-.. code-block:: console
-
     $ pip install kestrel-jupyter
     $ python -m kestrel_jupyter_kernel.setup
-
-3. (Optional) download Kestrel analytics examples for the ``APPLY`` hunt steps.
-
-.. code-block:: console
-
-    $ git clone https://github.com/opencybersecurityalliance/kestrel-analytics.git
+    $ jupyter notebook
 
 Hello World Hunt
 ================

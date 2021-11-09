@@ -146,6 +146,22 @@ This is done by exporting three environment variables for each data source, e.g.
     $ export STIXSHIFTER_HOST101_CONNECTION='{"host":"elastic.securitylog.company.com", "port":9200, "indices":"host101"}'
     $ export STIXSHIFTER_HOST101_CONFIG='{"auth":{"id":"VuaCfGcBCdbkQm-e5aOx", "api_key":"ui2lp2axTNmsyakw9tvNnw"}}'
 
+(Optional) Kestrel Analytics Download
+=====================================
+
+Want to have some Kestrel analytics ready at your fingertip? Threat
+intelligence enrichments like SANS API? Domain name lookup for IP addresses?
+Finding IP geolocations and pin them on an interactive map? Invoking machine
+learning inference function? Clone the community-contributed Kestrel analytics
+repo to start:
+
+.. code-block:: console
+
+    $ git clone https://github.com/opencybersecurityalliance/kestrel-analytics.git
+
+Go to the `analytics` directory and build the analytics docker containers to
+``APPLY`` in your hunt.
+
 Run Kestrel
 ===========
 
