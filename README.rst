@@ -64,42 +64,24 @@ threat hunting less tedious and more efficient.
 Installation
 ============
 
-Kestrel requires Python 3.x to run. Check `Python installation guide`_ if you
+Kestrel requires Python 3 to run. Check `Python installation guide`_ if you
 do not have Python. It is preferred to install Kestrel runtime using `pip`_,
 and it is preferred to install Kestrel runtime in a `Python virtual
 environment`_.
 
-0. Update Python installer.
-
 .. code-block:: console
 
     $ pip install --upgrade pip setuptools wheel
-
-1. Install Kestrel runtime.
-
-.. code-block:: console
-
-    $ pip install kestrel-lang
-
-2. Install Kestrel Jupyter kernel if you use `Jupyter Notebook`_ to hunt.
-
-.. code-block:: console
-
     $ pip install kestrel-jupyter
     $ python -m kestrel_jupyter_kernel.setup
-
-3. (Optional) download Kestrel analytics examples for the ``APPLY`` hunt steps.
-
-.. code-block:: console
-
-    $ git clone https://github.com/opencybersecurityalliance/kestrel-analytics.git
+    $ jupyter notebook
 
 Hello World Hunt
 ================
 
 1. Copy the following 3-step hunt flow into your favorite text editor:
 
-.. code-block::
+.. code-block:: elixir
 
     # create four process entities in Kestrel and store them in the variable `proclist`
     proclist = NEW process [ {"name": "cmd.exe", "pid": "123"}
@@ -149,36 +131,53 @@ Hunting In The Real World
 
 Find more at `Kestrel documentation hub`_ and `Kestrel blogs at OCA`_.
 
-RSA Presentation And Demo
-=========================
-
-Kestrel is introduced at RSA Conference 2021 with its goal of an `efficient
-cyberthreat hunting symbiosis`_, its design concepts like `entity-based
-reasoning`_ and `composable hunt flow`_, as well as a cross-host hunting demo
-with TTP pattern matching, provenance tracking, TI-enrichment, machine learning
-analytics, and more. Watch our session `The Game of Cyber Threat Hunting: The
-Return of the Fun`_ (30 minutes with demo) or the `demo`_ alone (15
-minutes).
-
 Kestrel Hunting Blogs
 =====================
 
 #. `Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks`_
 #. `Practicing Backward And Forward Tracking Hunts on A Windows Host`_
+#. `Building Your Own Kestrel Analytics and Sharing With the Community`_
+#. `Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow`_
 
-Kestrel Huntbook/Analytics Repo
-===============================
+Learning/Sharing With the Community
+===================================
 
 - `Kestrel huntbook repo`_
 - `Kestrel analytics repo`_
+
+Talks And Demos
+===============
+
+Kestrel was debuted at RSA Conference 2021 with its goal of an `efficient
+cyberthreat hunting symbiosis`_, its key design concepts `entity-based
+reasoning`_ and `composable hunt flow`_, as well as a small-enterprise APT
+hunting demo with TTP pattern matching, cross-host provenance tracking,
+TI-enrichment, machine learning analytics, and more. Watch our session `The
+Game of Cyber Threat Hunting: The Return of the Fun`_ (30 minutes with demo) or
+the `demo`_ alone (15 minutes).
+
+Kestrel was further introduced to the threat hunting community at `SANS Threat
+Hunting Summit 2021`_ in session `Compose Your Hunts With Reusable Knowledge
+and Share Your Huntbook With the Community`_ to facilitate huntbook
+composition, sharing, and reuse. The session started from 3 simple hunt step
+demos---TTP pattern matching, provenance tracking, and data visualization
+analytics---then went into comprehensive hunt flow composition to convey the
+idea of hunting knowledge composition and reuse.
+
+Kestrel will be presented as part of the open hunting stack for hybrid cloud in
+Black Hat Europe Arsenal 2021 session: `An Open Stack for Threat Hunting in
+Hybrid Cloud With Connected Observability`_. We will hunt an APT in a hybrid
+cloud that is a variant of a typical supply chain attack yet implemented in a
+more stealthy manner. The open stack consisting of Kestrel, `SysFlow`_, and
+other open-source projects will be presented.
 
 Connecting With The Community
 =============================
 
 Quick questions? Like to meet other users? Want to contribute?
 
-Join our *Kestrel slack channel* at `Open Cybersecurity Alliance slack
-workspace`_.
+Get a `slack invitation`_ to `Open Cybersecurity
+Alliance workspace`_ and join our *kestrel* channel.
 
 .. _Kestrel documentation hub: https://kestrel.readthedocs.io/
 .. _Kestrel blogs at OCA: https://opencybersecurityalliance.org/posts/
@@ -186,7 +185,8 @@ workspace`_.
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _Jupyter Notebook: https://jupyter.org/
-.. _Open Cybersecurity Alliance slack workspace: https://open-cybersecurity.slack.com/
+.. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
+.. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
 .. _efficient cyberthreat hunting symbiosis: https://kestrel.readthedocs.io/en/latest/overview.html#human-machine
 .. _demo: https://www.youtube.com/watch?v=tASFWZfD7l8
 .. _entity-based reasoning: https://kestrel.readthedocs.io/en/latest/language.html#entity-based-reasoning
@@ -194,5 +194,11 @@ workspace`_.
 .. _The Game of Cyber Threat Hunting\: The Return of the Fun: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
 .. _Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks: https://opencybersecurityalliance.org/posts/kestrel-2021-07-26/
 .. _Practicing Backward And Forward Tracking Hunts on A Windows Host: https://opencybersecurityalliance.org/posts/kestrel-2021-08-16/
+.. _Building Your Own Kestrel Analytics and Sharing With the Community: https://opencybersecurityalliance.org/posts/kestrel-custom-analytics/
+.. _Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
 .. _Kestrel huntbook repo: https://github.com/opencybersecurityalliance/kestrel-huntbook
 .. _Kestrel analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
+.. _SANS Threat Hunting Summit 2021: https://www.sans.org/blog/a-visual-summary-of-sans-threat-hunting-summit-2021/
+.. _Compose Your Hunts With Reusable Knowledge and Share Your Huntbook With the Community: https://www.youtube.com/watch?v=gyY5DAWLwT0
+.. _An Open Stack for Threat Hunting in Hybrid Cloud With Connected Observability: https://www.blackhat.com/eu-21/arsenal/schedule/index.html#an-open-stack-for-threat-hunting-in-hybrid-cloud-with-connected-observability-25112
+.. _SysFlow: https://github.com/sysflow-telemetry

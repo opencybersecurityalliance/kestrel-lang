@@ -273,7 +273,7 @@ Syntax
     - The pool can be a data source, for example, a data lake where monitored logs are
       stored, an EDR, a firewall, an IDS, a proxy server, or a SIEM system. In
       this case, the user needs to know the identifier of the data source (more
-      in section `Data And Analytics Interfaces`_). For example:
+      in section `Data Source And Analytics Interfaces`_). For example:
 
         - ``stixshifter://server101``: EDR on server 101 accessible via STIX-Shifter.
         - ``https://a.com/b.json``: sealed telemetry data in a STIX bundle.
@@ -535,7 +535,7 @@ Syntax
 
   There is no limitation for what an analytics could do besides the input and
   output specified by its corresponding Kestrel analytics interface (see `Data
-  And Analytics Interfaces`_).
+  Source And Analytics Interfaces`_).
 
   An analytics could run entirely locally and then just do a table lookup. It could
   reach out to the internet like the VirusTotal servers. It could perform
@@ -916,8 +916,10 @@ Comment
 
 Comment strings in Kestrel start with ``#`` to the end of the line.
 
-Data And Analytics Interfaces
-=============================
+.. _data-source-and-analytics-interfaces:
+
+Data Source And Analytics Interfaces
+====================================
 
 Kestrel aims to keep it open and easy to add data source and analytics---not
 only adding data source through the STIX-Shifter interface and adding analytics

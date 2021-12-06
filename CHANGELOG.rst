@@ -6,6 +6,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.1.5 (2021-11-08)
+==================
+
+Changed
+-------
+
+- dependency version bump for the open hunting stack (Black Hat Europe 2021)
+- installation documentation updates
+
+1.1.4 (2021-10-27)
+==================
+
+Added
+-----
+
+- multi-data source support
+- detailed error message from stix-shifter
+
+Fixed
+-----
+
+- Limit Python<=3.9 since numpy is not ready for 3.10
+
 1.1.3 (2021-10-08)
 ==================
 
