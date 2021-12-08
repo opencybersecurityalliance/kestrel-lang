@@ -65,7 +65,12 @@ from kestrel.exceptions import (
 )
 from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.syntax.parser import parse
-from kestrel.syntax.utils import get_keywords, get_entity_types, all_relations, LITERALS, AGG_FUNCS
+from kestrel.syntax.utils import (
+    get_entity_types,
+    all_relations,
+    LITERALS,
+    AGG_FUNCS,
+)
 from kestrel.semantics import *
 from kestrel.codegen import commands
 from kestrel.codegen.display import DisplayBlockSummary
@@ -396,37 +401,37 @@ class Session(object):
                 self.parse(prefix)
 
                 # If it parses successfully, add something so it will fail
-                self.parse(prefix + ' @autocompletions@')
+                self.parse(prefix + " @autocompletions@")
             except KestrelSyntaxError as e:
                 tmp = []
                 for token in e.expected:
-                    if token == 'VARIABLE':
+                    if token == "VARIABLE":
                         tmp.extend(self.get_variable_names())
-                    elif token == 'DATASRC':
+                    elif token == "DATASRC":
                         schemes = self.data_source_manager.schemes()
-                        tmp.extend([f'{scheme}://' for scheme in schemes])
+                        tmp.extend([f"{scheme}://" for scheme in schemes])
                         tmp.extend(self.get_variable_names())
-                    elif token == 'ANALYTICS':
+                    elif token == "ANALYTICS":
                         schemes = self.analytics_manager.schemes()
-                        tmp.extend([f'{scheme}://' for scheme in schemes])
-                    elif token == 'ENTITY_TYPE':
+                        tmp.extend([f"{scheme}://" for scheme in schemes])
+                    elif token == "ENTITY_TYPE":
                         tmp.extend(get_entity_types())
-                    elif token.startswith('STIXPATH'):
+                    elif token.startswith("STIXPATH"):
                         # TODO: figure out the varname and get its attrs
                         continue
-                    elif token == 'RELATION':
+                    elif token == "RELATION":
                         tmp.extend(all_relations)
-                    elif token == 'REVERSED':
+                    elif token == "REVERSED":
                         tmp.append("BY")
                         varnames = self.get_variable_names()
                         if last_word not in varnames:
                             # Must be FIND and not GROUP
                             tmp.extend(all_relations)
-                    elif token == 'FUNCNAME':
+                    elif token == "FUNCNAME":
                         tmp.extend(AGG_FUNCS)
                     elif token in LITERALS:
                         continue
-                    elif token.startswith('__ANON'):
+                    elif token.startswith("__ANON"):
                         continue
                     else:
                         tmp.append(token)

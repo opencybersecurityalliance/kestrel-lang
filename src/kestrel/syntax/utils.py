@@ -2,7 +2,11 @@ from lark import Lark
 from pkgutil import get_data
 from itertools import chain
 
-from kestrel.codegen.relations import all_relations, stix_2_0_ref_mapping, stix_2_0_identical_mapping
+from kestrel.codegen.relations import (
+    all_relations,
+    stix_2_0_ref_mapping,
+    stix_2_0_identical_mapping,
+)
 
 
 LITERALS = {"CNAME", "LETTER", "DIGIT", "WS", "INT", "WORD", "ESCAPED_STRING", "NUMBER"}
