@@ -148,28 +148,30 @@ Learning/Sharing With the Community
 Talks And Demos
 ===============
 
-Kestrel was debuted at RSA Conference 2021 with its goal of an `efficient
-cyberthreat hunting symbiosis`_, its key design concepts `entity-based
-reasoning`_ and `composable hunt flow`_, as well as a small-enterprise APT
-hunting demo with TTP pattern matching, cross-host provenance tracking,
-TI-enrichment, machine learning analytics, and more. Watch our session `The
-Game of Cyber Threat Hunting: The Return of the Fun`_ (30 minutes with demo) or
-the `demo`_ alone (15 minutes).
+Kestrel was debuted at RSA Conference 2021: `The Game of Cyber Threat Hunting:
+The Return of the Fun`_ with the goal of an `efficient cyberthreat hunting
+symbiosis`_, its key design concepts `entity-based reasoning`_ and `composable
+hunt flow`_, and a `small-enterprise APT hunting demo`_ with TTP pattern
+matching, cross-host provenance tracking, TI-enrichment, machine learning
+analytics, and more.
 
 Kestrel was further introduced to the threat hunting community at `SANS Threat
 Hunting Summit 2021`_ in session `Compose Your Hunts With Reusable Knowledge
 and Share Your Huntbook With the Community`_ to facilitate huntbook
-composition, sharing, and reuse. The session started from 3 simple hunt step
-demos---TTP pattern matching, provenance tracking, and data visualization
-analytics---then went into comprehensive hunt flow composition to convey the
-idea of hunting knowledge composition and reuse.
+composition, sharing, and reuse---from simple single hunt step demos (TTP
+pattern matching, provenance tracking, and data visualization analytics) to
+complex comprehensive hunt flow composition.
 
-Kestrel will be presented as part of the open hunting stack for hybrid cloud in
-Black Hat Europe Arsenal 2021 session: `An Open Stack for Threat Hunting in
-Hybrid Cloud With Connected Observability`_. We will hunt an APT in a hybrid
-cloud that is a variant of a typical supply chain attack yet implemented in a
-more stealthy manner. The open stack consisting of Kestrel, `SysFlow`_, and
-other open-source projects will be presented.
+Kestrel, together with `STIX-shifter`_, `Elastic`_, and `SysFlow`_ constitute
+the `open hunting stack`_ demoed at Black Hat Europe 2021: `An Open Stack for
+Threat Hunting in Hybrid Cloud With Connected Observability`_. A supply chain
+attack variant across a hybrid cloud (two clouds and on-premises machines) was
+hunted in the arsenal session.
+
+Kestrel was demoed at `Infosec Jupyterthon 2021`_ in session: `Reason Cyber
+Campaigns With Kestrel`_. The live hunting demo explained the basics of Kestrel
+throughout the discovery of the hybrid cloud APT campaign developed for our
+Black Hat Europe 2021 session.
 
 Connecting With The Community
 =============================
@@ -188,7 +190,7 @@ Alliance workspace`_ and join our *kestrel* channel.
 .. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
 .. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
 .. _efficient cyberthreat hunting symbiosis: https://kestrel.readthedocs.io/en/latest/overview.html#human-machine
-.. _demo: https://www.youtube.com/watch?v=tASFWZfD7l8
+.. _small-enterprise APT hunting demo: https://www.youtube.com/watch?v=tASFWZfD7l8
 .. _entity-based reasoning: https://kestrel.readthedocs.io/en/latest/language.html#entity-based-reasoning
 .. _composable hunt flow: https://kestrel.readthedocs.io/en/latest/language.html#composable-hunt-flow
 .. _The Game of Cyber Threat Hunting\: The Return of the Fun: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
@@ -201,4 +203,9 @@ Alliance workspace`_ and join our *kestrel* channel.
 .. _SANS Threat Hunting Summit 2021: https://www.sans.org/blog/a-visual-summary-of-sans-threat-hunting-summit-2021/
 .. _Compose Your Hunts With Reusable Knowledge and Share Your Huntbook With the Community: https://www.youtube.com/watch?v=gyY5DAWLwT0
 .. _An Open Stack for Threat Hunting in Hybrid Cloud With Connected Observability: https://www.blackhat.com/eu-21/arsenal/schedule/index.html#an-open-stack-for-threat-hunting-in-hybrid-cloud-with-connected-observability-25112
+.. _STIX-shifter: https://github.com/opencybersecurityalliance/stix-shifter
+.. _Elastic: https://www.elastic.co/
 .. _SysFlow: https://github.com/sysflow-telemetry
+.. _open hunting stack: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
+.. _Infosec Jupyterthon 2021: https://infosecjupyterthon.com/2021/agenda.html
+.. _Reason Cyber Campaigns With Kestrel: https://www.youtube.com/watch?v=nMnHBnYfIaI&t=20557s
