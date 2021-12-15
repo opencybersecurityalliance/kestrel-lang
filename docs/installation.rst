@@ -17,31 +17,11 @@ Python
 
 This project builds on Python 3. Refer to the `Python installation guide`_ if you do not have Python 3.
 
-The preferred way to install Kestrel is with `pip`_. You must upgrade `pip`_ to the latest version before you install:
-
-.. code-block:: console
-
-    $ pip install --upgrade pip
-
 SQLite
 ------
 
-By default, Kestrel uses ``sqlite3`` as the storage back-end (more details in
-`firepit`_ package), and ``firepit`` requires ``sqlite3 >= 3.24``. However,
-``sqlite3`` is not a standalone Python package in Python 3, and Python version,
-e.g., 3.6, is not coupled with ``sqlite3`` version, e.g., 3.22.
-
-This means Python installer such as ``pip`` cannot resolve ``sqlite3`` version
-requirement. You need manually run the following command in a terminal to check
-your ``sqlite3`` version and upgrade ``sqlite3`` if needed.
-
-.. code-block:: console
-
-    $ sqlite3 --version
-
-Among popular Linux distributions, the minimal distribution versions with
-out-of-box Linux installations that satisfy the ``sqlite3`` version
-requirement are:
+If you are using following Linux distributions or newer, the SQLite requirement is
+already met:
 
 - Archlinux
 - Debian 10
@@ -51,17 +31,25 @@ requirement are:
 - RedHat 8
 - Ubuntu 20.04 LTS
 
+Otherwise, check the SQLite version in a terminal and upgrade ``sqlite3 >=
+3.24`` as needed, which is required by `firepit`_, a Kestrel dependency, in its
+default configuration:
+
+.. code-block:: console
+
+    $ sqlite3 --version
+
 Runtime Installation
 ====================
 
 You can install Kestrel runtime from `stable release`_ or `nightly built
 version (source code)`_. Either way installs all packages in the
 ``kestrel-lang`` repository, and dependent packages, such as ``firepit`` and
-``stix-shifter``.  See the architecture section in :doc:`overview` to
-understand more.
+``stix-shifter``.
 
-It is a good practice to install Kestrel in a `Python virtual environment`_.
-You can easily setup and activate one named *huntingspace*:
+It is a good practice to install Kestrel in a `Python virtual environment`_ so
+all dependencies will be the latest. You can easily setup, activate, and
+update a Python virtual environment named *huntingspace*:
 
 .. code-block:: console
 
@@ -72,7 +60,7 @@ You can easily setup and activate one named *huntingspace*:
 Stable Release
 --------------
 
-Run this command in your terminal:
+Run this command in your terminal (*huntingspace* activated):
 
 .. code-block:: console
 
@@ -81,7 +69,7 @@ Run this command in your terminal:
 Nightly Built Version (Source Code)
 -----------------------------------
 
-Run this command in your terminal:
+Run this command in your terminal (*huntingspace* activated):
 
 .. code-block:: console
 
@@ -91,7 +79,8 @@ Run this command in your terminal:
 Front-Ends Installation
 =======================
 
-Kestrel runtime currently supports three front-ends (see architecture figure in :doc:`overview`):
+Kestrel runtime currently supports three front-ends
+(:ref:`kestrel_in_a_nutshell`):
 
 1. Command-line execution utility ``kestrel``: Installed with the
    package ``kestrel``. 
@@ -111,9 +100,9 @@ Kestrel runtime currently supports three front-ends (see architecture figure in 
 
 3. Python API:
 
-    - Start a Kestrel session in Python directly. See more at :doc:`source/kestrel.session`.
+- Start a Kestrel session in Python directly. See more at :doc:`source/kestrel.session`.
 
-    - Use `magic command`_ in iPython environment. Check `kestrel-jupyter`_ package for usage.
+- Use `magic command`_ in iPython environment. Check `kestrel-jupyter`_ package for usage.
 
 STIX-shifter Connector Installation
 ===================================
@@ -146,8 +135,8 @@ This is done by exporting three environment variables for each data source, e.g.
     $ export STIXSHIFTER_HOST101_CONNECTION='{"host":"elastic.securitylog.company.com", "port":9200, "indices":"host101"}'
     $ export STIXSHIFTER_HOST101_CONFIG='{"auth":{"id":"VuaCfGcBCdbkQm-e5aOx", "api_key":"ui2lp2axTNmsyakw9tvNnw"}}'
 
-(Optional) Kestrel Analytics Download
-=====================================
+(Optional) Kestrel Analytics
+============================
 
 Want to have some Kestrel analytics ready at your fingertip? Threat
 intelligence enrichments like SANS API? Domain name lookup for IP addresses?
@@ -162,12 +151,12 @@ repo to start:
 Go to the `analytics` directory and build the analytics docker containers to
 ``APPLY`` in your hunt.
 
-Run Kestrel
-===========
+Kestrel in Action
+=================
 
 Now the Kestrel runtime is set up and you can run a Kestrel huntflow with the
 command-line utility or launch a Jupyter service for developing a huntbook
-interactively:
+interactively (*huntingspace* activated):
 
 .. code-block:: console
 

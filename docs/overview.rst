@@ -117,8 +117,10 @@ Why not create an *efficient cyberthreat hunting symbiosis* with humans and
 machines to ask and answer different types of hunting questions and enjoy their
 strengths and values?
 
-Introducing Kestrel
-===================
+.. _kestrel_in_a_nutshell:
+
+Kestrel in a Nutshell
+=====================
 
 Kestrel provides a layer of abstraction to stop the repetition involved in
 cyberthreat hunting.
