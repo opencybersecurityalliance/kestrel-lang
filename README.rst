@@ -29,6 +29,11 @@ Kestrel Threat Hunting Language
    :target: https://www.youtube.com/watch?v=tASFWZfD7l8
    :alt: Kestrel Hunting Demo
 
+News
+====
+
+Download the `Kestrel analytics to detect Log4shell`_. Blog/huntflow will come soon.
+
 Overview
 ========
 
@@ -209,3 +214,4 @@ Alliance workspace`_ and join our *kestrel* channel.
 .. _open hunting stack: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
 .. _Infosec Jupyterthon 2021: https://infosecjupyterthon.com/2021/agenda.html
 .. _Reason Cyber Campaigns With Kestrel: https://www.youtube.com/watch?v=nMnHBnYfIaI&t=20557s
+.. _Kestrel analytics to detect Log4shell: https://github.com/opencybersecurityalliance/kestrel-analytics/tree/release/analytics/log4shell
