@@ -32,7 +32,7 @@ Kestrel Threat Hunting Language
 News
 ====
 
-Download the `Kestrel analytics to detect Log4shell`_. Blog/huntflow will come soon.
+Download the `Kestrel analytics to detect Log4Shell`_. Blog/huntflow will come soon.
 
 Overview
 ========
