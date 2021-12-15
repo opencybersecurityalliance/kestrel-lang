@@ -6,6 +6,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.1.6 (2021-12-15)
+==================
+
+Added
+-----
+
+- advanced code auto-completion with parser support
+
+Fixed
+-----
+
+- dollar sign incorrectly display in Jupyter Notebook (dataframe to html)
+
+Changed
+-------
+
+- installation documentation upgrade
+
 1.1.5 (2021-11-08)
 ==================
 
