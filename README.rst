@@ -32,7 +32,10 @@ Kestrel Threat Hunting Language
 News
 ====
 
-Download the `Kestrel analytics to detect Log4Shell`_. Blog/huntflow will come soon.
+Log4Shell detection:
+
+- The complete `Kestrel Log4Shell huntflow/huntbook`_
+- The `Log4Shell analytics`_ to download for the huntbook
 
 Overview
 ========
@@ -214,4 +217,5 @@ Alliance workspace`_ and join our *kestrel* channel.
 .. _open hunting stack: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
 .. _Infosec Jupyterthon 2021: https://infosecjupyterthon.com/2021/agenda.html
 .. _Reason Cyber Campaigns With Kestrel: https://www.youtube.com/watch?v=nMnHBnYfIaI&t=20557s
-.. _Kestrel analytics to detect Log4shell: https://github.com/opencybersecurityalliance/kestrel-analytics/tree/release/analytics/log4shell
+.. _Kestrel Log4Shell huntflow/huntbook: https://github.com/opencybersecurityalliance/kestrel-huntbook/blob/main/huntbooks/log4shell%20Detection.ipynb
+.. _Log4Shell analytics: https://github.com/opencybersecurityalliance/kestrel-analytics/tree/release/analytics/log4shell
