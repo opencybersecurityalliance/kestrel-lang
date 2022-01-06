@@ -38,6 +38,12 @@ def fake_bundle_3():
     return os.path.join(cwd, "test_bundle_3.json")
 
 
+@pytest.fixture
+def cbcloud_powershell_bundle():
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(cwd, "powershell_search_stix_result.json")
+
+
 def test_session_1(fake_bundle_file):
     with Session(debug_mode=True) as session:
         execute(
@@ -179,7 +185,7 @@ def test_disp_column_order(fake_bundle_file, caplog):
 
 
 def test_get_set_variable(fake_bundle_file):
-    with Session(debug_mode=True) as session:
+    with Session() as session:
         # Create a normal var
         script = f"x = get ipv4-addr from file://{fake_bundle_file} where [ipv4-addr:value = '192.168.121.121']"
         execute(session, script)
@@ -271,3 +277,26 @@ def test_session_do_complete_timestamp(fake_bundle_file, time_string, suffix_ts)
         script = f"""{time_string}"""
         result = session.do_complete(script, len(script))
         assert result == suffix_ts
+
+
+def test_session_debug_from_env():
+    os.environ["KESTREL_DEBUG"] = "something"
+    with Session() as session:
+        assert session.debug_mode == True
+
+
+def test_sha256_attr_name(cbcloud_powershell_bundle):
+    # Make sure we can handle single quotes in attr names
+    with Session() as session:
+        script = (
+            "x = get process"
+            f" from file://{cbcloud_powershell_bundle}"
+            " where [process:name = 'powershell.exe']"
+        )
+        execute(session, script)
+        out = session.execute("DISP x ATTR binary_ref.hashes.'SHA-256'")
+        df = out[0].dataframe
+        assert (
+            df["binary_ref.hashes.'SHA-256'"][0]
+            == "de96a6e69944335375dc1ac238336066889d9ffc7d73628ef4fe1b1b160ab32c"
+        )

@@ -2,7 +2,7 @@
 // Kestrel Grammar
 //
 
-start: statement+
+start: statement*
 
 //
 // If no VARIABLE is given, default to _ in post-parsing
@@ -41,7 +41,7 @@ join: "join"i VARIABLE "," VARIABLE ("by"i STIXPATH "," STIXPATH)?
 
 sort: "sort"i VARIABLE "by"i STIXPATH (ASC|DESC)?
 
-group: "group"i VARIABLE "by"i STIXPATH
+group: "group"i VARIABLE "by"i path_list ("with"i agg_list)?
 
 load: "load"i DUMPPATH ("as"i ENTITY_TYPE)?
 
@@ -63,13 +63,21 @@ endtime: "STOP" "t'" ISOTIMESTAMP "'"
 
 variables: VARIABLE ("," VARIABLE)*
 
+path_list: STIXPATH ("," STIXPATH)* -> valuelist
+
+agg_list: agg ("," agg)*
+
+agg: FUNCNAME "(" STIXPATH ")" ("AS"i alias)?
+
+?alias: CNAME
+
 VARIABLE: CNAME
 ENTITY_TYPE: LETTER ("_"|LETTER|DIGIT|"-")*
 ANALYTICS: (LETTER|DIGIT|/[-_.:\/]/)+
-STIXPATH: (LETTER|DIGIT|/[-_.:]/)+
+STIXPATH: (LETTER|DIGIT|/[-_.:']/)+
 STIXPATHS: STIXPATH (/\s*,\s*/ STIXPATH)*
 PATH: (LETTER|DIGIT|/[-_.:\/]/)+
-DATASRC: (PATH|ESCAPED_STRING)
+DATASRC: (PATH ("," PATH)* |ESCAPED_STRING)
 DUMPPATH: PATH
 ASC: "asc"i
 DESC: "desc"i
@@ -77,13 +85,24 @@ REVERSED: "by"i
 COMMENT: /#.*/
 URI: PATH
 
+FUNCNAME: (MIN|MAX|SUM|AVG|COUNT|NUNIQUE)
+MIN: "min"i
+MAX: "max"i
+SUM: "sum"i
+AVG: "avg"i
+COUNT: "count"i
+NUNIQUE: "nunique"i
+
 STIXPATTERNBODY: "[" /.+/ "]" | "(" /.+/ ")"
 
-ISOTIMESTAMP: /\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d{0,6}Z/
+ISOTIMESTAMP: /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(\.\d+)?Z/
 
-VARDATA: "[" (QSTRING ("," QSTRING)* | DICT ("," DICT)*) "]"
-QSTRING: /\s*"[^"]+"\s*/
-DICT: WS* "{" (QSTRING ":" QSTRING) ("," QSTRING ":" QSTRING)* "}" WS*
+// manually add `WS*` since `%ignore WS` doesn't apply to spaces inside terminals
+// https://github.com/lark-parser/lark/issues/99
+QSTRING: WS* ESCAPED_STRING WS*
+JSON_VALUE: WS* (ESCAPED_STRING|NUMBER) WS*
+VARDATA: "[" (QSTRING ("," QSTRING)* | JSON_DICT ("," JSON_DICT)*) "]"
+JSON_DICT: WS* "{" (QSTRING ":" JSON_VALUE) ("," QSTRING ":" JSON_VALUE)* "}" WS*
 
 RELATION: WORD
 

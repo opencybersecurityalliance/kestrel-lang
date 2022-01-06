@@ -6,7 +6,7 @@ Kestrel Threat Hunting Language
 
 Kestrel threat hunting language provides an abstraction for threat hunters to
 focus on the high-value and composable threat hypothesis development instead of
-specific realization of hypotheis testing with heterogeneous data sources,
+specific realization of hypothesis testing with heterogeneous data sources,
 threat intelligence, and public or proprietary analytics.
 
 .. toctree::

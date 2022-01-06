@@ -3,6 +3,41 @@ import os
 import uuid
 
 
+KESTREL_CONFIG = pathlib.Path("kestrel") / "kestrel.toml"
+KESTREL_CONFIG_PATH_ENV_VAR = "KESTREL_CONFIG_PATH"
+
+
+def config_paths():
+    # latter ones will override former ones
+    paths = [
+        # pip install with root
+        pathlib.Path("/etc") / KESTREL_CONFIG,
+        pathlib.Path("/usr/etc") / KESTREL_CONFIG,
+        pathlib.Path("/usr/local/etc") / KESTREL_CONFIG,
+        # pip install in venv
+        pathlib.Path(os.getenv("VIRTUAL_ENV", "")) / "etc" / KESTREL_CONFIG,
+        # conda environment install
+        pathlib.Path(os.getenv("CONDA_PREFIX", "")) / "etc" / KESTREL_CONFIG,
+        # GitHub Action: Ubuntu environment
+        pathlib.Path(os.getenv("pythonLocation", "")) / "etc" / KESTREL_CONFIG,
+        # pip install --user
+        pathlib.Path(os.getenv("HOME", "")) / ".local" / "etc" / KESTREL_CONFIG,
+        # user-defined configuration
+        pathlib.Path(os.getenv("HOME", "")) / ".config" / KESTREL_CONFIG,
+    ]
+
+    dynamic_config_file = os.getenv("KESTREL_CONFIG_PATH")
+    if dynamic_config_file:
+        paths.append(dynamic_config_file)
+
+    path_dedups = []
+    for path in paths:
+        if path not in path_dedups:
+            path_dedups.append(path)
+
+    return path_dedups
+
+
 def remove_empty_dicts(ds):
     # remove dict with all values as None in list({string:string})
     # this is the results from SQL query

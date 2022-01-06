@@ -55,42 +55,33 @@ import re
 import toml
 import time
 import math
+import lark
 from datetime import datetime
-from lark import UnexpectedCharacters, UnexpectedToken
-import stix2patterns.exceptions
 
 from kestrel.exceptions import (
     KestrelSyntaxError,
-    InvalidAttribute,
     NoValidConfiguration,
     InvalidStixPattern,
 )
+from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.syntax.parser import parse
-from kestrel.syntax.utils import get_keywords
+from kestrel.syntax.utils import (
+    get_entity_types,
+    all_relations,
+    LITERALS,
+    AGG_FUNCS,
+)
 from kestrel.semantics import *
 from kestrel.codegen import commands
 from kestrel.codegen.display import DisplayBlockSummary
 from kestrel.codegen.summary import gen_variable_summary
 from firepit import get_storage
 from firepit.exceptions import StixPatternError
-from kestrel.symboltable import VarStruct
-from kestrel.utils import set_current_working_directory
+from kestrel.utils import set_current_working_directory, config_paths
 from kestrel.datasource import DataSourceManager
 from kestrel.analytics import AnalyticsManager
 
 _logger = logging.getLogger(__name__)
-
-ROOT_DIR_CANDIDATES = [
-    x for x in [os.getenv("VIRTUAL_ENV", ""), os.getenv("CONDA_PREFIX", ""), "/"] if x
-]
-
-# latter ones will override former ones
-CONFIG_PATHS = [
-    os.path.join(ROOT_DIR_CANDIDATES.pop(0), "etc/kestrel/kestrel.toml"),
-    "/usr/local/etc/kestrel/kestrel.toml",
-    os.path.join(os.getenv("HOME", ""), ".local/etc/kestrel/kestrel.toml"),
-    os.path.join(os.getenv("HOME", ""), ".config/kestrel/kestrel.toml"),
-]
 
 
 class Session(object):
@@ -188,7 +179,11 @@ class Session(object):
         else:
             self.session_id = str(uuid.uuid4())
 
-        self.debug_mode = debug_mode
+        self.debug_mode = (
+            True
+            if debug_mode or os.getenv(self.config["debug"]["env_var"], False)
+            else False
+        )
 
         # default value of runtime_directory ownership
         self.runtime_directory_is_owned_by_upper_layer = False
@@ -202,7 +197,9 @@ class Session(object):
                 pathlib.Path(runtime_dir).mkdir(parents=True, exist_ok=True)
             self.runtime_directory = runtime_dir
         else:
-            tmp_dir = sys_tmp_dir / ("kestrel-session-" + self.session_id)
+            tmp_dir = sys_tmp_dir / (
+                self.config["session"]["cache_directory_prefix"] + self.session_id
+            )
             self.runtime_directory = tmp_dir.resolve()
             if tmp_dir.exists():
                 if tmp_dir.is_dir():
@@ -221,7 +218,9 @@ class Session(object):
                 tmp_dir.mkdir(parents=True, exist_ok=True)
 
         if self.debug_mode:
-            runtime_directory_master = sys_tmp_dir / "kestrel"
+            runtime_directory_master = (
+                sys_tmp_dir / self.config["debug"]["cache_directory"]
+            )
             if runtime_directory_master.exists():
                 runtime_directory_master.unlink()
             runtime_directory_master.symlink_to(self.runtime_directory)
@@ -240,8 +239,12 @@ class Session(object):
         # {"var": VarStruct}
         self.symtable = {}
 
-        self.data_source_manager = DataSourceManager()
-        self.analytics_manager = AnalyticsManager()
+        self.data_source_manager = DataSourceManager(
+            self.config["language"]["default_datasource_schema"]
+        )
+        self.analytics_manager = AnalyticsManager(
+            self.config["language"]["default_analytics_schema"]
+        )
         iso_ts_regex = r"\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}Z?)?)?)?)?)?"
         self._iso_ts = re.compile(iso_ts_regex)
 
@@ -291,10 +294,18 @@ class Session(object):
                 self.config["language"]["default_variable"],
                 self.config["language"]["default_sort_order"],
             )
-        except UnexpectedCharacters as err:
-            raise KestrelSyntaxError(err.line, err.column, "character", err.char)
-        except UnexpectedToken as err:
-            raise KestrelSyntaxError(err.line, err.column, "token", err.token)
+        except lark.UnexpectedEOF as err:
+            raise KestrelSyntaxError(
+                err.line, err.column, "end of line", "", err.expected
+            )
+        except lark.UnexpectedCharacters as err:
+            raise KestrelSyntaxError(
+                err.line, err.column, "character", err.char, err.allowed
+            )
+        except lark.UnexpectedToken as err:
+            raise KestrelSyntaxError(
+                err.line, err.column, "token", err.token, err.accepts or err.expected
+            )
         return ast
 
     def get_variable_names(self):
@@ -384,13 +395,47 @@ class Session(object):
                 allnames = []
                 _logger.debug("cannot find auto-complete interface")
         else:
-            allnames = (
-                get_keywords()
-                + self.get_variable_names()
-                + self.data_source_manager.schemes()
-                + self.analytics_manager.schemes()
-            )
             _logger.debug("standard auto-complete")
+
+            try:
+                self.parse(prefix)
+
+                # If it parses successfully, add something so it will fail
+                self.parse(prefix + " @autocompletions@")
+            except KestrelSyntaxError as e:
+                tmp = []
+                for token in e.expected:
+                    if token == "VARIABLE":
+                        tmp.extend(self.get_variable_names())
+                    elif token == "DATASRC":
+                        schemes = self.data_source_manager.schemes()
+                        tmp.extend([f"{scheme}://" for scheme in schemes])
+                        tmp.extend(self.get_variable_names())
+                    elif token == "ANALYTICS":
+                        schemes = self.analytics_manager.schemes()
+                        tmp.extend([f"{scheme}://" for scheme in schemes])
+                    elif token == "ENTITY_TYPE":
+                        tmp.extend(get_entity_types())
+                    elif token.startswith("STIXPATH"):
+                        # TODO: figure out the varname and get its attrs
+                        continue
+                    elif token == "RELATION":
+                        tmp.extend(all_relations)
+                    elif token == "REVERSED":
+                        tmp.append("BY")
+                        varnames = self.get_variable_names()
+                        if last_word not in varnames:
+                            # Must be FIND and not GROUP
+                            tmp.extend(all_relations)
+                    elif token == "FUNCNAME":
+                        tmp.extend(AGG_FUNCS)
+                    elif token in LITERALS:
+                        continue
+                    elif token.startswith("__ANON"):
+                        continue
+                    else:
+                        tmp.append(token)
+                allnames = sorted(tmp)
 
         suggestions = [
             name[len(last_word) :] for name in allnames if name.startswith(last_word)
@@ -403,8 +448,12 @@ class Session(object):
         Only needed for non-context-managed sessions.
         """
         del self.store
-        if not self.runtime_directory_is_owned_by_upper_layer and not self.debug_mode:
-            shutil.rmtree(self.runtime_directory)
+        if not self.runtime_directory_is_owned_by_upper_layer:
+            if self.debug_mode:
+                self._leave_exit_marker()
+                self._remove_obsolete_debug_folders()
+            else:
+                shutil.rmtree(self.runtime_directory)
 
     def _execute_ast(self, ast):
         displays = []
@@ -421,6 +470,8 @@ class Session(object):
                 #   - complete data source if omitted by user
                 #   - complete input context
                 check_elements_not_empty(stmt)
+                for input_var_name in get_all_input_var_names(stmt):
+                    check_var_exists(input_var_name, self.symtable)
                 if stmt["command"] == "get":
                     recognize_var_source(stmt, self.symtable)
                     complete_data_source(
@@ -463,7 +514,7 @@ class Session(object):
         end_exec_ts = time.time()
         execution_time_sec = math.ceil(end_exec_ts - start_exec_ts)
 
-        if new_vars:
+        if self.config["session"]["show_execution_summary"] and new_vars:
             vars_summary = [
                 gen_variable_summary(vname, self.symtable[vname]) for vname in new_vars
             ]
@@ -485,7 +536,7 @@ class Session(object):
 
         configs = []
 
-        for path in CONFIG_PATHS:
+        for path in config_paths():
             try:
                 configs.append(toml.load(path))
                 _logger.debug(f"Configuration file {path} loaded successfully.")
@@ -499,11 +550,41 @@ class Session(object):
         else:
             config = configs.pop(0)
             for c in configs:
-                config.update(c)
+                for domain, mappings in c.items():
+                    if domain in config:
+                        config[domain].update(mappings)
+                    else:
+                        config[domain] = mappings
 
         _logger.debug(f"Configuration loaded: {config}")
 
         return config
+
+    def _leave_exit_marker(self):
+        exit_marker = os.path.join(
+            self.runtime_directory, self.config["debug"]["session_exit_marker"]
+        )
+        with open(exit_marker, "w"):
+            pass
+
+    def _remove_obsolete_debug_folders(self):
+        # will only clean debug cache directories under system temp directory
+
+        # [(cache_dir, timestamp)]
+        exited_sessions = []
+
+        for x in pathlib.Path(tempfile.gettempdir()).iterdir():
+            if x.is_dir() and x.parts[-1].startswith(
+                self.config["session"]["cache_directory_prefix"]
+            ):
+                marker = x / self.config["debug"]["session_exit_marker"]
+                if marker.exists():
+                    exited_sessions.append((x, marker.stat().st_mtime))
+
+        # preserve the newest self.config["debug"]["maximum_exited_session"] debug sessions
+        exited_sessions.sort(key=lambda x: x[1])
+        for x, _ in exited_sessions[: -self.config["debug"]["maximum_exited_session"]]:
+            shutil.rmtree(x)
 
     def _get_complete_timestamp(self, ts_str):
         valid_ts_formats = [

@@ -72,3 +72,53 @@ def test_new_list_of_strings_without_type_to_fail():
         stmt = """newvar = NEW ["cmd.exe", "explorer.exe", "google-chrome.exe"]"""
         with pytest.raises(MissingEntityType) as e:
             s.execute(stmt)
+
+
+def test_new_with_int_pid():
+    with Session() as s:
+        stmt = """
+newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": 123}
+             , {"type": "process", "name": "explorer.exe", "pid": 99}
+             ]
+"""
+        s.execute(stmt)
+        v = s.get_variable("newvar")
+        assert len(v) == 2
+        assert v[0]["type"] == "process"
+        assert v[0]["name"] in ["cmd.exe", "explorer.exe"]
+        if v[0]["name"] == "cmd.exe":
+            assert v[0]["pid"] == 123
+        else:
+            assert v[0]["pid"] == 99
+
+
+def test_new_with_missing_field():
+    with Session() as s:
+        stmt = """
+newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
+             , {"type": "process", "name": "explorer.exe"}
+             ]
+"""
+        s.execute(stmt)
+        v = sorted(s.get_variable("newvar"), key=lambda d: d["name"])
+        assert len(v) == 2
+        assert v[0]["type"] == "process"
+        assert v[0]["name"] in ["cmd.exe", "explorer.exe"]
+        assert v[0]["pid"] == "123"
+        assert v[1]["pid"] == None
+
+
+def test_new_with_missing_field_first():
+    with Session() as s:
+        stmt = """
+newvar = NEW [ {"type": "process", "name": "cmd.exe"}
+             , {"type": "process", "name": "explorer.exe", "pid": "99"}
+             ]
+"""
+        s.execute(stmt)
+        v = sorted(s.get_variable("newvar"), key=lambda d: d["name"])
+        assert len(v) == 2
+        assert v[0]["type"] == "process"
+        assert v[0]["name"] in ["cmd.exe", "explorer.exe"]
+        assert v[0]["pid"] == None
+        assert v[1]["pid"] == "99"

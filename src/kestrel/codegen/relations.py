@@ -6,7 +6,12 @@ for more details.
 
 """
 
+import dateutil.parser
+import datetime
+from collections import defaultdict
 import logging
+
+from firepit.query import Query, Projection, Table, Unique
 
 _logger = logging.getLogger(__name__)
 
@@ -61,8 +66,9 @@ stix_2_0_ref_mapping = {
     ("windows-service-ext", "loaded", "user-account"): (["creator_user_ref"], True),
 }
 
+# the first available attribute will be used to uniquely identify the entity
 stix_2_0_identical_mapping = {
-    # entity-type: combination of attributes used for identical entity lookup
+    # entity-type: id attributes candidates
     "directory": ("path",),
     "domain-name": ("value",),
     "email-addr": ("value",),
@@ -74,7 +80,7 @@ stix_2_0_identical_mapping = {
     # `pid` is optional in STIX standard
     # `first_observed` cannot be used since it may be wrong (derived from observation)
     # `command_line` or `name` may not be in data and cannot be used
-    "process": ("pid",),
+    "process": ("pid", "name"),
     "software": ("name",),
     "url": ("value",),
     "user-account": ("user_id",),  # optional in STIX standard
@@ -99,9 +105,30 @@ all_relations = list(
     set([x[1] for x in stix_2_0_ref_mapping.keys() if x[1]] + generic_relations)
 )
 
-all_entity_types = list(
-    set([x[ind] for x in stix_2_0_ref_mapping.keys() for ind in [0, 2]])
-)
+
+def get_entity_id_attribute(variable):
+    # this function should always return something
+    # if no entity id attribute found, fall back to record "id" by default
+    # this works for:
+    #   - no appriparite identifier attribute found given specific data
+    #   - "network-traffic" (not in stix_2_0_identical_mapping)
+    id_attr = "id"
+
+    if variable.type in stix_2_0_identical_mapping:
+        available_attributes = variable.store.columns(variable.entity_table)
+        for attr in stix_2_0_identical_mapping[variable.type]:
+            if attr in available_attributes:
+                query = Query()
+                query.append(Table(variable.entity_table))
+                query.append(Projection([attr]))
+                query.append(Unique())
+                rows = variable.store.run_query(query).fetchall()
+                all_values = [row[attr] for row in rows if row[attr]]
+                if all_values:
+                    id_attr = attr
+                    break
+
+    return id_attr
 
 
 def are_entities_associated_with_x_ibm_event(entity_types):
@@ -133,15 +160,15 @@ def compile_specific_relation_to_pattern(
     return pattern
 
 
-def compile_identical_entity_search_pattern(entity_type, var_name):
-    comp_exps = []
-    if entity_type in stix_2_0_identical_mapping:
-        for attribute in stix_2_0_identical_mapping[entity_type]:
-            comp_exps.append(f"{entity_type}:{attribute} = {var_name}.{attribute}")
-        pattern = "[" + " AND ".join(comp_exps) + "]"
-        _logger.debug(f"identical entity search pattern compiled: {pattern}")
-    else:
+def compile_identical_entity_search_pattern(var_name, var_struct, does_support_id):
+    # "id" attribute may not be available for STIX 2.0 via STIX-shifter
+    # so `does_support_id` is set to False in default kestrel config file
+    attribute = get_entity_id_attribute(var_struct)
+    if attribute == "id" and not does_support_id:
         pattern = None
+    else:
+        pattern = f"[{var_struct.type}:{attribute} = {var_name}.{attribute}]"
+    _logger.debug(f"identical entity search pattern compiled: {pattern}")
     return pattern
 
 
@@ -192,3 +219,79 @@ def _generate_paramstix_comparison_expressions(
             comp_exps.append(f"{return_type}:id = {input_var_name}.{stix_ref}.id")
 
     return comp_exps
+
+
+def fine_grained_relational_process_filtering(
+    local_var, prefetch_entity_table, store, config
+):
+
+    _logger.debug(
+        f"start fine-grained relational process filtering for prefetched table: {prefetch_entity_table}"
+    )
+
+    query_ref = Query()
+    query_ref.append(Table(local_var.entity_table))
+    query_ref.append(Projection(["pid", "name", "first_observed", "last_observed"]))
+    ref_rows = local_var.store.run_query(query_ref).fetchall()
+
+    entities = defaultdict(list)
+
+    for row in ref_rows:
+        if row["pid"]:
+            process_name = row["name"]
+            process_start_time = dateutil.parser.isoparse(row["first_observed"])
+            process_end_time = dateutil.parser.isoparse(row["last_observed"])
+            entities[row["pid"]].append(
+                (process_name, process_start_time, process_end_time)
+            )
+
+    query_fil = Query()
+    query_fil.append(Table(prefetch_entity_table))
+    query_fil.append(
+        Projection(["id", "pid", "name", "first_observed", "last_observed"])
+    )
+    fil_rows = store.run_query(query_fil).fetchall()
+
+    filtered_ids = []
+
+    pnc_start_offset = datetime.timedelta(
+        seconds=config["process_name_change_timerange_start_offset"]
+    )
+    pnc_stop_offset = datetime.timedelta(
+        seconds=config["process_name_change_timerange_stop_offset"]
+    )
+    pls_start_offset = datetime.timedelta(
+        seconds=config["process_lifespan_start_offset"]
+    )
+    pls_stop_offset = datetime.timedelta(seconds=config["process_lifespan_stop_offset"])
+
+    for row in fil_rows:
+        if row["pid"]:
+            fil_start_time = dateutil.parser.isoparse(row["first_observed"])
+            fil_end_time = dateutil.parser.isoparse(row["last_observed"])
+            fil_process_name = row["name"]
+            for ref_process_name, ref_start_time, ref_end_time in entities[row["pid"]]:
+                if (
+                    (
+                        fil_process_name
+                        and fil_process_name == ref_process_name
+                        and fil_start_time > ref_start_time + pls_start_offset
+                        and fil_start_time < ref_end_time + pls_stop_offset
+                    )
+                    or (
+                        fil_start_time > ref_start_time + pnc_start_offset
+                        and fil_start_time < ref_end_time + pnc_stop_offset
+                    )
+                    or (
+                        fil_end_time > ref_start_time + pnc_start_offset
+                        and fil_end_time < ref_end_time + pnc_stop_offset
+                    )
+                ):
+                    filtered_ids.append(row["id"])
+                    break
+
+    _logger.debug(
+        f"found {len(filtered_ids)} out of {len(fil_rows)} to be true relational process records."
+    )
+
+    return filtered_ids

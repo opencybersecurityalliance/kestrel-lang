@@ -1,5 +1,6 @@
 import importlib
 import pkgutil
+import logging
 import inspect
 import sys
 from kestrel.datasource import AbstractDataSourceInterface
@@ -9,9 +10,11 @@ from kestrel.exceptions import (
     ConflictingDataSourceInterfaceScheme,
 )
 
+_logger = logging.getLogger(__name__)
+
 
 class DataSourceManager:
-    def __init__(self):
+    def __init__(self, default_schema):
         self.scheme_to_interface = {}
         interfaces = _load_data_source_interfaces()
         for i in interfaces:
@@ -19,6 +22,11 @@ class DataSourceManager:
 
         # important state keeper, needed in Session()
         self.queried_data_sources = [None]
+
+        self.default_schema = default_schema
+        if default_schema not in self.scheme_to_interface:
+            _logger.error(f"default datasource schema {default_schema} not found.")
+            raise DataSourceInterfaceNotFound(default_schema)
 
     def schemes(self):
         return list(self.scheme_to_interface.keys())
@@ -30,7 +38,13 @@ class DataSourceManager:
         return self.scheme_to_interface[scheme].list_data_sources()
 
     def query(self, uri, pattern, session_id):
-        scheme = uri.split("://")[0]
+        scheme, splitter, path = uri.rpartition("://")
+        if not scheme:
+            scheme = self.default_schema
+            if not splitter:
+                uri = self.default_schema + "://" + uri
+            else:
+                uri = self.default_schema + uri
         scheme = scheme.lower()
         if scheme not in self.scheme_to_interface:
             raise DataSourceInterfaceNotFound(scheme)

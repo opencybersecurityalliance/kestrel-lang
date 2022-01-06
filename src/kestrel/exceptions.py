@@ -13,7 +13,11 @@ class KestrelException(Exception):
 
     def __init__(self, error, suggestion=""):
         self.error = error if error[-1] == "." else error + "."
-        self.suggestion = suggestion if suggestion[-1] == "." else suggestion + "."
+        self.suggestion = (
+            suggestion
+            if (not suggestion or suggestion[-1] == ".")
+            else suggestion + "."
+        )
 
     def __str__(self):
         return f"[ERROR] {self.__class__.__name__}: {self.error} {self.suggestion}"
@@ -43,13 +47,19 @@ class NoValidConfiguration(KestrelException):
 
 
 class KestrelSyntaxError(KestrelException):
-    def __init__(self, line, column, invalid_term_type, invalid_term_value):
+    def __init__(self, line, column, invalid_term_type, invalid_term_value, expected):
         self.line = line
         self.column = column
         self.invalid_term_type = invalid_term_type
         self.invalid_term_value = invalid_term_value
+        self.expected = list(expected)
+        self._expects_str = (
+            f'expects "{self.expected[0]}"'
+            if len(self.expected) == 1
+            else f"expects one of {self.expected}"
+        )
         super().__init__(
-            f'invalid {self.invalid_term_type} "{self.invalid_term_value}" at line {self.line} column {self.column}',
+            f'invalid {self.invalid_term_type} "{self.invalid_term_value}" at line {self.line} column {self.column}, {self._expects_str}',
             "rewrite the failed statement",
         )
 
@@ -161,7 +171,8 @@ class InvalidDataSource(KestrelException):
 class DataSourceError(KestrelException):
     def __init__(self, error):
         super().__init__(
-            f"data source internal error: {error}", "please test data source manually"
+            f"data source internal error: {error}",
+            "please check data source config or test the query manually",
         )
 
 
@@ -227,4 +238,12 @@ class ConflictingAnalyticsInterfaceScheme(KestrelException):
         super().__init__(
             f'conflicting analytics interface scheme "{scheme}" between "{itf_a.__module__}" and "{itf_b.__module__}"',
             "uninstall one of the analytics interfaces",
+        )
+
+
+class InvalidAnalyticsInput(KestrelException):
+    def __init__(self, type_received, types_expected):
+        typelist = ", ".join([f'"{t}"' for t in types_expected])
+        super().__init__(
+            f'received unsupported type "{type_received}"; expected one of {typelist}'
         )

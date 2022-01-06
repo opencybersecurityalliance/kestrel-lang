@@ -1,3 +1,4 @@
+from firepit.exceptions import InvalidAttr
 from firepit.query import (
     Query,
     Projection,
@@ -9,7 +10,7 @@ from firepit.query import (
     Join,
 )
 from collections import OrderedDict
-from kestrel.codegen.relations import all_entity_types, stix_2_0_identical_mapping
+from kestrel.codegen.relations import get_entity_id_attribute
 from kestrel.exceptions import KestrelInternalError
 
 
@@ -35,61 +36,71 @@ def gen_variable_summary(var_name, var_struct):
 
     query_ids = _get_variable_query_ids(var_struct)
 
-    for table in var_struct.store.tables():
+    is_from_direct_datasource = False
+    var_birth_cmd = var_struct.birth_statement["command"]
+    if var_birth_cmd == "find" or (
+        var_birth_cmd == "get" and "datasource" in var_struct.birth_statement
+    ):
+        is_from_direct_datasource = True
 
-        if table in all_entity_types:
+    for entity_type in var_struct.store.types():
+
+        if entity_type not in ("identity", "observed-data"):
+
             count = 0
 
-            if query_ids:
+            if query_ids and is_from_direct_datasource:
                 query_ids_filter = Filter([Predicate("query_id", "IN", query_ids)])
                 query = Query()
-                query.append(Table(table))
+                query.append(Table(entity_type))
                 query.append(Join("__queries", "id", "=", "sco_id"))
                 query.append(query_ids_filter)
+                query.append(Unique())
                 query.append(Count())
                 result = var_struct.store.run_query(query).fetchall()
                 count = result[0]["count"]
-                if table == var_struct.type and count:
+                if entity_type == var_struct.type and count:
                     count = count - len(var_struct)
                     if count < 0:
                         raise KestrelInternalError(
-                            f"impossible count regarding variable {var_name} and table {table}"
+                            f"impossible count regarding variable {var_name} and type {entity_type}"
                         )
 
-            summary[f"{table}*"] = count
+            summary[f"{entity_type}*"] = count
 
     return summary, footnote
 
 
 def _get_variable_query_ids(variable):
+    query_ids = []
     if variable.entity_table:
         query = Query()
         query.append(Table("__queries"))
-        query.append(Join("__membership", "sco_id", "=", "sco_id"))
-        query.append(Filter([Predicate("var", "=", variable.entity_table)]))
+        query.append(Join(variable.entity_table, "sco_id", "=", "id"))
         query.append(Projection(["query_id"]))
         query.append(Unique())
-        rows = variable.store.run_query(query).fetchall()
-        query_ids = [r["query_id"] for r in rows]
-    else:
-        query_ids = []
+        try:
+            rows = variable.store.run_query(query).fetchall()
+            query_ids = [r["query_id"] for r in rows]
+        except InvalidAttr:
+            pass
     return query_ids
 
 
 def get_variable_entity_count(variable):
+    entity_count = 0
     if variable.entity_table:
+        entity_id_attr = get_entity_id_attribute(variable)
+        if entity_id_attr not in variable.store.columns(variable.entity_table):
+            return 0
         query = Query()
         query.append(Table(variable.entity_table))
-        cols = (
-            stix_2_0_identical_mapping[variable.type]
-            if variable.type in stix_2_0_identical_mapping
-            else ["id"]
-        )
-        query.append(Projection(cols))
+        query.append(Projection([entity_id_attr]))
         query.append(Unique())
         query.append(Count())
-        rows = variable.store.run_query(query).fetchall()
-        entity_count = rows[0]["count"] if rows else 0
-    else:
-        entity_count = 0
+        try:
+            rows = variable.store.run_query(query).fetchall()
+            entity_count = rows[0]["count"] if rows else 0
+        except InvalidAttr:
+            pass
     return entity_count

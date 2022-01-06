@@ -3,181 +3,219 @@ Kestrel Threat Hunting Language
 ===============================
 
 .. image:: https://img.shields.io/pypi/pyversions/kestrel-lang
-        :target: https://pypi.python.org/pypi/kestrel-lang/
+        :target: https://www.python.org/
+        :alt: Python 3
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
         :target: https://github.com/psf/black
+        :alt: Code Style: Black
 
 .. image:: https://img.shields.io/pypi/v/kestrel-lang
-        :target: https://pypi.python.org/pypi/kestrel-lang/
+        :target: https://pypi.python.org/pypi/kestrel-lang
+        :alt: Latest Version
 
 .. image:: https://img.shields.io/pypi/dm/kestrel-lang
-        :target: https://pypi.python.org/pypi/kestrel-lang/
+        :target: https://pypistats.org/packages/kestrel-lang
+        :alt: PyPI Downloads
 
 .. image:: https://readthedocs.org/projects/kestrel/badge/?version=latest
         :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-What is Kestrel? How to install? How to connect to data sources? How to write your first hunt flow?
+|
 
-You can find all the answers at `Kestrel documentation hub`_. A quick primer is below.
+.. image:: https://raw.githubusercontent.com/subbyte/kestrel-gif/main/hunt01.gif
+   :width: 100%
+   :target: https://www.youtube.com/watch?v=tASFWZfD7l8
+   :alt: Kestrel Hunting Demo
 
-.. _Kestrel documentation hub: https://kestrel.readthedocs.io/
+News
+====
 
-===================
-Introducing Kestrel
-===================
+Log4Shell detection:
 
-We introduce Kestrel as a layer of abstraction to stop repeating ourselves in
-cyber threat hunting.
+- The complete `Kestrel Log4Shell huntbook`_
+- The `Log4Shell analytics`_ to download for the huntbook
 
-- Kestrel language: a threat hunting language for a human to express *what to
+Overview
+========
+
+Kestrel threat hunting language provides an abstraction for threat hunters to
+focus on *what to hunt* instead of *how to hunt*. The abstraction makes it
+possible to codify resuable hunting knowledge in a composable and sharable
+manner. And Kestrel runtime figures out *how to hunt* for hunters to make cyber
+threat hunting less tedious and more efficient.
+
+.. image:: https://raw.githubusercontent.com/opencybersecurityalliance/kestrel-lang/release/docs/images/overview.png
+   :width: 100%
+   :alt: Kestrel overview.
+
+- **Kestrel language**: a threat hunting language for a human to express *what to
   hunt*.
 
-    - expressing the knowledge of *what* in patterns, analytics, and hunt flows.
-    - composing reusable hunting flows from individual hunting steps.
-    - reasoning with human-friendly entity-based data representation abstraction.
-    - thinking across heterogeneous data and threat intelligence sources.
-    - applying existing public and proprietary detection logic as analytics.
-    - reusing and sharing individual hunting steps and entire hunt books.
+  - expressing the knowledge of *what* in patterns, analytics, and hunt flows.
+  - composing reusable hunting flows from individual hunting steps.
+  - reasoning with human-friendly entity-based data representation abstraction.
+  - thinking across heterogeneous data and threat intelligence sources.
+  - applying existing public and proprietary detection logic as analytics.
+  - reusing and sharing individual hunting steps and entire hunt books.
 
-- Kestrel runtime: a machine interpreter that deals with *how to hunt*.
+- **Kestrel runtime**: a machine interpreter that deals with *how to hunt*.
 
-    - compiling the *what* against specific hunting platform instructions.
-    - executing the compiled code locally and remotely.
-    - assembling raw logs and records into entities for entity-based reasoning.
-    - caching intermediate data and related records for fast response.
-    - prefetching related logs and records for link construction between entities.
-    - defining extensible interfaces for data sources and analytics execution.
+  - compiling the *what* against specific hunting platform instructions.
+  - executing the compiled code locally and remotely.
+  - assembling raw logs and records into entities for entity-based reasoning.
+  - caching intermediate data and related records for fast response.
+  - prefetching related logs and records for link construction between entities.
+  - defining extensible interfaces for data sources and analytics execution.
 
-============
-Architecture
-============
-
-The entire Kestrel runtime consists following Python packages:
-
-- ``kestrel`` (in *kestrel-lang* repository): the interpreter including
-  parser, session management, code generation, data source and
-  analytics interface managers, and a command line front end.
-
-- ``firepit`` (in *firepit* repository): the Kestrel internal data storage
-  ingesting data from data sources, caching related data, and linking records
-  against each Kestrel variable, 
-
-- ``kestrel_datasource_stixshifter`` (in *kestrel-lang* repository): the
-  STIX-Shifter data source interface for managing data sources via
-  STIX-Shifter.
-
-- ``kestrel_datasource_stixbundle`` (in *kestrel-lang* repository): the data
-  source interface for ingesting static telemetry data that is already sealed
-  in STIX bundles.
-
-- ``kestrel_analytics_docker`` (in *kestrel-lang* repository): the analytics
-  interface that executes analytics in docker containers.
-
-- ``kestrel_jupyter_kernel`` (in *kestrel-jupyter* repository): the Kestrel
-  Jupyter Notebook kernel to use Kestrel in a Jupyter notebook.
-
-- ``kestrel_ipython`` (in *kestrel-jupyter* repository): the iPython *magic
-  command* realization for writing native Kestrel in iPython.
-  
-============
 Installation
 ============
 
-Install the Kestrel runtime plus additional front ends such as Kestrel Jupyter
-Notebook kernel.
-
-
-Requirements
-============
-
-This project builds on Python 3. Refer to the `Python installation guide`_ if you do not have Python 3.
-
-The preferred way to install Kestrel is via `pip`_. Please upgrade `pip`_ to the latest version before install:
-
-.. code-block:: console
-
-    $ pip install --upgrade pip
-
-Runtime Installation
-====================
-
-One can install Kestrel runtime from `stable release`_ or `source code`_.
-Either way installs all packages in the ``kestrel-lang`` repository, and
-dependent packages such as ``firepit`` and ``stix-shifter``. Check the
-architecture section in :doc:`overview` to understand more.
-
-You can install as a normal user, root, or in a `Python virtual environment`_.
-
-Stable Release
---------------
-
-Run this command in your terminal:
-
-.. code-block:: console
-
-    $ pip install kestrel-lang
-
-Source Code
------------
-
-1. install and upgrade Python building packages ``setuptools`` and ``wheel``:
+Kestrel requires Python 3 to run. Check `Python installation guide`_ if you
+do not have Python. It is preferred to install Kestrel runtime using `pip`_,
+and it is preferred to install Kestrel runtime in a `Python virtual
+environment`_.
 
 .. code-block:: console
 
     $ pip install --upgrade pip setuptools wheel
-
-2. clone the source from the `Github repo`_:
-
-.. code-block:: console
-
-    $ git clone git://github.com/IBM/kestrel-lang
-    $ cd kestrel-lang
-
-3. (optional) switch to the `develop` branch if you want the nightly built version:
-
-.. code-block:: console
-
-    $ git checkout develop
-
-4. install all packages from the repo:
-
-.. code-block:: console
-
-    $ pip install .
-
-Runtime Front Ends
-==================
-
-Kestrel runtime currently supports three front ends (see architecture figure in :doc:`overview`):
-
-1. Command line execution utility ``kestrel``: this is installed with the
-   package ``kestrel``. 
-
-.. code-block:: console
-
-    $ kestrel [-h] [-v] [--debug] hunt101.hf
-
-2. Kestrel Jupyter Notebook kernel: need to install and setup the
-   `kestrel-jupyter`_ package (`Jupyter Notebook`_ dependencies will be
-   automatically installed if not exist):
-
-.. code-block:: console
-
     $ pip install kestrel-jupyter
-    $ python -m thl_jupyter_kernel.setup
+    $ python -m kestrel_jupyter_kernel.setup
+    $ jupyter notebook
 
-3. Python API:
+Hello World Hunt
+================
 
-    - Start a Kestrel session in Python directly. See more at :doc:`source/kestrel.session`.
+1. Copy the following 3-step hunt flow into your favorite text editor:
 
-    - Use `magic command`_ in iPython environment. ``kestrel-jupyter`` required.
+.. code-block:: elixir
 
-.. _pip: https://pip.pypa.io
+    # create four process entities in Kestrel and store them in the variable `proclist`
+    proclist = NEW process [ {"name": "cmd.exe", "pid": "123"}
+                           , {"name": "explorer.exe", "pid": "99"}
+                           , {"name": "firefox.exe", "pid": "201"}
+                           , {"name": "chrome.exe", "pid": "205"}
+                           ]
+
+    # match a pattern of browser processes, and put the matched entities in variable `browsers`
+    browsers = GET process FROM proclist WHERE [process:name IN ('firefox.exe', 'chrome.exe')]
+
+    # display the information (attributes name, pid) of the entities in variable `browsers`
+    DISP browsers ATTR name, pid
+
+2. Save to a file ``helloworld.hf``.
+
+3. Execute the hunt flow in a terminal (in Python venv if virtual environment is used):
+
+.. code-block:: console
+
+    $ kestrel helloworld.hf
+
+Now you captured browser processes in a Kestrel variable ``browsers`` from all processes created:
+
+::
+    
+           name pid
+     chrome.exe 205
+    firefox.exe 201
+
+    [SUMMARY] block executed in 1 seconds
+    VARIABLE    TYPE  #(ENTITIES)  #(RECORDS)  process*
+    proclist process            4           4         0
+    browsers process            2           2         0
+    *Number of related records cached.
+
+Hunting In The Real World
+=========================
+
+#. How to develop hunts interactively in Jupyter Notebook?
+#. How to connect to one and more real-world data sources?
+#. How to write and match a TTP pattern?
+#. How to find child processes of a process?
+#. How to find network traffic from a process?
+#. How to apply pre-built analytics?
+#. How to fork and merge hunt flows?
+
+Find more at `Kestrel documentation hub`_ and `Kestrel blogs at OCA`_.
+
+Kestrel Hunting Blogs
+=====================
+
+#. `Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks`_
+#. `Practicing Backward And Forward Tracking Hunts on A Windows Host`_
+#. `Building Your Own Kestrel Analytics and Sharing With the Community`_
+#. `Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow`_
+
+Learning/Sharing With the Community
+===================================
+
+- `Kestrel huntbook repo`_
+- `Kestrel analytics repo`_
+
+Talks And Demos
+===============
+
+Kestrel was debuted at RSA Conference 2021: `The Game of Cyber Threat Hunting:
+The Return of the Fun`_ with the goal of an `efficient cyberthreat hunting
+symbiosis`_, its key design concepts `entity-based reasoning`_ and `composable
+hunt flow`_, and a `small-enterprise APT hunting demo`_ with TTP pattern
+matching, cross-host provenance tracking, TI-enrichment, machine learning
+analytics, and more.
+
+Kestrel was further introduced to the threat hunting community at `SANS Threat
+Hunting Summit 2021`_ in session `Compose Your Hunts With Reusable Knowledge
+and Share Your Huntbook With the Community`_ to facilitate huntbook
+composition, sharing, and reuse---from simple single hunt step demos (TTP
+pattern matching, provenance tracking, and data visualization analytics) to
+complex comprehensive hunt flow composition.
+
+Kestrel, together with `STIX-shifter`_, `Elastic`_, and `SysFlow`_ constitute
+the `open hunting stack`_ demoed at Black Hat Europe 2021: `An Open Stack for
+Threat Hunting in Hybrid Cloud With Connected Observability`_. A supply chain
+attack variant across a hybrid cloud (two clouds and on-premises machines) was
+hunted in the arsenal session.
+
+Kestrel was demoed at `Infosec Jupyterthon 2021`_ in session: `Reason Cyber
+Campaigns With Kestrel`_. The live hunting demo explained the basics of Kestrel
+throughout the discovery of the hybrid cloud APT campaign developed for our
+Black Hat Europe 2021 session.
+
+Connecting With The Community
+=============================
+
+Quick questions? Like to meet other users? Want to contribute?
+
+Get a `slack invitation`_ to `Open Cybersecurity
+Alliance workspace`_ and join our *kestrel* channel.
+
+.. _Kestrel documentation hub: https://kestrel.readthedocs.io/
+.. _Kestrel blogs at OCA: https://opencybersecurityalliance.org/posts/
+.. _pip: https://pip.pypa.io/
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
-.. _Github repo: https://github.com/IBM/kestrel-lang
-.. _kestrel-jupyter: http://github.com/IBM/kestrel-jupyter
 .. _Jupyter Notebook: https://jupyter.org/
-.. _magic command: https://ipython.readthedocs.io/en/stable/interactive/magics.html
+.. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
+.. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
+.. _efficient cyberthreat hunting symbiosis: https://kestrel.readthedocs.io/en/latest/overview.html#human-machine
+.. _small-enterprise APT hunting demo: https://www.youtube.com/watch?v=tASFWZfD7l8
+.. _entity-based reasoning: https://kestrel.readthedocs.io/en/latest/language.html#entity-based-reasoning
+.. _composable hunt flow: https://kestrel.readthedocs.io/en/latest/language.html#composable-hunt-flow
+.. _The Game of Cyber Threat Hunting\: The Return of the Fun: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
+.. _Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks: https://opencybersecurityalliance.org/posts/kestrel-2021-07-26/
+.. _Practicing Backward And Forward Tracking Hunts on A Windows Host: https://opencybersecurityalliance.org/posts/kestrel-2021-08-16/
+.. _Building Your Own Kestrel Analytics and Sharing With the Community: https://opencybersecurityalliance.org/posts/kestrel-custom-analytics/
+.. _Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
+.. _Kestrel huntbook repo: https://github.com/opencybersecurityalliance/kestrel-huntbook
+.. _Kestrel analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
+.. _SANS Threat Hunting Summit 2021: https://www.sans.org/blog/a-visual-summary-of-sans-threat-hunting-summit-2021/
+.. _Compose Your Hunts With Reusable Knowledge and Share Your Huntbook With the Community: https://www.youtube.com/watch?v=gyY5DAWLwT0
+.. _An Open Stack for Threat Hunting in Hybrid Cloud With Connected Observability: https://www.blackhat.com/eu-21/arsenal/schedule/index.html#an-open-stack-for-threat-hunting-in-hybrid-cloud-with-connected-observability-25112
+.. _STIX-shifter: https://github.com/opencybersecurityalliance/stix-shifter
+.. _Elastic: https://www.elastic.co/
+.. _SysFlow: https://github.com/sysflow-telemetry
+.. _open hunting stack: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
+.. _Infosec Jupyterthon 2021: https://infosecjupyterthon.com/2021/agenda.html
+.. _Reason Cyber Campaigns With Kestrel: https://www.youtube.com/watch?v=nMnHBnYfIaI&t=20557s
+.. _Kestrel Log4Shell huntbook: https://github.com/opencybersecurityalliance/kestrel-huntbook/blob/main/huntbooks/log4shell%20Detection.ipynb
+.. _Log4Shell analytics: https://github.com/opencybersecurityalliance/kestrel-analytics/tree/release/analytics/log4shell

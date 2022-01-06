@@ -18,22 +18,21 @@
 #     - a table that can be imported to pandas dataframe
 ################################################################
 
-import os
-import pathlib
 import functools
 import logging
-import time
 import itertools
 from collections import OrderedDict
 
+from firepit.query import Aggregation, Group, Query, Table
+
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts
 from kestrel.exceptions import *
-from kestrel.semantics import get_entity_table, get_entity_type, get_entity_len
+from kestrel.semantics import get_entity_table, get_entity_type
 from kestrel.symboltable import new_var
 from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.codegen.data import load_data, load_data_file, dump_data_to_file
 from kestrel.codegen.display import DisplayDataframe, DisplayDict
-from kestrel.codegen.pattern import build_pattern, or_patterns
+from kestrel.codegen.pattern import build_pattern, or_patterns, build_pattern_from_ids
 from kestrel.codegen.relations import (
     generic_relations,
     compile_generic_relation_to_pattern,
@@ -42,6 +41,8 @@ from kestrel.codegen.relations import (
     compile_x_ibm_event_search_flow_in_pattern,
     compile_x_ibm_event_search_flow_out_pattern,
     are_entities_associated_with_x_ibm_event,
+    fine_grained_relational_process_filtering,
+    get_entity_id_attribute,
 )
 
 _logger = logging.getLogger(__name__)
@@ -73,12 +74,9 @@ def _default_output(func):
 def _guard_empty_input(func):
     @functools.wraps(func)
     def wrapper(stmt, session):
-        input_len_dict = {
-            v: get_entity_len(v, session.symtable)
-            for v in get_all_input_var_names(stmt)
-        }
-        for v, size in input_len_dict.items():
-            if size == 0:
+        for varname in get_all_input_var_names(stmt):
+            v = session.symtable[varname]
+            if v.length + v.records_count == 0:
                 raise EmptyInputVariable(v)
         else:
             return func(stmt, session)
@@ -182,7 +180,7 @@ def info(stmt, session):
 
 @_debug_logger
 def disp(stmt, session):
-    if len(session.symtable[stmt["input"]]) > 0:
+    if session.symtable[stmt["input"]].entity_table:
         content = session.store.lookup(
             get_entity_table(stmt["input"], session.symtable),
             stmt["attrs"],
@@ -196,8 +194,8 @@ def disp(stmt, session):
 @_debug_logger
 @_default_output
 def get(stmt, session):
-    local_var_name = stmt["output"] + "_local"
-    return_var_name = stmt["output"]
+    local_var_table = stmt["output"] + "_local"
+    return_var_table = stmt["output"]
     return_type = stmt["type"]
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
@@ -218,7 +216,7 @@ def get(stmt, session):
             get_entity_table(stmt["variablesource"], session.symtable),
             pattern,
         )
-        output = new_var(session.store, return_var_name, [], stmt, session.symtable)
+        output = new_var(session.store, return_var_table, [], stmt, session.symtable)
         _logger.debug(f"get from variable source \"{stmt['variablesource']}\"")
 
     elif "datasource" in stmt:
@@ -227,41 +225,61 @@ def get(stmt, session):
             stmt["datasource"], pattern, session.session_id
         )
         query_id = rs.load_to_store(session.store)
-        session.store.extract(local_var_name, return_type, query_id, pattern)
-        _output = new_var(session.store, local_var_name, [], stmt, session.symtable)
-
-        output = _output
+        session.store.extract(local_var_table, return_type, query_id, pattern)
+        _output = new_var(session.store, local_var_table, [], stmt, session.symtable)
+        _logger.debug(
+            f"native GET pattern executed and DB view {local_var_table} extracted."
+        )
 
         if session.config["prefetch"]["get"] and len(_output):
-
-            prefetch_ret_var_name = return_var_name + "_prefetch"
-
-            pattern_pf = _prefetch(
+            prefetch_ret_var_table = return_var_table + "_prefetch"
+            prefetch_ret_entity_table = _prefetch(
                 return_type,
-                prefetch_ret_var_name,
-                local_var_name,
+                prefetch_ret_var_table,
+                local_var_table,
                 stmt["timerange"],
                 start_offset,
                 end_offset,
-                {local_var_name: _output},
+                {local_var_table: _output},
                 session.store,
                 session.session_id,
                 session.data_source_manager,
+                session.config["stixquery"]["support_id"],
             )
 
-            if pattern_pf:
-                # this is a fix when the unique identifier in
-                # `kestrel.codegen.relations.stix_2_0_identical_mapping` is
-                # missing, especially for process.
-
-                # TODO: this or_pattern() code can be removed when we have
-                # better logic of unique identifier of entities.
-
-                full_pat = or_patterns([pattern, pattern_pf])
-                session.store.extract(return_var_name, return_type, None, full_pat)
-                output = new_var(
-                    session.store, return_var_name, [], stmt, session.symtable
+            if return_type == "process" and get_entity_id_attribute(_output) != "id":
+                prefetch_ret_entity_table = _filter_prefetched_process(
+                    return_var_table,
+                    session,
+                    _output,
+                    prefetch_ret_entity_table,
+                    return_type,
                 )
+        else:
+            prefetch_ret_entity_table = None
+
+        if prefetch_ret_entity_table:
+            _logger.debug(
+                f"merge {local_var_table} and {prefetch_ret_entity_table} into {return_var_table}."
+            )
+            session.store.merge(
+                return_var_table, [local_var_table, prefetch_ret_entity_table]
+            )
+            for v in list(
+                set(
+                    [local_var_table, prefetch_ret_entity_table, prefetch_ret_var_table]
+                )
+            ):
+                if not session.debug_mode:
+                    _logger.debug(f"remove temp store view {v}.")
+                    session.store.remove_view(v)
+        else:
+            _logger.debug(
+                f'prefetch return None, just rename native GET pattern matching results into "{return_var_table}".'
+            )
+            session.store.rename_view(local_var_table, return_var_table)
+
+        output = new_var(session.store, return_var_table, [], stmt, session.symtable)
 
     else:
         raise KestrelInternalError(f"unknown type of source in {str(stmt)}")
@@ -276,8 +294,8 @@ def find(stmt, session):
     return_type = stmt["type"]
     input_type = session.symtable[stmt["input"]].type
     input_var_name = stmt["input"]
-    return_var_name = stmt["output"]
-    local_var_name = stmt["output"] + "_local"
+    return_var_table = stmt["output"]
+    local_var_table = stmt["output"] + "_local"
     local_var_event_name = stmt["output"] + "_asso_event"
     relation = stmt["relation"]
     is_reversed = stmt["reversed"]
@@ -286,7 +304,7 @@ def find(stmt, session):
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
 
-    if return_type not in session.store.tables():
+    if return_type not in session.store.types():
         # return empty variable
         output = new_var(session.store, None, [], stmt, session.symtable)
 
@@ -302,7 +320,7 @@ def find(stmt, session):
             )
 
             if (
-                event_type in session.store.tables()
+                event_type in session.store.types()
                 and are_entities_associated_with_x_ibm_event([input_type, return_type])
                 and input_type != return_type
             ):
@@ -324,7 +342,6 @@ def find(stmt, session):
                     _symtable[local_var_event_name] = new_var(
                         session.store, local_var_event_name, [], stmt, session.symtable
                     )
-
                     event_out_pattern_body = (
                         compile_x_ibm_event_search_flow_out_pattern(
                             return_type, local_var_event_name
@@ -338,6 +355,10 @@ def find(stmt, session):
                         _symtable,
                         session.store,
                     )
+                    if not session.debug_mode:
+                        _logger.debug(f"remove temp store view {local_var_event_name}.")
+                        session.store.remove_view(local_var_event_name)
+
                 except InvalidAttribute:
                     _logger.warning(
                         "attributes not in DB when building event pattern for x-oca-event"
@@ -360,34 +381,83 @@ def find(stmt, session):
             local_pattern = None
 
         local_pattern = or_patterns([local_pattern, event_pattern])
-        if not local_pattern:
+
+        # by default, `session.store.extract` will generate new entity_table named `local_var_table`
+        # `extract` does not support the case both query_id and pattern are None
+        if local_pattern:
+            session.store.extract(local_var_table, return_type, None, local_pattern)
+            _output = new_var(
+                session.store, local_var_table, [], stmt, session.symtable
+            )
+
+            # Second, prefetch all records of the entities and associated entities
+            if (
+                session.config["prefetch"]["find"]
+                and len(_output)
+                and _output.data_source
+            ):
+                prefetch_ret_var_table = return_var_table + "_prefetch"
+                prefetch_ret_entity_table = _prefetch(
+                    return_type,
+                    prefetch_ret_var_table,
+                    local_var_table,
+                    time_range,
+                    start_offset,
+                    end_offset,
+                    {local_var_table: _output},
+                    session.store,
+                    session.session_id,
+                    session.data_source_manager,
+                    session.config["stixquery"]["support_id"],
+                )
+
+                # special handling for process to filter out impossible relational processes
+                # this is needed since STIX 2.0 does not have mandatory fields for
+                # process and field like `pid` is not unique
+                if (
+                    return_type == "process"
+                    and get_entity_id_attribute(_output) != "id"
+                ):
+                    prefetch_ret_entity_table = _filter_prefetched_process(
+                        return_var_table,
+                        session,
+                        _output,
+                        prefetch_ret_entity_table,
+                        return_type,
+                    )
+            else:
+                prefetch_ret_entity_table = None
+
+            if prefetch_ret_entity_table:
+                _logger.debug(
+                    f"merge {local_var_table} and {prefetch_ret_entity_table} into {return_var_table}."
+                )
+                session.store.merge(
+                    return_var_table, [local_var_table, prefetch_ret_entity_table]
+                )
+                for v in list(
+                    set(
+                        [
+                            local_var_table,
+                            prefetch_ret_entity_table,
+                            prefetch_ret_var_table,
+                        ]
+                    )
+                ):
+                    if not session.debug_mode:
+                        _logger.debug(f"remove temp store view {v}.")
+                        session.store.remove_view(v)
+            else:
+                _logger.debug(
+                    f'prefetch return None, just rename native GET pattern matching results into "{return_var_table}".'
+                )
+                session.store.rename_view(local_var_table, return_var_table)
+
+        else:
+            return_var_table = None
             _logger.info(f'no relation "{relation}" on this dataset')
 
-        # by default, `session.store.extract` will generate new entity_table named `local_var_name`
-        session.store.extract(local_var_name, return_type, None, local_pattern)
-
-        _output = new_var(session.store, local_var_name, [], stmt, session.symtable)
-
-        # default output without remote query
-        output = _output
-
-        # Second, prefetch all records of the entities and associated entities
-        if session.config["prefetch"]["find"] and len(_output) and _output.data_source:
-            if _prefetch(
-                return_type,
-                return_var_name,
-                local_var_name,
-                time_range,
-                start_offset,
-                end_offset,
-                {local_var_name: _output},
-                session.store,
-                session.session_id,
-                session.data_source_manager,
-            ):
-                output = new_var(
-                    session.store, return_var_name, [], stmt, session.symtable
-                )
+        output = new_var(session.store, return_var_table, [], stmt, session.symtable)
 
     return output, None
 
@@ -409,12 +479,13 @@ def join(stmt, session):
 @_default_output
 @_guard_empty_input
 def group(stmt, session):
-    session.store.assign(
-        stmt["output"],
-        get_entity_table(stmt["input"], session.symtable),
-        op="group",
-        by=stmt["path"],
+    query = Query(
+        [Table(get_entity_table(stmt["input"], session.symtable)), Group(stmt["paths"])]
     )
+    if "aggregations" in stmt:
+        aggs = [(i["func"], i["attr"], i["alias"]) for i in stmt["aggregations"]]
+        query.append(Aggregation(aggs))
+    session.store.assign_query(stmt["output"], query)
 
 
 @_debug_logger
@@ -457,6 +528,7 @@ def _prefetch(
     store,
     session_id,
     ds_manager,
+    does_support_id,
 ):
     """prefetch identical entities and associated entities.
 
@@ -489,16 +561,19 @@ def _prefetch(
 
         session_id (str): session ID.
 
-    Returns:
-        [str]: pattern if the prefetch is performed.
-    """
-    # only need to return bool in the future
+        does_support_id (bool): whether "id" can be an attribute in data source query.
 
-    pattern_body = compile_identical_entity_search_pattern(return_type, input_var_name)
+    Returns:
+        str: the entity table in store if the prefetch is performed else None.
+    """
+
+    _logger.debug(f"prefetch {return_type} to extend {input_var_name}.")
+
+    pattern_body = compile_identical_entity_search_pattern(
+        input_var_name, symtable[input_var_name], does_support_id
+    )
 
     if pattern_body:
-        # this may fail if the attribute in `stix_2_0_identical_mapping` does not exists
-        # this is important since STIX does not have any mandatory attributes for process/file
         remote_pattern = build_pattern(
             pattern_body, time_range, start_offset, end_offset, symtable, store
         )
@@ -509,8 +584,33 @@ def _prefetch(
             query_id = resp.load_to_store(store)
 
             # build the return_var_name view in store
-            store.extract(return_var_name, return_type, None, remote_pattern)
+            store.extract(return_var_name, return_type, query_id, remote_pattern)
 
-            return remote_pattern
+            _logger.debug(f"prefetch successful.")
+            return return_var_name
 
+    _logger.info(f"prefetch return empty.")
     return None
+
+
+def _filter_prefetched_process(
+    return_var_name, session, local_var, prefetched_entity_table, return_type
+):
+
+    _logger.debug(f"filter prefetched {return_type} for {prefetched_entity_table}.")
+
+    prefetch_filtered_var_name = return_var_name + "_prefetch_filtered"
+    entity_ids = fine_grained_relational_process_filtering(
+        local_var,
+        prefetched_entity_table,
+        session.store,
+        session.config["prefetch"],
+    )
+    id_pattern = build_pattern_from_ids(return_type, entity_ids)
+    if id_pattern:
+        session.store.extract(prefetch_filtered_var_name, return_type, None, id_pattern)
+        _logger.debug(f"filter successful.")
+        return prefetch_filtered_var_name
+    else:
+        _logger.info("no prefetched process found after filtering.")
+        return None

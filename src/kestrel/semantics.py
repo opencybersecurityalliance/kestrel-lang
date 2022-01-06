@@ -77,3 +77,8 @@ def check_semantics_on_find(stmt, input_type):
         entity_y,
     ) not in stix_2_0_ref_mapping and relation not in generic_relations:
         raise UnsupportedRelation(entity_x, relation, entity_y)
+
+
+def check_var_exists(var_name, symtable):
+    if var_name not in symtable:
+        raise VariableNotExist(var_name)
