@@ -25,6 +25,9 @@ Properties of profile name:
 import os
 import json
 import time
+from functools import lru_cache
+
+import yaml
 
 from stix_shifter.stix_translation import stix_translation
 from stix_shifter.stix_transmission import stix_transmission
@@ -40,27 +43,120 @@ from kestrel.exceptions import (
 
 from kestrel_datasource_stixshifter.config import ENV_VAR_PREFIX, RETRIEVAL_BATCH_SIZE
 
+# Create a global dict of cached configurations
+# On first invocation, search for YAML file of configurations
+# Note the parsing time and cache. On subsequent calls, check stat.ST_MTIME and re-parse if necessary
+# ENV variables _override_ the YAML file``
+
+
+def merge(c1, c2):
+    for k in set(c1.keys()).union(set(c2.keys())):
+        if k in c1 and k in c2:
+            if isinstance(c1[k], dict) and isinstance(c2[k], dict):
+                yield (k, dict(merge(c1[k], c2[k])))
+            else:
+                yield (k, c2[k])
+        elif k in c1:
+            yield (k, c1[k])
+        else:
+            yield (k, c2[k])
+
 
 class StixShifterInterface(AbstractDataSourceInterface):
+    __config = None
+
+    @staticmethod
+    def init():
+        if StixShifterInterface.__config is not None:
+            return
+        config = dict()
+        k_path = os.path.expanduser("~/.kestrel/config.yml")
+        if os.path.exists(k_path):
+            with open(k_path, "r") as fd:
+                cfg = yaml.load(fd, yaml.SafeLoader)
+                try:
+                    if "stixshifter" in cfg:
+                        config = {c["name"].lower(): c for c in cfg["stixshifter"]}
+                    for kv in cfg.get("env", []):
+                        os.environ[kv["key"]] = kv["value"]
+                except:
+                    pass
+        # Check for environment variable to override the config
+        if "KESTREL_CONFIG" in os.environ and os.path.exists(
+            os.environ.get("KESTREL_CONFIG")
+        ):
+            k_path = os.environ.get("KESTREL_CONFIG")
+            with open(k_path, "r") as fd:
+                cfg = yaml.load(fd, yaml.SafeLoader)
+                try:
+                    for c in cfg.get("stixshifter", []):
+                        pname = c["name"].lower()
+                        if pname not in config:
+                            config[pname] = c
+                        else:
+                            # we need to merge
+                            config[pname] = dict(merge(config[pname], c))
+                    for kv in cfg.get("env", []):
+                        os.environ[kv["key"]] = kv["value"]
+                except:
+                    pass
+        # Now look for any ENV variables the override or add new configs
+        StixShifterInterface.__config = dict(
+            merge(config, StixShifterInterface.__env_parse())
+        )
+
+    @staticmethod
+    def __env_parse():
+        env_vars = os.environ.keys()
+        stixshifter_vars = filter(lambda x: x.startswith(ENV_VAR_PREFIX), env_vars)
+        config = dict()
+        for evar in stixshifter_vars:
+            profile = evar.split("_")[1].lower()
+            if profile not in config:
+                config[profile] = dict()
+            # is it a _CONNECTOR, _CONNECTION, or _CONFIG?
+            try:
+                if evar.lower().endswith("_connector"):
+                    config[profile]["connector"] = os.environ[evar]
+                elif evar.lower().endswith("_connection"):
+                    try:
+                        config[profile]["connection"] = json.loads(os.environ[evar])
+                    except json.decoder.JSONDecodeError:
+                        raise InvalidDataSource(
+                            profile,
+                            "stixshifter",
+                            f"invalid JSON in {evar} environment variable",
+                        )
+                elif evar.lower().endswith("_config"):
+                    try:
+                        config[profile]["config"] = json.loads(os.environ[evar])
+                    except json.decoder.JSONDecodeError:
+                        raise InvalidDataSource(
+                            profile,
+                            "stixshifter",
+                            f"invalid JSON in {evar} environment variable",
+                        )
+            except:
+                pass
+        return config
+
+    @staticmethod
+    def config():
+        return StixShifterInterface.__config
+
     @staticmethod
     def schemes():
         """STIX Shifter data source interface only supports ``stixshifter://`` scheme."""
         return ["stixshifter"]
 
     @staticmethod
+    @lru_cache(maxsize=1)
     def list_data_sources():
         """Get configured data sources from environment variable profiles."""
-        data_sources = []
-
-        env_vars = os.environ.keys()
-        stixshifter_vars = filter(lambda x: x.startswith(ENV_VAR_PREFIX), env_vars)
-        for evar in stixshifter_vars:
-            profile = evar.split("_")[1].lower()
-            if profile not in data_sources:
-                data_sources.append(profile)
-
+        if StixShifterInterface.__config is None:
+            StixShifterInterface.init()
+        data_sources = list(StixShifterInterface.__config.keys())
         data_sources.sort()
-
         return data_sources
 
     @staticmethod
@@ -180,74 +276,57 @@ class StixShifterInterface(AbstractDataSourceInterface):
         return ReturnFromFile(query_id, bundles)
 
     @staticmethod
+    @lru_cache(maxsize=100)
     def _get_stixshifter_config(profile_name):
-        profile_name = profile_name.upper()
+        if StixShifterInterface.__config is None:
+            StixShifterInterface.init()
 
-        env_conr_name = f"{ENV_VAR_PREFIX}{profile_name}_CONNECTOR"
-        connector_name = os.getenv(env_conr_name)
+        profile_name = profile_name.lower()
+        connector_name = StixShifterInterface.__config.get(profile_name, {}).get(
+            "connector"
+        )
         if not connector_name:
             raise InvalidDataSource(
                 profile_name,
                 "stixshifter",
-                f"no {env_conr_name} environment variable found",
+                f"no {profile_name} configuration found",
             )
         connector_name = connector_name.lower()
 
-        env_conn_name = f"{ENV_VAR_PREFIX}{profile_name}_CONNECTION"
-        connection = os.getenv(env_conn_name)
+        connection = StixShifterInterface.__config[profile_name].get("connection", None)
         if not connection:
             raise InvalidDataSource(
                 profile_name,
                 "stixshifter",
-                f"no {env_conn_name} environment variable found",
+                f"no {profile_name} connection configured",
             )
 
-        env_conf_name = f"{ENV_VAR_PREFIX}{profile_name}_CONFIG"
-        configuration = os.getenv(env_conf_name)
+        configuration = StixShifterInterface.__config[profile_name].get("config", None)
         if not configuration:
             raise InvalidDataSource(
                 profile_name,
                 "stixshifter",
-                f"no {env_conf_name} environment variable found",
-            )
-
-        try:
-            connection = json.loads(connection)
-        except json.decoder.JSONDecodeError:
-            raise InvalidDataSource(
-                profile_name,
-                "stixshifter",
-                f"invalid JSON in {env_conn_name} environment variable",
+                f"no {profile_name} configuration defined",
             )
 
         if "host" not in connection:
             raise InvalidDataSource(
                 profile_name,
                 "stixshifter",
-                f'invalid {env_conn_name} environment variable: no "host" field',
+                f'invalid {profile_name} environment variable: no "host" field',
             )
 
         if "port" not in connection and connector_name != "stix_bundle":
             raise InvalidDataSource(
                 profile_name,
                 "stixshifter",
-                f'invalid {env_conn_name} environment variable: no "port" field',
-            )
-
-        try:
-            configuration = json.loads(configuration)
-        except json.decoder.JSONDecodeError:
-            raise InvalidDataSource(
-                profile_name,
-                "stixshifter",
-                f"invalid JSON in {env_conf_name} environment variable",
+                f'invalid {profile_name} environment variable: no "port" field',
             )
 
         if "auth" not in configuration:
             raise InvalidDataSource(
                 profile_name,
                 "stixshifter",
-                f'invalid {env_conf_name} environment variable: no "auth" field',
+                f'invalid {profile_name} environment variable: no "auth" field',
             )
-
         return connector_name, connection, configuration
