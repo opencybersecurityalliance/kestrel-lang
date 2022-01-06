@@ -31,5 +31,5 @@ jobs:
           python -m pip install --upgrade setuptools
           python -m pip install black
           python -m pip install .
-      - name: Code style check
+      - name: Code style check (please black your code)
         run: black --check src/
