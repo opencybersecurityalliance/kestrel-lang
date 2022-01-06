@@ -79,9 +79,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                     for kv in cfg.get('env', []):
                         os.environ[kv['key']] = kv['value']
                 except:
-                    print("Error parsing config")
-        else:
-            print("Default config not found")
+                    pass
         # Check for environment variable to override the config
         if 'KESTREL_CONFIG' in os.environ and os.path.exists(os.environ.get('KESTREL_CONFIG')):
             k_path = os.environ.get('KESTREL_CONFIG')
@@ -98,9 +96,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                     for kv in cfg.get('env', []):
                         os.environ[kv['key']] = kv['value']
                 except:
-                    print("Error parsing or merging ENV-specific config")
-        else:
-            print("Environment variable not found")
+                    pass
         # Now look for any ENV variables the override or add new configs
         StixShifterInterface.__config = dict(merge(config, StixShifterInterface.__env_parse()))
     
@@ -327,5 +323,4 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 "stixshifter",
                 f'invalid {profile_name} environment variable: no "auth" field',
             )
-        print(connector_name, connection, configuration)
         return connector_name, connection, configuration
