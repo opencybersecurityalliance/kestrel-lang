@@ -120,7 +120,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                     config[profile]["connector"] = os.environ[evar]
                 elif evar.lower().endswith("_connection"):
                     try:
-                        config[profile]["connector"] = json.loads(os.environ[evar])
+                        config[profile]["connection"] = json.loads(os.environ[evar])
                     except json.decoder.JSONDecodeError:
                         raise InvalidDataSource(
                             profile,
