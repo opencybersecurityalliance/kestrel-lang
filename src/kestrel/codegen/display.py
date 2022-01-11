@@ -37,7 +37,8 @@ class DisplayDataframe(AbstractDisplay):
         return self.dataframe.to_string(index=False, na_rep="")
 
     def to_html(self):
-        return self.dataframe.to_html(index=False, na_rep="")
+        escaped_df = self.dataframe.replace("\$", "\\\$", inplace=False, regex=True)
+        return escaped_df.to_html(index=False, na_rep="")
 
     def to_json(self):
         body = self.dataframe.to_json(orient="records")
