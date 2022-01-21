@@ -2,8 +2,6 @@ import json
 import pathlib
 import uuid
 
-from firepit.props import get_last, ref_type
-from firepit.query import CoalescedColumn, Column, Join, Projection, Query
 import pandas as pd
 
 from kestrel.exceptions import MissingEntityType, NonUniformEntityType
@@ -49,82 +47,12 @@ def load_data_file(store, output_entity_table, file_path, input_entity_type=None
     return entity_type
 
 
-def _make_join(store, lhs, ref, rhs, proj):
-    # Use the `ref` prop as the alias for table `rhs`
-    # Important because e.g. network-traffic needs to JOIN ipv4-addr twice
-    proj.extend(
-        [
-            Column(c, ref, f"{ref}.{c}")
-            for c in store.columns(rhs)
-            if c != "id" and c != ref
-        ]
-    )
-    return Join(rhs, ref, "=", "id", how="LEFT OUTER", alias=ref, lhs=lhs)
-
-
-def _auto_deref(store, input_entity_table, etype):
-    # Automatically resolve all refs for backward compatibility
-    all_types = set(store.types())
-    props = store.columns(input_entity_table)
-    proj = []
-    qry = Query(input_entity_table)
-    for prop in props:
-        if prop.endswith("_ref"):
-            rtypes = set(ref_type(etype, get_last(prop))) & all_types
-            prev_table = input_entity_table
-            if len(rtypes) > 1:
-                assert set(rtypes) == {"ipv4-addr", "ipv6-addr"}
-                # Special case for when we have BOTH IPv4 and IPv6
-                for n in (4, 6):
-                    qry.append(
-                        Join(
-                            f"ipv{n}-addr",
-                            prop,
-                            "=",
-                            "id",
-                            how="LEFT OUTER",
-                            alias=f"{prop}{n}",
-                            lhs=prev_table,
-                        )
-                    )
-                v4_cols = set(store.columns("ipv4-addr"))
-                v6_cols = set(store.columns("ipv6-addr"))
-                # Coalesce columns that are common to both
-                for c in v4_cols & v6_cols:
-                    if c not in {"id", prop}:
-                        names = [f"{prop}{n}.{c}" for n in (4, 6)]
-                        proj.append(CoalescedColumn(names, f"{prop}.{c}"))
-                # Collect columns that are exclusive to one table or the other
-                for c in v4_cols - v6_cols:
-                    if c not in {"id", prop}:
-                        for a in ("src4", "dst4"):
-                            proj.append(Column(c, a, f"{prop}.{c}"))
-                for c in v6_cols - v4_cols:
-                    if c not in {"id", prop}:
-                        for a in ("src6", "dst6"):
-                            proj.append(Column(c, a, f"{prop}.{c}"))
-            else:
-                rtype = list(rtypes)[0]
-                if rtype in all_types:
-                    # Need to join this table
-                    qry.append(_make_join(store, prev_table, prop, rtype, proj))
-                    prev_table = rtype
-        else:
-            proj.append(Column(prop, input_entity_table))
-    qry.append(Projection(proj))
-    return store.run_query(qry).fetchall()
-
-
 def dump_data_to_file(store, input_entity_table, file_path):
     p = pathlib.Path(file_path)
     p.parent.mkdir(parents=True, exist_ok=True)
 
-    etype = store.table_type(input_entity_table)
-    input_data = (
-        _auto_deref(store, input_entity_table, etype) if input_entity_table else []
-    )
+    input_data = store.lookup(input_entity_table) if input_entity_table else []
     df = pd.DataFrame(input_data)
-    df["type"] = etype
     dump_format = _get_dump_format(p)
     if dump_format == "csv":
         df.to_csv(file_path)
