@@ -35,7 +35,7 @@ class KestrelInternalError(KestrelException):
 
 class InvalidConfiguration(KestrelException):
     def __init__(self, error, suggestion):
-        super().__init__(self, error, suggestion)
+        super().__init__(error, suggestion)
 
 
 ################################################################

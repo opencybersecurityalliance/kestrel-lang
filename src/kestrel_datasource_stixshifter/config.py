@@ -1,4 +1,6 @@
 import os
+import json
+import logging
 
 from kestrel.config import (
     CONFIG_DIR_DEFAULT,
@@ -9,8 +11,19 @@ from kestrel.exceptions import InvalidConfiguration, InvalidDataSource
 
 PROFILE_PATH_DEFAULT = CONFIG_DIR_DEFAULT / "stixshifter.yaml"
 PROFILE_PATH_ENV_VAR = "KESTREL_STIXSHIFTER_CONFIG"
+STIXSHIFTER_DEBUG_ENV_VAR = "KESTREL_STIXSHIFTER_DEBUG"  # debug mode for stix-shifter if the environment variable exists
 ENV_VAR_PREFIX = "STIXSHIFTER_"
 RETRIEVAL_BATCH_SIZE = 512
+
+_logger = logging.getLogger(__name__)
+
+def set_stixshifter_logging_level():
+    debug_mode = os.getenv(STIXSHIFTER_DEBUG_ENV_VAR, False)
+    logging_level = logging.DEBUG if debug_mode else logging.INFO
+    _logger.debug(f"set stix-shifter logging level: {logging_level}")
+    logging.getLogger("stix_shifter").setLevel(logging_level)
+    logging.getLogger("stix_shifter_utils").setLevel(logging_level)
+    logging.getLogger("stix_shifter_modules").setLevel(logging_level)
 
 
 def load_profiles_from_env_var():
@@ -21,6 +34,7 @@ def load_profiles_from_env_var():
         items = evar.lower().split("_")
         suffix = items[-1]
         profile = "_".join(items[1:-1])
+        _logger.debug(f"processing stix-shifter env var: {evar}:")
         if profile not in profiles:
             profiles[profile] = {}
 
@@ -37,6 +51,7 @@ def load_profiles_from_env_var():
         else:
             value = os.environ[evar]
 
+        _logger.debug(f"profile: {profile}, suffix: {suffix}, value: {value}")
         profiles[profile][suffix] = value
 
     return profiles
@@ -63,6 +78,7 @@ def get_datasource_from_profiles(profile_name, profiles):
         )
     else:
         profile = profiles[profile_name]
+        _logger.debug(f"profile to use: {profile}")
         if "connector" not in profile:
             raise InvalidDataSource(
                 profile_name,
@@ -71,7 +87,7 @@ def get_datasource_from_profiles(profile_name, profiles):
             )
         else:
             connector_name = profile["connector"]
-        if "conneciton" not in profile:
+        if "connection" not in profile:
             raise InvalidDataSource(
                 profile_name,
                 "stixshifter",
@@ -112,12 +128,13 @@ def get_datasource_from_profiles(profile_name, profiles):
 
 def load_profiles():
     config = load_user_config(PROFILE_PATH_ENV_VAR, PROFILE_PATH_DEFAULT)
-    if "profiles" not in config:
-        raise InvalidConfiguration(
-            'stix-shifter config file error that "profiles" is not found as a root-level key',
-            "check stix-shifter config file",
-        )
-    profiles_from_file = config["profiles"]
+    if config and "profiles" in config:
+        _logger.debug(f"stix-shifter profiles found in config file")
+        profiles_from_file = config["profiles"]
+    else:
+        _logger.debug("either config file does not exist or no stix-shifter profile found in config file. This may indicate a config syntax error if config file exists.")
+        profiles_from_file = {}
     profiles_from_env_var = load_profiles_from_env_var()
     profiles = update_nested_dict(profiles_from_file, profiles_from_env_var)
+    _logger.debug(f"profiles loaded: {profiles}")
     return profiles

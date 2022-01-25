@@ -35,6 +35,7 @@ from (the later will override the former):
 
 import json
 import time
+import logging
 
 from stix_shifter.stix_translation import stix_translation
 from stix_shifter.stix_transmission import stix_transmission
@@ -43,7 +44,9 @@ from kestrel.utils import mkdtemp
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
-from kestrel_datasource_stixshifter.config import RETRIEVAL_BATCH_SIZE, get_datasource_from_profiles, load_profiles
+from kestrel_datasource_stixshifter.config import RETRIEVAL_BATCH_SIZE, get_datasource_from_profiles, load_profiles, set_stixshifter_logging_level
+
+_logger = logging.getLogger(__name__)
 
 class StixShifterInterface(AbstractDataSourceInterface):
 
@@ -73,9 +76,12 @@ class StixShifterInterface(AbstractDataSourceInterface):
         if scheme != "stixshifter":
             raise DataSourceManagerInternalError(f"interface {__package__} should not process scheme {scheme}")
 
+        set_stixshifter_logging_level()
+
         ingestdir = mkdtemp()
         query_id = ingestdir.name
         bundles = []
+        _logger.debug(f"prepare query with ID: {query_id}")
         for i, profile in enumerate(profiles):
             (
                 connector_name,
@@ -103,6 +109,9 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 raise DataSourceError(
                     f"STIX-shifter translation failed with message: {dsl['error']}"
                 )
+
+            _logger.debug(f"STIX pattern to query: {pattern}")
+            _logger.debug(f"translate results: {dsl}")
 
             # query results should be put together; when translated to STIX, the relation between them will remain
             connector_results = []
@@ -164,6 +173,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         f"STIX-shifter transmission.query() failed with message: {stix_shifter_error_msg}"
                     )
 
+            _logger.debug("transmission succeeded, start translate back to STIX")
+
             stixbundle = translation.translate(
                 connector_name,
                 "results",
@@ -172,6 +183,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 {},
             )
 
+            _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
             with ingestfile.open("w") as ingest:
                 json.dump(stixbundle, ingest, indent=4)
             bundles.append(str(ingestfile.resolve()))
