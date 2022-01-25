@@ -12,11 +12,13 @@ Unreleased
 Added
 -----
 
-- modular config loading
+- main config module
 - stix-shifter config/profile loading from disk
 - sharable-state of config between Kestrel session and any Kestrel data source interfaces
 - stix-shifter DEBUG level env var ``KESTREL_STIXSHIFTER_DEBUG``
 - debug info logging in package ``kestrel_datasource_stixshifter``
+- documentation for Kestrel main config
+- documentation for ``kestrel_datasource_stixshifter`` config
 
 Changed
 -------

@@ -20,15 +20,15 @@ prefetch:
   process_lifespan_start_offset: -10800 # seconds
   process_lifespan_stop_offset: 10800 # seconds
 
+# option when generating STIX query
+stixquery:
+  timerange_start_offset: -300 # seconds
+  timerange_stop_offset: 300 # seconds
+  support_id: false # STIX 2.0 does not support unique ID
+
 # debug options
 debug:
   env_var: "KESTREL_DEBUG" # debug mode if the environment variable exists
   cache_directory: "kestrel" # under system temp directory
   session_exit_marker: "session.exited"
   maximum_exited_session: 3
-
-# temp place
-stixquery:
-  timerange_start_offset: -300 # seconds
-  timerange_stop_offset: 300 # seconds
-  support_id: false # STIX 2.0 does not support unique ID

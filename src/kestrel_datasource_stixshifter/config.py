@@ -17,6 +17,7 @@ RETRIEVAL_BATCH_SIZE = 512
 
 _logger = logging.getLogger(__name__)
 
+
 def set_stixshifter_logging_level():
     debug_mode = os.getenv(STIXSHIFTER_DEBUG_ENV_VAR, False)
     logging_level = logging.DEBUG if debug_mode else logging.INFO
@@ -132,7 +133,9 @@ def load_profiles():
         _logger.debug(f"stix-shifter profiles found in config file")
         profiles_from_file = config["profiles"]
     else:
-        _logger.debug("either config file does not exist or no stix-shifter profile found in config file. This may indicate a config syntax error if config file exists.")
+        _logger.debug(
+            "either config file does not exist or no stix-shifter profile found in config file. This may indicate a config syntax error if config file exists."
+        )
         profiles_from_file = {}
     profiles_from_env_var = load_profiles_from_env_var()
     profiles = update_nested_dict(profiles_from_file, profiles_from_env_var)

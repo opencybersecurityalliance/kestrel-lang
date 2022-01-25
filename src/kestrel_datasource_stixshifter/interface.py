@@ -1,35 +1,85 @@
-"""STIX Shifter data source package provides access to data sources via
-stix-shifter.
+"""The STIX shifter data source package provides access to data sources via
+`stix-shifter`_.
 
-Before use, need to install the target stix-shifter connector packages such as
-``stix-shifter-modules-carbonblack``.
+Before use, one need to install any target stix-shifter connector packages such
+as ``stix-shifter-modules-carbonblack``. Check all `avaliable connectors`_ and
+their `pypi packages <https://pypi.org/search/?q=stix-shifter-modules&o=>`_.
 
 The STIX Shifter interface can reach multiple data sources. The user needs to
-setup one *profile* per data source. The profile name will be used in the
-``FROM`` clause of the Kestrel ``GET`` command, e.g., ``newvar = GET entity-type
-FROM stixshifter://profilename WHERE ...``. Kestrel runtime will load profiles
-from (the later will override the former):
+provide one *profile* per data source. The profile name (case insensitive) will
+be used in the ``FROM`` clause of the Kestrel ``GET`` command, e.g., ``newvar =
+GET entity-type FROM stixshifter://profilename WHERE ...``. Kestrel runtime
+will load profiles from 3 places (the later will override the former):
 
-#. stix-shifter interface config file (only at first run):
+#. stix-shifter interface config file (only when a Kestrel session starts):
 
-    - First check environment variable ``KESTREL_STIXSHIFTER_CONFIG`` to find a file path.
-    - Then load either the file from the first step or the default place ``~/.config/kestrel/stixshifter.yaml``.
+    Put your profiles in the stix-shifter interface config file (YAML):
 
-    The YAML file shoud has a root level key ``profiles``.
+    - Default path: ``~/.config/kestrel/stixshifter.yaml``.
+    - A customized path specified in the environment variable ``KESTREL_STIXSHIFTER_CONFIG``.
 
-#. environment variables (only at first run):
+    Example of stix-shifter interface config file containing profiles:
 
-    - ``STIXSHIFTER_PROFILENAME_CONNECTOR``: the STIX Shifter connector name, e.g., ``elastic_ecs``.
-    - ``STIXSHIFTER_PROFILENAME_CONNECTION``: the STIX Shifter `connection <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#connection>`_ object in JSON string.
-    - ``STIXSHIFTER_PROFILENAME_CONFIG``: the STIX Shifter `configuration <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#configuration>`_ object in JSON string.
+    .. code-block:: yaml
 
-    Properties of profile name:
+        profiles:
+            host101:
+                connector: elastic_ecs
+                connection:
+                    host: elastic.securitylog.company.com
+                    port: 9200
+                    indices: host101
+                config:
+                    auth:
+                        id: VuaCfGcBCdbkQm-e5aOx
+                        api_key: ui2lp2axTNmsyakw9tvNnw
+            host102:
+                connector: qradar
+                connection:
+                    host: qradar.securitylog.company.com
+                    port: 443
+                config:
+                    auth:
+                        SEC: 123e4567-e89b-12d3-a456-426614174000
+            host103:
+                connector: cbcloud
+                connection:
+                    host: cbcloud.securitylog.company.com
+                    port: 443
+                config:
+                    auth:
+                        org-key: D5DQRHQP
+                        token: HT8EMI32DSIMAQ7DJM
 
-    - Not case sensitive, e.g., ``profileX`` in the Kestrel command will match
-  ``STIXSHIFTER_PROFILEX_...`` in environment variables.
-    - Cannot contain ``_``.
+#. environment variables (only when a Kestrel session starts):
+
+    Three environment variables are required for each profile:
+
+    - ``STIXSHIFTER_PROFILENAME_CONNECTOR``: the STIX Shifter connector name,
+      e.g., ``elastic_ecs``.
+    - ``STIXSHIFTER_PROFILENAME_CONNECTION``: the STIX Shifter `connection
+      <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#connection>`_
+      object in JSON string.
+    - ``STIXSHIFTER_PROFILENAME_CONFIG``: the STIX Shifter `configuration
+      <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#configuration>`_
+      object in JSON string.
+
+    Example of environment variables for a profile:
+
+    .. code-block:: console
+
+        $ export STIXSHIFTER_HOST101_CONNECTOR=elastic_ecs
+        $ export STIXSHIFTER_HOST101_CONNECTION='{"host":"elastic.securitylog.company.com", "port":9200, "indices":"host101"}'
+        $ export STIXSHIFTER_HOST101_CONFIG='{"auth":{"id":"VuaCfGcBCdbkQm-e5aOx", "api_key":"ui2lp2axTNmsyakw9tvNnw"}}'
 
 #. any in-session edit through the ``CONFIG`` command.
+
+If you launch Kestrel in debug mode, stix-shifter debug mode is still not
+enabled by default. To record debug level logs of stix-shifter, create
+environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
+
+.. _stix-shifter: https://github.com/opencybersecurityalliance/stix-shifter
+.. _avaliable connectors: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md#available-connectors
 
 """
 
@@ -44,12 +94,17 @@ from kestrel.utils import mkdtemp
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
-from kestrel_datasource_stixshifter.config import RETRIEVAL_BATCH_SIZE, get_datasource_from_profiles, load_profiles, set_stixshifter_logging_level
+from kestrel_datasource_stixshifter.config import (
+    RETRIEVAL_BATCH_SIZE,
+    get_datasource_from_profiles,
+    load_profiles,
+    set_stixshifter_logging_level,
+)
 
 _logger = logging.getLogger(__name__)
 
-class StixShifterInterface(AbstractDataSourceInterface):
 
+class StixShifterInterface(AbstractDataSourceInterface):
     @staticmethod
     def schemes():
         """STIX Shifter data source interface only supports ``stixshifter://`` scheme."""
@@ -74,7 +129,9 @@ class StixShifterInterface(AbstractDataSourceInterface):
             config["profiles"] = load_profiles()
 
         if scheme != "stixshifter":
-            raise DataSourceManagerInternalError(f"interface {__package__} should not process scheme {scheme}")
+            raise DataSourceManagerInternalError(
+                f"interface {__package__} should not process scheme {scheme}"
+            )
 
         set_stixshifter_logging_level()
 

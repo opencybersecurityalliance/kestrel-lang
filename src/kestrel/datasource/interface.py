@@ -70,7 +70,7 @@ class AbstractDataSourceInterface(ABC):
 
         Args:
             config (dict): a layered list/dict that contains config for the
-            interface and can be edited/updated by the interface.
+              interface and can be edited/updated by the interface.
 
         Returns:
             [str]: A list of data source names accessible from this interface.
@@ -100,7 +100,7 @@ class AbstractDataSourceInterface(ABC):
             directly writing into the store.
 
             config (dict): a layered list/dict that contains config for the
-            interface and can be edited/updated by the interface.
+              interface and can be edited/updated by the interface.
 
         Returns:
             kestrel.datasource.retstruct.AbstractReturnStruct: returned data.
