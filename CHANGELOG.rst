@@ -6,6 +6,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+Unreleased
+==========
+
+Added
+-----
+
+- reusable config loading module
+- stix-shifter config/profile loading from disk
+- sharable-state of config between Kestrel session and any Kestrel data source interfaces
+
+Changed
+-------
+
+- simplified Kestrel config loading flow
+- default Kestrel config now not managed by ``pip``
+- Kestrel main config now in YAML
+- Kestrel data source interfaces API update with ``config`` parameter
+- stix-shifter data source interface refactoring
+
+Fixed
+-----
+
+- Kestrel config not replaced after version upgrade #116
+
 1.1.6 (2021-12-15)
 ==================
 

@@ -8,7 +8,7 @@ from kestrel.utils import update_nested_dict
 
 CONFIG_DIR_DEFAULT = pathlib.Path.home() / ".config" / "kestrel"
 CONFIG_PATH_DEFAULT = CONFIG_DIR_DEFAULT / "kestrel.yaml"
-CONFIG_PATH_ENV_VAR = "KESTREL_CONFIG"  # override CONFIG_PATH_DEFAULT if provided
+CONFIG_PATH_ENV_VAR = "KESTREL_CONFIG" # override CONFIG_PATH_DEFAULT if provided
 
 _logger = logging.getLogger(__name__)
 
