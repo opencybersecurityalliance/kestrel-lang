@@ -238,9 +238,7 @@ class Session(object):
         # {"var": VarStruct}
         self.symtable = {}
 
-        self.data_source_manager = DataSourceManager(
-            self.config["language"]["default_datasource_schema"]
-        )
+        self.data_source_manager = DataSourceManager(self.config)
         self.analytics_manager = AnalyticsManager(
             self.config["language"]["default_analytics_schema"]
         )

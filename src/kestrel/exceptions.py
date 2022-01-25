@@ -29,6 +29,16 @@ class KestrelInternalError(KestrelException):
 
 
 ################################################################
+#                     Kestrel Session Errors
+################################################################
+
+
+class InvalidConfiguration(KestrelException):
+    def __init__(self, error, suggestion):
+        super().__init__(self, error, suggestion)
+
+
+################################################################
 #                       Kestrel Syntax Errors
 ################################################################
 

@@ -65,8 +65,12 @@ class AbstractDataSourceInterface(ABC):
 
     @staticmethod
     @abstractmethod
-    def list_data_sources():
+    def list_data_sources(config):
         """List data source names accessible from this interface.
+
+        Args:
+            config (dict): a layered list/dict that contains config for the
+            interface and can be edited/updated by the interface.
 
         Returns:
             [str]: A list of data source names accessible from this interface.
@@ -76,7 +80,7 @@ class AbstractDataSourceInterface(ABC):
 
     @staticmethod
     @abstractmethod
-    def query(uri, pattern, session_id):
+    def query(uri, pattern, session_id, config):
         """Sending a data query to a specific data source.
 
         If the store of the session is modified and directly gets the data
@@ -89,8 +93,14 @@ class AbstractDataSourceInterface(ABC):
 
         Args:
             uri (str): the full URI including the scheme and data source name.
+
             pattern (str): the pattern to query (currently we support STIX).
-            session_id (str): id of the session, may be useful for analytics directly writing into the store.
+
+            session_id (str): id of the session, may be useful for analytics
+            directly writing into the store.
+
+            config (dict): a layered list/dict that contains config for the
+            interface and can be edited/updated by the interface.
 
         Returns:
             kestrel.datasource.retstruct.AbstractReturnStruct: returned data.
