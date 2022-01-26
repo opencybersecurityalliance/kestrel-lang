@@ -7,7 +7,7 @@ from kestrel.config import (
     load_user_config,
 )
 from kestrel.utils import update_nested_dict
-from kestrel.exceptions import InvalidConfiguration, InvalidDataSource
+from kestrel.exceptions import InvalidDataSource
 
 PROFILE_PATH_DEFAULT = CONFIG_DIR_DEFAULT / "stixshifter.yaml"
 PROFILE_PATH_ENV_VAR = "KESTREL_STIXSHIFTER_CONFIG"
