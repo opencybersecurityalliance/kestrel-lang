@@ -71,6 +71,7 @@ def get_datasource_from_profiles(profile_name, profiles):
     Returns:
         Bool
     """
+    profile_name = profile_name.lower()
     if profile_name not in profiles:
         raise InvalidDataSource(
             profile_name,

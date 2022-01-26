@@ -85,6 +85,7 @@ environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
 
 import json
 import time
+import copy
 import logging
 
 from stix_shifter.stix_translation import stix_translation
@@ -140,11 +141,12 @@ class StixShifterInterface(AbstractDataSourceInterface):
         bundles = []
         _logger.debug(f"prepare query with ID: {query_id}")
         for i, profile in enumerate(profiles):
-            (
-                connector_name,
-                connection_dict,
-                configuration_dict,
-            ) = get_datasource_from_profiles(profile, config["profiles"])
+            # STIX-shifter will alter the config objects, thus making them not reusable.
+            # So only give stix-shifter a copy of the configs.
+            # Check `modernize` functions in the `stix_shifter_utils` for details.
+            (connector_name, connection_dict, configuration_dict,) = map(
+                copy.deepcopy, get_datasource_from_profiles(profile, config["profiles"])
+            )
 
             data_path_striped = "".join(filter(str.isalnum, profile))
             ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
