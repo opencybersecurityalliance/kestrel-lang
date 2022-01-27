@@ -122,21 +122,27 @@ Elasticsearch, you need to install the corresponding connector such as
 
     $ pip install stix-shifter-modules-elastic-ecs
 
-STIX-shifter Data Source Config
-===============================
+After specific STIX-shifter connector installed, you need to tell
+Kestrel/STIX-shifter where to find your data source and how to connect. This is
+done by providing data source profiles in Kestrel stix-shifter config file or
+through environment variables. Read
+:doc:`source/kestrel_datasource_stixshifter.interface` to find the right
+connector to install and to provide profiles in the config file or environment
+variables.
 
-After installing the STIX-shifter connector, you need to tell a Kestrel
-front-end, e.g., Jupyter, details of the data source you are connecting to.
-This is done by exporting three environment variables for each data source, e.g.:
+Kestrel in Action
+=================
+
+Now the Kestrel runtime is set up and you can run a Kestrel huntflow with the
+command-line utility or launch a Jupyter service for developing a huntbook
+interactively (*huntingspace* activated):
 
 .. code-block:: console
 
-    $ export STIXSHIFTER_HOST101_CONNECTOR=elastic_ecs
-    $ export STIXSHIFTER_HOST101_CONNECTION='{"host":"elastic.securitylog.company.com", "port":9200, "indices":"host101"}'
-    $ export STIXSHIFTER_HOST101_CONFIG='{"auth":{"id":"VuaCfGcBCdbkQm-e5aOx", "api_key":"ui2lp2axTNmsyakw9tvNnw"}}'
+   $ jupyter notebook
 
-(Optional) Kestrel Analytics
-============================
+Optional: Kestrel Analytics
+===========================
 
 Want to have some Kestrel analytics ready at your fingertip? Threat
 intelligence enrichments like SANS API? Domain name lookup for IP addresses?
@@ -151,16 +157,14 @@ repo to start:
 Go to the `analytics` directory and build the analytics docker containers to
 ``APPLY`` in your hunt.
 
-Kestrel in Action
-=================
+Optional: Debug Mode
+====================
 
-Now the Kestrel runtime is set up and you can run a Kestrel huntflow with the
-command-line utility or launch a Jupyter service for developing a huntbook
-interactively (*huntingspace* activated):
-
-.. code-block:: console
-
-   $ jupyter notebook
+You can run Kestrel in debug mode by either use the ``--debug`` flag of the
+Kestrel command-line utility, or create environment variable ``KESTREL_DEBUG``
+with any value before launching Kestrel, which is useful when you use Kestrel
+in Jupyter Notebook. In the debug mode, all runtime data including caches and
+logs at debug level are at ``/tmp/kestrel/``.
 
 .. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/

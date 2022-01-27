@@ -33,12 +33,9 @@ class KestrelInternalError(KestrelException):
 ################################################################
 
 
-class NoValidConfiguration(KestrelException):
-    def __init__(self):
-        super().__init__(
-            "no valid configuration files found",
-            'reinstall package with "pip install". report bug if not solved',
-        )
+class InvalidConfiguration(KestrelException):
+    def __init__(self, error, suggestion):
+        super().__init__(error, suggestion)
 
 
 ################################################################

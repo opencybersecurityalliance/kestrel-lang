@@ -6,6 +6,34 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.1.7 (2022-01-27)
+==================
+
+Added
+-----
+
+- standalone Kestrel config module to support modular and simplified Kestrel config loading flow
+- shareable-state of config between Kestrel session and any Kestrel data source interfaces
+- stix-shifter interface upgraded with shareable-state of config support
+- stix-shifter DEBUG level env var ``KESTREL_STIXSHIFTER_DEBUG``
+- stix-shifter config/profile loading from disk ``~/.config/kestrel/stixshifter.yaml``
+- debug message logging in ``kestrel_datasource_stixshifter``
+- documentation for Kestrel main config with default config linked/shown
+
+Changed
+-------
+
+- default Kestrel config not managed by ``pip`` any more
+- turn main Kestrel from TOML into YAML ``~/.config/kestrel/kestrel.yaml``
+- upgrade Kestrel data source interfaces API with new ``config`` parameter
+- default stix-shifter debug level to INFO
+- documentation upgrade for ``kestrel_datasource_stixshifter``
+
+Fixed
+-----
+
+- Kestrel config upgrade inconsistency #116
+
 1.1.6 (2021-12-15)
 ==================
 

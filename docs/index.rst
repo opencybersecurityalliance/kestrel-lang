@@ -16,6 +16,7 @@ threat intelligence, and public or proprietary analytics.
    tutorial
    installation
    language
+   configuration
    runtime
    theory
    contributing

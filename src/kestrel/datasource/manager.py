@@ -14,16 +14,21 @@ _logger = logging.getLogger(__name__)
 
 
 class DataSourceManager:
-    def __init__(self, default_schema):
+    def __init__(self, config):
         self.scheme_to_interface = {}
-        interfaces = _load_data_source_interfaces()
-        for i in interfaces:
+        self.scheme_to_interface_name = {}
+        config["datasources"] = {}
+        self.config = config
+
+        for n, i in _load_data_source_interfaces().items():
             self.scheme_to_interface.update({s: i for s in i.schemes()})
+            self.scheme_to_interface_name.update({s: n for s in i.schemes()})
+            self.config["datasources"][n] = {}
 
         # important state keeper, needed in Session()
         self.queried_data_sources = [None]
 
-        self.default_schema = default_schema
+        default_schema = self.config["language"]["default_datasource_schema"]
         if default_schema not in self.scheme_to_interface:
             _logger.error(f"default datasource schema {default_schema} not found.")
             raise DataSourceInterfaceNotFound(default_schema)
@@ -32,25 +37,33 @@ class DataSourceManager:
         return list(self.scheme_to_interface.keys())
 
     def list_data_sources_from_scheme(self, scheme):
-        scheme = scheme.lower()
-        if scheme not in self.scheme_to_interface:
-            raise DataSourceInterfaceNotFound(scheme)
-        return self.scheme_to_interface[scheme].list_data_sources()
+        i, c = self._get_interface_with_config(scheme)
+        return self.i.list_data_sources(c)
 
     def query(self, uri, pattern, session_id):
+        default_schema = self.config["language"]["default_datasource_schema"]
         scheme, splitter, path = uri.rpartition("://")
         if not scheme:
-            scheme = self.default_schema
+            scheme = default_schema
             if not splitter:
-                uri = self.default_schema + "://" + uri
+                uri = default_schema + "://" + uri
             else:
-                uri = self.default_schema + uri
+                uri = default_schema + uri
+        i, c = self._get_interface_with_config(scheme)
+        rs = i.query(uri, pattern, session_id, c)
+        self.queried_data_sources.append(uri)
+        return rs
+
+    def _get_interface_with_config(self, scheme):
         scheme = scheme.lower()
         if scheme not in self.scheme_to_interface:
             raise DataSourceInterfaceNotFound(scheme)
-        rs = self.scheme_to_interface[scheme].query(uri, pattern, session_id)
-        self.queried_data_sources.append(uri)
-        return rs
+        if scheme not in self.scheme_to_interface_name:
+            raise DataSourceInterfaceNotFound(scheme)
+        interface_name = self.scheme_to_interface_name[scheme]
+        interface_config = self.config["datasources"][interface_name]
+        interface = self.scheme_to_interface[scheme]
+        return interface, interface_config
 
 
 def _list_data_source_interfaces():
@@ -61,7 +74,7 @@ def _list_data_source_interfaces():
 
 def _load_data_source_interfaces():
     interface_names = _list_data_source_interfaces()
-    interfaces = []
+    interfaces = {}
     for interface_name in interface_names:
         importlib.import_module(interface_name)
         cls = inspect.getmembers(sys.modules[interface_name], _is_interface_class)
@@ -76,13 +89,13 @@ def _load_data_source_interfaces():
         else:
             interface = cls[0][1]
             interface_conflict, scheme_conflict = _find_scheme_conflict(
-                interface, interfaces
+                interface, interfaces.values()
             )
             if interface_conflict:
                 raise ConflictingDataSourceInterfaceScheme(
                     interface, interface_conflict, scheme_conflict
                 )
-            interfaces.append(interface)
+            interfaces[interface_name] = interface
     return interfaces
 
 
