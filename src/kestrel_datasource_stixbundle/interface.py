@@ -29,7 +29,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
         return ["file", "http", "https"]
 
     @staticmethod
-    def list_data_sources():
+    def list_data_sources(config=None):
         """Empty return for now.
 
         May not be meaningful to implement this for this interface. This method
@@ -39,7 +39,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
         return []
 
     @staticmethod
-    def query(uri, pattern, session_id=None):
+    def query(uri, pattern, session_id=None, config=None):
         scheme, _, data_paths = uri.rpartition("://")
         data_paths = data_paths.split(",")
         pattern = fixup_pattern(pattern)
