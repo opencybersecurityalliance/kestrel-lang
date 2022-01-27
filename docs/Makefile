@@ -3,6 +3,8 @@
 # Required Python packages to build:
 # 	- sphinx
 # 	- sphinx-rtd-theme
+# How to build your local docs:
+#   $ make html
 
 # You can set these variables from the command line, and also
 # from the environment for the first two.
