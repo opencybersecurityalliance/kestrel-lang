@@ -38,7 +38,7 @@ class DataSourceManager:
 
     def list_data_sources_from_scheme(self, scheme):
         i, c = self._get_interface_with_config(scheme)
-        return self.i.list_data_sources(c)
+        return i.list_data_sources(c)
 
     def query(self, uri, pattern, session_id):
         default_schema = self.config["language"]["default_datasource_schema"]
