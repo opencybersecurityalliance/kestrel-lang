@@ -28,6 +28,7 @@ will load profiles from 3 places (the later will override the former):
                 connection:
                     host: elastic.securitylog.company.com
                     port: 9200
+                    selfSignedCert: True
                     indices: host101
                 config:
                     auth:
@@ -87,6 +88,7 @@ import json
 import time
 import copy
 import logging
+import importlib
 
 from stix_shifter.stix_translation import stix_translation
 from stix_shifter.stix_transmission import stix_transmission
@@ -103,6 +105,18 @@ from kestrel_datasource_stixshifter.config import (
 )
 
 _logger = logging.getLogger(__name__)
+
+
+def check_module_availability(connector_name):
+    try:
+        connector_module = importlib.import_module(
+            "stix_shifter_modules." + connector_name + ".entry_point"
+        )
+    except:
+        raise DataSourceError(
+            f'STIX shifter connector for "{connector_name}" is not installed',
+            "please install the corresponding STIX shifter connector Python package.",
+        )
 
 
 class StixShifterInterface(AbstractDataSourceInterface):
@@ -147,6 +161,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
             (connector_name, connection_dict, configuration_dict,) = map(
                 copy.deepcopy, get_datasource_from_profiles(profile, config["profiles"])
             )
+
+            check_module_availability(connector_name)
 
             data_path_striped = "".join(filter(str.isalnum, profile))
             ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
