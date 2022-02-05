@@ -1,5 +1,4 @@
 from ipykernel.kernelbase import Kernel
-import pandas as pd
 import os
 import logging
 
@@ -48,7 +47,7 @@ class KestrelKernel(Kernel):
                 self.send_response(
                     self.iopub_socket,
                     "display_data",
-                    {"data": {"text/html": output_html}},
+                    {"data": {"text/html": output_html}, "metadata": {}},
                 )
 
             except Exception as e:

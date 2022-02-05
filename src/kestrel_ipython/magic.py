@@ -1,10 +1,7 @@
 import sys
 import re
 
-from IPython.core import magic_arguments
 from IPython.core.magic import (
-    line_magic,
-    cell_magic,
     line_cell_magic,
     Magics,
     magics_class,
