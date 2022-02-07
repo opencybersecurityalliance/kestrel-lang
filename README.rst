@@ -32,7 +32,7 @@ If you want to install from source code:
 
 .. code-block:: console
 
-    $ git clone git://github.com/IBM/kestrel-jupyter
+    $ git clone git://github.com/opencybersecurityalliance/kestrel-jupyter
     $ cd kestrel-jupyter
     $ pip install .
     $ python -m kestrel_jupyter_kernel.setup
