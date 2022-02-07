@@ -6,13 +6,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
-Unreleased
-==========
+1.0.2 (2022-02-07)
+==================
 
 Added
 -----
 
 - Entire call stack in log if exception occurred.
+
+Fixed
+-----
+
+- Jupyter Lab not display results #4
 
 1.0.1 (2021-06-22)
 ==================
