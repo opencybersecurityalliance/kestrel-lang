@@ -48,7 +48,7 @@ to Jupyter Lab yet.
 
 Write your hello world hunt:
 
-.. code-block::
+.. code-block:: elixir
 
     newvar = NEW process ["cmd.exe", "reg.exe"]
     DISP newvar
