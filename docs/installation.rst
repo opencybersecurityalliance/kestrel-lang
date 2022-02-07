@@ -166,7 +166,6 @@ with any value before launching Kestrel, which is useful when you use Kestrel
 in Jupyter Notebook. In the debug mode, all runtime data including caches and
 logs at debug level are at ``/tmp/kestrel/``.
 
-.. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _Github repo: https://github.com/opencybersecurityalliance/kestrel-lang
