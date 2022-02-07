@@ -1,10 +1,12 @@
 from ipykernel.kernelbase import Kernel
-import pandas as pd
 import os
 import logging
 
 from kestrel.session import Session
 from kestrel_jupyter_kernel.config import LOG_FILE_NAME
+
+
+_logger = logging.getLogger(__name__)
 
 
 class KestrelKernel(Kernel):
@@ -20,7 +22,7 @@ class KestrelKernel(Kernel):
         self.kestrel_session = Session()
         _set_logging(
             self.kestrel_session.debug_mode,
-            os.path.join(self.kestrel_session.runtime_directory, LOG_FILE_NAME)
+            os.path.join(self.kestrel_session.runtime_directory, LOG_FILE_NAME),
         )
 
     def do_complete(self, code, cursor_pos):
@@ -45,10 +47,11 @@ class KestrelKernel(Kernel):
                 self.send_response(
                     self.iopub_socket,
                     "display_data",
-                    {"data": {"text/html": output_html}},
+                    {"data": {"text/html": output_html}, "metadata": {}},
                 )
 
             except Exception as e:
+                _logger.error("Exception occurred", exc_info=True)
                 self.send_response(
                     self.iopub_socket, "stream", {"name": "stderr", "text": str(e)}
                 )
