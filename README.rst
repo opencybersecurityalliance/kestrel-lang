@@ -41,7 +41,10 @@ How to Use Kestrel Jupyter Notebook Kernel
 ==========================================
 
 Start Jupyter with ``jupyter notebook`` and start a new notebook with kernel
-``kestrel``.
+``kestrel``. Note if you are using ``jupyter lab``, most functionalities are
+there such as code execution, error prompot, and context-aware auto-complete,
+but the syntax highlighting is not ported from our Jupyter Notebook environment
+to Jupyter Lab yet.
 
 Write your hello world hunt:
 
