@@ -26,6 +26,8 @@ A Kestrel data source interface is a Python package with the following rules:
 
 from abc import ABC, abstractmethod
 
+MODULE_PREFIX = "kestrel_datasource_"
+
 
 class AbstractDataSourceInterface(ABC):
     """The abstract class for building a data source interface.
@@ -97,7 +99,7 @@ class AbstractDataSourceInterface(ABC):
             pattern (str): the pattern to query (currently we support STIX).
 
             session_id (str): id of the session, may be useful for analytics
-            directly writing into the store.
+              directly writing into the store.
 
             config (dict): a layered list/dict that contains config for the
               interface and can be edited/updated by the interface.

@@ -239,9 +239,7 @@ class Session(object):
         self.symtable = {}
 
         self.data_source_manager = DataSourceManager(self.config)
-        self.analytics_manager = AnalyticsManager(
-            self.config["language"]["default_analytics_schema"]
-        )
+        self.analytics_manager = AnalyticsManager(self.config)
         iso_ts_regex = r"\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}Z?)?)?)?)?)?"
         self._iso_ts = re.compile(iso_ts_regex)
 

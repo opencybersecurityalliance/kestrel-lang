@@ -14,16 +14,16 @@ _logger = logging.getLogger(__name__)
 
 
 class AnalyticsManager:
-    def __init__(self, default_schema):
+    def __init__(self, config):
         self.scheme_to_interface = {}
         interfaces = _load_analytics_interfaces()
         for i in interfaces:
             self.scheme_to_interface.update({s: i for s in i.schemes()})
 
-        self.default_schema = default_schema
-        if default_schema not in self.scheme_to_interface:
-            _logger.error(f"default analytics schema {default_schema} not found.")
-            raise AnalyticsInterfaceNotFound(default_schema)
+        self.default_schema = config["language"]["default_analytics_schema"]
+        if self.default_schema not in self.scheme_to_interface:
+            _logger.error(f"default analytics schema {self.default_schema} not found.")
+            raise AnalyticsInterfaceNotFound(self.default_schema)
 
     def schemes(self):
         return list(self.scheme_to_interface.keys())

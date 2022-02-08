@@ -26,6 +26,8 @@ A Kestrel analytics interface is a Python package with the following rules:
 
 from abc import ABC, abstractmethod
 
+MODULE_PREFIX = "kestrel_analytics_"
+
 
 class AbstractAnalyticsInterface(ABC):
     """The abstract class for building an analytics interface."""
@@ -51,8 +53,12 @@ class AbstractAnalyticsInterface(ABC):
 
     @staticmethod
     @abstractmethod
-    def list_analytics():
+    def list_analytics(config):
         """List analytics names accessible from this interface.
+
+        Args:
+            config (dict): a layered list/dict that contains config for the
+              interface and can be edited/updated by the interface.
 
         Returns:
             [str]: A list of analytics names accessible from this interface.
@@ -62,7 +68,7 @@ class AbstractAnalyticsInterface(ABC):
 
     @staticmethod
     @abstractmethod
-    def execute(uri, argument_variables, session_id=None, parameters=None):
+    def execute(uri, argument_variables, config, session_id=None, parameters=None):
         """Execute an analytics.
 
         An analytics updates argument variables in place with revised
@@ -83,8 +89,14 @@ class AbstractAnalyticsInterface(ABC):
 
         Args:
             uri (str): the full URI including the scheme and analytics name.
+
             argument_variables ([kestrel.symboltable.VarStruct]): the list of Kestrel variables as arguments.
+
+            config (dict): a layered list/dict that contains config for the
+              interface and can be edited/updated by the interface.
+
             session_id (str): id of the session, may be useful for analytics directly writing into the store.
+
             parameters (dict): analytics execution parameters in key-value pairs ``{"str":"str"}``.
 
         Returns:
