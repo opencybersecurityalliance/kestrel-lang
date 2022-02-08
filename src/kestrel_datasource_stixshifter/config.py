@@ -59,17 +59,17 @@ def load_profiles_from_env_var():
 
 
 def get_datasource_from_profiles(profile_name, profiles):
-    """Validate profile data
+    """Validate and retrieve profile data
 
-    Validate profile data. The data should be a dict with "connector",
-    "connection", "config" keys, and appropriate values.
+    Validate and retrieve profile data. The data should be a dict with
+    "connector", "connection", "config" keys, and appropriate values.
 
     Args:
         profile_name (str): The name of the profile.
         profiles (dict): name to profile (dict) mapping.
 
     Returns:
-        Bool
+        STIX-shifter config triplet
     """
     profile_name = profile_name.lower()
     if profile_name not in profiles:

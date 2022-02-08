@@ -1,8 +1,11 @@
 """The STIX shifter data source package provides access to data sources via
 `stix-shifter`_.
 
-Before use, one need to install any target stix-shifter connector packages such
-as ``stix-shifter-modules-carbonblack``. Check all `avaliable connectors`_ and
+Optional before use: install any target stix-shifter connector packages such as
+``stix-shifter-modules-carbonblack``. This STIX shifter interface will try to
+guess the target connector and install if not exist, but the connector naming
+guess may not always be correct. Manual install is required if a user see error
+plus suggestion to install a connector. Check all `avaliable connectors`_ and
 their `pypi packages <https://pypi.org/search/?q=stix-shifter-modules&o=>`_.
 
 The STIX Shifter interface can reach multiple data sources. The user needs to
@@ -84,6 +87,7 @@ environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
 
 """
 
+import pip
 import json
 import time
 import copy
@@ -109,14 +113,22 @@ _logger = logging.getLogger(__name__)
 
 def check_module_availability(connector_name):
     try:
-        connector_module = importlib.import_module(
+        importlib.import_module(
             "stix_shifter_modules." + connector_name + ".entry_point"
         )
     except:
-        raise DataSourceError(
-            f'STIX shifter connector for "{connector_name}" is not installed',
-            "please install the corresponding STIX shifter connector Python package.",
-        )
+        package_name = "stix-shifter-modules-" + connector_name.replace("_", "-")
+        pip.main(["install", package_name])
+        try:
+            importlib.import_module(
+                "stix_shifter_modules." + connector_name + ".entry_point"
+            )
+        except:
+            raise DataSourceError(
+                f'STIX shifter connector for "{connector_name}" is not installed '
+                + "and Kestrel cannot figure out the correct Python package name for install",
+                "please manually install the corresponding STIX shifter connector Python package.",
+            )
 
 
 class StixShifterInterface(AbstractDataSourceInterface):
