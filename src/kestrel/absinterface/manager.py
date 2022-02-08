@@ -40,7 +40,29 @@ class InterfaceManager:
     def schemes(self):
         return list(self.scheme_to_interface.keys())
 
-    def get_default_schema(self):
+    def _parse_and_complete_uri(self, uri):
+        default_schema = self._get_default_schema()
+        scheme, splitter, path = uri.rpartition("://")
+        if not scheme:
+            scheme = default_schema
+            if not splitter:
+                uri = default_schema + "://" + uri
+            else:
+                uri = default_schema + uri
+        return scheme, uri
+
+    def _get_interface_with_config(self, scheme):
+        scheme = scheme.lower()
+        if scheme not in self.scheme_to_interface:
+            raise nonexist_interface_exception(scheme)
+        if scheme not in self.scheme_to_interface_name:
+            raise nonexist_interface_exception(scheme)
+        interface_name = self.scheme_to_interface_name[scheme]
+        interface_config = self.config[self.config_root_key][interface_name]
+        interface = self.scheme_to_interface[scheme]
+        return interface, interface_config
+
+    def _get_default_schema(self):
         # this method is required to handle dynamic config changes
         partial_config_path = self.config
         for path_component in self.default_schema_config_path:
@@ -52,28 +74,6 @@ class InterfaceManager:
             raise self.nonexist_interface_exception(default_schema)
 
         return default_schema
-
-    def parse_and_complete_uri(self, uri):
-        default_schema = self.get_default_schema()
-        scheme, splitter, path = uri.rpartition("://")
-        if not scheme:
-            scheme = default_schema
-            if not splitter:
-                uri = default_schema + "://" + uri
-            else:
-                uri = default_schema + uri
-        return scheme, uri
-
-    def get_interface_with_config(self, scheme):
-        scheme = scheme.lower()
-        if scheme not in self.scheme_to_interface:
-            raise nonexist_interface_exception(scheme)
-        if scheme not in self.scheme_to_interface_name:
-            raise nonexist_interface_exception(scheme)
-        interface_name = self.scheme_to_interface_name[scheme]
-        interface_config = self.config[self.config_root_key][interface_name]
-        interface = self.scheme_to_interface[scheme]
-        return interface, interface_config
 
 
 def _load_interfaces(

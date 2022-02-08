@@ -24,12 +24,12 @@ class DataSourceManager(InterfaceManager):
         self.queried_data_sources = [None]
 
     def list_data_sources_from_scheme(self, scheme):
-        i, c = self.get_interface_with_config(scheme)
+        i, c = self._get_interface_with_config(scheme)
         return i.list_data_sources(c)
 
     def query(self, uri, pattern, session_id):
-        scheme, uri = self.parse_and_complete_uri(uri)
-        i, c = self.get_interface_with_config(scheme)
+        scheme, uri = self._parse_and_complete_uri(uri)
+        i, c = self._get_interface_with_config(scheme)
         rs = i.query(uri, pattern, session_id, c)
         self.queried_data_sources.append(uri)
         return rs
