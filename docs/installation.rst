@@ -113,7 +113,7 @@ interactively (*huntingspace* activated):
 
 .. code-block:: console
 
-   $ jupyter notebook
+    $ jupyter notebook
 
 Optional: Kestrel Analytics
 ===========================
