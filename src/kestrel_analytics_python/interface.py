@@ -1,7 +1,7 @@
 """Python analytics interface executes Python function as Kestrel analytics.
 
-Using a Python Analytics
-------------------------
+Use a Python Analytics
+----------------------
 
 Create a profile for each analytics in the python analytics interface config
 file (YAML):
