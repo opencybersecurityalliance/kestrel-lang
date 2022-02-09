@@ -56,6 +56,7 @@ import time
 import math
 import lark
 from datetime import datetime
+from contextlib import AbstractContextManager
 
 from kestrel.exceptions import (
     KestrelSyntaxError,
@@ -83,7 +84,7 @@ from kestrel.analytics import AnalyticsManager
 _logger = logging.getLogger(__name__)
 
 
-class Session(object):
+class Session(AbstractContextManager):
     """Kestrel Session class
 
     A session object needs to be instantiated to create a Kestrel runtime space.
@@ -516,9 +517,6 @@ class Session(object):
             displays.append(DisplayBlockSummary(vars_summary, execution_time_sec))
 
         return displays
-
-    def __enter__(self):
-        return self
 
     def __exit__(self, exception_type, exception_value, traceback):
         self.close()
