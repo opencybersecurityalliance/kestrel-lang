@@ -138,7 +138,7 @@ def load_profiles():
     config = load_user_config(PROFILE_PATH_ENV_VAR, PROFILE_PATH_DEFAULT)
     if config and "profiles" in config:
         _logger.debug(f"stix-shifter profiles found in config file")
-        profiles_from_file = config["profiles"]
+        profiles_from_file = {k.lower(): v for k, v in config["profiles"].items()}
     else:
         _logger.debug(
             "either config file does not exist or no stix-shifter profile found in config file. This may indicate a config syntax error if config file exists."
