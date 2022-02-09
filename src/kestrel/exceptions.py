@@ -253,3 +253,10 @@ class InvalidAnalyticsInput(KestrelException):
         super().__init__(
             f'received unsupported type "{type_received}"; expected one of {typelist}'
         )
+
+
+class InvalidAnalyticsOutput(KestrelException):
+    def __init__(self, analytcs_name, return_type):
+        super().__init__(
+            f"unsupported return type {return_type} from analytics: {analytics_name}"
+        )

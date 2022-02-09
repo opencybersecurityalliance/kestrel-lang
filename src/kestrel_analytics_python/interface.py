@@ -1,23 +1,15 @@
 """Python analytics interface executes Python function as Kestrel analytics.
 
-An analytics using this interface should follow the rules:
+Using a Python Analytics
+------------------------
 
-#. The analytics is a Python function.
-
-#. The function takes in one or more Kestrel variable dumps in Pandas dataframes.
-
-#. The function returns the same amount of updated Kestrel variable dumps in
-   Pandas dataframe, plus a Kestrel display object (or an HTML element in str,
-   which will be wrapped into a Kestrel disply object by the interface) if any.
-
-#. Any parameters in the APPLY command will be passed in as environment varibles.
-
-Put your profiles in the python analytics interface config file (YAML):
+Create a profile for each analytics in the python analytics interface config
+file (YAML):
 
 - Default path: ``~/.config/kestrel/pythonanalytics.yaml``.
 - A customized path specified in the environment variable ``KESTREL_PYTHON_ANALYTICS_CONFIG``.
 
-Example of stix-shifter interface config file containing profiles:
+Example of the python analytics interface config file:
 
 .. code-block:: yaml
 
@@ -29,6 +21,49 @@ Example of stix-shifter interface config file containing profiles:
             module: /home/user/kestrel-analytics/analytics/suspiciousscoring/analytics.py
             func: analytics
 
+Develop a Python Analytics
+--------------------------
+
+A Python analytics is a python function that follows the rules:
+
+#. The function takes in one or more Kestrel variable dumps in Pandas dataframes.
+
+#. The return of the function is a tuple containing either or both:
+
+    - Updated variables. The number of variables can be either 0, e.g.,
+      visualization analytics, or the same number as input Kestrel variables.
+      The order of the updated variables should follow the same order as input
+      variables.
+
+    - An object to display, which can be any of the following types:
+
+        - Kestrel display object
+
+        - HTML element as a string
+
+        - Matplotlib figure (by default, pandas DataFrame plots use this)
+
+   The display object can be either before or after updated variables, if both exist.
+
+#. Any parameters in the APPLY command will be passed in as environment
+   varibles. The names of the environment variables are the exact parameter keys
+   given in the ``APPLY`` command. For example, the following command
+
+   .. code-block::
+
+       APPLY python://a1 ON var1 WITH XPARAM=src_ref.value, YPARAM=number_observed
+
+   will create environment variables ``$XPARAM`` with value ``src_ref.value``
+   and ``$YPARAM`` with value ``number_observed`` to be used by the analytics
+   ``a1``. After the execution of the analytics, the environment variables
+   will be roll back to the original state.
+
+#. The Python function could spawn other processes or execute other binaries,
+   where the Python function just acts like a wrapper. Check our `domain name
+   lookup analytics`_ as an example.
+
+.. _domain name lookup analytics: https://github.com/opencybersecurityalliance/kestrel-analytics/tree/release/analytics/domainnamelookup
+
 """
 
 import os
@@ -36,11 +71,13 @@ import sys
 import pathlib
 import logging
 import inspect
+import matplotlib
 import subprocess
 from collections.abc import Mapping
 from pandas import DataFrame
 from importlib.util import spec_from_file_location, module_from_spec
 from contextlib import AbstractContextManager
+from io import StringIO
 
 from kestrel.codegen.display import AbstractDisplay, DisplayHtml
 from kestrel.analytics import AbstractAnalyticsInterface
@@ -50,6 +87,7 @@ from kestrel.exceptions import (
     InvalidAnalyticsInterfaceImplementation,
     AnalyticsError,
     InvalidAnalyticsArgumentCount,
+    InvalidAnalyticsOutput,
 )
 from kestrel_analytics_python.config import (
     get_profile,
@@ -100,7 +138,7 @@ class PythonAnalytics(AbstractContextManager):
 
     .. code-block:: python
 
-        with PythonAnalytics(profile_name, profiles) as func:
+        with PythonAnalytics(profile_name, profiles, parameters) as func:
             func(input_kestrel_variables)
 
     #. Validate and retrieve profile data. The data should be a dict with "module"
@@ -111,13 +149,15 @@ class PythonAnalytics(AbstractContextManager):
 
     #. Execute the analytics and process return intelligently.
 
-    #. Clean the environment, especially additional sys.path required by the analytics.
+    #. Clean the environment.
 
     Args:
 
         profile_name (str): The name of the profile/analytics.
 
         profiles (dict): name to profile (dict) mapping.
+
+        parameters (dict): key-value pairs of parameters.
 
     """
 
@@ -194,10 +234,12 @@ class PythonAnalytics(AbstractContextManager):
                         f'analytics "{self.name}" yielded a string return. treat it as an HTML element.'
                     )
                     output_dsps.append(DisplayHtml(x))
+                elif isinstance(x, matplotlib.figure.Figure):
+                    x_svg = StringIO()
+                    x.savefig(x_svg, format="svg")
+                    output_dsps.append(DisplayHtml(x_svg.getvalue()))
                 else:
-                    raise AnalyticsError(
-                        f'analytics "{self.name}" yielded invalid return: neither DataFrame nor Kestrel Display object'
-                    )
+                    raise InvalidAnalyticsOutput(self.name, type(x))
 
             if not outputs:
                 raise AnalyticsError(f'analytics "{self.name}" yield nothing')
