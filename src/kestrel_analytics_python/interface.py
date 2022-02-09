@@ -87,7 +87,9 @@ class PythonInterface(AbstractAnalyticsInterface):
             )
 
         with PythonAnalytics(profile, config["profiles"]) as func:
-            func(argument_variables)
+            display = func(argument_variables)
+
+        return display
 
 
 class PythonAnalytics(AbstractContextManager):
@@ -216,7 +218,6 @@ class PythonAnalytics(AbstractContextManager):
                     v.store.reassign(v.entity_table, o_dict)
 
             display = output_dsps[0] if output_dsps else None
-            _logger.debug(display.html)
             return display
 
     def _load_module(self):
