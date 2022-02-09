@@ -87,12 +87,13 @@ environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
 
 """
 
-import pip
+import sys
 import json
 import time
 import copy
 import logging
 import importlib
+import subprocess
 
 from stix_shifter.stix_translation import stix_translation
 from stix_shifter.stix_transmission import stix_transmission
@@ -118,7 +119,7 @@ def check_module_availability(connector_name):
         )
     except:
         package_name = "stix-shifter-modules-" + connector_name.replace("_", "-")
-        pip.main(["install", package_name])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
         try:
             importlib.import_module(
                 "stix_shifter_modules." + connector_name + ".entry_point"
@@ -273,6 +274,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
             _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
             with ingestfile.open("w") as ingest:
                 json.dump(stixbundle, ingest, indent=4)
-            bundles.append(str(ingestfile.resolve()))
+            bundles.append(str(ingestfile.expanduser().resolve()))
 
         return ReturnFromFile(query_id, bundles)

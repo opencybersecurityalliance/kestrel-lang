@@ -200,7 +200,7 @@ class Session(AbstractContextManager):
             tmp_dir = sys_tmp_dir / (
                 self.config["session"]["cache_directory_prefix"] + self.session_id
             )
-            self.runtime_directory = tmp_dir.resolve()
+            self.runtime_directory = tmp_dir.expanduser().resolve()
             if tmp_dir.exists():
                 if tmp_dir.is_dir():
                     _logger.debug(
@@ -474,7 +474,7 @@ class Session(AbstractContextManager):
                         stmt, self.data_source_manager.queried_data_sources[-1]
                     )
                 if stmt["command"] == "load" or stmt["command"] == "save":
-                    stmt["path"] = pathlib.Path(stmt["path"]).resolve()
+                    stmt["path"] = pathlib.Path(stmt["path"]).expanduser().resolve()
                 if stmt["command"] == "find":
                     check_semantics_on_find(stmt, self.symtable[stmt["input"]].type)
                 if "attrs" in stmt:

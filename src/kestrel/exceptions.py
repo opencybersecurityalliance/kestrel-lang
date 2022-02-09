@@ -240,6 +240,13 @@ class ConflictingAnalyticsInterfaceScheme(KestrelException):
         )
 
 
+class InvalidAnalyticsArgumentCount(KestrelException):
+    def __init__(self, analytics_name, num_received, num_expected):
+        super().__init__(
+            f'the analytics "{analytics_name}" takes {num_expected} Kestrel variables, not {num_received} as given in APPLY.'
+        )
+
+
 class InvalidAnalyticsInput(KestrelException):
     def __init__(self, type_received, types_expected):
         typelist = ", ".join([f'"{t}"' for t in types_expected])
