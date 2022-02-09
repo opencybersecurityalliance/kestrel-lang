@@ -80,6 +80,12 @@ def get_datasource_from_profiles(profile_name, profiles):
         )
     else:
         profile = profiles[profile_name]
+        if not profile:
+            raise InvalidDataSource(
+                profile_name,
+                "stixshifter",
+                f"the profile is empty",
+            )
         _logger.debug(f"profile to use: {profile}")
         if "connector" not in profile:
             raise InvalidDataSource(
