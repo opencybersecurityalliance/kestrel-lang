@@ -37,6 +37,7 @@ import pathlib
 import logging
 import inspect
 import subprocess
+from collections.abc import Mapping
 from pandas import DataFrame
 from importlib.util import spec_from_file_location, module_from_spec
 from contextlib import AbstractContextManager
@@ -86,7 +87,7 @@ class PythonInterface(AbstractAnalyticsInterface):
                 f"interface {__package__} should not process scheme {scheme}"
             )
 
-        with PythonAnalytics(profile, config["profiles"]) as func:
+        with PythonAnalytics(profile, config["profiles"], parameters) as func:
             display = func(argument_variables)
 
         return display
@@ -120,30 +121,43 @@ class PythonAnalytics(AbstractContextManager):
 
     """
 
-    def __init__(self, profile_name, profiles):
+    def __init__(self, profile_name, profiles, parameters):
         self.name = profile_name
+        self.parameters = parameters
         self.module_name, self.func_name = get_profile(profile_name, profiles)
         self.module_path = pathlib.Path(self.module_name).expanduser().resolve()
         self.module_path_dir_str = str(self.module_path.parent)
 
     def __enter__(self):
+        # accommodate any other Python modules to load in the dir
+        self.syspath = sys.path.copy()
         sys.path.append(self.module_path_dir_str)
-        self.kestrel_cwd = os.getcwd()
+
+        # accommodate any other executables or data to load in the dir
+        self.cwd_original = os.getcwd()
         os.chdir(self.module_path_dir_str)
 
+        # passing parameters as environment variables
+        self.environ_original = os.environ.copy()
+        if self.parameters:
+            if isinstance(self.parameters, Mapping):
+                _logger.debug(f"setting parameters as env vars: {self.parameters}")
+                for k, v in self.parameters.items():
+                    os.environ[k] = ",".join(v) if isinstance(v, list) else v
+            else:
+                raise InvalidAnalyticsInterfaceImplementation(
+                    "parameters should be passed in as a Mapping"
+                )
+
+        # time to load the analytics function
         self.analytics_function = self._locate_analytics_func(self._load_module())
 
         return self._execute
 
     def __exit__(self, exception_type, exception_value, traceback):
-        if sys.path[-1] == self.module_path_dir_str:
-            sys.path.pop()
-        else:
-            raise InvalidAnalyticsInterfaceImplementation(
-                "strange: analytics module directory not found on path."
-            )
-
-        os.chdir(self.kestrel_cwd)
+        sys.path = self.syspath
+        os.chdir(self.cwd_original)
+        os.environ = self.environ_original
 
     def _execute(self, arg_variables):
         """Execute the analytics
