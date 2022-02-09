@@ -119,6 +119,10 @@ def check_module_availability(connector_name):
         )
     except:
         package_name = "stix-shifter-modules-" + connector_name.replace("_", "-")
+        _logger.info(
+            f'installing missing stix-shifter connector "{connector_name}" '
+            f'with possible Python package "{package_name}"'
+        )
         subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
         try:
             importlib.import_module(
@@ -127,7 +131,7 @@ def check_module_availability(connector_name):
         except:
             raise DataSourceError(
                 f'STIX shifter connector for "{connector_name}" is not installed '
-                + "and Kestrel cannot figure out the correct Python package name for install",
+                "and Kestrel cannot figure out the correct Python package name for install",
                 "please manually install the corresponding STIX shifter connector Python package.",
             )
 
