@@ -31,8 +31,7 @@ will load profiles from 3 places (the later will override the former):
                 connection:
                     host: elastic.securitylog.company.com
                     port: 9200
-                    # stix-shifter will NOT verify certificate with the following flag
-                    selfSignedCert: false
+                    selfSignedCert: false # this means do NOT check cert
                     indices: host101
                 config:
                     auth:
