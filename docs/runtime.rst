@@ -11,3 +11,4 @@ Runtime API
    source/kestrel_datasource_stixshifter.interface
    source/kestrel.analytics.interface
    source/kestrel_analytics_docker.interface
+   source/kestrel_analytics_python.interface
