@@ -234,7 +234,12 @@ class PythonAnalytics(AbstractContextManager):
                 profile, len(input_dataframes), self._get_var_count()
             )
         else:
-            outputs = self.analytics_function(*input_dataframes)
+            try:
+                outputs = self.analytics_function(*input_dataframes)
+            except Exception as e:
+                error = str(e)
+                raise AnalyticsError(f"{self.name} failed: {error}")
+
             if not isinstance(outputs, tuple):
                 outputs = (outputs,)
 
