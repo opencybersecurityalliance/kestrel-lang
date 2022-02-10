@@ -13,21 +13,30 @@ Added
 -----
 
 - Kestrel main package
+
     - matplotlib figure support in Kestrel Display Objects
     - analytics interface upgraded with config shared to Kestrel
+    
 - Python analytics interface
+
     - minimal requirement design for writing a Python analytics
     - analytics function environment setup and destroy
     - support for a variety of display object outputs
     - parameters support
     - stack tracing for exception inside a Python analytics
+    
 - STIX-shifter data source interface
+
     - automatic STIX-shifter connector install
+    
         - connector name guess
         - connector origin verification
         - comprehensive error and suggestion if automatic install failed
+        
     - pretty print for exception inside a Docker analytics
-- documentation:
+    
+- documentation
+
     - Python analytics interface
     - Kestrel debug page
     - flag to disable certificate verification in STIX-shifter profile example
