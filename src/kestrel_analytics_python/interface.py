@@ -77,9 +77,8 @@ from collections.abc import Mapping
 from pandas import DataFrame
 from importlib.util import spec_from_file_location, module_from_spec
 from contextlib import AbstractContextManager
-from io import StringIO
 
-from kestrel.codegen.display import AbstractDisplay, DisplayHtml
+from kestrel.codegen.display import AbstractDisplay, DisplayHtml, DisplayFigure
 from kestrel.analytics import AbstractAnalyticsInterface
 from kestrel.exceptions import (
     InvalidAnalytics,
@@ -235,9 +234,8 @@ class PythonAnalytics(AbstractContextManager):
                     )
                     output_dsps.append(DisplayHtml(x))
                 elif isinstance(x, matplotlib.figure.Figure):
-                    x_svg = StringIO()
-                    x.savefig(x_svg, format="svg")
-                    output_dsps.append(DisplayHtml(x_svg.getvalue()))
+                    _logger.info(f'analytics "{self.name}" yielded a figure.')
+                    output_dsps.append(DisplayFigure(x))
                 else:
                     raise InvalidAnalyticsOutput(self.name, type(x))
 
