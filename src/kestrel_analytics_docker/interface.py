@@ -115,7 +115,7 @@ class DockerInterface(AbstractAnalyticsInterface):
                 environment=env,
             )
         except docker.errors.ContainerError as e:
-            error = str(e)
+            error = e.stderr.decode("utf-8")
             _logger.error(error)
             raise AnalyticsError(f"{analytics_name} failed: {error}")
 
