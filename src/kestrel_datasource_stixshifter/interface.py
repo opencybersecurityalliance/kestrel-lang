@@ -76,7 +76,6 @@ enabled by default. To record debug level logs of stix-shifter, create
 environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
 
 .. _stix-shifter: https://github.com/opencybersecurityalliance/stix-shifter
-.. _STIX-shifter connector: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md#available-connectors
 
 """
 
