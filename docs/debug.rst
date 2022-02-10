@@ -63,7 +63,7 @@ to print out some value:
 
     .. code-block:: console
 
-        $ pip install .
+        $ pip install -e .
 
 #. Rerun Kestrel (command-line utility or restart Kestrel kernel in Jupyter)
    and check the entry you logged at ``/tmp/kestrel/session.log``.
