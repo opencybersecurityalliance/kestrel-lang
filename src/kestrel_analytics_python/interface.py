@@ -26,7 +26,7 @@ Develop a Python Analytics
 
 A Python analytics is a python function that follows the rules:
 
-#. The function takes in one or more Kestrel variable dumps in Pandas dataframes.
+#. The function takes in one or more Kestrel variable dumps in Pandas DataFrames.
 
 #. The return of the function is a tuple containing either or both:
 
@@ -41,22 +41,39 @@ A Python analytics is a python function that follows the rules:
 
         - HTML element as a string
 
-        - Matplotlib figure (by default, pandas DataFrame plots use this)
+        - Matplotlib figure (by default, Pandas DataFrame plots use this)
 
-   The display object can be either before or after updated variables, if both exist.
+   The display object can be either before or after updated variables. In other
+   words, if the input variables are ``var1``, ``var2``, and ``var3``, the
+   return of the analytics can be either of the following:
 
-#. Any parameters in the APPLY command will be passed in as environment
-   varibles. The names of the environment variables are the exact parameter keys
-   given in the ``APPLY`` command. For example, the following command
+   .. code-block:: python
+
+       # the analytics enriches variables without returning a display object
+       return var1_updated, var3_updated, var3_updated
+
+       # this is a visualization analytics and no variable updates
+       return display_obj
+
+       # the analytics does both variable updates and visualization
+       return var1_updated, var3_updated, var3_updated, display_obj
+
+       # the analytics does both variable updates and visualization
+       return display_obj, var1_updated, var3_updated, var3_updated
+
+
+#. Parameters in the APPLY command are passed in as environment varibles. The
+   names of the environment variables are the exact parameter keys given in the
+   ``APPLY`` command. For example, the following command
 
    .. code-block::
 
        APPLY python://a1 ON var1 WITH XPARAM=src_ref.value, YPARAM=number_observed
 
-   will create environment variables ``$XPARAM`` with value ``src_ref.value``
-   and ``$YPARAM`` with value ``number_observed`` to be used by the analytics
-   ``a1``. After the execution of the analytics, the environment variables
-   will be roll back to the original state.
+   creates environment variables ``$XPARAM`` with value ``src_ref.value`` and
+   ``$YPARAM`` with value ``number_observed`` to be used by the analytics
+   ``a1``. After the execution of the analytics, the environment variables will
+   be roll back to the original state.
 
 #. The Python function could spawn other processes or execute other binaries,
    where the Python function just acts like a wrapper. Check our `domain name
