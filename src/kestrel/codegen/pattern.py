@@ -66,12 +66,20 @@ def build_pattern(
         _logger.debug(f'pattern body dereferred: "{pattern_body}"')
 
         if pattern_body and not time_range:
-            try:
-                ref_var_time_ranges = [
-                    _get_variable_time_range(store, symtable, var_name)
-                    for var_name in references.keys()
-                ]
+            ref_var_time_ranges = []
 
+            for var_name in references.keys():
+                try:
+                    _tr = _get_variable_time_range(store, symtable, var_name)
+                except InvalidAttribute:
+                    _tr = None
+                    _logger.warning(
+                        f"pattern time range searching failed on variable {var_name}"
+                    )
+                else:
+                    ref_var_time_ranges.append(_tr)
+
+            if ref_var_time_ranges:
                 start = min([t[0] for t in ref_var_time_ranges])
                 end = max([t[1] for t in ref_var_time_ranges])
 
@@ -83,12 +91,6 @@ def build_pattern(
 
                 time_range = (start_stix, stop_stix)
                 _logger.debug(f"pattern time range computed: {time_range}")
-
-            except InvalidAttribute:
-                time_range = None
-                _logger.warning(
-                    f"pattern time range searching failed on variable {var_name}"
-                )
 
     if pattern_body:
         if time_range:
@@ -160,9 +162,30 @@ def _get_variable_time_range(store, symtable, var_name):
     except InvalidAttr as e:
         raise InvalidAttribute(e.message)
     life_span = dedup_dicts(store_return)
-    start = min([dateutil.parser.isoparse(e["first_observed"]) for e in life_span])
-    end = max([dateutil.parser.isoparse(e["last_observed"]) for e in life_span])
-    return start, end
+    first_observed, last_observed = [], []
+    for e in life_span:
+        if e["first_observed"]:
+            try:
+                tsf = dateutil.parser.isoparse(e["first_observed"])
+            except:
+                pass
+            else:
+                first_observed.append(tsf)
+        if e["last_observed"]:
+            try:
+                tsl = dateutil.parser.isoparse(e["last_observed"])
+            except:
+                pass
+            else:
+                last_observed.append(tsl)
+    if not first_observed:
+        # firepit could return None for e["first_observed"],
+        # which will cause a dateutil parsing exception of <TypeError>
+        raise InvalidAttribute("first_observed")
+    if not last_observed:
+        raise InvalidAttribute("last_observed")
+
+    return min(first_observed), max(last_observed)
 
 
 def _type_value(value):
