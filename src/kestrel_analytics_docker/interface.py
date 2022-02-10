@@ -52,7 +52,7 @@ class DockerInterface(AbstractAnalyticsInterface):
         return ["docker"]
 
     @staticmethod
-    def list_analytics():
+    def list_analytics(config=None):
         """Check docker for the list of Kestrel analytics."""
         docker_images = docker.from_env().images.list()
         tags = [tag for img in docker_images for tag in img.attrs["RepoTags"]]
@@ -66,7 +66,7 @@ class DockerInterface(AbstractAnalyticsInterface):
         return analytics_names
 
     @staticmethod
-    def execute(uri, argument_variables, session_id=None, parameters=None):
+    def execute(uri, argument_variables, config=None, session_id=None, parameters=None):
         """Execute an analytics."""
 
         scheme, _, analytics_name = uri.rpartition("://")
@@ -115,7 +115,7 @@ class DockerInterface(AbstractAnalyticsInterface):
                 environment=env,
             )
         except docker.errors.ContainerError as e:
-            error = str(e)
+            error = e.stderr.decode("utf-8")
             _logger.error(error)
             raise AnalyticsError(f"{analytics_name} failed: {error}")
 

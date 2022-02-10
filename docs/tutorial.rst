@@ -94,8 +94,8 @@ Install and set up the Kestrel Jupyter Notebook kernel:
 Creating A Hunt Book
 --------------------
 
-1. Launch a Jupyter Notebook (not Jupyter Lab, which is not fully supported
-   yet) from the terminal:
+1. Launch a Jupyter Notebook (or Jupyter Lab, which has initial support except
+   for syntax highlighting) from the terminal:
 
 .. code-block:: console
 
