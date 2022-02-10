@@ -12,10 +12,7 @@ class KestrelException(Exception):
     """
 
     def __init__(self, error, suggestion=""):
-        if "\n" in error:
-            self.error = error if error[-1] == "\n" else error + "\n"
-        else:
-            self.error = error if error[-1] == "." else error + "."
+        self.error = error[:-1] if error[-1] == "\n" else error
 
         self.suggestion = (
             suggestion
@@ -24,7 +21,7 @@ class KestrelException(Exception):
         )
 
     def __str__(self):
-        return f"[ERROR] {self.__class__.__name__}: {self.error} {self.suggestion}"
+        return f"[ERROR] {self.__class__.__name__}: {self.error}\n{self.suggestion}"
 
 
 class KestrelInternalError(KestrelException):
@@ -174,7 +171,7 @@ class DataSourceError(KestrelException):
         if not suggestion:
             suggestion = "please check data source config or test the query manually"
         super().__init__(
-            f"data source error: {error}",
+            error,
             suggestion,
         )
 
@@ -219,8 +216,9 @@ class InvalidAnalytics(KestrelException):
 
 
 class AnalyticsError(KestrelException):
-    def __init__(self, error):
-        super().__init__(error, "report to analytics developer")
+    def __init__(self, error, suggestion=""):
+        suggestion = "report to analytics developer" if not suggestion else suggestion
+        super().__init__(error, suggestion)
 
 
 class AnalyticsInterfaceNotFound(KestrelException):

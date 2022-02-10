@@ -88,8 +88,8 @@ import sys
 import pathlib
 import logging
 import inspect
+import traceback
 import matplotlib
-import subprocess
 from collections.abc import Mapping
 from pandas import DataFrame
 from importlib.util import spec_from_file_location, module_from_spec
@@ -237,8 +237,11 @@ class PythonAnalytics(AbstractContextManager):
             try:
                 outputs = self.analytics_function(*input_dataframes)
             except Exception as e:
-                error = str(e)
-                raise AnalyticsError(f"{self.name} failed: {error}")
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                error = "".join(
+                    traceback.format_exception(exc_type, exc_value, exc_traceback)
+                )
+                raise AnalyticsError(f"{self.name} failed at execution:\n{error}")
 
             if not isinstance(outputs, tuple):
                 outputs = (outputs,)
@@ -302,25 +305,19 @@ class PythonAnalytics(AbstractContextManager):
         )
         module = module_from_spec(spec)
 
-        missed_package = "pip"
-        while missed_package:
-            try:
-                spec.loader.exec_module(module)
-            except ModuleNotFoundError as e:
-                if e.name == missed_package:
-                    raise AnalyticsError(
-                        f'cannot find dependent package "{missed_package}" to install'
-                    )
-                else:
-                    missed_package = e.name
-                    _logger.info(
-                        f'install missing dependent package "{missed_package}" for analytics "{self.name}"'
-                    )
-                    subprocess.check_call(
-                        [sys.executable, "-m", "pip", "install", missed_package]
-                    )
-            else:
-                missed_package = None
+        try:
+            spec.loader.exec_module(module)
+        except ModuleNotFoundError as e:
+            raise AnalyticsError(
+                f"{self.name} misses dependent library: {e.name}",
+                "pip install the corresponding Python package",
+            )
+        except Exception as e:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            error = "".join(
+                traceback.format_exception(exc_type, exc_value, exc_traceback)
+            )
+            raise AnalyticsError(f"{self.name} failed at importing:\n{error}")
 
         return module
 
