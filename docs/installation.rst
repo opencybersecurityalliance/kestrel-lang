@@ -131,15 +131,6 @@ repo to start:
 Go to the `analytics` directory and build the analytics docker containers to
 ``APPLY`` in your hunt.
 
-Optional: Debug Mode
-====================
-
-You can run Kestrel in debug mode by either use the ``--debug`` flag of the
-Kestrel command-line utility, or create environment variable ``KESTREL_DEBUG``
-with any value before launching Kestrel, which is useful when you use Kestrel
-in Jupyter Notebook. In the debug mode, all runtime data including caches and
-logs at debug level are at ``/tmp/kestrel/``.
-
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _kestrel-lang: http://github.com/opencybersecurityalliance/kestrel-lang
