@@ -1,10 +1,6 @@
 """The STIX shifter data source package provides access to data sources via
 `stix-shifter`_.
 
-Before use, one need to install any target stix-shifter connector packages such
-as ``stix-shifter-modules-carbonblack``. Check all `avaliable connectors`_ and
-their `pypi packages <https://pypi.org/search/?q=stix-shifter-modules&o=>`_.
-
 The STIX Shifter interface can reach multiple data sources. The user needs to
 provide one *profile* per data source. The profile name (case insensitive) will
 be used in the ``FROM`` clause of the Kestrel ``GET`` command, e.g., ``newvar =
@@ -28,7 +24,7 @@ will load profiles from 3 places (the later will override the former):
                 connection:
                     host: elastic.securitylog.company.com
                     port: 9200
-                    selfSignedCert: True
+                    selfSignedCert: false # this means do NOT check cert
                     indices: host101
                 config:
                     auth:
@@ -80,15 +76,18 @@ enabled by default. To record debug level logs of stix-shifter, create
 environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
 
 .. _stix-shifter: https://github.com/opencybersecurityalliance/stix-shifter
-.. _avaliable connectors: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md#available-connectors
 
 """
 
+import sys
 import json
 import time
 import copy
 import logging
 import importlib
+import subprocess
+import requests
+from lxml import html
 
 from stix_shifter.stix_translation import stix_translation
 from stix_shifter.stix_transmission import stix_transmission
@@ -107,16 +106,76 @@ from kestrel_datasource_stixshifter.config import (
 _logger = logging.getLogger(__name__)
 
 
+XPATH_PYPI_PKG_HOME = "/html/body/main/div[4]/div/div/div[1]/div[2]/ul/li[1]/a/@href"
+XPATH_PYPI_PKG_SOURCE = "/html/body/main/div[4]/div/div/div[1]/div[2]/ul/li[2]/a/@href"
+STIX_SHIFTER_HOMEPAGE = "https://github.com/opencybersecurityalliance/stix-shifter"
+
+
 def check_module_availability(connector_name):
     try:
-        connector_module = importlib.import_module(
+        importlib.import_module(
             "stix_shifter_modules." + connector_name + ".entry_point"
         )
     except:
-        raise DataSourceError(
-            f'STIX shifter connector for "{connector_name}" is not installed',
-            "please install the corresponding STIX shifter connector Python package.",
+        _logger.info(f'miss stix-shifter connector "{connector_name}"')
+
+        package_name = "stix-shifter-modules-" + connector_name.replace("_", "-")
+        _logger.debug(f"guess the connector package name: {package_name}")
+
+        _logger.debug(
+            "go to PyPI to verify whether the package is genuine from stix-shifter project"
         )
+        try:
+            pypi_response = requests.get(f"https://pypi.org/project/{package_name}")
+            pypi_etree = html.fromstring(pypi_response.content)
+        except:
+            raise DataSourceError(
+                f'STIX shifter connector for "{connector_name}" is not installed '
+                f'and Kestrel guessed Python package name "{package_name}" but could not connect to PyPI to verify its genuineness',
+                "please manually install the correct stix-shifter connector Python package.",
+            )
+
+        try:
+            p_homepage = pypi_etree.xpath(XPATH_PYPI_PKG_HOME)[0]
+            p_source = pypi_etree.xpath(XPATH_PYPI_PKG_SOURCE)[0]
+        except:
+            raise DataSourceError(
+                f'STIX shifter connector for "{connector_name}" is not installed '
+                f'and Kestrel guessed Python package name "{package_name}" but could not verify its genuineness due to PyPI design change',
+                "please find the correct stix-shifter connector Python package to install. "
+                "And report to Kestrel developers about this package verification failure",
+            )
+
+        if p_homepage != STIX_SHIFTER_HOMEPAGE or p_source != STIX_SHIFTER_HOMEPAGE:
+            raise DataSourceError(
+                f'STIX shifter connector for "{connector_name}" is not installed '
+                f'and Kestrel found Python package "{package_name}" is not a genuine stix-shifter package',
+                "please find the correct stix-shifter connector Python package to install. "
+                f"And report to Kestrel developers about this malicious package",
+            )
+
+        _logger.info(
+            f'find Python package "{package_name}" for the missing stix-shifter connector "{connector_name}".'
+        )
+        _logger.info(f'install Python package "{package_name}".')
+
+        try:
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", package_name]
+            )
+        except:
+            _logger.info("package installation with 'pip' failed.")
+
+        try:
+            importlib.import_module(
+                "stix_shifter_modules." + connector_name + ".entry_point"
+            )
+        except:
+            raise DataSourceError(
+                f'STIX shifter connector for "{connector_name}" is not installed '
+                f'and Kestrel failed to install the possible Python package "{package_name}"',
+                "please manually install the corresponding STIX shifter connector Python package.",
+            )
 
 
 class StixShifterInterface(AbstractDataSourceInterface):
@@ -261,6 +320,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
             _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
             with ingestfile.open("w") as ingest:
                 json.dump(stixbundle, ingest, indent=4)
-            bundles.append(str(ingestfile.resolve()))
+            bundles.append(str(ingestfile.expanduser().resolve()))
 
         return ReturnFromFile(query_id, bundles)

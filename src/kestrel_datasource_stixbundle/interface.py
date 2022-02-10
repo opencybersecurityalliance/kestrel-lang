@@ -81,6 +81,6 @@ class StixBundleInterface(AbstractDataSourceInterface):
 
             with ingestfile.open("w") as f:
                 json.dump(bundle_out, f)
-            bundles.append(str(ingestfile.resolve()))
+            bundles.append(str(ingestfile.expanduser().resolve()))
 
         return ReturnFromFile(ingestdir.name, bundles)

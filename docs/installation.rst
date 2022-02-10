@@ -2,7 +2,7 @@
 Installation
 ============
 
-Install the Kestrel runtime, Kestrel Jupyter front-end, and STIX-shifter connector modules.
+Install the Kestrel runtime plus the Kestrel Jupyter front-end.
 
 Operating Systems
 =================
@@ -44,8 +44,8 @@ Runtime Installation
 
 You can install Kestrel runtime from `stable release`_ or `nightly built
 version (source code)`_. Either way installs all packages in the
-``kestrel-lang`` repository, and dependent packages, such as ``firepit`` and
-``stix-shifter``.
+`kestrel-lang`_ repository, and dependent packages, such as `firepit`_ and
+`STIX-shifter`_.
 
 It is a good practice to install Kestrel in a `Python virtual environment`_ so
 all dependencies will be the latest. You can easily setup, activate, and
@@ -104,32 +104,6 @@ Kestrel runtime currently supports three front-ends
 
 - Use `magic command`_ in iPython environment. Check `kestrel-jupyter`_ package for usage.
 
-STIX-shifter Connector Installation
-===================================
-
-Among :ref:`data-source-and-analytics-interfaces`, STIX-shifter is the main
-data source interface currently implemented by the Kestrel runtime.
-`STIX-shifter`_ provides a federated search interface against more than a dozen
-EDRs, NDRs, and SIEM systems for data retrieval.
-
-Because of the federated nature of STIX-shifter, the project releases a string
-of Python packages (called *connectors* of STIX-shifter) for each data source.
-Depending on the data source you are connecting to, e.g., Sysmon data stored in
-Elasticsearch, you need to install the corresponding connector such as
-`stix-shifter-modules-elastic-ecs`:
-
-.. code-block:: console
-
-    $ pip install stix-shifter-modules-elastic-ecs
-
-After specific STIX-shifter connector installed, you need to tell
-Kestrel/STIX-shifter where to find your data source and how to connect. This is
-done by providing data source profiles in Kestrel stix-shifter config file or
-through environment variables. Read
-:doc:`source/kestrel_datasource_stixshifter.interface` to find the right
-connector to install and to provide profiles in the config file or environment
-variables.
-
 Kestrel in Action
 =================
 
@@ -139,7 +113,7 @@ interactively (*huntingspace* activated):
 
 .. code-block:: console
 
-   $ jupyter notebook
+    $ jupyter notebook
 
 Optional: Kestrel Analytics
 ===========================
@@ -157,20 +131,11 @@ repo to start:
 Go to the `analytics` directory and build the analytics docker containers to
 ``APPLY`` in your hunt.
 
-Optional: Debug Mode
-====================
-
-You can run Kestrel in debug mode by either use the ``--debug`` flag of the
-Kestrel command-line utility, or create environment variable ``KESTREL_DEBUG``
-with any value before launching Kestrel, which is useful when you use Kestrel
-in Jupyter Notebook. In the debug mode, all runtime data including caches and
-logs at debug level are at ``/tmp/kestrel/``.
-
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
-.. _Github repo: https://github.com/opencybersecurityalliance/kestrel-lang
+.. _kestrel-lang: http://github.com/opencybersecurityalliance/kestrel-lang
 .. _kestrel-jupyter: http://github.com/opencybersecurityalliance/kestrel-jupyter
+.. _firepit: http://github.com/opencybersecurityalliance/firepit
 .. _Jupyter Notebook: https://jupyter.org/
 .. _magic command: https://ipython.readthedocs.io/en/stable/interactive/magics.html
-.. _firepit: https://github.com/opencybersecurityalliance/firepit
 .. _STIX-shifter: https://github.com/opencybersecurityalliance/stix-shifter

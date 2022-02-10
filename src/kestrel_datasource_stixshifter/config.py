@@ -59,17 +59,17 @@ def load_profiles_from_env_var():
 
 
 def get_datasource_from_profiles(profile_name, profiles):
-    """Validate profile data
+    """Validate and retrieve profile data
 
-    Validate profile data. The data should be a dict with "connector",
-    "connection", "config" keys, and appropriate values.
+    Validate and retrieve profile data. The data should be a dict with
+    "connector", "connection", "config" keys, and appropriate values.
 
     Args:
         profile_name (str): The name of the profile.
         profiles (dict): name to profile (dict) mapping.
 
     Returns:
-        Bool
+        STIX-shifter config triplet
     """
     profile_name = profile_name.lower()
     if profile_name not in profiles:
@@ -80,6 +80,12 @@ def get_datasource_from_profiles(profile_name, profiles):
         )
     else:
         profile = profiles[profile_name]
+        if not profile:
+            raise InvalidDataSource(
+                profile_name,
+                "stixshifter",
+                f"the profile is empty",
+            )
         _logger.debug(f"profile to use: {profile}")
         if "connector" not in profile:
             raise InvalidDataSource(
@@ -132,7 +138,7 @@ def load_profiles():
     config = load_user_config(PROFILE_PATH_ENV_VAR, PROFILE_PATH_DEFAULT)
     if config and "profiles" in config:
         _logger.debug(f"stix-shifter profiles found in config file")
-        profiles_from_file = config["profiles"]
+        profiles_from_file = {k.lower(): v for k, v in config["profiles"].items()}
     else:
         _logger.debug(
             "either config file does not exist or no stix-shifter profile found in config file. This may indicate a config syntax error if config file exists."

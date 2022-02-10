@@ -56,6 +56,7 @@ import time
 import math
 import lark
 from datetime import datetime
+from contextlib import AbstractContextManager
 
 from kestrel.exceptions import (
     KestrelSyntaxError,
@@ -83,7 +84,7 @@ from kestrel.analytics import AnalyticsManager
 _logger = logging.getLogger(__name__)
 
 
-class Session(object):
+class Session(AbstractContextManager):
     """Kestrel Session class
 
     A session object needs to be instantiated to create a Kestrel runtime space.
@@ -199,7 +200,7 @@ class Session(object):
             tmp_dir = sys_tmp_dir / (
                 self.config["session"]["cache_directory_prefix"] + self.session_id
             )
-            self.runtime_directory = tmp_dir.resolve()
+            self.runtime_directory = tmp_dir.expanduser().resolve()
             if tmp_dir.exists():
                 if tmp_dir.is_dir():
                     _logger.debug(
@@ -473,7 +474,7 @@ class Session(object):
                         stmt, self.data_source_manager.queried_data_sources[-1]
                     )
                 if stmt["command"] == "load" or stmt["command"] == "save":
-                    stmt["path"] = pathlib.Path(stmt["path"]).resolve()
+                    stmt["path"] = pathlib.Path(stmt["path"]).expanduser().resolve()
                 if stmt["command"] == "find":
                     check_semantics_on_find(stmt, self.symtable[stmt["input"]].type)
                 if "attrs" in stmt:
@@ -516,9 +517,6 @@ class Session(object):
             displays.append(DisplayBlockSummary(vars_summary, execution_time_sec))
 
         return displays
-
-    def __enter__(self):
-        return self
 
     def __exit__(self, exception_type, exception_value, traceback):
         self.close()
