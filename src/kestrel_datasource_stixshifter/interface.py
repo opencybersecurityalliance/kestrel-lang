@@ -111,8 +111,13 @@ XPATH_PYPI_PKG_SOURCE = "/html/body/main/div[4]/div/div/div[1]/div[2]/ul/li[2]/a
 STIX_SHIFTER_HOMEPAGE = "https://github.com/opencybersecurityalliance/stix-shifter"
 
 
-def verify_package_origin(connector_name, package_name):
+def get_package_name(connector_name):
+    return "stix-shifter-modules-" + connector_name.replace("_", "-")
+
+
+def verify_package_origin(connector_name):
     _logger.debug("go to PyPI to verify package genuineness from stix-shifter project")
+    package_name = get_package_name(connector_name)
 
     try:
         pypi_response = requests.get(f"https://pypi.org/project/{package_name}")
@@ -154,7 +159,7 @@ def check_module_availability(connector_name):
     except:
         _logger.info(f'miss stix-shifter connector "{connector_name}"')
 
-        package_name = "stix-shifter-modules-" + connector_name.replace("_", "-")
+        package_name = get_package_name(connector_name)
         _logger.debug(f"guess the connector package name: {package_name}")
 
         verify_package_origin(connector_name, package_name)
