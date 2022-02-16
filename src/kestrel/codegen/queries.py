@@ -33,7 +33,9 @@ def compile_specific_relation_to_query(
         if ref_name.endswith("_refs"):
             query = _generate_reflist_query(input_var_name, ref_name, entity_y)
         elif var_attr in input_var_attrs and ret_attr in return_type_attrs:
-            query = _generate_ref_query(input_var_name, var_attr, return_type, ret_attr)
+            query = _generate_ref_query(
+                input_var_name, input_type, var_attr, return_type, ret_attr
+            )
         else:
             continue
         return query
@@ -44,7 +46,9 @@ def compile_specific_relation_to_query(
         if ref_name.endswith("_refs"):
             query = _generate_reflist_query(input_var_name, ref_name, entity_x)
         elif var_attr in input_var_attrs and ret_attr in return_type_attrs:
-            query = _generate_ref_query(input_var_name, var_attr, return_type, ret_attr)
+            query = _generate_ref_query(
+                input_var_name, input_type, var_attr, return_type, ret_attr
+            )
         else:
             continue
         return query
@@ -90,13 +94,18 @@ class SQLQuery(Query):
         return self.text, self.values
 
 
-def _generate_ref_query(input_var_name, var_attr, ret_type, ret_attr):
-    return Query(
+def _generate_ref_query(input_var_name, input_type, var_attr, ret_type, ret_attr):
+    # SELECT * FROM ret_type WHERE ret_type.ret_attr IN (SELECT var_attr FROM input_var_name)
+    subq = Query(
         [
             Table(input_var_name),
-            Join(ret_type, var_attr, "=", ret_attr),
-            Projection([Column("*", ret_type)]),  # All columns from ret_type
-            Unique(),
+            Projection([var_attr]),
+        ]
+    )
+    return Query(
+        [
+            Table(ret_type),
+            Filter([Predicate(ret_attr, "IN", subq)]),
         ]
     )
 

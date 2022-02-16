@@ -115,3 +115,17 @@ files = FIND file LOADED BY procs
         files = s.get_variable('files')
         print(json.dumps(files, indent=4))
         assert len(files) == 1
+
+
+def test_find_process_created_process(proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+procs = get process
+        from file://{proc_bundle_file}
+        where [process:command_line LIKE 'wmic%']
+parents = FIND process CREATED procs
+"""
+        s.execute(stmt)
+        data = s.get_variable('parents')
+        print(json.dumps(data, indent=4))
+        assert len(data)

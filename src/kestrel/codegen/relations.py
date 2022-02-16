@@ -60,7 +60,8 @@ stix_2_0_ref_mapping = {
     ("process", "created", "network-traffic"): (["opened_connection_refs"], []),
     ("user-account", "owned", "process"): ([], ["creator_user_ref"]),
     ("process", "loaded", "file"): (["binary_ref"], []),
-    ("process", "created", "process"): (["parent_ref"], ["child_refs"]),
+    # ("process", "created", "process"): (["child_refs"], ["parent_ref"]),
+    ("process", "created", "process"): ([], ["parent_ref"]),
     # service
     ("windows-service-ext", "loaded", "file"): (["service_dll_refs"], []),
     ("windows-service-ext", "loaded", "user-account"): (["creator_user_ref"], []),
