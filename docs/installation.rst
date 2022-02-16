@@ -2,7 +2,7 @@
 Installation
 ============
 
-Install the Kestrel runtime, Kestrel Jupyter front-end, and STIX-shifter connector modules.
+Install the Kestrel runtime plus the Kestrel Jupyter front-end.
 
 Operating Systems
 =================
@@ -44,8 +44,8 @@ Runtime Installation
 
 You can install Kestrel runtime from `stable release`_ or `nightly built
 version (source code)`_. Either way installs all packages in the
-``kestrel-lang`` repository, and dependent packages, such as ``firepit`` and
-``stix-shifter``.
+`kestrel-lang`_ repository, and dependent packages, such as `firepit`_ and
+`STIX-shifter`_.
 
 It is a good practice to install Kestrel in a `Python virtual environment`_ so
 all dependencies will be the latest. You can easily setup, activate, and
@@ -104,70 +104,19 @@ Kestrel runtime currently supports three front-ends
 
 - Use `magic command`_ in iPython environment. Check `kestrel-jupyter`_ package for usage.
 
-STIX-shifter Connector Installation
-===================================
+Kestrel in Action
+=================
 
-Among :ref:`data-source-and-analytics-interfaces`, STIX-shifter is the main
-data source interface currently implemented by the Kestrel runtime.
-`STIX-shifter`_ provides a federated search interface against more than a dozen
-EDRs, NDRs, and SIEM systems for data retrieval.
-
-Because of the federated nature of STIX-shifter, the project releases a string
-of Python packages (called *connectors* of STIX-shifter) for each data source.
-Depending on the data source you are connecting to, e.g., Sysmon data stored in
-Elasticsearch, you need to install the corresponding connector such as
-`stix-shifter-modules-elastic-ecs`:
+Now the Kestrel runtime is set up and you can run a Kestrel huntflow with the
+command-line utility or launch a Jupyter service for developing a huntbook
+interactively (*huntingspace* activated):
 
 .. code-block:: console
 
-    $ pip install stix-shifter-modules-elastic-ecs
+    $ jupyter notebook
 
-STIX-shifter Data Source Config
-===============================
-
-After installing the STIX-shifter connector, you need to tell a Kestrel
-front-end, e.g., Jupyter, details of the data source you are connecting to.
-This is done by exporting three environment variables for each data source, e.g.:
-
-.. code-block:: console
-
-    $ export STIXSHIFTER_HOST101_CONNECTOR=elastic_ecs
-    $ export STIXSHIFTER_HOST101_CONNECTION='{"host":"elastic.securitylog.company.com", "port":9200, "indices":"host101"}'
-    $ export STIXSHIFTER_HOST101_CONFIG='{"auth":{"id":"VuaCfGcBCdbkQm-e5aOx", "api_key":"ui2lp2axTNmsyakw9tvNnw"}}'
-
-Multiple STIX-shifter connections can be specified together in a single YAML
-file for convenience, as such:
-
-.. code-block:: yaml
-
-    stixshifter:
-    - name: host101
-      connector: elastic_ecs
-      connection:
-        host: elastic.securitylog.company.com
-        port: 9200
-        indices: host101
-      config:
-        auth:
-        id: VuaCfGcBCdbkQm-e5aOx
-        api_key: ui2lp2axTNmsyakw9tvNnw
-
-You can specify as many profiles as you like. Configurations are loaded in the following order, where subsequent setting override previous ones.
-
-1. ``~/.kestrel/config.yml`` Default location for the Kestrel configuration YAML file
-2. ``KESTREL_CONFIG`` Environment variable which points to a YAML file that overrides options already loaded via 1.
-3. ``STIXSHIFTER_<profile>_{CONNECTOR, CONNECTION, CONFIG}`` environment variables as above. Overrides setting from 1 and 2.
-
-Note that it will intelligently override individual settings. E.g.,
-
-.. code-block:: console
-
-    $ export STIXSHIFTER_HOST101_CONNECTION='{"port" : 8080}'
-
-Will use the host101 configuration from the ``~/.kestrel/config.yml`` file but changing only the port to ``8080``.
-
-(Optional) Kestrel Analytics
-============================
+Optional: Kestrel Analytics
+===========================
 
 Want to have some Kestrel analytics ready at your fingertip? Threat
 intelligence enrichments like SANS API? Domain name lookup for IP addresses?
@@ -182,23 +131,11 @@ repo to start:
 Go to the `analytics` directory and build the analytics docker containers to
 ``APPLY`` in your hunt.
 
-Kestrel in Action
-=================
-
-Now the Kestrel runtime is set up and you can run a Kestrel huntflow with the
-command-line utility or launch a Jupyter service for developing a huntbook
-interactively (*huntingspace* activated):
-
-.. code-block:: console
-
-   $ jupyter notebook
-
-.. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
-.. _Github repo: https://github.com/opencybersecurityalliance/kestrel-lang
+.. _kestrel-lang: http://github.com/opencybersecurityalliance/kestrel-lang
 .. _kestrel-jupyter: http://github.com/opencybersecurityalliance/kestrel-jupyter
+.. _firepit: http://github.com/opencybersecurityalliance/firepit
 .. _Jupyter Notebook: https://jupyter.org/
 .. _magic command: https://ipython.readthedocs.io/en/stable/interactive/magics.html
-.. _firepit: https://github.com/opencybersecurityalliance/firepit
 .. _STIX-shifter: https://github.com/opencybersecurityalliance/stix-shifter

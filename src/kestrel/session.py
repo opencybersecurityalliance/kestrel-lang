@@ -52,15 +52,14 @@ import shutil
 import uuid
 import logging
 import re
-import toml
 import time
 import math
 import lark
 from datetime import datetime
+from contextlib import AbstractContextManager
 
 from kestrel.exceptions import (
     KestrelSyntaxError,
-    NoValidConfiguration,
     InvalidStixPattern,
 )
 from kestrel.syntax.parser import get_all_input_var_names
@@ -77,14 +76,15 @@ from kestrel.codegen.display import DisplayBlockSummary
 from kestrel.codegen.summary import gen_variable_summary
 from firepit import get_storage
 from firepit.exceptions import StixPatternError
-from kestrel.utils import set_current_working_directory, config_paths
+from kestrel.utils import set_current_working_directory
+from kestrel.config import load_config
 from kestrel.datasource import DataSourceManager
 from kestrel.analytics import AnalyticsManager
 
 _logger = logging.getLogger(__name__)
 
 
-class Session(object):
+class Session(AbstractContextManager):
     """Kestrel Session class
 
     A session object needs to be instantiated to create a Kestrel runtime space.
@@ -172,7 +172,7 @@ class Session(object):
             f"Establish session with session_id: {session_id}, runtime_dir: {runtime_dir}, store_path:{store_path}, debug_mode:{debug_mode}"
         )
 
-        self.config = self._load_configuration()
+        self.config = load_config()
 
         if session_id:
             self.session_id = session_id
@@ -200,7 +200,7 @@ class Session(object):
             tmp_dir = sys_tmp_dir / (
                 self.config["session"]["cache_directory_prefix"] + self.session_id
             )
-            self.runtime_directory = tmp_dir.resolve()
+            self.runtime_directory = tmp_dir.expanduser().resolve()
             if tmp_dir.exists():
                 if tmp_dir.is_dir():
                     _logger.debug(
@@ -239,12 +239,8 @@ class Session(object):
         # {"var": VarStruct}
         self.symtable = {}
 
-        self.data_source_manager = DataSourceManager(
-            self.config["language"]["default_datasource_schema"]
-        )
-        self.analytics_manager = AnalyticsManager(
-            self.config["language"]["default_analytics_schema"]
-        )
+        self.data_source_manager = DataSourceManager(self.config)
+        self.analytics_manager = AnalyticsManager(self.config)
         iso_ts_regex = r"\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}Z?)?)?)?)?)?"
         self._iso_ts = re.compile(iso_ts_regex)
 
@@ -478,7 +474,7 @@ class Session(object):
                         stmt, self.data_source_manager.queried_data_sources[-1]
                     )
                 if stmt["command"] == "load" or stmt["command"] == "save":
-                    stmt["path"] = pathlib.Path(stmt["path"]).resolve()
+                    stmt["path"] = pathlib.Path(stmt["path"]).expanduser().resolve()
                 if stmt["command"] == "find":
                     check_semantics_on_find(stmt, self.symtable[stmt["input"]].type)
                 if "attrs" in stmt:
@@ -522,43 +518,12 @@ class Session(object):
 
         return displays
 
-    def __enter__(self):
-        return self
-
     def __exit__(self, exception_type, exception_value, traceback):
         self.close()
 
     def _update_symbol_table(self, output_var_name, output_var_struct):
         self.symtable[output_var_name] = output_var_struct
         self.symtable[self.config["language"]["default_variable"]] = output_var_struct
-
-    def _load_configuration(self):
-
-        configs = []
-
-        for path in config_paths():
-            try:
-                configs.append(toml.load(path))
-                _logger.debug(f"Configuration file {path} loaded successfully.")
-            except FileNotFoundError:
-                _logger.debug(f"Configuration file {path} does not exist.")
-            except toml.decoder.TomlDecodeError:
-                _logger.debug(f"Invalid configuration file {path}.")
-
-        if not configs:
-            raise NoValidConfiguration
-        else:
-            config = configs.pop(0)
-            for c in configs:
-                for domain, mappings in c.items():
-                    if domain in config:
-                        config[domain].update(mappings)
-                    else:
-                        config[domain] = mappings
-
-        _logger.debug(f"Configuration loaded: {config}")
-
-        return config
 
     def _leave_exit_marker(self):
         exit_marker = os.path.join(

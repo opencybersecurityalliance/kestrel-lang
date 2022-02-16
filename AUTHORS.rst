@@ -15,6 +15,7 @@ Contributors
 - `Jill Casavant`_
 - `Sulakshan Vajipayajula`_
 - `Chew Kin Zhong`_
+- `Ian Molloy`_
 
 .. _Xiaokui Shu: https://github.com/subbyte
 .. _Paul Coccoli: https://github.com/pcoccoli
@@ -22,3 +23,4 @@ Contributors
 .. _Jill Casavant: https://github.com/jmcasava
 .. _Sulakshan Vajipayajula: https://github.com/svajipay
 .. _Chew Kin Zhong: https://github.com/kinzhong
+.. _Ian Molloy: https://github.com/imolloy

@@ -1,33 +1,93 @@
-"""STIX Shifter data source package provides access to data sources via
-stix-shifter.
-
-Before use, need to install the target stix-shifter connector packages such as
-``stix-shifter-modules-carbonblack``.
+"""The STIX shifter data source package provides access to data sources via
+`stix-shifter`_.
 
 The STIX Shifter interface can reach multiple data sources. The user needs to
-setup one *profile* per data source. The profile name will be used in the
-``FROM`` clause of the Kestrel ``GET`` command, e.g., ``newvar = GET entity-type
-FROM stixshifter://profilename WHERE ...``. Kestrel runtime will load the profile
-for the used profile from environment variables:
+provide one *profile* per data source. The profile name (case insensitive) will
+be used in the ``FROM`` clause of the Kestrel ``GET`` command, e.g., ``newvar =
+GET entity-type FROM stixshifter://profilename WHERE ...``. Kestrel runtime
+will load profiles from 3 places (the later will override the former):
 
-- ``STIXSHIFTER_PROFILENAME_CONNECTOR``: the STIX Shifter connector name, e.g., ``elastic_ecs``.
-- ``STIXSHIFTER_PROFILENAME_CONNECTION``: the STIX Shifter `connection <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#connection>`_ object in JSON string.
-- ``STIXSHIFTER_PROFILENAME_CONFIG``: the STIX Shifter `configuration <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#configuration>`_ object in JSON string.
+#. stix-shifter interface config file (only when a Kestrel session starts):
 
-Properties of profile name:
+    Put your profiles in the stix-shifter interface config file (YAML):
 
-- Not case sensitive, e.g., ``profileX`` in the Kestrel command will match
-  ``STIXSHIFTER_PROFILEX_...`` in environment variables.
-- Cannot contain ``_``.
+    - Default path: ``~/.config/kestrel/stixshifter.yaml``.
+    - A customized path specified in the environment variable ``KESTREL_STIXSHIFTER_CONFIG``.
+
+    Example of stix-shifter interface config file containing profiles:
+
+    .. code-block:: yaml
+
+        profiles:
+            host101:
+                connector: elastic_ecs
+                connection:
+                    host: elastic.securitylog.company.com
+                    port: 9200
+                    selfSignedCert: false # this means do NOT check cert
+                    indices: host101
+                config:
+                    auth:
+                        id: VuaCfGcBCdbkQm-e5aOx
+                        api_key: ui2lp2axTNmsyakw9tvNnw
+            host102:
+                connector: qradar
+                connection:
+                    host: qradar.securitylog.company.com
+                    port: 443
+                config:
+                    auth:
+                        SEC: 123e4567-e89b-12d3-a456-426614174000
+            host103:
+                connector: cbcloud
+                connection:
+                    host: cbcloud.securitylog.company.com
+                    port: 443
+                config:
+                    auth:
+                        org-key: D5DQRHQP
+                        token: HT8EMI32DSIMAQ7DJM
+
+#. environment variables (only when a Kestrel session starts):
+
+    Three environment variables are required for each profile:
+
+    - ``STIXSHIFTER_PROFILENAME_CONNECTOR``: the STIX Shifter connector name,
+      e.g., ``elastic_ecs``.
+    - ``STIXSHIFTER_PROFILENAME_CONNECTION``: the STIX Shifter `connection
+      <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#connection>`_
+      object in JSON string.
+    - ``STIXSHIFTER_PROFILENAME_CONFIG``: the STIX Shifter `configuration
+      <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#configuration>`_
+      object in JSON string.
+
+    Example of environment variables for a profile:
+
+    .. code-block:: console
+
+        $ export STIXSHIFTER_HOST101_CONNECTOR=elastic_ecs
+        $ export STIXSHIFTER_HOST101_CONNECTION='{"host":"elastic.securitylog.company.com", "port":9200, "indices":"host101"}'
+        $ export STIXSHIFTER_HOST101_CONFIG='{"auth":{"id":"VuaCfGcBCdbkQm-e5aOx", "api_key":"ui2lp2axTNmsyakw9tvNnw"}}'
+
+#. any in-session edit through the ``CONFIG`` command.
+
+If you launch Kestrel in debug mode, stix-shifter debug mode is still not
+enabled by default. To record debug level logs of stix-shifter, create
+environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
+
+.. _stix-shifter: https://github.com/opencybersecurityalliance/stix-shifter
 
 """
 
-import os
+import sys
 import json
 import time
-from functools import lru_cache
-
-import yaml
+import copy
+import logging
+import importlib
+import subprocess
+import requests
+from lxml import html
 
 from stix_shifter.stix_translation import stix_translation
 from stix_shifter.stix_transmission import stix_transmission
@@ -35,150 +95,139 @@ from stix_shifter.stix_transmission import stix_transmission
 from kestrel.utils import mkdtemp
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
-from kestrel.exceptions import (
-    InvalidDataSource,
-    DataSourceError,
-    DataSourceManagerInternalError,
+from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
+from kestrel_datasource_stixshifter.config import (
+    RETRIEVAL_BATCH_SIZE,
+    get_datasource_from_profiles,
+    load_profiles,
+    set_stixshifter_logging_level,
 )
 
-from kestrel_datasource_stixshifter.config import ENV_VAR_PREFIX, RETRIEVAL_BATCH_SIZE
-
-# Create a global dict of cached configurations
-# On first invocation, search for YAML file of configurations
-# Note the parsing time and cache. On subsequent calls, check stat.ST_MTIME and re-parse if necessary
-# ENV variables _override_ the YAML file``
+_logger = logging.getLogger(__name__)
 
 
-def merge(c1, c2):
-    for k in set(c1.keys()).union(set(c2.keys())):
-        if k in c1 and k in c2:
-            if isinstance(c1[k], dict) and isinstance(c2[k], dict):
-                yield (k, dict(merge(c1[k], c2[k])))
-            else:
-                yield (k, c2[k])
-        elif k in c1:
-            yield (k, c1[k])
-        else:
-            yield (k, c2[k])
+XPATH_PYPI_PKG_HOME = "/html/body/main/div[4]/div/div/div[1]/div[2]/ul/li[1]/a/@href"
+XPATH_PYPI_PKG_SOURCE = "/html/body/main/div[4]/div/div/div[1]/div[2]/ul/li[2]/a/@href"
+STIX_SHIFTER_HOMEPAGE = "https://github.com/opencybersecurityalliance/stix-shifter"
+
+
+def get_package_name(connector_name):
+    return "stix-shifter-modules-" + connector_name.replace("_", "-")
+
+
+def verify_package_origin(connector_name):
+    _logger.debug("go to PyPI to verify package genuineness from stix-shifter project")
+    package_name = get_package_name(connector_name)
+
+    try:
+        pypi_response = requests.get(f"https://pypi.org/project/{package_name}")
+        pypi_etree = html.fromstring(pypi_response.content)
+    except:
+        raise DataSourceError(
+            f'STIX shifter connector for "{connector_name}" is not installed '
+            f'and Kestrel guessed Python package name "{package_name}" but failed to locate it at PyPI',
+            "please manually install the correct stix-shifter connector Python package.",
+        )
+
+    try:
+        p_homepage = pypi_etree.xpath(XPATH_PYPI_PKG_HOME)[0]
+        p_source = pypi_etree.xpath(XPATH_PYPI_PKG_SOURCE)[0]
+    except:
+        raise DataSourceError(
+            f'STIX shifter connector for "{connector_name}" is not installed '
+            f'and Kestrel guessed Python package name "{package_name}" but could not verify its genuineness due to PyPI design change',
+            "please find the correct stix-shifter connector Python package to install. "
+            "And report to Kestrel developers about this package verification failure",
+        )
+
+    if p_homepage != STIX_SHIFTER_HOMEPAGE or p_source != STIX_SHIFTER_HOMEPAGE:
+        raise DataSourceError(
+            f'STIX shifter connector for "{connector_name}" is not installed '
+            f'and Kestrel found Python package "{package_name}" is not a genuine stix-shifter package',
+            "please find the correct stix-shifter connector Python package to install. "
+            f"And report to Kestrel developers about this malicious package",
+        )
+
+    _logger.info(f'"{package_name}" verified as a stix-shifter package.')
+
+
+def check_module_availability(connector_name):
+    try:
+        importlib.import_module(
+            "stix_shifter_modules." + connector_name + ".entry_point"
+        )
+    except:
+        _logger.info(f'miss stix-shifter connector "{connector_name}"')
+
+        package_name = get_package_name(connector_name)
+        _logger.debug(f"guess the connector package name: {package_name}")
+
+        verify_package_origin(connector_name, package_name)
+
+        _logger.info(f'install Python package "{package_name}".')
+        try:
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", package_name]
+            )
+        except:
+            _logger.info("package installation with 'pip' failed.")
+
+        try:
+            importlib.import_module(
+                "stix_shifter_modules." + connector_name + ".entry_point"
+            )
+        except:
+            raise DataSourceError(
+                f'STIX shifter connector for "{connector_name}" is not installed '
+                f'and Kestrel failed to install the possible Python package "{package_name}"',
+                "please manually install the corresponding STIX shifter connector Python package.",
+            )
 
 
 class StixShifterInterface(AbstractDataSourceInterface):
-    __config = None
-
-    @staticmethod
-    def init():
-        if StixShifterInterface.__config is not None:
-            return
-        config = dict()
-        k_path = os.path.expanduser("~/.kestrel/config.yml")
-        if os.path.exists(k_path):
-            with open(k_path, "r") as fd:
-                cfg = yaml.load(fd, yaml.SafeLoader)
-                try:
-                    if "stixshifter" in cfg:
-                        config = {c["name"].lower(): c for c in cfg["stixshifter"]}
-                    for kv in cfg.get("env", []):
-                        os.environ[kv["key"]] = kv["value"]
-                except:
-                    pass
-        # Check for environment variable to override the config
-        if "KESTREL_CONFIG" in os.environ and os.path.exists(
-            os.environ.get("KESTREL_CONFIG")
-        ):
-            k_path = os.environ.get("KESTREL_CONFIG")
-            with open(k_path, "r") as fd:
-                cfg = yaml.load(fd, yaml.SafeLoader)
-                try:
-                    for c in cfg.get("stixshifter", []):
-                        pname = c["name"].lower()
-                        if pname not in config:
-                            config[pname] = c
-                        else:
-                            # we need to merge
-                            config[pname] = dict(merge(config[pname], c))
-                    for kv in cfg.get("env", []):
-                        os.environ[kv["key"]] = kv["value"]
-                except:
-                    pass
-        # Now look for any ENV variables the override or add new configs
-        StixShifterInterface.__config = dict(
-            merge(config, StixShifterInterface.__env_parse())
-        )
-
-    @staticmethod
-    def __env_parse():
-        env_vars = os.environ.keys()
-        stixshifter_vars = filter(lambda x: x.startswith(ENV_VAR_PREFIX), env_vars)
-        config = dict()
-        for evar in stixshifter_vars:
-            profile = evar.split("_")[1].lower()
-            if profile not in config:
-                config[profile] = dict()
-            # is it a _CONNECTOR, _CONNECTION, or _CONFIG?
-            try:
-                if evar.lower().endswith("_connector"):
-                    config[profile]["connector"] = os.environ[evar]
-                elif evar.lower().endswith("_connection"):
-                    try:
-                        config[profile]["connection"] = json.loads(os.environ[evar])
-                    except json.decoder.JSONDecodeError:
-                        raise InvalidDataSource(
-                            profile,
-                            "stixshifter",
-                            f"invalid JSON in {evar} environment variable",
-                        )
-                elif evar.lower().endswith("_config"):
-                    try:
-                        config[profile]["config"] = json.loads(os.environ[evar])
-                    except json.decoder.JSONDecodeError:
-                        raise InvalidDataSource(
-                            profile,
-                            "stixshifter",
-                            f"invalid JSON in {evar} environment variable",
-                        )
-            except:
-                pass
-        return config
-
-    @staticmethod
-    def config():
-        return StixShifterInterface.__config
-
     @staticmethod
     def schemes():
         """STIX Shifter data source interface only supports ``stixshifter://`` scheme."""
         return ["stixshifter"]
 
     @staticmethod
-    @lru_cache(maxsize=1)
-    def list_data_sources():
+    def list_data_sources(config):
         """Get configured data sources from environment variable profiles."""
-        if StixShifterInterface.__config is None:
-            StixShifterInterface.init()
-        data_sources = list(StixShifterInterface.__config.keys())
+        if not config:
+            config["profiles"] = load_profiles()
+        data_sources = list(config["profiles"].keys())
         data_sources.sort()
         return data_sources
 
     @staticmethod
-    def query(uri, pattern, session_id=None):
+    def query(uri, pattern, session_id, config):
         """Query a stixshifter data source."""
         scheme, _, profile = uri.rpartition("://")
         profiles = profile.split(",")
+
+        if not config:
+            config["profiles"] = load_profiles()
 
         if scheme != "stixshifter":
             raise DataSourceManagerInternalError(
                 f"interface {__package__} should not process scheme {scheme}"
             )
 
+        set_stixshifter_logging_level()
+
         ingestdir = mkdtemp()
         query_id = ingestdir.name
         bundles = []
+        _logger.debug(f"prepare query with ID: {query_id}")
         for i, profile in enumerate(profiles):
-            (
-                connector_name,
-                connection_dict,
-                configuration_dict,
-            ) = StixShifterInterface._get_stixshifter_config(profile)
+            # STIX-shifter will alter the config objects, thus making them not reusable.
+            # So only give stix-shifter a copy of the configs.
+            # Check `modernize` functions in the `stix_shifter_utils` for details.
+            (connector_name, connection_dict, configuration_dict,) = map(
+                copy.deepcopy, get_datasource_from_profiles(profile, config["profiles"])
+            )
+
+            check_module_availability(connector_name)
 
             data_path_striped = "".join(filter(str.isalnum, profile))
             ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
@@ -200,6 +249,9 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 raise DataSourceError(
                     f"STIX-shifter translation failed with message: {dsl['error']}"
                 )
+
+            _logger.debug(f"STIX pattern to query: {pattern}")
+            _logger.debug(f"translate results: {dsl}")
 
             # query results should be put together; when translated to STIX, the relation between them will remain
             connector_results = []
@@ -261,6 +313,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         f"STIX-shifter transmission.query() failed with message: {stix_shifter_error_msg}"
                     )
 
+            _logger.debug("transmission succeeded, start translate back to STIX")
+
             stixbundle = translation.translate(
                 connector_name,
                 "results",
@@ -269,64 +323,9 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 {},
             )
 
+            _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
             with ingestfile.open("w") as ingest:
                 json.dump(stixbundle, ingest, indent=4)
-            bundles.append(str(ingestfile.resolve()))
+            bundles.append(str(ingestfile.expanduser().resolve()))
 
         return ReturnFromFile(query_id, bundles)
-
-    @staticmethod
-    @lru_cache(maxsize=100)
-    def _get_stixshifter_config(profile_name):
-        if StixShifterInterface.__config is None:
-            StixShifterInterface.init()
-
-        profile_name = profile_name.lower()
-        connector_name = StixShifterInterface.__config.get(profile_name, {}).get(
-            "connector"
-        )
-        if not connector_name:
-            raise InvalidDataSource(
-                profile_name,
-                "stixshifter",
-                f"no {profile_name} configuration found",
-            )
-        connector_name = connector_name.lower()
-
-        connection = StixShifterInterface.__config[profile_name].get("connection", None)
-        if not connection:
-            raise InvalidDataSource(
-                profile_name,
-                "stixshifter",
-                f"no {profile_name} connection configured",
-            )
-
-        configuration = StixShifterInterface.__config[profile_name].get("config", None)
-        if not configuration:
-            raise InvalidDataSource(
-                profile_name,
-                "stixshifter",
-                f"no {profile_name} configuration defined",
-            )
-
-        if "host" not in connection:
-            raise InvalidDataSource(
-                profile_name,
-                "stixshifter",
-                f'invalid {profile_name} environment variable: no "host" field',
-            )
-
-        if "port" not in connection and connector_name != "stix_bundle":
-            raise InvalidDataSource(
-                profile_name,
-                "stixshifter",
-                f'invalid {profile_name} environment variable: no "port" field',
-            )
-
-        if "auth" not in configuration:
-            raise InvalidDataSource(
-                profile_name,
-                "stixshifter",
-                f'invalid {profile_name} environment variable: no "auth" field',
-            )
-        return connector_name, connection, configuration

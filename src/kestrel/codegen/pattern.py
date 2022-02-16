@@ -65,12 +65,20 @@ def build_pattern(
         _logger.debug(f'pattern body dereferred: "{pattern_body}"')
 
         if pattern_body and not time_range:
-            try:
-                ref_var_time_ranges = [
-                    _get_variable_time_range(store, symtable, var_name)
-                    for var_name in references.keys()
-                ]
+            ref_var_time_ranges = []
 
+            for var_name in references.keys():
+                try:
+                    _tr = _get_variable_time_range(store, symtable, var_name)
+                except InvalidAttribute:
+                    _tr = None
+                    _logger.warning(
+                        f"pattern time range searching failed on variable {var_name}"
+                    )
+                else:
+                    ref_var_time_ranges.append(_tr)
+
+            if ref_var_time_ranges:
                 start = min([t[0] for t in ref_var_time_ranges])
                 end = max([t[1] for t in ref_var_time_ranges])
 
@@ -82,12 +90,6 @@ def build_pattern(
 
                 time_range = (start_stix, stop_stix)
                 _logger.debug(f"pattern time range computed: {time_range}")
-
-            except InvalidAttribute as e:
-                time_range = None
-                _logger.warning(
-                    f"pattern time range searching failed on variables {list(references.keys())}"
-                )
 
     if pattern_body:
         if time_range:

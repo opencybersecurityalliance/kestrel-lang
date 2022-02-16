@@ -1,0 +1,34 @@
+# syntax default values
+language:
+  default_variable: "_"
+  default_sort_order: "desc"
+  default_datasource_schema: "stixshifter"
+  default_analytics_schema: "docker"
+
+# how a Kestrel session is executed
+session:
+  cache_directory_prefix: "kestrel-session-" # under system temp directory
+  local_database_path: "local.db"
+  show_execution_summary: true
+
+# whether/how to prefetch all records/observations for entities
+prefetch:
+  get: true
+  find: true
+  process_name_change_timerange_start_offset: -5 # seconds
+  process_name_change_timerange_stop_offset: 5 # seconds
+  process_lifespan_start_offset: -10800 # seconds
+  process_lifespan_stop_offset: 10800 # seconds
+
+# option when generating STIX query
+stixquery:
+  timerange_start_offset: -300 # seconds
+  timerange_stop_offset: 300 # seconds
+  support_id: false # STIX 2.0 does not support unique ID
+
+# debug options
+debug:
+  env_var: "KESTREL_DEBUG" # debug mode if the environment variable exists
+  cache_directory: "kestrel" # under system temp directory
+  session_exit_marker: "session.exited"
+  maximum_exited_session: 3

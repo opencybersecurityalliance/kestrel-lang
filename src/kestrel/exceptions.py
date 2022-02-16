@@ -12,7 +12,8 @@ class KestrelException(Exception):
     """
 
     def __init__(self, error, suggestion=""):
-        self.error = error if error[-1] == "." else error + "."
+        self.error = error[:-1] if error[-1] == "\n" else error
+
         self.suggestion = (
             suggestion
             if (not suggestion or suggestion[-1] == ".")
@@ -20,7 +21,7 @@ class KestrelException(Exception):
         )
 
     def __str__(self):
-        return f"[ERROR] {self.__class__.__name__}: {self.error} {self.suggestion}"
+        return f"[ERROR] {self.__class__.__name__}: {self.error}\n{self.suggestion}"
 
 
 class KestrelInternalError(KestrelException):
@@ -33,12 +34,9 @@ class KestrelInternalError(KestrelException):
 ################################################################
 
 
-class NoValidConfiguration(KestrelException):
-    def __init__(self):
-        super().__init__(
-            "no valid configuration files found",
-            'reinstall package with "pip install". report bug if not solved',
-        )
+class InvalidConfiguration(KestrelException):
+    def __init__(self, error, suggestion):
+        super().__init__(error, suggestion)
 
 
 ################################################################
@@ -169,10 +167,12 @@ class InvalidDataSource(KestrelException):
 
 
 class DataSourceError(KestrelException):
-    def __init__(self, error):
+    def __init__(self, error, suggestion=""):
+        if not suggestion:
+            suggestion = "please check data source config or test the query manually"
         super().__init__(
-            f"data source internal error: {error}",
-            "please check data source config or test the query manually",
+            error,
+            suggestion,
         )
 
 
@@ -216,8 +216,9 @@ class InvalidAnalytics(KestrelException):
 
 
 class AnalyticsError(KestrelException):
-    def __init__(self, error):
-        super().__init__(error, "report to analytics developer")
+    def __init__(self, error, suggestion=""):
+        suggestion = "report to analytics developer" if not suggestion else suggestion
+        super().__init__(error, suggestion)
 
 
 class AnalyticsInterfaceNotFound(KestrelException):
@@ -241,9 +242,23 @@ class ConflictingAnalyticsInterfaceScheme(KestrelException):
         )
 
 
+class InvalidAnalyticsArgumentCount(KestrelException):
+    def __init__(self, analytics_name, num_received, num_expected):
+        super().__init__(
+            f'the analytics "{analytics_name}" takes {num_expected} Kestrel variables, not {num_received} as given in APPLY.'
+        )
+
+
 class InvalidAnalyticsInput(KestrelException):
     def __init__(self, type_received, types_expected):
         typelist = ", ".join([f'"{t}"' for t in types_expected])
         super().__init__(
             f'received unsupported type "{type_received}"; expected one of {typelist}'
+        )
+
+
+class InvalidAnalyticsOutput(KestrelException):
+    def __init__(self, analytcs_name, return_type):
+        super().__init__(
+            f"unsupported return type {return_type} from analytics: {analytics_name}"
         )
