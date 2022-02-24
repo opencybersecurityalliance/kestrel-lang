@@ -9,6 +9,12 @@ The format is based on `Keep a Changelog`_.
 1.2.1 (2022-02-24)
 ==================
 
+Added
+-----
+
+- unit test: python analytics basic tests
+- unit test: stix-shifter connector verification
+
 Removed
 -------
 
