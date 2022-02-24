@@ -1,0 +1,26 @@
+name: Daily STIX-shifter Connector Package Verification Test
+
+on:
+  schedule:
+    # Run this once per day, towards the end of the day for keeping the most
+    # recent data point most meaningful (hours are interpreted in UTC).
+    - cron: "55 02 * * *"
+  workflow_dispatch: # Allow for running this manually.
+
+jobs:
+  verify-stixshifter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install Kestrel package
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools
+          python -m pip install pytest
+          python -m pip install .
+      - name: Sample STIX-shifter Connector Package Verification on PyPI
+        run: pytest -vv tests/test_stixshifter.py -k test_verify_package_origin

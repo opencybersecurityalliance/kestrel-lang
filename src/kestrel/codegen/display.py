@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from pandas import DataFrame
 from io import StringIO
-import matplotlib
 import json
 
 from kestrel.exceptions import KestrelInternalError
@@ -154,7 +153,11 @@ class DisplayHtml(AbstractDisplay):
 
 class DisplayFigure(DisplayHtml):
     def __init__(self, figure):
-        if not isinstance(figure, matplotlib.figure.Figure):
+        figure_type = type(figure)
+        if (
+            figure_type.__module__ + "." + figure_type.__name__
+            != "matplotlib.figure.Figure"
+        ):
             raise KestrelInternalError("invalid input to DisplayFigure object")
         vfile = StringIO()
         figure.savefig(vfile, format="svg")

@@ -1,0 +1,96 @@
+import pytest
+import pathlib
+import os
+
+from kestrel.session import Session
+from kestrel.codegen.display import DisplayHtml
+
+
+@pytest.fixture(autouse=True)
+def env_setup(tmp_path):
+
+    analytics_module_path = str(
+        pathlib.Path(__file__).resolve().parent / "kestrel_python_analytics.py"
+    )
+
+    profiles = f"""profiles:
+    enrich_one_variable:
+        module: {analytics_module_path}
+        func: enrich_one_variable
+    html_visualization:
+        module: {analytics_module_path}
+        func: html_visualization
+    enrich_multiple_variables:
+        module: {analytics_module_path}
+        func: enrich_multiple_variables
+    """
+
+    profile_file = tmp_path / "pythonanalytics.yaml"
+    with open(profile_file, "w") as pf:
+        pf.write(profiles)
+
+    os.environ["KESTREL_PYTHON_ANALYTICS_CONFIG"] = str(
+        profile_file.expanduser().resolve()
+    )
+
+
+def test_enrich_one_variable():
+    with Session() as s:
+        stmt = """
+newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
+             , {"type": "process", "name": "explorer.exe", "pid": "99"}
+             ]
+APPLY python://enrich_one_variable ON newvar
+"""
+        s.execute(stmt)
+        v = s.get_variable("newvar")
+        assert len(v) == 2
+        assert v[0]["type"] == "process"
+        assert set([v[0]["x_new_attr"], v[1]["x_new_attr"]]) == set(
+            ["newval0", "newval1"]
+        )
+
+
+def test_html_visualization():
+    with Session() as s:
+        stmt = """
+newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
+             , {"type": "process", "name": "explorer.exe", "pid": "99"}
+             ]
+APPLY python://html_visualization ON newvar
+"""
+        displays = s.execute(stmt)
+        viz = displays[0]
+        assert type(viz) is DisplayHtml
+        assert viz.html == "<p>Hello World! -- a Kestrel analytics</p>"
+
+
+@pytest.mark.skip(
+    reason="to fix: multiple variables reassign in APPLY gives a firepit exception"
+)
+def test_enrich_multiple_variables():
+    with Session() as s:
+        stmt = """
+v1 = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
+         , {"type": "process", "name": "explorer.exe", "pid": "99"}
+         ]
+v2 = NEW process ["cmd.exe", "explorer.exe", "google-chrome.exe"]
+v3 = NEW ipv4-addr ["1.1.1.1", "2.2.2.2"]
+APPLY python://enrich_multiple_variables ON v1, v2, v3
+"""
+        s.execute(stmt)
+
+        v1 = s.get_variable("v1")
+        assert set([v1[0]["x_new_attr"], v1[1]["x_new_attr"]]) == set(
+            ["newval_a0", "newval_a1"]
+        )
+
+        v2 = s.get_variable("v2")
+        assert set(
+            [v2[0]["x_new_attr"], v2[1]["x_new_attr"], v2[2]["x_new_attr"]]
+        ) == set(["newval_b0", "newval_b1", "newval_b2"])
+
+        v3 = s.get_variable("v3")
+        assert set([v3[0]["x_new_attr"], v3[1]["x_new_attr"]]) == set(
+            ["newval_c0", "newval_c1"]
+        )

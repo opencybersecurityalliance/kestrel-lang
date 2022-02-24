@@ -89,7 +89,6 @@ import pathlib
 import logging
 import inspect
 import traceback
-import matplotlib
 from collections.abc import Mapping
 from pandas import DataFrame
 from importlib.util import spec_from_file_location, module_from_spec
@@ -248,6 +247,7 @@ class PythonAnalytics(AbstractContextManager):
 
             output_dfs, output_dsps = [], []
             for x in outputs:
+                x_class_str = type(x).__module__ + "." + type(x).__name__
                 if isinstance(x, DataFrame):
                     output_dfs.append(x)
                 elif isinstance(x, AbstractDisplay):
@@ -258,7 +258,7 @@ class PythonAnalytics(AbstractContextManager):
                         f'analytics "{self.name}" yielded a string return. treat it as an HTML element.'
                     )
                     output_dsps.append(DisplayHtml(x))
-                elif isinstance(x, matplotlib.figure.Figure):
+                elif x_class_str == "matplotlib.figure.Figure":
                     _logger.info(f'analytics "{self.name}" yielded a figure.')
                     output_dsps.append(DisplayFigure(x))
                 else:
