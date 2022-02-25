@@ -225,12 +225,14 @@ class Session(AbstractContextManager):
                 runtime_directory_master.unlink()
             runtime_directory_master.symlink_to(self.runtime_directory)
 
-        # local database of SQLite or Parquet
+        # local database of SQLite or PostgreSQL
         if not store_path:
             # use the default local database in config.py
-            store_path = os.path.join(
-                self.runtime_directory, self.config["session"]["local_database_path"]
-            )
+            local_database_path = self.config["session"]["local_database_path"]
+            if "://" in local_database_path:
+                store_path = local_database_path
+            else:
+                store_path = os.path.join(self.runtime_directory, local_database_path)
         self.store = get_storage(store_path, self.session_id)
 
         # Symbol Table

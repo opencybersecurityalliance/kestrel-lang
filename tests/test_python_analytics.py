@@ -6,6 +6,12 @@ from kestrel.session import Session
 from kestrel.codegen.display import DisplayHtml
 
 
+@pytest.fixture
+def fake_bundle_file():
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(cwd, "test_bundle.json")
+
+
 @pytest.fixture(autouse=True)
 def env_setup(tmp_path):
 
@@ -94,3 +100,16 @@ APPLY python://enrich_multiple_variables ON v1, v2, v3
         assert set([v3[0]["x_new_attr"], v3[1]["x_new_attr"]]) == set(
             ["newval_c0", "newval_c1"]
         )
+
+
+def test_enrich_after_get(fake_bundle_file):
+    with Session() as s:
+        stmt = f"""
+newvar = get url from file://{fake_bundle_file} where [url:value LIKE '%']
+APPLY python://enrich_one_variable ON newvar
+"""
+        s.execute(stmt)
+        v = s.get_variable("newvar")
+        assert len(v) == 31
+        assert v[0]["type"] == "url"
+        assert "x_new_attr" in v[0]
