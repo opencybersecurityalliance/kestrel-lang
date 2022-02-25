@@ -232,9 +232,7 @@ class Session(AbstractContextManager):
             if "://" in local_database_path:
                 store_path = local_database_path
             else:
-                store_path = os.path.join(
-                    self.runtime_directory, local_database_path
-                )
+                store_path = os.path.join(self.runtime_directory, local_database_path)
         self.store = get_storage(store_path, self.session_id)
 
         # Symbol Table
