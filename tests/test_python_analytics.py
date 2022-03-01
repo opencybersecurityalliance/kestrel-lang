@@ -12,6 +12,12 @@ def fake_bundle_file():
     return os.path.join(cwd, "test_bundle.json")
 
 
+@pytest.fixture
+def fake_bundle_4():
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(cwd, "test_bundle_4.json")
+
+
 @pytest.fixture(autouse=True)
 def env_setup(tmp_path):
 
@@ -71,9 +77,6 @@ APPLY python://html_visualization ON newvar
         assert viz.html == "<p>Hello World! -- a Kestrel analytics</p>"
 
 
-@pytest.mark.skip(
-    reason="to fix: multiple variables reassign in APPLY gives a firepit exception"
-)
 def test_enrich_multiple_variables():
     with Session() as s:
         stmt = """
@@ -102,7 +105,7 @@ APPLY python://enrich_multiple_variables ON v1, v2, v3
         )
 
 
-def test_enrich_after_get(fake_bundle_file):
+def test_enrich_after_get_url(fake_bundle_file):
     with Session() as s:
         stmt = f"""
 newvar = get url from file://{fake_bundle_file} where [url:value LIKE '%']
@@ -112,4 +115,17 @@ APPLY python://enrich_one_variable ON newvar
         v = s.get_variable("newvar")
         assert len(v) == 31
         assert v[0]["type"] == "url"
+        assert "x_new_attr" in v[0]
+
+
+def test_enrich_after_get_process(fake_bundle_4):
+    with Session() as s:
+        stmt = f"""
+newvar = get process from file://{fake_bundle_4} where [process:binary_ref.name LIKE '%']
+APPLY python://enrich_one_variable ON newvar
+"""
+        s.execute(stmt)
+        v = s.get_variable("newvar")
+        assert len(v) == 4
+        assert v[0]["type"] == "process"
         assert "x_new_attr" in v[0]
