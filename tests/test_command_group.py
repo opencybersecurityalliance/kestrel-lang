@@ -50,9 +50,6 @@ def test_group_src_dst(fake_bundle_file):
 @pytest.mark.parametrize(
     "agg_func, attr, expected",
     [
-        ("sum", "number_observed", "sum_number_observed"),
-        ("avg", "number_observed", "avg_number_observed"),
-        ("min", "last_observed", "min_last_observed"),
         ("max", "dst_ref.value", "max_dst_ref.value"),
         ("count", "dst_ref.value", "count_dst_ref.value"),
         ("nunique", "dst_ref.value", "nunique_dst_ref.value"),
@@ -77,9 +74,6 @@ def test_group_srcref_agg(fake_bundle_file, agg_func, attr, expected):
 @pytest.mark.parametrize(
     "agg_func, attr, alias",
     [
-        ("sum", "number_observed", "count"),
-        ("avg", "number_observed", "avg_count"),
-        ("min", "last_observed", "foo"),
         ("max", "dst_ref.value", "rand_value"),
         ("count", "dst_ref.value", "whatever"),
         ("nunique", "dst_ref.value", "unique_dests"),
