@@ -303,9 +303,9 @@ class PythonAnalytics(AbstractContextManager):
         spec = spec_from_file_location(
             "kestrel_analytics_python.analytics.{profile_name}", str(self.module_path)
         )
-        module = module_from_spec(spec)
 
         try:
+            module = module_from_spec(spec)
             spec.loader.exec_module(module)
         except ModuleNotFoundError as e:
             raise AnalyticsError(
@@ -313,11 +313,19 @@ class PythonAnalytics(AbstractContextManager):
                 "pip install the corresponding Python package",
             )
         except Exception as e:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            error = "".join(
-                traceback.format_exception(exc_type, exc_value, exc_traceback)
-            )
-            raise AnalyticsError(f"{self.name} failed at importing:\n{error}")
+            if isinstance(e, AttributeError) and e.args == (
+                "'NoneType' object has no attribute 'loader'",
+            ):
+                raise AnalyticsError(
+                    f"{self.name} is not found",
+                    "please make sure the Python module and function specified in the profile (configuration) exist",
+                )
+            else:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                error = "".join(
+                    traceback.format_exception(exc_type, exc_value, exc_traceback)
+                )
+                raise AnalyticsError(f"{self.name} failed at importing:\n{error}")
 
         return module
 
