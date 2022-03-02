@@ -162,7 +162,7 @@ def check_module_availability(connector_name):
         package_name = get_package_name(connector_name)
         _logger.debug(f"guess the connector package name: {package_name}")
 
-        verify_package_origin(connector_name, package_name)
+        verify_package_origin(connector_name)
 
         _logger.info(f'install Python package "{package_name}".')
         try:
