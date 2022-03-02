@@ -6,6 +6,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.2.2 (2022-03-02)
+==================
+
+Added
+-----
+
+- remote data store support
+- unit test: Python analytics: APPLY after GET
+- unit test: Python analytics: APPLY on multiple variables
+
+Fixed
+-----
+
+- bump firepit version to fix transaction errors
+- bug fix: verify_package_origin() takes 1 argument
+
+Removed
+-------
+
+- unit test: Python 3.6 EOL and removed from GitHub Actions
+
 1.2.1 (2022-02-24)
 ==================
 
