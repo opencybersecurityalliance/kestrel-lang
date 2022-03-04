@@ -1,7 +1,10 @@
 import json
+import logging
 import re
 import uuid
 import pathlib
+from datetime import datetime, timezone
+from dateutil import parser
 import requests
 
 from stix2matcher.matcher import match
@@ -9,6 +12,8 @@ from stix2matcher.matcher import match
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
 from kestrel.exceptions import DataSourceManagerInternalError, DataSourceConnectionError
+
+_logger = logging.getLogger(__name__)
 
 
 def _make_query_dir(uri):
@@ -48,9 +53,9 @@ class StixBundleInterface(AbstractDataSourceInterface):
         bundles = []
         for i, data_path in enumerate(data_paths):
             data_path_striped = "".join(filter(str.isalnum, data_path))
-            ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
+            bundlefile = ingestdir / f"{data_path_striped}.json"
+            ingestfile = ingestdir / f"{i}.json"
 
-            # TODO: keep files in LRU cache?
             if scheme == "file":
                 try:
                     with open(data_path, "r") as f:
@@ -58,26 +63,62 @@ class StixBundleInterface(AbstractDataSourceInterface):
                 except Exception:
                     raise DataSourceConnectionError(uri)
             elif scheme == "http" or scheme == "https":
-                try:
-                    bundle_in = requests.get(f"{scheme}://{data_path}").json()
-                except requests.exceptions.ConnectionError:
-                    raise DataSourceConnectionError(uri)
+                data_uri = f"{scheme}://{data_path}"
+                if bundlefile.exists():
+                    _logger.debug("File exists: %s", bundlefile)
+                    try:
+                        resp = requests.head(data_uri)
+                    except requests.exceptions.ConnectionError:
+                        raise DataSourceConnectionError(uri)
+                    last_modified = parser.parse(resp.headers.get("Last-Modified"))
+                    file_time = datetime.fromtimestamp(
+                        bundlefile.stat().st_mtime, tz=timezone.utc
+                    )
+                else:
+                    _logger.debug("Bundle not on disk: %s", bundlefile)
+                    last_modified = None
+                    file_time = None
+
+                if not last_modified or last_modified > file_time:
+                    _logger.info("Downloading %s to %s", data_uri, bundlefile)
+                    try:
+                        bundle_in = requests.get(data_uri).json()
+                    except requests.exceptions.ConnectionError:
+                        raise DataSourceConnectionError(uri)
+                    with bundlefile.open("w") as f:
+                        json.dump(bundle_in, f)
+                else:
+                    # We already have this file
+                    _logger.debug("Using cached bundle: %s", bundlefile)
+                    try:
+                        with open(bundlefile, "r") as f:
+                            bundle_in = json.load(f)
+                    except Exception:
+                        raise DataSourceConnectionError(uri)
             else:
                 raise DataSourceManagerInternalError(
                     f"interface {__package__} should not process scheme {scheme}"
                 )
 
             bundle_out = {}
+            _logger.debug("Filtering: %s", bundlefile)
+            count = 0
+            matched = 0
             for prop, val in bundle_in.items():
                 if prop == "objects":
                     bundle_out[prop] = []
                     for obj in val:
+                        count += 1
                         if obj["type"] != "observed-data" or match(
                             pattern, [obj], False
                         ):
                             bundle_out[prop].append(obj)
+                            matched += 1
                 else:
                     bundle_out[prop] = val
+            _logger.debug(
+                "Matched %d of %d observations: %s", matched, count, bundlefile
+            )
 
             with ingestfile.open("w") as f:
                 json.dump(bundle_out, f)
