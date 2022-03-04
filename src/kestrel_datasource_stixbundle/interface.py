@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from dateutil import parser
 import requests
 
-from stix2matcher.matcher import match
+from stix2matcher.matcher import Pattern
 
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
@@ -48,6 +48,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
         scheme, _, data_paths = uri.rpartition("://")
         data_paths = data_paths.split(",")
         pattern = fixup_pattern(pattern)
+        compiled_pattern = Pattern(pattern)
 
         ingestdir = _make_query_dir(uri)
         bundles = []
@@ -109,8 +110,8 @@ class StixBundleInterface(AbstractDataSourceInterface):
                     bundle_out[prop] = []
                     for obj in val:
                         count += 1
-                        if obj["type"] != "observed-data" or match(
-                            pattern, [obj], False
+                        if obj["type"] != "observed-data" or compiled_pattern.match(
+                            [obj], False
                         ):
                             bundle_out[prop].append(obj)
                             matched += 1
