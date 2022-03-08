@@ -24,6 +24,7 @@ import itertools
 from collections import OrderedDict
 
 from firepit.query import Aggregation, Group, Query, Table
+from firepit.stix20 import summarize_pattern
 
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts
 from kestrel.exceptions import *
@@ -43,6 +44,7 @@ from kestrel.codegen.relations import (
     are_entities_associated_with_x_ibm_event,
     fine_grained_relational_process_filtering,
     get_entity_id_attribute,
+    stix_2_0_identical_mapping,
 )
 
 _logger = logging.getLogger(__name__)
@@ -231,7 +233,24 @@ def get(stmt, session):
             f"native GET pattern executed and DB view {local_var_table} extracted."
         )
 
-        if session.config["prefetch"]["get"] and len(_output):
+        pat_summary = summarize_pattern(pattern)
+        pat_types = list(pat_summary.keys())
+        if return_type in stix_2_0_identical_mapping:
+            id_attrs = set(stix_2_0_identical_mapping[return_type])
+        else:
+            id_attrs = pat_summary[return_type]  # Hack
+        if (
+            len(pat_types) == 1
+            and pat_types[0] == return_type
+            and pat_summary[return_type] == id_attrs
+        ):
+            # Prefetch won't return anything new here, so skip it
+            _logger.debug("Skipping prefetch for direct query")
+            do_prefetch = False
+        else:
+            do_prefetch = True
+
+        if do_prefetch and session.config["prefetch"]["get"] and len(_output):
             prefetch_ret_var_table = return_var_table + "_prefetch"
             prefetch_ret_entity_table = _prefetch(
                 return_type,
