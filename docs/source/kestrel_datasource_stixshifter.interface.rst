@@ -1,4 +1,4 @@
-STIX Shifter Data Source Interface
+STIX-shifter Data Source Interface
 ==================================
 
 .. automodule:: kestrel_datasource_stixshifter.interface

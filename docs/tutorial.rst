@@ -19,7 +19,8 @@ install Kestrel is to use pip:
     $ pip install --upgrade pip setuptools wheel
     $ pip install kestrel-lang
 
-If you need more control, check out the following guide on :doc:`installation` for more details.
+It is preferred to install Kestrel in a `Python virtual environment`_. Check
+out :doc:`installation` for details.
 
 Write Your First Hunt Flow
 --------------------------
@@ -123,13 +124,13 @@ Creating A Hunt Book
    add another hunt step in a new notebook cell to capture the firefox process
    only, and then show the results.
 
-::
+.. code-block:: elixir
 
     firefox = GET process FROM browsers WHERE [process:pid = '201']
     DISP firefox ATTR name, pid
 
 6. Run the second cell with ``Shifter`` + ``Enter``. The result is a hunt book
-   with two cells and the results from them.
+   with two cells and their execution results.
 
 .. image:: images/tutorial/jupyter_helloworld_strech.png
    :width: 100%
@@ -149,11 +150,15 @@ add more hunt steps, or share the hunt book with others.
 Hunting On Real-World Data
 ==========================
 
-Now it is time to hunt on real-world data. Before you start, you must identify
-an available data source, which can be a host monitor, an EDR, a SIEM, a
-firewall, etc. In the first release of Kestrel, the *STIX-Shifter
-data source interface* is included. `STIX-Shifter`_ supports lots of data sources to
-connect to Kestrel. Check if yours is in the `supported list`_ before you start.
+Now it is time to hunt on real-world data. Before start, you must identify one
+or more available data sources for hunting, which can be a host monitor, an
+EDR, a SIEM, a firewall, etc. Kestrel has data source interfaces, each of which
+rules and configures how to talk to a set of data sources. The first data
+source interface available to Kestrel is the
+:doc:`source/kestrel_datasource_stixshifter.interface`, which leverages
+`STIX-shifter`_ as a federated search layer to talk to more then a dozen of
+different data sources. Visit the STIX-shifter `supported list`_ to get the
+STIX-shifter connector *module name* for your data source.
 
 Checking Data Sources
 ---------------------
@@ -163,15 +168,14 @@ Two example data sources are described. Select from the following options to sta
 Option 1: Sysmon + Elasticsearch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-`Sysmon`_ is a popular host monitor, but it is not a full monitoring
-stack, meaning that it does not store data or handle queries. To create the queryable stack
-for Kestrel, set up an `Elasticsearch`_ instance to store the monitored
-data.
+`Sysmon`_ is a popular host monitor, but it is not a full monitoring stack---it
+does not store data or handle queries. To create the queryable data source for
+Kestrel, set up an `Elasticsearch`_ instance to store the monitored data.
 
-1. Install Sysmon on a host to monitor it.
+1. Install Sysmon on a host to monitor its system activities.
 
 2. Install Elasticsearch somewhere that is reachable by both the monitored host
-   and the hunter's machine where Kestrel and STIX-Shifter are running.
+   and the hunter's machine where Kestrel and STIX-shifter are running.
 
 3. Set up Sysmon ingestion into Elasticsearch, for example, wtih `Logstash`_.
 
@@ -179,80 +183,87 @@ data.
    This allows you to differentiate data stored in the same Elasticsearch but
    are from different monitored hosts.
 
-5. Set up a username and password or API keys in Elasticsearch. Test API query to the
-   Elasticsearch.
+5. Set up a username/password or an API key in Elasticsearch for Kestrel to use.
 
 Option 2: CarbonBlack
 ^^^^^^^^^^^^^^^^^^^^^
 
 CarbonBlack provides a full monitoring and data access stack, which can be
-directly used by STIX-Shifter and Kestrel.
+directly used by STIX-shifter and Kestrel.
 
 The only task is to get an API key of the CarbonBlack Response or CarbonBlack
 Cloud service which is running. You also need to know whether the service is
-CarbonBlack Response or Cloud, which corresponds to different STIX-Shifter
+CarbonBlack Response or Cloud, which corresponds to different STIX-shifter
 connectors to install.
 
-STIX-Shifter Setup
-------------------
+Adding Kestrel Data Source Profiles
+-----------------------------------
 
-STIX-Shifter is automatically installed when installing ``kestrel``. However,
-you need to install additional STIX-Shifter connector packages for each
-specific data sources. Example connectors:
+After obtaining credentials to access your data sources, you need to let
+Kestrel know them. In other words, you need to create a profile for each data
+source. The profile
 
-- Sysmon data in Elasticsearch: ``stix-shifter-modules-elastic-ecs``.
-- Sysflow data in Elasticsearch: ``stix-shifter-modules-elastic-ecs``.
-- CarbonBlack Response: ``stix-shifter-modules-carbonblack``.
-- CarbonBlack Cloud: ``stix-shifter-modules-cbcloud``.
-- IBM QRadar: ``stix-shifter-modules-qradar``.
+- names the data source to refer to in a huntbook,
+- specifies how to connect to the data source,
+- gives additional configuration if needed for data source access.
 
-For example, to access Sysmon data in Elasticsearch, install the corresponding connector:
+There are two ways to create a data source profile: adding a section in
+``~/.config/kestrel/stixshifter.yaml`` (create the file if not exist), or
+creating 3 environment variables per data source before starting Kestrel.
+Below is an example of ``~/.config/kestrel/stixshifter.yaml`` containing 3 data
+source profiles. The data source names (you will use in your hunts) are:
 
-.. code-block:: console
+- ``host101``: the Sysmon data stored at ``elastic.securitylog.company.com``
+- ``host102``: the CarbonBlack Cloud data at ``cbcloud.securitylog.company.com``
+- ``siemq``: the QRadar data at ``qradar.securitylog.company.com``
 
-    $ pip install stix-shifter-modules-elastic-ecs
+.. code-block:: yaml
 
-Suppose you set up an Elasticsearch server at ``elastic.securitylog.company.com``
-with default port ``9200``. You would add the Sysmon monitored host to it as index
-``host101``. Then obtain the API ID and API key of the Elasticsearch server as
-``VuaCfGcBCdbkQm-e5aOx`` and ``ui2lp2axTNmsyakw9tvNnw``, respectively.
+    profiles:
+        host101:
+            connector: elastic_ecs
+            connection:
+                host: elastic.securitylog.company.com
+                port: 9200
+                indices: host101
+            config:
+                auth:
+                    id: VuaCfGcBCdbkQm-e5aOx
+                    api_key: ui2lp2axTNmsyakw9tvNnw
+        host102:
+            connector: cbcloud
+            connection:
+                host: cbcloud.securitylog.company.com
+                port: 443
+            config:
+                auth:
+                    org-key: D5DQRHQP
+                    token: HT8EMI32DSIMAQ7DJM
+        siemq:
+            connector: qradar
+            connection:
+                host: qradar.securitylog.company.com
+                port: 443
+            config:
+                auth:
+                    SEC: 123e4567-e89b-12d3-a456-426614174000
 
-The Kestrel STIX-Shifter data source interface loads the information above with
-environment variables when querying STIX-Shifter. You must set up three
-environment variables for each data source. Refer to
-:doc:`source/kestrel_datasource_stixshifter.interface` for more details.
-
-.. code-block:: console
-
-    $ export STIXSHIFTER_HOST101_CONNECTOR=elastic_ecs
-    $ export STIXSHIFTER_HOST101_CONNECTION='{"host":"elastic.securitylog.company.com", "port":9200, "indices":"host101"}'
-    $ export STIXSHIFTER_HOST101_CONFIG='{"auth":{"id":"VuaCfGcBCdbkQm-e5aOx", "api_key":"ui2lp2axTNmsyakw9tvNnw"}}'
-
-Another example of the configuration for an IBM QRadar instance to connect:
-
-.. code-block:: console
-
-    $ export STIXSHIFTER_SIEMQ_CONNECTOR=qradar
-    $ export STIXSHIFTER_SIEMQ_CONNECTION='{"host":"qradar.securitylog.company.com", "port":443}'
-    $ export STIXSHIFTER_SIEMQ_CONFIG='{"auth":{"SEC":"123e4567-e89b-12d3-a456-426614174000"}}'
-
-The configurations can be tested in STIX-Shifter directly to see whether the
-query translation and transmission work. Refer to `STIX-Shifter documentation`_
-for more details.
+Check :doc:`source/kestrel_datasource_stixshifter.interface` for more
+information such as data source with a self-signed certificate and how to use
+environment variables to create a data source profile.
 
 Pattern Matching Against Real-World Data
 ----------------------------------------
 
-Now restart Jupyter Notebook from the same terminal where environment variables
-are exported:
+Now restart Jupyter Notebook from the terminal:
 
 .. code-block:: console
 
     $ jupyter notebook
 
-Write the first ``GET`` command to use STIX-Shifter data source
+Write the first ``GET`` command to use STIX-shifter data source
 interface. After typing the ``stixshifter://`` URI prefix, press ``TAB`` to
-auto-complete the available data sources loaded from environment variables:
+auto-complete the available data sources:
 
 .. image:: images/tutorial/datasource_list.png
    :width: 75%
@@ -261,27 +272,33 @@ auto-complete the available data sources loaded from environment variables:
 You can put up a simple pattern to search the entity pool of the Sysmon data
 source:
 
+.. code-block:: elixir
+
+    newvar = GET process FROM stixshifter://host101 WHERE [process:name = 'svchost.exe']
+
+You can add a second hunt step to display the entities:
+
+.. code-block:: elixir
+
+    DISP newvar ATTR name, pid
+
+After executing the two steps, you may get something like this:
+
 .. image:: images/tutorial/first_get.png
    :width: 100%
    :alt: First GET command against data source.
 
-**[Empty Return]** You may get an empty return. That is not bad! No error means
-the data source connection is set up correctly. The reason for the empty return
-is that by default STIX-shifter only searches the last five minutes of data if no
-time range is provided in the ``WHERE`` clause, and you are lucky that the data
-source has no matched data in the last five minutes. If this is the case, you
-can get data by specifying a time range at the end of the GET command, for example,
-``START t'2021-05-06T00:00:00Z' STOP t'2021-05-07T00:00:00Z'`` to search for
-all data on the day May 6, 2021. You need to use ISO timestamp and both
-``START`` and ``STOP`` keywords. Press ``tab`` in the middle of the timestamp
-to complete it. For more information, see the command:GET section in
-:doc:`language`.
-
-**[Python Version Issue]** STIX-Shifter has compatibility issues with Python >
-3.6. Test STIX-Shifter manually if Kestrel encounters a data source issue and
-suggests so. If the Python version is the issue, you might need to install Python
-3.6, for example, ``sudo dnf install python3.6``, and create `Python virtual
-environment`_ from Python 3.6 to restart.
+You may get zero entities in the return. That is not bad! Getting zero entities
+but not errors means the data source connection is set up correctly. The reason
+for the empty return is that by default STIX-shifter only searches the last
+five minutes of data if no time range is provided in the ``WHERE`` clause, and
+you are lucky that the data source has no matched data in the last five
+minutes. If this is the case, you can get data by specifying a time range at
+the end of the GET command, for example, ``START t'2021-05-06T00:00:00Z' STOP
+t'2021-05-07T00:00:00Z'`` to search for all data on the day May 6, 2021. You
+need to use ISO timestamp and both ``START`` and ``STOP`` keywords. Press
+``tab`` in the middle of the timestamp to complete it. For more information,
+see the *command:GET* section in :doc:`language`.
 
 Matching A TTP Pattern
 ----------------------
@@ -296,11 +313,16 @@ and the common binary to execute is a shell, for example, ``bash``.
    :width: 25%
    :alt: A TTP pattern.
 
-Put the TTP in a STIX pattern, match it against a `Sysflow`_ data source,
-and extract exploited processes from it. Specify a time range, which is
-highly recommended when there is no referred Kestrel variables in the ``WHERE``
-clause. If no time range is given, STIX-Shifter might apply a default time range,
-for example, the last 10 minutes. Read more about ``GET`` in :doc:`language`.
+Put the TTP in a STIX pattern, and return the exploited processes as the first
+hunt step in the Kestrel `RSAC'21 demo`_:
+
+.. code-block:: elixir
+
+    exp_node = GET process FROM stixshifter://linuxserver31
+               WHERE [process:parent_ref.name = 'node' AND process:binary_ref.name != 'node']
+               START t'2021-04-05T00:00:00Z' STOP t'2021-04-06T00:00:00Z'
+
+You may get some results like if there are logs that matches the TTP:
 
 .. image:: images/tutorial/ttp_exploit_matching.png
    :width: 90%
@@ -309,14 +331,14 @@ for example, the last 10 minutes. Read more about ``GET`` in :doc:`language`.
 Knowing Your Variables
 ======================
 
-After execution of each cell, Kestrel will give a summary on new variables such
-as how many entities and records are associated with it. For definitions of
-entity and record, see :doc:`language`. The summary also shows how
-many related records are returned from a data source and cached by Kestrel for
-future use, for example, `Finding Connected Entities`_. For example, when asking the
-TTP pattern above, the Sysflow data source also returns some
-network traffic associated with the processes in the returned variable
-``exp_node``. Kestrel caches it and gives the information in the summary.
+After execution of each cell, Kestrel gives a summary on new variables such as
+how many entities and records are associated with it. For definitions of entity
+and record, see :doc:`language`. The summary also shows how many related
+records are returned from a data source and cached by Kestrel for future use,
+for example, `Finding Connected Entities`_. For example, when asking the TTP
+pattern above, the Sysflow data source also returns some network traffic
+associated with the processes in ``exp_node``. Kestrel caches it and gives the
+information in the summary.
 
 Now that you have some entities back from data sources, you might be wondering what's
 in ``exp_node``. You need to have some hunt steps to inspect the Kestrel
@@ -340,9 +362,18 @@ of processes, network traffic created by processes, files loaded by processes,
 users who own the processes. To do so, use the ``FIND`` command with a
 previously created Kestrel variable, which stores a list of entities from which
 to find connected entities. Note that not all data sources have relation data,
-and not all STIX-Shifter connector modules are mature enough to translate
-relation data. The data sources known to work are `sysmon`_ and `Sysflow`_ both
-through ``elastic_ecs`` STIX-Shifter connector. Read more in :doc:`language`.
+and not all STIX-shifter connector modules are mature enough to translate
+relation data. The data sources known to work are `Sysmon`_ and `Sysflow`_ both
+through ``elastic_ecs`` STIX-shifter connector. Read more in :doc:`language`.
+
+A simple hunt step to get child processes of processes in ``exp_node``:
+
+.. code-block:: elixir
+
+    nc = FIND process CREATED BY exp_node
+    DISP nc ATTR name, pid, command_line
+
+This is the common way you reveal malicious activities from suspicious processes:
 
 .. image:: images/tutorial/find_command.png
    :width: 90%
@@ -370,33 +401,39 @@ shows a proxy server as the destination IP.
 
 To get the real destination IP addresses, you need to ask the proxy server or
 the SIEM system that stores the proxy logs, for example, `siemq` (QRadar) as
-provided to Kestrel in `STIX-Shifter Setup`_. This is an XDR hunt that goes across
-host/EDR to SIEM/firewall.
+provided to Kestrel in `Adding Kestrel Data Source Profiles`_. This is an XDR
+hunt (`RSAC'21 demo`_) that goes across host/EDR to SIEM/firewall.
 
-Write the ``GET`` in the second notebook cell. In the ``WHERE`` clause,
-specify the source IP and source port to identify the network traffic.  Kestrel
-will derive the time range for the ``GET``, which makes the relationship
-resolution unique. Lastly, show the other half of the proxy traffic to the
-Internet using ``DISP``.
+Once you refer to a variable in a STIX pattern in ``GET``, Kestrel will derive
+the time range for the ``GET`` based on the referred variable, which makes the
+relationship resolution unique.
 
 Applying an Analytics
 =====================
 
-You can apply any external analyzing or detection logic to add new attributes
-to existing Kestrel variables or return visualizations. Kestrel treats
-analytics as black boxes and only cares about the input and output formats. So it is
-possible to wrap even proprietary software in Kestrel analytics. Read more
-about analytics in :doc:`language`.
+You can apply any external analyzing or detection logic for adding new
+attributes to existing Kestrel variables or performing visualizations. Kestrel
+enables it by the Kestrel analytics hunt step (more in :doc:`language`), which
+is a foreign language interface to Kestrel.
+
+Kestrel treats analytics as black boxes and only cares about the input and
+output formats. So it is possible to wrap even proprietary software in Kestrel
+analytics. Similar to data sources, Kestrel has a two-level abstraction for
+analytics: Kestrel has multiple *analytics interfaces*, each of which handles a
+set of Kestrel analytics accordingly. Upon installation, Kestrel provides two
+analytics interfaces: :doc:`source/kestrel_analytics_docker.interface` and
+:doc:`source/kestrel_analytics_python.interface`.
+
+Community-contributed Kestrel analytics are at `kestrel-analytics repo`_, which
+can be cloned and used through either the Docker or Python analytics interface.
+Currently there are Kestrel analytics for IP enrichment, threat intelligence
+enrichment, machine learning inference, plotting, complex visualization,
+clustering, suspicious process scoring, and log4shell deobfuscation.
 
 Docker Analytics Setup
 ----------------------
 
-Kestrel ships with a docker analytics interface, plus 5 example analytics for
-*threat intelligence enrichment via SANS API*, *suspicious process scoring*,
-*machine learning model testing*, *geolocation visualization*, and *data
-plotting*.  Check our ``kestrel-analytics`` repository for more details.
-
-To use an analytics via the docker interface, you need to have `docker`_
+To use an analytics via the Docker interface, you need to have `docker`_
 installed, and then build the docker container for that analytics. For example,
 to build a docker container for the *geolocation visualization* analytics, go
 to its source code and run the command:
@@ -404,6 +441,24 @@ to its source code and run the command:
 .. code-block:: console
 
     $ docker build -t kestrel-analytics-pinip .
+
+To learn more about how to write and run a Kestrel analytics through the Docker
+interface, visit :doc:`source/kestrel_analytics_docker.interface` and our blog
+of `building your own Kestrel analytics`_.
+
+Python Analytics Setup
+----------------------
+
+You are already using Python to run Kestrel, so there is no additional
+requirement you need here.
+
+To setup an analytics via the Python interface, you only need to tell Kestrel
+where the analytics module/function is. Similar to `Adding Kestrel Data Source
+Profiles`_, you specify analytics profiles at
+``~/.config/kestrel/pythonanalytics.yaml``. You can follow the `Kestrel
+analytics example profile`_ in the `kestrel-analytics repo`_. Check more
+instructions including how to write your own Python analytics at
+:doc:`source/kestrel_analytics_python.interface`.
 
 Run an Analytics
 ----------------
@@ -422,26 +477,6 @@ This analytics first gets geolocations for all IP addresses in the network
 traffic using the `GeoIP2`_ API. Then it uses `Folium`_ library to pin them on
 a map. Lastly, it serializes the output into a Kestrel display object and hands
 it over to the analytics manager in Kestrel runtime.
-
-Creating Your Analytics
------------------------
-
-It is simple to create your analytics, even analytics interface (see the last
-section in :doc:`language` for more details). To create a new analytics using
-the Kestrel docker analytics interface (more at
-:doc:`source/kestrel_analytics_docker.interface`), you can use the container
-template in the ``kestrel-analytics`` repository. After adding some meat or
-wrapping existing code into an analytics, build a docker container with the
-name prefix ``kestrel-analytics-``. For example, the full container name for
-the ``pinip`` analytics we apply in the `Run An Analytics`_ section is
-``kestrel-analytics-pinip``.
-
-Analytics are available to Kestrel immediately after they are built and can be
-listed in a terminal:
-
-.. code-block:: console
-
-    $ docker image ls
 
 Forking and Merging Hunt Flows
 ==============================
@@ -462,14 +497,17 @@ writing composable hunt flows, see :doc:`language`.
 
 .. _pip: https://pip.pypa.io
 .. _Python 3: http://docs.python-guide.org/en/latest/starting/installation/
-.. _STIX-Shifter: https://github.com/opencybersecurityalliance/stix-shifter
+.. _STIX-shifter: https://github.com/opencybersecurityalliance/stix-shifter
 .. _supported list: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md#available-connectors
 .. _sysmon: https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon
 .. _Elasticsearch: https://www.elastic.co/
-.. _STIX-Shifter documentation: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _Sysflow: https://github.com/sysflow-telemetry
 .. _GeoIP2: https://www.maxmind.com/
 .. _Folium: https://python-visualization.github.io/folium/
 .. _Logstash: https://www.elastic.co/logstash
 .. _docker: https://www.docker.com/
+.. _RSAC'21 demo: https://www.youtube.com/watch?v=tASFWZfD7l8
+.. _kestrel-analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
+.. _Kestrel analytics example profile: https://github.com/opencybersecurityalliance/kestrel-analytics/blob/release/pythonanalytics_sample.yaml
+.. _building your own Kestrel analytics: https://opencybersecurityalliance.org/posts/kestrel-custom-analytics/
