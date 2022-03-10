@@ -28,7 +28,7 @@ Since you haven't set up a data source to
 retrieve real-world monitored data yet, you will create some entities in Kestrel
 to hunt.
 
-.. code-block::
+.. code-block:: elixir
 
     # create four process entities in Kestrel and store them in the variable `proclist`
     proclist = NEW process [ {"name": "cmd.exe", "pid": "123"}
