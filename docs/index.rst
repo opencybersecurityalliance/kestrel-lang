@@ -13,8 +13,8 @@ threat intelligence, and public or proprietary analytics.
    :maxdepth: 2
 
    overview
+   installation/index
    tutorial
-   installation
    language
    configuration
    debug

@@ -1,3 +1,8 @@
+"""The STIX bundle data source package provides access to canned data in STIX
+bundles locally or remotely.
+
+"""
+
 import json
 import logging
 import re
@@ -31,20 +36,17 @@ def fixup_pattern(pattern):
 class StixBundleInterface(AbstractDataSourceInterface):
     @staticmethod
     def schemes():
+        """STIX bundle data source interface supporting ``file:///``, ``http://``, ``https://`` scheme."""
         return ["file", "http", "https"]
 
     @staticmethod
     def list_data_sources(config=None):
-        """Empty return for now.
-
-        May not be meaningful to implement this for this interface. This method
-        should enumerate hosts but the set is unbounded.
-
-        """
+        """This interface does not list data sources."""
         return []
 
     @staticmethod
     def query(uri, pattern, session_id=None, config=None):
+        """Query a STIX bundle locally or remotely."""
         scheme, _, data_paths = uri.rpartition("://")
         data_paths = data_paths.split(",")
         pattern = fixup_pattern(pattern)

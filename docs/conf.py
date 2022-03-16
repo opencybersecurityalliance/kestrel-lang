@@ -18,6 +18,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
+    "sphinx.ext.autosectionlabel",
 ]
 
 autodoc_default_options = {
@@ -26,6 +27,10 @@ autodoc_default_options = {
     # "undoc-members": True,
     "show-inheritance": True
 }
+
+suppress_warnings = ['autosectionlabel.*']
+
+autosectionlabel_prefix_document = True
 
 html_title = project
 html_theme = "sphinx_rtd_theme"

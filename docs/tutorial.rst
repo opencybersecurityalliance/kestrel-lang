@@ -8,26 +8,12 @@ data source, apply analytics, and compose larger hunt flows.
 Hello World Hunt
 ================
 
-Installation
-------------
-
-Make sure you have `Python 3`_ and `pip`_ installed. The simplest way to
-install Kestrel is to use pip:
-
-.. code-block:: console
-
-    $ pip install --upgrade pip setuptools wheel
-    $ pip install kestrel-lang
-
-It is preferred to install Kestrel in a `Python virtual environment`_. Check
-out :doc:`installation` for details.
+If you haven't installed Kestrel, follow the instructions at :doc:`installation/runtime`.
 
 Write Your First Hunt Flow
 --------------------------
 
-Since you haven't set up a data source to
-retrieve real-world monitored data yet, you will create some entities in Kestrel
-to hunt.
+Let's create some entities in Kestrel for a test run.
 
 .. code-block:: elixir
 
@@ -80,17 +66,9 @@ The results have two parts:
 Kestrel + Jupyter
 =================
 
-Develop a hunt flow in Jupyter Notebook.
-
-Installation
-------------
-
-Install and set up the Kestrel Jupyter Notebook kernel:
-
-.. code-block:: console
-
-    $ pip install kestrel-jupyter
-    $ python -m kestrel_jupyter_kernel.setup
+To develop a hunt flow using Jupyter Notebook, you need to first follow the
+instructions in :doc:`installation/runtime` to install the Kestrel Jupyter
+Notebook kernel if you haven't done so.
 
 Creating A Hunt Book
 --------------------
@@ -117,8 +95,8 @@ Creating A Hunt Book
    :alt: Hello world hunt in Jupyter.
 
 4. The result shows two process entities in the variable ``browsers``. The
-   ``DISP`` command is an inspection command (more in :doc:`language`), which
-   prints entity information.
+   :ref:`language:DISP` command is an inspection command that prints entity
+   information.
 
 5. When you get an idea of the pid associated with the firefox process, you can
    add another hunt step in a new notebook cell to capture the firefox process
@@ -412,53 +390,9 @@ Applying an Analytics
 =====================
 
 You can apply any external analyzing or detection logic for adding new
-attributes to existing Kestrel variables or performing visualizations. Kestrel
-enables it by the Kestrel analytics hunt step (more in :doc:`language`), which
-is a foreign language interface to Kestrel.
-
-Kestrel treats analytics as black boxes and only cares about the input and
-output formats. So it is possible to wrap even proprietary software in Kestrel
-analytics. Similar to data sources, Kestrel has a two-level abstraction for
-analytics: Kestrel has multiple *analytics interfaces*, each of which handles a
-set of Kestrel analytics accordingly. Upon installation, Kestrel provides two
-analytics interfaces: :doc:`source/kestrel_analytics_docker.interface` and
-:doc:`source/kestrel_analytics_python.interface`.
-
-Community-contributed Kestrel analytics are at `kestrel-analytics repo`_, which
-can be cloned and used through either the Docker or Python analytics interface.
-Currently there are Kestrel analytics for IP enrichment, threat intelligence
-enrichment, machine learning inference, plotting, complex visualization,
-clustering, suspicious process scoring, and log4shell deobfuscation.
-
-Docker Analytics Setup
-----------------------
-
-To use an analytics via the Docker interface, you need to have `docker`_
-installed, and then build the docker container for that analytics. For example,
-to build a docker container for the *geolocation visualization* analytics, go
-to its source code and run the command:
-
-.. code-block:: console
-
-    $ docker build -t kestrel-analytics-pinip .
-
-To learn more about how to write and run a Kestrel analytics through the Docker
-interface, visit :doc:`source/kestrel_analytics_docker.interface` and our blog
-of `building your own Kestrel analytics`_.
-
-Python Analytics Setup
-----------------------
-
-You are already using Python to run Kestrel, so there is no additional
-requirement you need here.
-
-To setup an analytics via the Python interface, you only need to tell Kestrel
-where the analytics module/function is. Similar to `Adding Kestrel Data Source
-Profiles`_, you specify analytics profiles at
-``~/.config/kestrel/pythonanalytics.yaml``. You can follow the `Kestrel
-analytics example profile`_ in the `kestrel-analytics repo`_. Check more
-instructions including how to write your own Python analytics at
-:doc:`source/kestrel_analytics_python.interface`.
+attributes to existing Kestrel variables or performing visualizations. Check
+:doc:`installation/analytics` to better understand Kestrel analytics and learn
+how to use existing analytics in the `kestrel-analytics repo`_.
 
 Run an Analytics
 ----------------
@@ -495,19 +429,13 @@ Congratulations! You finished this challenging full Kestrel tutorial.
 To learn more about the language terms, concepts, syntax, and semantics for
 writing composable hunt flows, see :doc:`language`.
 
-.. _pip: https://pip.pypa.io
-.. _Python 3: http://docs.python-guide.org/en/latest/starting/installation/
 .. _STIX-shifter: https://github.com/opencybersecurityalliance/stix-shifter
 .. _supported list: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md#available-connectors
 .. _sysmon: https://docs.microsoft.com/en-us/sysinternals/downloads/sysmon
 .. _Elasticsearch: https://www.elastic.co/
-.. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _Sysflow: https://github.com/sysflow-telemetry
 .. _GeoIP2: https://www.maxmind.com/
 .. _Folium: https://python-visualization.github.io/folium/
 .. _Logstash: https://www.elastic.co/logstash
-.. _docker: https://www.docker.com/
 .. _RSAC'21 demo: https://www.youtube.com/watch?v=tASFWZfD7l8
 .. _kestrel-analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
-.. _Kestrel analytics example profile: https://github.com/opencybersecurityalliance/kestrel-analytics/blob/release/pythonanalytics_sample.yaml
-.. _building your own Kestrel analytics: https://opencybersecurityalliance.org/posts/kestrel-custom-analytics/
