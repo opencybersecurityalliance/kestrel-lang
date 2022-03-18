@@ -67,20 +67,26 @@ class StixBundleInterface(AbstractDataSourceInterface):
                     raise DataSourceConnectionError(uri)
             elif scheme == "http" or scheme == "https":
                 data_uri = f"{scheme}://{data_path}"
+                last_modified = None
+                file_time = None
                 if bundlefile.exists():
                     _logger.debug("File exists: %s", bundlefile)
                     try:
                         resp = requests.head(data_uri)
                     except requests.exceptions.ConnectionError:
                         raise DataSourceConnectionError(uri)
-                    last_modified = parser.parse(resp.headers.get("Last-Modified"))
-                    file_time = datetime.fromtimestamp(
-                        bundlefile.stat().st_mtime, tz=timezone.utc
-                    )
+                    last_modified = resp.headers.get("Last-Modified")
+                    if last_modified:
+                        last_modified = parser.parse(last_modified)
+                        file_time = datetime.fromtimestamp(
+                            bundlefile.stat().st_mtime, tz=timezone.utc
+                        )
+                    else:
+                        _logger.debug(
+                            "HTTP/HTTPS response header does not have 'Last-Modified' field"
+                        )
                 else:
                     _logger.debug("Bundle not on disk: %s", bundlefile)
-                    last_modified = None
-                    file_time = None
 
                 if not last_modified or last_modified > file_time:
                     _logger.info("Downloading %s to %s", data_uri, bundlefile)
