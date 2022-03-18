@@ -5,7 +5,7 @@ Kestrel analytics are one type of hunt steps (:ref:`language:APPLY`) that
 provide foreign language interfaces to non-Kestrel hunting modules. You can
 apply any external logic as a Kestrel analytics to
 
-- add new attributes to one or more Kestrel variables
+- compute new attributes to one or more Kestrel variables
 - perform visualizations
 
 Note Kestrel treats analytics as black boxes and only cares about the input and
