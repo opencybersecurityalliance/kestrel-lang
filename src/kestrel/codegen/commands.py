@@ -199,9 +199,12 @@ def disp(stmt, session):
     transform = stmt.get("transform")
     if transform and entity_table:
         if transform.lower() == "timestamped":
+            paths = stmt["attrs"]
+            if paths:
+                paths = paths.split(",")
             content = session.store.timestamped(
                 entity_table,
-                path=stmt["attrs"],
+                path=paths,
                 limit=stmt["limit"],
             )
         else:

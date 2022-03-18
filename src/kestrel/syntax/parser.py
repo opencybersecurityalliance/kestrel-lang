@@ -43,12 +43,7 @@ class _PostParsing(Transformer):
 
     def assign(self, args):
         result = args[0]  # Already transformed in expression method below
-        result.update(
-            {
-                "command": "assign",
-                "inputs": _extract_vars(args, self.default_variable),
-            }
-        )
+        result["command"] = "assign"
         return result
 
     def merge(self, args):
