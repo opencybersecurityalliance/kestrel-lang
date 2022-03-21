@@ -24,10 +24,13 @@ statement: VARIABLE "=" command
         | save
         | new
         | merge
-       
-merge: VARIABLE ("+" VARIABLE)*
+        | assign
 
-disp: "disp"i VARIABLE ("attr"i STIXPATHS)? ("limit"i INT)?
+assign: expression
+
+merge: VARIABLE ("+" VARIABLE)+
+
+disp: "disp"i expression ("attr"i STIXPATHS)? ("limit"i INT)?
 
 info: "info"i VARIABLE
 
@@ -48,6 +51,9 @@ load: "load"i DUMPPATH ("as"i ENTITY_TYPE)?
 save: "save"i VARIABLE "to"i DUMPPATH
 
 new: "new"i (ENTITY_TYPE)? VARDATA
+
+expression: TRANSFORM "(" VARIABLE ")"
+           | VARIABLE
 
 anaparams: (localargs (", " localargs)* | URI)
 
@@ -70,6 +76,9 @@ agg_list: agg ("," agg)*
 agg: FUNCNAME "(" STIXPATH ")" ("AS"i alias)?
 
 ?alias: CNAME
+
+TRANSFORM: (TIMESTAMPED)
+TIMESTAMPED: "timestamped"i
 
 VARIABLE: CNAME
 ENTITY_TYPE: LETTER ("_"|LETTER|DIGIT|"-")*

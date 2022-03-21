@@ -100,6 +100,21 @@ def _debug_logger(func):
 
 @_debug_logger
 @_default_output
+def assign(stmt, session):
+    entity_table = get_entity_table(stmt["input"], session.symtable)
+    transform = stmt.get("transform")
+    if transform:
+        if transform.lower() == "timestamped":
+            qry = session.store.timestamped(entity_table, run=False)
+            session.store.assign_query(stmt["output"], qry)
+    else:
+        session.store.merge(stmt["output"], [entity_table])
+    output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
+    return output, None
+
+
+@_debug_logger
+@_default_output
 def merge(stmt, session):
     entity_types = list(
         set(
@@ -180,9 +195,23 @@ def info(stmt, session):
 
 @_debug_logger
 def disp(stmt, session):
-    if session.symtable[stmt["input"]].entity_table:
+    entity_table = get_entity_table(stmt["input"], session.symtable)
+    transform = stmt.get("transform")
+    if transform and entity_table:
+        if transform.lower() == "timestamped":
+            paths = stmt["attrs"]
+            if paths:
+                paths = paths.split(",")
+            content = session.store.timestamped(
+                entity_table,
+                path=paths,
+                limit=stmt["limit"],
+            )
+        else:
+            content = []
+    elif entity_table:
         content = session.store.lookup(
-            get_entity_table(stmt["input"], session.symtable),
+            entity_table,
             stmt["attrs"],
             stmt["limit"],
         )

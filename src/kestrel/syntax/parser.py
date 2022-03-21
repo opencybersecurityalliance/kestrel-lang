@@ -41,6 +41,11 @@ class _PostParsing(Transformer):
         stmt["output"] = _extract_var(args, self.default_variable)
         return stmt
 
+    def assign(self, args):
+        result = args[0]  # Already transformed in expression method below
+        result["command"] = "assign"
+        return result
+
     def merge(self, args):
         return {
             "command": "merge",
@@ -51,13 +56,16 @@ class _PostParsing(Transformer):
         return {"command": "info", "input": _extract_var(args, self.default_variable)}
 
     def disp(self, args):
+        result = args[0]  # Already transformed in expression method below
         paths = _assert_and_extract_single("STIXPATHS", args)
-        return {
-            "command": "disp",
-            "input": _extract_var(args, self.default_variable),
-            "attrs": paths if paths else "*",
-            "limit": _extract_int(args),
-        }
+        result.update(
+            {
+                "command": "disp",
+                "attrs": paths if paths else "*",
+                "limit": _extract_int(args),
+            }
+        )
+        return result
 
     def get(self, args):
         datasource = _extract_datasource(args)
@@ -167,6 +175,12 @@ class _PostParsing(Transformer):
             "command": "new",
             "type": _extract_entity_type(args),
             "data": _assert_and_extract_single("VARDATA", args),
+        }
+
+    def expression(self, args):
+        return {
+            "input": _extract_var(args, self.default_variable),
+            "transform": _assert_and_extract_single("TRANSFORM", args),
         }
 
     def starttime(self, args):
