@@ -203,7 +203,7 @@ references) SCOs, along with a time range for when those observables were
 actually seen.
 
 SCOs themselves do not contain any information for when they were observed,
-but you can retrieve the timestamps from those observations by using the
+but you can retrieve SCOs with timestamps from those observations by using the
 ``TIMESTAMPED`` transform:
 
 ::
