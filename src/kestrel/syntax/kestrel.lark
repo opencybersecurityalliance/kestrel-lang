@@ -30,7 +30,7 @@ assign: expression
 
 merge: VARIABLE ("+" VARIABLE)+
 
-disp: "disp"i expression ("attr"i STIXPATHS)? ("limit"i INT)?
+disp: "disp"i expression
 
 info: "info"i VARIABLE
 
@@ -52,8 +52,15 @@ save: "save"i VARIABLE "to"i DUMPPATH
 
 new: "new"i (ENTITY_TYPE)? VARDATA
 
-expression: TRANSFORM "(" VARIABLE ")"
-           | VARIABLE
+transform: TRANSFORM "(" VARIABLE ")"
+         | VARIABLE
+
+expression: transform attr_clause? sort_clause? limit_clause? offset_clause?
+
+attr_clause: "attr"i STIXPATHS
+sort_clause: "sort"i "by"i STIXPATH (ASC|DESC)?
+limit_clause: "limit"i INT
+offset_clause: "offset"i INT
 
 anaparams: (localargs (", " localargs)* | URI)
 

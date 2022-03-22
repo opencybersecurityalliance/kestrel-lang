@@ -71,6 +71,7 @@ SELECT DISTINCT sco.*
    FROM __contains c
    WHERE target_ref LIKE '{input_type}--%')""",
         tuple(),
+        input_var_name,
     )
 
 
@@ -79,8 +80,8 @@ SELECT DISTINCT sco.*
 class SQLQuery(Query):
     """A pre-written SQL query"""
 
-    def __init__(self, query_text, query_values):
-        self.stages = []  # For compatibility
+    def __init__(self, query_text, query_values, var_name):
+        super().__init__(var_name)
         self.text = query_text
         self.values = query_values
 
@@ -88,7 +89,7 @@ class SQLQuery(Query):
         return None
 
     def append(self, stage):
-        raise NotImplemented
+        raise NotImplementedError
 
     def render(self, placeholder):
         return self.text, self.values

@@ -3,7 +3,6 @@ import os
 
 import pytest
 
-from kestrel.exceptions import VariableNotExist
 from kestrel.session import Session
 
 
@@ -33,7 +32,7 @@ conns = get network-traffic
         data = out[0].to_dict()['data']
         assert len(data) == 5
         assert "first_observed" in data[0]
-        out = s.execute("DISP TIMESTAMPED(conns) ATTR src_ref.value, src_port")
+        out = s.execute("DISP TIMESTAMPED(conns) ATTR first_observed, src_ref.value, src_port")
         data = out[0].to_dict()['data']
         assert len(data) == 29
         assert "first_observed" in data[0]
@@ -41,7 +40,7 @@ conns = get network-traffic
         assert "src_port" in data[0]
         assert "dst_ref.value" not in data[0]
         assert "dst_port" not in data[0]
-        out = s.execute("DISP TIMESTAMPED(conns) ATTR src_ref.value, src_port LIMIT 5")
+        out = s.execute("DISP TIMESTAMPED(conns) ATTR first_observed, src_ref.value, src_port LIMIT 5")
         data = out[0].to_dict()['data']
         assert len(data) == 5
         assert "first_observed" in data[0]
