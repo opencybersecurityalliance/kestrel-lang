@@ -24,7 +24,7 @@ Kestrel Threat Hunting Language
 
 |
 
-.. image:: https://raw.githubusercontent.com/subbyte/kestrel-gif/main/hunt01.gif
+.. image:: https://github.com/opencybersecurityalliance/data-bucket-kestrel/raw/main/images/github_homepage_animation.gif
    :width: 100%
    :target: https://www.youtube.com/watch?v=tASFWZfD7l8
    :alt: Kestrel Hunting Demo

@@ -25,7 +25,6 @@ def load_profiles():
 
 
 def get_profile(profile_name, profiles):
-    profile_name = profile_name.lower()
     if profile_name not in profiles:
         raise InvalidAnalytics(
             profile_name,
