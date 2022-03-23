@@ -23,7 +23,7 @@ Added
 Fixed
 -----
 
-- STIX bundle downloaded without `Last-Modified` field in response header #187
+- STIX bundle downloaded without ``Last-Modified`` field in response header #187
 - case sensitive support for Python analytics profile name #189
 
 1.2.2 (2022-03-02)
