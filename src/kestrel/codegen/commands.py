@@ -611,6 +611,7 @@ def _filter_prefetched_process(
 
 def _add_projection(store, entity_table, query, paths):
     proj = query.proj.cols if query.proj else []
+    cols = store.columns(entity_table)
     for path in paths:
         if path == "*":
             return
@@ -618,7 +619,11 @@ def _add_projection(store, entity_table, query, paths):
             joins, table, column = store.path_joins(entity_table, None, path)
             query.extend(joins)
             proj.append(Column(column, table, path))
+        elif path in cols:
+            # Prevent any ambiguity
+            proj.append(Column(path, entity_table))
         else:
+            # Not sure where it came from
             proj.append(path)
     query.append(Projection(proj))
 
