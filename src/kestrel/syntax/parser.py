@@ -1,6 +1,8 @@
 import ast
-from lark import Lark, Transformer, Tree
 from pkgutil import get_data
+
+from firepit.query import Filter, Predicate
+from lark import Lark, Transformer, Tree
 
 
 def parse(stmts, default_variable="_", default_sort_order="desc"):
@@ -186,6 +188,11 @@ class _PostParsing(Transformer):
             "transform": _assert_and_extract_single("TRANSFORM", args),
         }
 
+    def where_clause(self, args):
+        return {
+            "where": Filter([args[0]]),
+        }
+
     def attr_clause(self, args):
         paths = _assert_and_extract_single("STIXPATHS", args)
         return {
@@ -240,6 +247,44 @@ class _PostParsing(Transformer):
         func = args[0].value.lower()
         alias = args[2].value if len(args) > 2 else f"{func}_{args[1].value}"
         return {"func": func, "attr": args[1].value, "alias": alias}
+
+    def disj(self, args):
+        lhs = str(args[0])
+        rhs = str(args[2])
+        return Predicate(lhs, "OR", rhs)
+
+    def conj(self, args):
+        lhs = str(args[0])
+        rhs = str(args[2])
+        return Predicate(lhs, "AND", rhs)
+
+    def comp(self, args):
+        lhs = str(args[0])
+        op = str(args[1])
+        rhs = str(args[2])
+        return Predicate(lhs, op, rhs)
+
+    def null_comp(self, args):
+        lhs = str(args[0])
+        op = str(args[1])
+        if op == "IS NOT":
+            op = "!="
+        else:
+            op = "="
+        rhs = "NULL"
+        return Predicate(lhs, op, rhs)
+
+    def column(self, args):
+        return args[0].value
+
+    def squoted_str(self, args):
+        return args[0].value.strip("'")
+
+    def num_literal(self, args):
+        return args[0].value
+
+    def null(self, args):
+        return "NULL"
 
 
 def _first(args):

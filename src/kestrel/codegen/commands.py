@@ -107,9 +107,14 @@ def assign(stmt, session):
     if transform:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
-            session.store.assign_query(stmt["output"], qry)
+        else:
+            qry = Query(entity_table)
     else:
-        session.store.merge(stmt["output"], [entity_table])
+        qry = Query(entity_table)
+
+    qry = _build_query(session.store, entity_table, qry, stmt)
+    session.store.assign_query(stmt["output"], qry)
+
     output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
     return output, None
 
@@ -206,23 +211,9 @@ def disp(stmt, session):
     else:
         qry = Query(entity_table)
 
-    if qry:
-        attrs = stmt["attrs"]
-        if attrs != "*":
-            cols = attrs.split(",")
-            _add_projection(session.store, entity_table, qry, cols)
-        sort_by = stmt.get("path")
-        if sort_by:
-            direction = "ASC" if stmt["ascending"] else "DESC"
-            qry.append(Order([(sort_by, direction)]))
-        limit = stmt.get("limit")
-        if limit:
-            qry.append(Limit(limit))
-        offset = stmt.get("offset")
-        if offset:
-            qry.append(Offset(offset))
-        cursor = session.store.run_query(qry)
-        content = cursor.fetchall()
+    qry = _build_query(session.store, entity_table, qry, stmt)
+    cursor = session.store.run_query(qry)
+    content = cursor.fetchall()
 
     return None, DisplayDataframe(dedup_ordered_dicts(remove_empty_dicts(content)))
 
@@ -630,3 +621,24 @@ def _add_projection(store, entity_table, query, paths):
         else:
             proj.append(path)
     query.append(Projection(proj))
+
+
+def _build_query(store, entity_table, qry, stmt):
+    where = stmt.get("where")
+    if where:
+        qry.append(where)
+    attrs = stmt.get("attrs", "*")
+    if attrs != "*":
+        cols = attrs.split(",")
+        _add_projection(store, entity_table, qry, cols)
+    sort_by = stmt.get("path")
+    if sort_by:
+        direction = "ASC" if stmt["ascending"] else "DESC"
+        qry.append(Order([(sort_by, direction)]))
+    limit = stmt.get("limit")
+    if limit:
+        qry.append(Limit(limit))
+    offset = stmt.get("offset")
+    if offset:
+        qry.append(Offset(offset))
+    return qry
