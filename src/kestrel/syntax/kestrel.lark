@@ -30,7 +30,7 @@ assign: expression
 
 merge: VARIABLE ("+" VARIABLE)+
 
-disp: "disp"i expression ("attr"i STIXPATHS)? ("limit"i INT)?
+disp: "disp"i expression
 
 info: "info"i VARIABLE
 
@@ -52,8 +52,38 @@ save: "save"i VARIABLE "to"i DUMPPATH
 
 new: "new"i (ENTITY_TYPE)? VARDATA
 
-expression: TRANSFORM "(" VARIABLE ")"
-           | VARIABLE
+transform: TRANSFORM "(" VARIABLE ")"
+         | VARIABLE
+
+expression: transform where_clause? attr_clause? sort_clause? limit_clause? offset_clause?
+
+where_clause: "where"i condition
+attr_clause: "attr"i STIXPATHS
+sort_clause: "sort"i "by"i STIXPATH (ASC|DESC)?
+limit_clause: "limit"i INT
+offset_clause: "offset"i INT
+
+?condition: disjunction
+
+?disjunction: conjunction
+            | disjunction "OR"i conjunction -> disj
+
+?conjunction: comparison
+            | conjunction "AND"i comparison -> conj
+
+?comparison: column OP value -> comp
+           | column NULL_OP "null"i -> null_comp
+           | "(" disjunction ")"
+
+column: STIXPATH
+
+?value: SQSTRING -> squoted_str
+      | NUMBER   -> num_literal
+      | /NULL/   -> nulls
+
+OP: /([<>!=]?=|[<>]|IN|LIKE|MATCHES)/
+
+NULL_OP: /IS (NOT)?/i
 
 anaparams: (localargs (", " localargs)* | URI)
 
@@ -112,6 +142,7 @@ QSTRING: WS* ESCAPED_STRING WS*
 JSON_VALUE: WS* (ESCAPED_STRING|NUMBER) WS*
 VARDATA: "[" (QSTRING ("," QSTRING)* | JSON_DICT ("," JSON_DICT)*) "]"
 JSON_DICT: WS* "{" (QSTRING ":" JSON_VALUE) ("," QSTRING ":" JSON_VALUE)* "}" WS*
+SQSTRING: /'[^']*'/
 
 RELATION: WORD
 

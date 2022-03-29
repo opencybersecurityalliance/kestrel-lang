@@ -82,6 +82,11 @@ conns = FIND network-traffic CREATED BY procs
         conns = s.get_variable('conns')
         assert len(conns) == 853  # FIXME: should be 948, I think (id collisions for network-traffic)
 
+        # DISP with a ref (parent_ref) and ambiguous column (command_line)
+        disp_out = s.execute("DISP procs ATTR name, parent_ref.name, command_line")
+        data = disp_out[0].to_dict()["data"]
+        print(json.dumps(data, indent=4))
+
 
 def test_find_file_linked_to_process(proc_bundle_file):
     with Session() as s:

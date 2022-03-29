@@ -1,6 +1,8 @@
 import ast
-from lark import Lark, Transformer, Tree
 from pkgutil import get_data
+
+from firepit.query import Filter, Predicate
+from lark import Lark, Transformer, Tree
 
 
 def parse(stmts, default_variable="_", default_sort_order="desc"):
@@ -56,15 +58,12 @@ class _PostParsing(Transformer):
         return {"command": "info", "input": _extract_var(args, self.default_variable)}
 
     def disp(self, args):
-        result = args[0]  # Already transformed in expression method below
-        paths = _assert_and_extract_single("STIXPATHS", args)
-        result.update(
-            {
-                "command": "disp",
-                "attrs": paths if paths else "*",
-                "limit": _extract_int(args),
-            }
-        )
+        result = {"command": "disp"}
+        for arg in args:
+            if isinstance(arg, dict):
+                result.update(arg)
+        if "attrs" not in result:
+            result["attrs"] = "*"
         return result
 
     def get(self, args):
@@ -178,9 +177,42 @@ class _PostParsing(Transformer):
         }
 
     def expression(self, args):
+        result = args[0]
+        for arg in args:
+            result.update(arg)
+        return result
+
+    def transform(self, args):
         return {
             "input": _extract_var(args, self.default_variable),
             "transform": _assert_and_extract_single("TRANSFORM", args),
+        }
+
+    def where_clause(self, args):
+        return {
+            "where": Filter([args[0]]),
+        }
+
+    def attr_clause(self, args):
+        paths = _assert_and_extract_single("STIXPATHS", args)
+        return {
+            "attrs": paths if paths else "*",
+        }
+
+    def sort_clause(self, args):
+        return {
+            "path": _extract_stixpath(args),
+            "ascending": _extract_direction(args, self.default_sort_order),
+        }
+
+    def limit_clause(self, args):
+        return {
+            "limit": _extract_int(args),
+        }
+
+    def offset_clause(self, args):
+        return {
+            "offset": _extract_int(args),
         }
 
     def starttime(self, args):
@@ -215,6 +247,44 @@ class _PostParsing(Transformer):
         func = args[0].value.lower()
         alias = args[2].value if len(args) > 2 else f"{func}_{args[1].value}"
         return {"func": func, "attr": args[1].value, "alias": alias}
+
+    def disj(self, args):
+        lhs = str(args[0])
+        rhs = str(args[2])
+        return Predicate(lhs, "OR", rhs)
+
+    def conj(self, args):
+        lhs = str(args[0])
+        rhs = str(args[2])
+        return Predicate(lhs, "AND", rhs)
+
+    def comp(self, args):
+        lhs = str(args[0])
+        op = str(args[1])
+        rhs = str(args[2])
+        return Predicate(lhs, op, rhs)
+
+    def null_comp(self, args):
+        lhs = str(args[0])
+        op = str(args[1])
+        if op == "IS NOT":
+            op = "!="
+        else:
+            op = "="
+        rhs = "NULL"
+        return Predicate(lhs, op, rhs)
+
+    def column(self, args):
+        return args[0].value
+
+    def squoted_str(self, args):
+        return args[0].value.strip("'")
+
+    def num_literal(self, args):
+        return args[0].value
+
+    def null(self, args):
+        return "NULL"
 
 
 def _first(args):

@@ -23,6 +23,7 @@ import logging
 import itertools
 from collections import OrderedDict
 
+from firepit.query import Column, Limit, Offset, Order, Projection, Query
 from firepit.stix20 import summarize_pattern
 
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts
@@ -106,9 +107,14 @@ def assign(stmt, session):
     if transform:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
-            session.store.assign_query(stmt["output"], qry)
+        else:
+            qry = Query(entity_table)
     else:
-        session.store.merge(stmt["output"], [entity_table])
+        qry = Query(entity_table)
+
+    qry = _build_query(session.store, entity_table, qry, stmt)
+    session.store.assign_query(stmt["output"], qry)
+
     output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
     return output, None
 
@@ -199,24 +205,16 @@ def disp(stmt, session):
     transform = stmt.get("transform")
     if transform and entity_table:
         if transform.lower() == "timestamped":
-            paths = stmt["attrs"]
-            if paths:
-                paths = paths.split(",")
-            content = session.store.timestamped(
-                entity_table,
-                path=paths,
-                limit=stmt["limit"],
-            )
+            qry = session.store.timestamped(entity_table, run=False)
         else:
-            content = []
-    elif entity_table:
-        content = session.store.lookup(
-            entity_table,
-            stmt["attrs"],
-            stmt["limit"],
-        )
+            qry = Query(entity_table)
     else:
-        content = []
+        qry = Query(entity_table)
+
+    qry = _build_query(session.store, entity_table, qry, stmt)
+    cursor = session.store.run_query(qry)
+    content = cursor.fetchall()
+
     return None, DisplayDataframe(dedup_ordered_dicts(remove_empty_dicts(content)))
 
 
@@ -609,3 +607,43 @@ def _filter_prefetched_process(
     else:
         _logger.info("no prefetched process found after filtering.")
         return None
+
+
+def _add_projection(store, entity_table, query, paths):
+    proj = query.proj.cols if query.proj else []
+    cols = store.columns(entity_table)
+    for path in paths:
+        if path == "*":
+            return
+        if "_ref" in path:  # This seems like a hack
+            joins, table, column = store.path_joins(entity_table, None, path)
+            query.extend(joins)
+            proj.append(Column(column, table, path))
+        elif path in cols:
+            # Prevent any ambiguity
+            proj.append(Column(path, entity_table))
+        else:
+            # Not sure where it came from
+            proj.append(path)
+    query.append(Projection(proj))
+
+
+def _build_query(store, entity_table, qry, stmt):
+    where = stmt.get("where")
+    if where:
+        qry.append(where)
+    attrs = stmt.get("attrs", "*")
+    if attrs != "*":
+        cols = attrs.split(",")
+        _add_projection(store, entity_table, qry, cols)
+    sort_by = stmt.get("path")
+    if sort_by:
+        direction = "ASC" if stmt["ascending"] else "DESC"
+        qry.append(Order([(sort_by, direction)]))
+    limit = stmt.get("limit")
+    if limit:
+        qry.append(Limit(limit))
+    offset = stmt.get("offset")
+    if offset:
+        qry.append(Offset(offset))
+    return qry
