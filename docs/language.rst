@@ -207,6 +207,7 @@ but you can retrieve SCOs with timestamps from those observations by using the
 ``TIMESTAMPED`` transform:
 
 ::
+
    ts_scos = TIMESTAMPED(scos)
 
 The result of this transform is no longer a list of entities, but a data
@@ -223,7 +224,7 @@ one of the five `hunt step`_ categories:
 #. Transformation: ``SORT``, ``GROUP``.
 #. Enrichment: ``APPLY``.
 #. Inspection: ``INFO``, ``DISP``.
-#. Flow-control: ``SAVE``, ``LOAD``, ``COPY``, ``MERGE``, ``JOIN``.
+#. Flow-control: ``SAVE``, ``LOAD``, ``ASSIGN``, ``MERGE``, ``JOIN``.
 
 To achieve `composable hunt flow`_ and allow threat hunters to compose hunt
 flow freely, the input and output of any Kestrel command are defined as
@@ -270,7 +271,7 @@ display object, or both a variable and a display object.
 +---------+----------------+---------------+----------------+---------------+
 | LOAD    | no             | yes           | yes            | no            |
 +---------+----------------+---------------+----------------+---------------+
-| COPY    | yes            | no            | yes            | no            |
+| ASSIGN  | yes            | no            | yes            | no            |
 +---------+----------------+---------------+----------------+---------------+
 | MERGE   | yes (two)      | no            | yes            | no            |
 +---------+----------------+---------------+----------------+---------------+
@@ -679,13 +680,26 @@ Syntax
 ^^^^^^
 ::
 
-    DISP [TIMESTAMPED(varx)|varx] [ATTR attribute1, attribute2, ...]
+    DISP [TIMESTAMPED(varx)|varx]
+        [WHERE condition...]
+        [ATTR attribute1, attribute2, ...]
+        [SORT BY attibute [ASC|DESC]]
+	[LIMIT l [OFFSET n]]
 
 - The optional transform ``TIMESTAMPED`` retrieves the ``first_observed``
   timestamped for each observation of each entity in ``varx``.
 
+- The optional clause ``WHERE`` specifies a boolean condition to filter
+  the entities (similar to a SQL ``WHERE`` clause).
+
 - The optional clause ``ATTR`` specifies which list of attributes you
   would like to print. If omitted, Kestrel will output all attributes.
+
+- The optional clause ``SORT BY`` specifies which attribute to use to
+  to order the entities to print.
+
+- The optional clause ``LIMIT`` specifies an upper limit on the number
+  of entities to print.
 
 - The command deduplicates rows. All rows in the display object are distinct.
 
@@ -862,10 +876,10 @@ Examples
          FROM stixshifter://idsX
          WHERE [network-traffic:dst_ref.value = susp_ips.value]
 
-COPY
-----
+ASSIGN
+------
 
-The command ``COPY`` is an *flow-control* hunt step to copy a variable to another.
+The command ``ASSIGN`` is an *flow-control* hunt step to copy data from one variable to another.
 
 Syntax
 ^^^^^^
@@ -873,10 +887,29 @@ Syntax
 
     newvar = oldvar
     newvar = TIMESTAMPED(oldvar)
+    newvar = oldvar [WHERE attr = value...][ATTR attr1,...][SORT BY attr][LIMIT n [OFFSET m]]
 
 - The first form simply assigns a new name to a variable.
 - In the second form, ``newver`` will contains a list of timestamped observations
   of the entities in ``oldvar``.
+- In the third form, ``oldvar`` will be filtered and the result assigned to ``newvar``.
+
+Examples
+^^^^^^^^
+::
+
+    # copy procs
+    copy_of_procs = procs
+
+    # filter conns for SSH connections
+    ssh_conns = conns WHERE dst_port = 22
+
+    # get URLs with their timestamps
+    ts_urls = TIMESTAMPED(urls)
+
+    # filter procs for WMIC commands with timestamps
+    wmic_procs = TIMESTAMPED(procs) WHERE command_line LIKE '%wmic%'
+
 
 MERGE
 -----
