@@ -38,31 +38,31 @@ A maintainer should release a new Kestrel runtime (PyPI package name: ``kestre-l
     - Add changes in ``CHANGELOG.rst`` under a new version section.
     - Commit the updates with the new version number as the message.
     - Push the local ``develop`` branch to remote.
-  
+
 2. Graduate code to the ``release`` branch
 
     - Open a PR to merge the ``develop`` branch to the ``release`` branch. Use the version number as the PR title.
 
     - Merge the PR.
-    
+
 3. Create a new release
 
     - Go to the release page and click *Draft a new release*.
-    
+
     - Type the version number as the new tag to create.
-    
+
     - Choose ``release`` branch as the *Target*.
-    
+
     - Specify a release title. Use the version number for ordinary release.
-    
+
     - Write a summary of the release.
-    
+
         - Patch number release: copy the CHANGELOG entries.
-        
+
         - Minor number release: may have a TLDR at the beginning highlighting the most important new feature.
-    
+
     - Hit the *Publish release* button.
-    
+
 4. After release check
 
     - Check `kestrel-lang on PyPI`_ after a few minutes to confirm new package built and released.
