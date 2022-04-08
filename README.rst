@@ -1,13 +1,6 @@
 .. image:: https://raw.githubusercontent.com/opencybersecurityalliance/kestrel-lang/develop/logo/logo_w_text.svg
-   :width: 41%
+   :width: 50%
    :alt: Kestrel Threat Hunting Language
-
-.. image:: https://github.com/opencybersecurityalliance/data-bucket-kestrel/raw/main/images/github_homepage_animation.gif
-   :width: 60%
-   :target: https://www.youtube.com/watch?v=tASFWZfD7l8
-   :alt: Kestrel Hunting Demo
-
-|
 
 .. image:: https://img.shields.io/pypi/pyversions/kestrel-lang
         :target: https://www.python.org/
@@ -28,13 +21,22 @@
 .. image:: https://readthedocs.org/projects/kestrel/badge/?version=latest
         :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
-
+   
 Kestrel threat hunting language aims to make hunting fast by providing a layer
 of abstraction for hunters. Software developers write Python or Swift than
 machine code to quickly turn their business logic into applications. Threat
 hunters write Kestrel to quickly turn their threat hypotheses into
 hunt-flows---we see threat hunting as an interactive procedure to create
 customized intrusion detection systems on the fly.
+
+|
+
+.. image:: https://github.com/opencybersecurityalliance/data-bucket-kestrel/raw/main/images/github_homepage_animation.gif
+   :width: 80%
+   :target: https://www.youtube.com/watch?v=tASFWZfD7l8
+   :alt: Kestrel Hunting Demo
+
+
 
 .. image:: https://raw.githubusercontent.com/opencybersecurityalliance/kestrel-lang/release/docs/images/overview.png
    :width: 100%
