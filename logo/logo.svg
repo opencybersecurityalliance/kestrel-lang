@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .top    {fill:#333F50; transform: skewX(35deg)}
+    .bottom {fill:#333F50; transform: skewX(-35deg)}
+  </style>
+  <defs>
+    <rect class="top"    width="26" height="50" id="huntstepT" />
+    <rect class="bottom" width="26" height="50" id="huntstepB" />
+  </defs>
+  <!--
+  <rect x="0" y="0" width="160" height="160" fill="#eeeeee" />
+  -->
+  <use href="#huntstepT" x="15" y="30" />
+  <use href="#huntstepB" x="85" y="80" />
+  <use href="#huntstepT" x="85" y="30" />
+  <use href="#huntstepB" x="120" y="80" />
+</svg>
