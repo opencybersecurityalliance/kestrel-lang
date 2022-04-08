@@ -1,4 +1,4 @@
-.. image:: https://raw.githubusercontent.com/opencybersecurityalliance/kestrel-lang/develop/logo/logo_w_text.svg
+.. image:: logo/logo_w_text.svg
    :width: 432
    :alt: Kestrel Threat Hunting Language
 
