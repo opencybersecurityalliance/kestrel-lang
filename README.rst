@@ -38,10 +38,10 @@ hunt-flow is to hunts as control-flow is to ordinary programs.
 
 What does it mean by *hunt fast*?
 
-- Do not write the same TTP pattern against different data sources.
-- Do not write customized adapaters to connect hunt steps.
+- Do not write the same TTP pattern in different data source queries.
+- Do not write one-time-use adapaters to connect hunt steps.
 - Do not waste your existing analytic scripts/programs in future hunts.
-- Do construct your hunt-flow with smaller reuseable hunt-flow.
+- Do construct your hunt-flow from smaller reuseable hunt-flow.
 - Do share your hunt book with your future self and your colleagues.
 - Do get interactive feedback and revise hunt-flow on the fly.
 
