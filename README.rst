@@ -1,5 +1,5 @@
 .. image:: https://raw.githubusercontent.com/opencybersecurityalliance/kestrel-lang/develop/logo/logo_w_text.svg
-   :width: 50%
+   :width: 60%
    :alt: Kestrel Threat Hunting Language
 
 .. image:: https://img.shields.io/pypi/pyversions/kestrel-lang
@@ -81,15 +81,21 @@ Kestrel in a Nutshell
 Basic Concepts and Howto
 ========================
 
-Some common topics/questions described in `Kestrel documentation`_:
+Visit `Kestrel documentation`_ to start and dive into Kestrel:
 
-- `A comprehensive introduction to Kestrel`_
-- `Interactive tutorial with quiz`_
-- `Kestrel runtime installation`_
-- `How to connect to your data sources`_
-- `How to execute an analytic hunt step in Python/Docker`_
-- `Language reference book`_
-- `How to use Kestrel via API`_
+- Learn concepts and syntax:
+
+  - `A comprehensive introduction to Kestrel`_
+  - `The two key concepts of Kestrel`_
+  - `Interactive tutorial with quiz`_
+  - `Language reference book`_
+
+- Hunt in your environment:
+
+  - `Kestrel runtime installation`_
+  - `How to connect to your data sources`_
+  - `How to execute an analytic hunt step in Python/Docker`_
+  - `How to use Kestrel via API`_
 
 Kestrel Hunt Books And Analytics
 ================================
@@ -134,7 +140,9 @@ Connecting With The Community
 
 .. _Try Kestrel in a cloud sandbox without install: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
 .. _Kestrel documentation: https://kestrel.readthedocs.io/
+
 .. _A comprehensive introduction to Kestrel: https://kestrel.readthedocs.io/en/latest/overview.html
+.. _The two key concepts of Kestrel: https://kestrel.readthedocs.io/en/latest/language.html#key-concepts
 .. _Interactive tutorial with quiz: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
 .. _Kestrel runtime installation: https://kestrel.readthedocs.io/en/latest/installation/runtime.html
 .. _How to connect to your data sources: https://kestrel.readthedocs.io/en/latest/installation/datasource.html
