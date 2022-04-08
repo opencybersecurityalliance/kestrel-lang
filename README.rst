@@ -48,14 +48,14 @@ What does it mean by *hunt fast*?
 |
 
 .. image:: https://github.com/opencybersecurityalliance/data-bucket-kestrel/raw/main/images/github_homepage_animation.gif
-   :width: 80%
+   :width: 90%
    :target: https://www.youtube.com/watch?v=tASFWZfD7l8
    :alt: Kestrel Hunting Demo
 
 Kestrel in a Nutshell
 =====================
 
-.. image:: https://raw.githubusercontent.com/opencybersecurityalliance/kestrel-lang/release/docs/images/overview.png
+.. image:: docs/images/overview.png
    :width: 100%
    :alt: Kestrel overview.
 
@@ -141,7 +141,7 @@ Connecting With The Community
 .. _Try Kestrel in a cloud sandbox without install: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
 .. _Kestrel documentation: https://kestrel.readthedocs.io/
 
-.. _A comprehensive introduction to Kestrel: https://kestrel.readthedocs.io/en/latest/overview.html
+.. _A comprehensive introduction to Kestrel: https://kestrel.readthedocs.io/en/latest/overview/
 .. _The two key concepts of Kestrel: https://kestrel.readthedocs.io/en/latest/language.html#key-concepts
 .. _Interactive tutorial with quiz: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
 .. _Kestrel runtime installation: https://kestrel.readthedocs.io/en/latest/installation/runtime.html
