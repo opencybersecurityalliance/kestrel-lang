@@ -108,26 +108,26 @@ Kestrel Hunting Blogs
 Talks And Demos
 ===============
 
-- Apr 2022 `SC Media eSummit on Threat Hunting & Offense Security`_
-- Dec 2021 `Infosec Jupyterthon 2021`_ `[live hunt recording]<https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695>`_
-- Nov 2021 `BlackHat Europe 2021`_
-- Oct 2021 `SANS Threat Hunting Summit 2021`_: `[recording]<https://www.youtube.com/watch?v=gyY5DAWLwT0>`_
-- May 2021 `RSA Conference 2021`_: `[session recording]<https://www.youtube.com/watch?v=-Xb086R0JTk>`_
+- 2022/04 `SC Media eSummit on Threat Hunting & Offense Security`_
+- 2021/12 `Infosec Jupyterthon 2021`_ [`live hunt recording <https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695>`_]
+- 2021/11 `BlackHat Europe 2021`_
+- 2021/10 `SANS Threat Hunting Summit 2021`_: [`session recording <https://www.youtube.com/watch?v=gyY5DAWLwT0>`_]
+- 2021/05 `RSA Conference 2021`_: [`session recording <https://www.youtube.com/watch?v=-Xb086R0JTk>`_]
 
 Connecting With The Community
 =============================
 
-- Ask questions, give suggestions, and connect with other hunters using slack.
+- Join Kestrel slack channel:
   
   - Get a `slack invitation`_ to join `Open Cybersecurity Alliance workspace`_
-  - Join the *kestrel* channel to meet other hunters
+  - Join the *kestrel* channel to ask questions and connect with other hunters
   
 - Contribute to the language development:
 
   - Create a GitHub issue to report bugs and new features
   - Follow the `contributing guideline`_ to submit your pull request
 
-- Contribute to the hunting knowledge base:
+- Share your hunt book and analytics:
 
   - `Kestrel huntbook`_
   - `Kestrel analytics`_
