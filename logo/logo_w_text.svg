@@ -10,7 +10,7 @@
     <rect class="bottom" width="26" height="50" id="huntstepB" />
   </defs>
   <!--
-  <rect x="1" y="1" width="460" height="160" fill="#eeeeee" />
+  <rect x="0" y="0" width="460" height="160" fill="#eeeeee" />
   -->
   <use href="#huntstepT" x="15" y="30" />
   <use href="#huntstepB" x="85" y="80" />
