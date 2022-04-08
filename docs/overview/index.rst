@@ -25,9 +25,6 @@ Human-Machine Symbiosis
 Kestrel in a Nutshell
 =====================
 
-Kestrel provides a layer of abstraction to stop the repetition involved in
-cyberthreat hunting.
-
 .. include:: nutshell.rst
 
 Runtime Packages

@@ -1,3 +1,6 @@
+Kestrel provides a layer of abstraction to stop the repetition involved in
+cyberthreat hunting.
+
 .. image:: ../images/overview.png
    :width: 100%
    :alt: Kestrel overview.
