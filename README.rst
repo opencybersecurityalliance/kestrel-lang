@@ -1,6 +1,13 @@
-===============================
-Kestrel Threat Hunting Language
-===============================
+.. image:: https://raw.githubusercontent.com/opencybersecurityalliance/kestrel-lang/develop/logo/logo_w_text.svg
+   :width: 41%
+   :alt: Kestrel Threat Hunting Language
+
+.. image:: https://github.com/opencybersecurityalliance/data-bucket-kestrel/raw/main/images/github_homepage_animation.gif
+   :width: 60%
+   :target: https://www.youtube.com/watch?v=tASFWZfD7l8
+   :alt: Kestrel Hunting Demo
+
+|
 
 .. image:: https://img.shields.io/pypi/pyversions/kestrel-lang
         :target: https://www.python.org/
@@ -22,29 +29,12 @@ Kestrel Threat Hunting Language
         :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-|
-
-.. image:: https://github.com/opencybersecurityalliance/data-bucket-kestrel/raw/main/images/github_homepage_animation.gif
-   :width: 100%
-   :target: https://www.youtube.com/watch?v=tASFWZfD7l8
-   :alt: Kestrel Hunting Demo
-
-News
-====
-
-Log4Shell detection:
-
-- The complete `Kestrel Log4Shell huntbook`_
-- The `Log4Shell analytics`_ to download for the huntbook
-
-Overview
-========
-
-Kestrel threat hunting language provides an abstraction for threat hunters to
-focus on *what to hunt* instead of *how to hunt*. The abstraction makes it
-possible to codify resuable hunting knowledge in a composable and sharable
-manner. And Kestrel runtime figures out *how to hunt* for hunters to make cyber
-threat hunting less tedious and more efficient.
+Kestrel threat hunting language aims to make hunting fast by providing a layer
+of abstraction for hunters. Software developers write Python or Swift than
+machine code to quickly turn their business logic into applications. Threat
+hunters write Kestrel to quickly turn their threat hypotheses into
+hunt-flows---we see threat hunting as an interactive procedure to create
+customized intrusion detection systems on the fly.
 
 .. image:: https://raw.githubusercontent.com/opencybersecurityalliance/kestrel-lang/release/docs/images/overview.png
    :width: 100%
@@ -57,8 +47,8 @@ threat hunting less tedious and more efficient.
   - composing reusable hunting flows from individual hunting steps.
   - reasoning with human-friendly entity-based data representation abstraction.
   - thinking across heterogeneous data and threat intelligence sources.
-  - applying existing public and proprietary detection logic as analytics.
-  - reusing and sharing individual hunting steps and entire hunt books.
+  - applying existing public and proprietary detection logic as analytic hunt steps.
+  - reusing and sharing individual hunting steps, hunt-flow, and entire hunt books.
 
 - **Kestrel runtime**: a machine interpreter that deals with *how to hunt*.
 
@@ -68,6 +58,14 @@ threat hunting less tedious and more efficient.
   - caching intermediate data and related records for fast response.
   - prefetching related logs and records for link construction between entities.
   - defining extensible interfaces for data sources and analytics execution.
+
+News
+====
+
+Log4Shell detection:
+
+- The complete `Kestrel Log4Shell huntbook`_
+- The `Log4Shell analytics`_ to download for the huntbook
 
 Installation
 ============
