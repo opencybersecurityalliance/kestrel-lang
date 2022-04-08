@@ -123,12 +123,19 @@ Talks And Demos
 Connecting With The Community
 =============================
 
+
+   
 - Join Kestrel slack channel:
   
   - Get a `slack invitation`_ to join `Open Cybersecurity Alliance workspace`_
+  
+    .. image:: https://opencybersecurityalliance.org/img/OCA-1.png
+       :width: 20%
+       :alt: OCA logo
+     
   - Join the *kestrel* channel to ask questions and connect with other hunters
   
-- Contribute to the language development:
+- Contribute to the language development (`Apache License 2.0`_):
 
   - Create a GitHub issue to report bugs and new features
   - Follow the `contributing guideline`_ to submit your pull request
@@ -137,6 +144,9 @@ Connecting With The Community
 
   - `Kestrel huntbook`_
   - `Kestrel analytics`_
+
+
+
 
 .. _Try Kestrel in a cloud sandbox without install: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
 .. _Kestrel documentation: https://kestrel.readthedocs.io/
@@ -167,3 +177,4 @@ Connecting With The Community
 .. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
 .. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
 .. _contributing guideline: CONTRIBUTING.rst
+.. _Apache License 2.0: https://github.com/opencybersecurityalliance/kestrel-lang/blob/develop/LICENSE.md
