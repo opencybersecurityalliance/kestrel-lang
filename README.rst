@@ -1,5 +1,5 @@
 .. image:: https://raw.githubusercontent.com/opencybersecurityalliance/kestrel-lang/develop/logo/logo_w_text.svg
-   :width: 50%
+   :width: 52%
    :alt: Kestrel Threat Hunting Language
 
 .. image:: https://img.shields.io/pypi/pyversions/kestrel-lang
