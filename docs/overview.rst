@@ -6,7 +6,7 @@ Dive into the essence of cyber threat hunting, think about improving it, and
 introduce Kestrel.
 
 Cyberthreat Hunting
-====================
+===================
 
 Cyberthreat hunting is the planning and developing of a threat discovery program on
 an ad hoc basis against new and customized advanced persistent threats (APT). Cyberthreat hunting

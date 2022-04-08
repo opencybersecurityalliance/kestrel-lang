@@ -108,22 +108,29 @@ Kestrel Hunting Blogs
 Talks And Demos
 ===============
 
-- [2022/04] `SC Media eSummit on Threat Hunting & Offense Security`_: `The ABCs of Kestrel`_
-- [2021/12] `Infosec Jupyterthon 2021`_: `Reason Cyber Campaigns With Kestrel`_
-- [2021/11] `BlackHat Europe 2021`_: `An Open Stack for Threat Hunting in Hybrid Cloud With Connected Observability`_
-- [2021/10] `SANS Threat Hunting Summit 2021`_: `Compose Your Hunts With Reusable Knowledge and Share Your Huntbook With the Community`_
-- [2021/05] `RSA Conference 2021`_: `The Game of Cyber Threat Hunting: The Return of the Fun`_
+- Apr 2022 `SC Media eSummit on Threat Hunting & Offense Security`_
+- Dec 2021 `Infosec Jupyterthon 2021`_ `[live hunt recording]<https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695>`_
+- Nov 2021 `BlackHat Europe 2021`_
+- Oct 2021 `SANS Threat Hunting Summit 2021`_: `[recording]<https://www.youtube.com/watch?v=gyY5DAWLwT0>`_
+- May 2021 `RSA Conference 2021`_: `[session recording]<https://www.youtube.com/watch?v=-Xb086R0JTk>`_
 
 Connecting With The Community
 =============================
 
 - Ask questions, give suggestions, and connect with other hunters using slack.
   
-  - Get a `slack invitation`_ to join `Open Cybersecurity Alliance workspace`_.
-  - find the *kestrel* channel to join.
+  - Get a `slack invitation`_ to join `Open Cybersecurity Alliance workspace`_
+  - Join the *kestrel* channel to meet other hunters
   
-- Create a GitHub issue to report bugs and follow the `contributing guideline`_
-  to submit your pull request.
+- Contribute to the language development:
+
+  - Create a GitHub issue to report bugs and new features
+  - Follow the `contributing guideline`_ to submit your pull request
+
+- Contribute to the hunting knowledge base:
+
+  - `Kestrel huntbook`_
+  - `Kestrel analytics`_
 
 .. _Try Kestrel in a cloud sandbox without install: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
 .. _Kestrel documentation: https://kestrel.readthedocs.io/
@@ -143,16 +150,11 @@ Connecting With The Community
 .. _Building Your Own Kestrel Analytics and Sharing With the Community: https://opencybersecurityalliance.org/posts/kestrel-custom-analytics/
 .. _Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
 
-.. _RSA Conference 2021: https://www.rsaconference.com/events/2021-usa
-.. _The Game of Cyber Threat Hunting\: The Return of the Fun: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
+.. _RSA Conference 2021: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
 .. _SANS Threat Hunting Summit 2021: https://www.sans.org/blog/a-visual-summary-of-sans-threat-hunting-summit-2021/
-.. _Compose Your Hunts With Reusable Knowledge and Share Your Huntbook With the Community: https://www.youtube.com/watch?v=gyY5DAWLwT0
-.. _BlackHat Europe 2021: https://www.blackhat.com/eu-21/
-.. _An Open Stack for Threat Hunting in Hybrid Cloud With Connected Observability: https://www.blackhat.com/eu-21/arsenal/schedule/index.html#an-open-stack-for-threat-hunting-in-hybrid-cloud-with-connected-observability-25112
+.. _BlackHat Europe 2021: https://www.blackhat.com/eu-21/arsenal/schedule/index.html#an-open-stack-for-threat-hunting-in-hybrid-cloud-with-connected-observability-25112
 .. _Infosec Jupyterthon 2021: https://infosecjupyterthon.com/2021/agenda.html
-.. _Reason Cyber Campaigns With Kestrel: https://www.youtube.com/watch?v=nMnHBnYfIaI&t=20557s
 .. _SC Media eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
-.. _The ABCs of Kestrel: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
 
 .. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
 .. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
