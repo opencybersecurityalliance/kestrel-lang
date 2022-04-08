@@ -24,16 +24,17 @@
 
 |
 
-Kestrel threat hunting language aims to make cyber threat hunting *fast* by
-providing a layer of abstraction to build reusable, composable, and shareable
-hunt-flow.
+Kestrel is a threat hunting language aiming to make cyber threat hunting *fast*
+by providing a layer of abstraction to build reusable, composable, and
+shareable hunt-flow.
 
 `Try Kestrel in a cloud sandbox without install`_.
 
 Software developers write Python or Swift than machine code to quickly turn
 business logic into applications. Threat hunters write Kestrel to quickly turn
-threat hypotheses into hunt-flows---we see threat hunting as an interactive
-procedure to create customized intrusion detection systems on the fly.
+threat hypotheses into hunt-flow. We see threat hunting as an interactive
+procedure to create customized intrusion detection systems on the fly, and
+hunt-flow is to hunts as control-flow is to ordinary programs.
 
 What does it mean by *hunt fast*?
 
