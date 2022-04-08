@@ -12,7 +12,7 @@ threat intelligence, and public or proprietary analytics.
 .. toctree::
    :maxdepth: 2
 
-   overview
+   overview/index
    installation/index
    tutorial
    language
@@ -20,6 +20,7 @@ threat intelligence, and public or proprietary analytics.
    debug
    runtime
    theory
+   talks
    contributing
    authors
 

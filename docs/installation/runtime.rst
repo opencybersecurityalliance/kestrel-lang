@@ -81,7 +81,7 @@ Front-Ends Installation
 =======================
 
 Kestrel runtime currently supports three front-ends
-(:ref:`kestrel_in_a_nutshell`):
+(:ref:`overview/index:Kestrel in a Nutshell`):
 
 1. Command-line execution utility ``kestrel`` (installed in the
    package ``kestrel-lang``):
