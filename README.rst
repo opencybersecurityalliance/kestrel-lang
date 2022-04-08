@@ -78,75 +78,24 @@ Kestrel in a Nutshell
   - prefetching related logs and records for link construction between entities.
   - defining extensible interfaces for data sources and analytics execution.
 
-Installation
-============
+Basic Concepts and Howto
+========================
 
-Kestrel requires Python 3 to run. Check `Python installation guide`_ if you
-do not have Python. It is preferred to install Kestrel runtime using `pip`_,
-and it is preferred to install Kestrel runtime in a `Python virtual
-environment`_.
+Some common topics/questions described in `Kestrel documentation`_:
 
-.. code-block:: console
+- `A comprehensive introduction to Kestrel`_
+- `Interactive tutorial with quiz`_
+- `Kestrel runtime installation`_
+- `How to connect to your data sources`_
+- `How to execute an analytic hunt step in Python/Docker`_
+- `Language reference book`_
+- `How to use Kestrel via API`_
 
-    $ pip install --upgrade pip setuptools wheel
-    $ pip install kestrel-jupyter
-    $ python -m kestrel_jupyter_kernel.setup
-    $ jupyter notebook
+Kestrel Hunt Books And Analytics
+================================
 
-Hello World Hunt
-================
-
-1. Copy the following 3-step hunt flow into your favorite text editor:
-
-.. code-block:: elixir
-
-    # create four process entities in Kestrel and store them in the variable `proclist`
-    proclist = NEW process [ {"name": "cmd.exe", "pid": "123"}
-                           , {"name": "explorer.exe", "pid": "99"}
-                           , {"name": "firefox.exe", "pid": "201"}
-                           , {"name": "chrome.exe", "pid": "205"}
-                           ]
-
-    # match a pattern of browser processes, and put the matched entities in variable `browsers`
-    browsers = GET process FROM proclist WHERE [process:name IN ('firefox.exe', 'chrome.exe')]
-
-    # display the information (attributes name, pid) of the entities in variable `browsers`
-    DISP browsers ATTR name, pid
-
-2. Save to a file ``helloworld.hf``.
-
-3. Execute the hunt flow in a terminal (in Python venv if virtual environment is used):
-
-.. code-block:: console
-
-    $ kestrel helloworld.hf
-
-Now you captured browser processes in a Kestrel variable ``browsers`` from all processes created:
-
-::
-    
-           name pid
-     chrome.exe 205
-    firefox.exe 201
-
-    [SUMMARY] block executed in 1 seconds
-    VARIABLE    TYPE  #(ENTITIES)  #(RECORDS)  process*
-    proclist process            4           4         0
-    browsers process            2           2         0
-    *Number of related records cached.
-
-Hunting In The Real World
-=========================
-
-#. How to develop hunts interactively in Jupyter Notebook?
-#. How to connect to one and more real-world data sources?
-#. How to write and match a TTP pattern?
-#. How to find child processes of a process?
-#. How to find network traffic from a process?
-#. How to apply pre-built analytics?
-#. How to fork and merge hunt flows?
-
-Find more at `Kestrel documentation hub`_ and `Kestrel blogs at OCA`_.
+- `Kestrel huntbook`_: community-contributed Kestrel huntbooks
+- `Kestrel analytics`_: community-contributed Kestrel analytics
 
 Kestrel Hunting Blogs
 =====================
@@ -156,76 +105,55 @@ Kestrel Hunting Blogs
 #. `Building Your Own Kestrel Analytics and Sharing With the Community`_
 #. `Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow`_
 
-Learning/Sharing With the Community
-===================================
-
-- `Kestrel huntbook repo`_
-- `Kestrel analytics repo`_
-
 Talks And Demos
 ===============
 
-Kestrel was debuted at RSA Conference 2021: `The Game of Cyber Threat Hunting:
-The Return of the Fun`_ with the goal of an `efficient cyberthreat hunting
-symbiosis`_, its key design concepts `entity-based reasoning`_ and `composable
-hunt flow`_, and a `small-enterprise APT hunting demo`_ with TTP pattern
-matching, cross-host provenance tracking, TI-enrichment, machine learning
-analytics, and more.
-
-Kestrel was further introduced to the threat hunting community at `SANS Threat
-Hunting Summit 2021`_ in session `Compose Your Hunts With Reusable Knowledge
-and Share Your Huntbook With the Community`_ to facilitate huntbook
-composition, sharing, and reuse---from simple single hunt step demos (TTP
-pattern matching, provenance tracking, and data visualization analytics) to
-complex comprehensive hunt flow composition.
-
-Kestrel, together with `STIX-shifter`_, `Elastic`_, and `SysFlow`_ constitute
-the `open hunting stack`_ demoed at Black Hat Europe 2021: `An Open Stack for
-Threat Hunting in Hybrid Cloud With Connected Observability`_. A supply chain
-attack variant across a hybrid cloud (two clouds and on-premises machines) was
-hunted in the arsenal session.
-
-Kestrel was demoed at `Infosec Jupyterthon 2021`_ in session: `Reason Cyber
-Campaigns With Kestrel`_. The live hunting demo explained the basics of Kestrel
-throughout the discovery of the hybrid cloud APT campaign developed for our
-Black Hat Europe 2021 session.
+- [2022/04] `SC Media eSummit on Threat Hunting & Offense Security`_: `The ABCs of Kestrel`_
+- [2021/12] `Infosec Jupyterthon 2021`_: `Reason Cyber Campaigns With Kestrel`_
+- [2021/11] `BlackHat Europe 2021`_: `An Open Stack for Threat Hunting in Hybrid Cloud With Connected Observability`_
+- [2021/10] `SANS Threat Hunting Summit 2021`_: `Compose Your Hunts With Reusable Knowledge and Share Your Huntbook With the Community`_
+- [2021/05] `RSA Conference 2021`_: `The Game of Cyber Threat Hunting: The Return of the Fun`_
 
 Connecting With The Community
 =============================
 
-Quick questions? Like to meet other users? Want to contribute?
-
-Get a `slack invitation`_ to `Open Cybersecurity
-Alliance workspace`_ and join our *kestrel* channel.
+- Ask questions, give suggestions, and connect with other hunters using slack.
+  
+  - Get a `slack invitation`_ to join `Open Cybersecurity Alliance workspace`_.
+  - find the *kestrel* channel to join.
+  
+- Create a GitHub issue to report bugs and follow the `contributing guideline`_
+  to submit your pull request.
 
 .. _Try Kestrel in a cloud sandbox without install: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
-.. _Kestrel documentation hub: https://kestrel.readthedocs.io/
-.. _Kestrel blogs at OCA: https://opencybersecurityalliance.org/posts/
-.. _pip: https://pip.pypa.io/
-.. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
-.. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
-.. _Jupyter Notebook: https://jupyter.org/
-.. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
-.. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
-.. _efficient cyberthreat hunting symbiosis: https://kestrel.readthedocs.io/en/latest/overview.html#human-machine
-.. _small-enterprise APT hunting demo: https://www.youtube.com/watch?v=tASFWZfD7l8
-.. _entity-based reasoning: https://kestrel.readthedocs.io/en/latest/language.html#entity-based-reasoning
-.. _composable hunt flow: https://kestrel.readthedocs.io/en/latest/language.html#composable-hunt-flow
-.. _The Game of Cyber Threat Hunting\: The Return of the Fun: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
+.. _Kestrel documentation: https://kestrel.readthedocs.io/
+.. _A comprehensive introduction to Kestrel: https://kestrel.readthedocs.io/en/latest/overview.html
+.. _Interactive tutorial with quiz: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
+.. _Kestrel runtime installation: https://kestrel.readthedocs.io/en/latest/installation/runtime.html
+.. _How to connect to your data sources: https://kestrel.readthedocs.io/en/latest/installation/datasource.html
+.. _How to execute an analytic hunt step in Python/Docker: https://kestrel.readthedocs.io/en/latest/installation/analytics.html
+.. _Language reference book: https://kestrel.readthedocs.io/en/latest/language.html
+.. _How to use Kestrel via API: https://kestrel.readthedocs.io/en/latest/source/kestrel.session.html
+
+.. _Kestrel huntbook: https://github.com/opencybersecurityalliance/kestrel-huntbook
+.. _Kestrel analytics: https://github.com/opencybersecurityalliance/kestrel-analytics
+
 .. _Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks: https://opencybersecurityalliance.org/posts/kestrel-2021-07-26/
 .. _Practicing Backward And Forward Tracking Hunts on A Windows Host: https://opencybersecurityalliance.org/posts/kestrel-2021-08-16/
 .. _Building Your Own Kestrel Analytics and Sharing With the Community: https://opencybersecurityalliance.org/posts/kestrel-custom-analytics/
 .. _Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
-.. _Kestrel huntbook repo: https://github.com/opencybersecurityalliance/kestrel-huntbook
-.. _Kestrel analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
+
+.. _RSA Conference 2021: https://www.rsaconference.com/events/2021-usa
+.. _The Game of Cyber Threat Hunting\: The Return of the Fun: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
 .. _SANS Threat Hunting Summit 2021: https://www.sans.org/blog/a-visual-summary-of-sans-threat-hunting-summit-2021/
 .. _Compose Your Hunts With Reusable Knowledge and Share Your Huntbook With the Community: https://www.youtube.com/watch?v=gyY5DAWLwT0
+.. _BlackHat Europe 2021: https://www.blackhat.com/eu-21/
 .. _An Open Stack for Threat Hunting in Hybrid Cloud With Connected Observability: https://www.blackhat.com/eu-21/arsenal/schedule/index.html#an-open-stack-for-threat-hunting-in-hybrid-cloud-with-connected-observability-25112
-.. _STIX-shifter: https://github.com/opencybersecurityalliance/stix-shifter
-.. _Elastic: https://www.elastic.co/
-.. _SysFlow: https://github.com/sysflow-telemetry
-.. _open hunting stack: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
 .. _Infosec Jupyterthon 2021: https://infosecjupyterthon.com/2021/agenda.html
 .. _Reason Cyber Campaigns With Kestrel: https://www.youtube.com/watch?v=nMnHBnYfIaI&t=20557s
-.. _Kestrel Log4Shell huntbook: https://github.com/opencybersecurityalliance/kestrel-huntbook/blob/main/huntbooks/log4shell%20Detection.ipynb
-.. _Log4Shell analytics: https://github.com/opencybersecurityalliance/kestrel-analytics/tree/release/analytics/log4shell
+.. _SC Media eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
+.. _The ABCs of Kestrel: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
+
+.. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
+.. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
+.. _contributing guideline: CONTRIBUTING.rst
