@@ -21,13 +21,28 @@
 .. image:: https://readthedocs.org/projects/kestrel/badge/?version=latest
         :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
-   
-Kestrel threat hunting language aims to make hunting fast by providing a layer
-of abstraction for hunters. Software developers write Python or Swift than
-machine code to quickly turn their business logic into applications. Threat
-hunters write Kestrel to quickly turn their threat hypotheses into
-hunt-flows---we see threat hunting as an interactive procedure to create
-customized intrusion detection systems on the fly.
+
+|
+
+Kestrel threat hunting language aims to make cyber threat hunting *fast* by
+providing a layer of abstraction to build reusable, composable, and shareable
+hunt-flow.
+
+`Try Kestrel in a cloud sandbox without install`_.
+
+Software developers write Python or Swift than machine code to quickly turn
+business logic into applications. Threat hunters write Kestrel to quickly turn
+threat hypotheses into hunt-flows---we see threat hunting as an interactive
+procedure to create customized intrusion detection systems on the fly.
+
+What does it mean by *hunt fast*?
+
+- Do not write the same TTP pattern against different data sources.
+- Do not write customized adapaters to connect hunt steps.
+- Do not waste your existing analytic scripts/programs in future hunts.
+- Do construct your hunt-flow with smaller reuseable hunt-flow.
+- Do share your hunt book with your future self and your colleagues.
+- Do get interactive feedback and revise hunt-flow on the fly.
 
 |
 
@@ -36,7 +51,8 @@ customized intrusion detection systems on the fly.
    :target: https://www.youtube.com/watch?v=tASFWZfD7l8
    :alt: Kestrel Hunting Demo
 
-
+Kestrel in a Nutshell
+=====================
 
 .. image:: https://raw.githubusercontent.com/opencybersecurityalliance/kestrel-lang/release/docs/images/overview.png
    :width: 100%
@@ -60,14 +76,6 @@ customized intrusion detection systems on the fly.
   - caching intermediate data and related records for fast response.
   - prefetching related logs and records for link construction between entities.
   - defining extensible interfaces for data sources and analytics execution.
-
-News
-====
-
-Log4Shell detection:
-
-- The complete `Kestrel Log4Shell huntbook`_
-- The `Log4Shell analytics`_ to download for the huntbook
 
 Installation
 ============
@@ -189,6 +197,7 @@ Quick questions? Like to meet other users? Want to contribute?
 Get a `slack invitation`_ to `Open Cybersecurity
 Alliance workspace`_ and join our *kestrel* channel.
 
+.. _Try Kestrel in a cloud sandbox without install: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
 .. _Kestrel documentation hub: https://kestrel.readthedocs.io/
 .. _Kestrel blogs at OCA: https://opencybersecurityalliance.org/posts/
 .. _pip: https://pip.pypa.io/
