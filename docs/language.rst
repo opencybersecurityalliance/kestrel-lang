@@ -445,7 +445,7 @@ fundamental retrieval hunt step. And ``FIND`` provides a layer of abstraction
 to retrieve connected entities more easily than using the raw ``GET`` for this,
 that is, ``FIND`` can be replaced by ``GET`` in theory with some knowledge of *how
 to hunt*. Kestrel tries to focus threat hunters on *what to hunt* and automate
-the generation of *how to hunt* (see :doc:`overview`). Finding connected
+the generation of *how to hunt* (see :doc:`overview/index`). Finding connected
 entities requires knowledge on how the underlying records are connected, and
 Kestrel resolves the how for users with the command ``FIND``.
 
@@ -983,8 +983,6 @@ Comment
 =======
 
 Comment strings in Kestrel start with ``#`` to the end of the line.
-
-.. _data-source-and-analytics-interfaces:
 
 Data Source And Analytics Interfaces
 ====================================

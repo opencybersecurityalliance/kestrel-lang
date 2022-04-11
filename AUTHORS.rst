@@ -2,8 +2,8 @@
 Credits
 =======
 
-Development Leads
------------------
+Maintainers
+-----------
 
 - `Xiaokui Shu`_
 - `Paul Coccoli`_

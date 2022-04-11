@@ -6,6 +6,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.2.3 (2022-03-23)
+==================
+
+Added
+-----
+
+- error message improvement: suggestion when a Python analytics is not found
+- performance improvement: cache STIX bundle for any downloaded bundle in the stix-bundle data source interface
+- performance improvement: pre-compile STIX pattern before matching in the stix-bundle data source interface
+- performance improvement: skip prefetch when the generated prefetch STIX pattern is the same as the user-specified pattern
+- documentation improvement: add building instructions for documentation
+- documentation improvement: add data source setup under *Installation And Setup*
+- documentation improvement: add analytics setup under *Installation And Setup*
+
+Fixed
+-----
+
+- STIX bundle downloaded without ``Last-Modified`` field in response header #187
+- case sensitive support for Python analytics profile name #189
+
 1.2.2 (2022-03-02)
 ==================
 
