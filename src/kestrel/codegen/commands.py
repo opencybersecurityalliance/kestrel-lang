@@ -612,12 +612,15 @@ def _filter_prefetched_process(
 def _add_projection(store, entity_table, query, paths):
     proj = query.proj.cols if query.proj else []
     cols = store.columns(entity_table)
+    joined = set()
     for path in paths:
         if path == "*":
             return
         if "_ref" in path:  # This seems like a hack
             joins, table, column = store.path_joins(entity_table, None, path)
-            query.extend(joins)
+            if table not in joined:
+                query.extend(joins)
+                joined.add(table)
             proj.append(Column(column, table, path))
         elif path in cols:
             # Prevent any ambiguity
