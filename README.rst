@@ -123,8 +123,6 @@ Talks And Demos
 Connecting With The Community
 =============================
 
-
-   
 - Join Kestrel slack channel:
   
   - Get a `slack invitation`_ to join `Open Cybersecurity Alliance workspace`_
@@ -139,6 +137,7 @@ Connecting With The Community
 
   - Create a GitHub issue to report bugs and new features
   - Follow the `contributing guideline`_ to submit your pull request
+  - Refer to the `governance documentation`_ regarding the execution of the project
 
 - Share your hunt book and analytics:
 
@@ -177,4 +176,5 @@ Connecting With The Community
 .. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
 .. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
 .. _contributing guideline: CONTRIBUTING.rst
-.. _Apache License 2.0: https://github.com/opencybersecurityalliance/kestrel-lang/blob/develop/LICENSE.md
+.. _governance documentation: GOVERNANCE.rst
+.. _Apache License 2.0: LICENSE.md
