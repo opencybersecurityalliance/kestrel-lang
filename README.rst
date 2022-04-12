@@ -97,7 +97,7 @@ Visit `Kestrel documentation`_ to start and dive into Kestrel:
   - `How to execute an analytic hunt step in Python/Docker`_
   - `How to use Kestrel via API`_
 
-Kestrel HuntBooks And Analytics
+Kestrel Huntbooks And Analytics
 ===============================
 
 - `Kestrel huntbook`_: community-contributed Kestrel huntbooks
