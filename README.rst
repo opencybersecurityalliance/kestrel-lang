@@ -135,7 +135,7 @@ Connecting With The Community
   
 - Contribute to the language development (`Apache License 2.0`_):
 
-  - Create a GitHub issue to report bugs and new features
+  - Create a `GitHub Issue`_ to report bugs and new features
   - Follow the `contributing guideline`_ to submit your pull request
   - Refer to the `governance documentation`_ regarding PR merge, release, and vulnerability disclosure
 
@@ -175,6 +175,7 @@ Connecting With The Community
 
 .. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
 .. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
+.. _GitHub Issue: https://github.com/opencybersecurityalliance/kestrel-lang/issues
 .. _contributing guideline: CONTRIBUTING.rst
 .. _governance documentation: GOVERNANCE.rst
 .. _Apache License 2.0: LICENSE.md
