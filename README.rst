@@ -137,7 +137,7 @@ Connecting With The Community
 
   - Create a GitHub issue to report bugs and new features
   - Follow the `contributing guideline`_ to submit your pull request
-  - Refer to the `governance documentation`_ regarding the execution of the project
+  - Refer to the `governance documentation`_ regarding PR merge, release, and vulnerability disclosure
 
 - Share your hunt book and analytics:
 
