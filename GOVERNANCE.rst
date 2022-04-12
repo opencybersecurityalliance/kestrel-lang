@@ -2,10 +2,20 @@
 Kestrel Language Development
 ============================
 
-Maintainers
------------
+Maintainers and Contributors
+----------------------------
 
-Find the current maintainers and people who contributed to the project at our `AUTHORS page`_.
+Find the current maintainers and contributors to the project at our `authors page`_.
+
+GitHub Issue Management
+-----------------------
+
+Maintainers subscribe to the project and get notification of GitHub issue creation and updates. At least one maintainer needs to participate in a GitHub issue after created.
+
+Code Contribution Management
+----------------------------
+
+Maintainers subscribe to the project and get notification of pull requests (PR). For bug fix PR, at least one maintainer needs to review and approve the PR before merging to the `develop` branch. For new feature PR, one maintainer will lead the discussion to review and merge it.
 
 Semantic Versioning
 -------------------
@@ -36,6 +46,7 @@ A maintainer should release a new Kestrel runtime (PyPI package name: ``kestre-l
     - Sync the local git repo to the latest of the ``develop`` branch.
     - Update the ``version`` field in ``setup.cfg``.
     - Add changes in ``CHANGELOG.rst`` under a new version section.
+    - Add new contributors to ``AUTHORS.rst`` if any.
     - Commit the updates with the new version number as the message.
     - Push the local ``develop`` branch to remote.
 
@@ -68,8 +79,16 @@ A maintainer should release a new Kestrel runtime (PyPI package name: ``kestre-l
     - Check `kestrel-lang on PyPI`_ after a few minutes to confirm new package built and released.
     - May activate/pin the released version of Kestrel documentation at `readthedocs version control`_.
 
-.. _AUTHORS page: https://github.com/opencybersecurityalliance/kestrel-lang/blob/develop/AUTHORS.rst
+Vulnerability Disclosure
+------------------------
+
+In the case of a vulnerability, please contact any of the maintainers via slack to resolve the vulnerability as soon as possible (before or after it is published). To join OCA slack workspace, please follow the instructions in the `README`_.
+
+
+
+.. _authors page: AUTHORS.rst
 .. _entity-based cyber reasoning: https://kestrel.readthedocs.io/en/latest/language.html#entity-based-reasoning
 .. _firepit: https://github.com/opencybersecurityalliance/firepit
 .. _kestrel-lang on PyPI: https://pypi.org/project/kestrel-lang/
 .. _readthedocs version control: https://readthedocs.org/projects/kestrel/versions/
+.. _README: README.rst
