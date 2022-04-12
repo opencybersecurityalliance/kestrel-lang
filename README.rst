@@ -42,7 +42,7 @@ What does it mean by *hunt fast*?
 - Do not write one-time-use adapaters to connect hunt steps.
 - Do not waste your existing analytic scripts/programs in future hunts.
 - Do construct your hunt-flow from smaller reuseable hunt-flow.
-- Do share your hunt book with your future self and your colleagues.
+- Do share your huntbook with your future self and your colleagues.
 - Do get interactive feedback and revise hunt-flow on the fly.
 
 |
@@ -67,7 +67,7 @@ Kestrel in a Nutshell
   - reasoning with human-friendly entity-based data representation abstraction.
   - thinking across heterogeneous data and threat intelligence sources.
   - applying existing public and proprietary detection logic as analytic hunt steps.
-  - reusing and sharing individual hunting steps, hunt-flow, and entire hunt books.
+  - reusing and sharing individual hunting steps, hunt-flow, and entire huntbooks.
 
 - **Kestrel runtime**: a machine interpreter that deals with *how to hunt*.
 
@@ -97,8 +97,8 @@ Visit `Kestrel documentation`_ to start and dive into Kestrel:
   - `How to execute an analytic hunt step in Python/Docker`_
   - `How to use Kestrel via API`_
 
-Kestrel Hunt Books And Analytics
-================================
+Kestrel HuntBooks And Analytics
+===============================
 
 - `Kestrel huntbook`_: community-contributed Kestrel huntbooks
 - `Kestrel analytics`_: community-contributed Kestrel analytics
@@ -135,11 +135,11 @@ Connecting With The Community
   
 - Contribute to the language development (`Apache License 2.0`_):
 
-  - Create a `GitHub Issue`_ to report bugs and new features
+  - Create a `GitHub Issue`_ to report bugs and suggest new features
   - Follow the `contributing guideline`_ to submit your pull request
   - Refer to the `governance documentation`_ regarding PR merge, release, and vulnerability disclosure
 
-- Share your hunt book and analytics:
+- Share your huntbook and analytics:
 
   - `Kestrel huntbook`_
   - `Kestrel analytics`_
