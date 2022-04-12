@@ -17,6 +17,11 @@ Code Contribution Management
 
 Maintainers subscribe to the project and get notification of pull requests (PR). For bug fix PR, at least one maintainer needs to review and approve the PR before merging to the `develop` branch. For new feature PR, one maintainer will lead the discussion to review and merge it.
 
+Branching Model
+---------------
+
+This repo generally follow the `branching model`_ summarized by Vincent Driessen. The two long-term branches are ``develop`` and ``release``.
+
 Semantic Versioning
 -------------------
 
@@ -87,6 +92,7 @@ In the case of a vulnerability, please contact any of the maintainers via slack 
 
 
 .. _authors page: AUTHORS.rst
+.. _branching model: https://nvie.com/posts/a-successful-git-branching-model
 .. _entity-based cyber reasoning: https://kestrel.readthedocs.io/en/latest/language.html#entity-based-reasoning
 .. _firepit: https://github.com/opencybersecurityalliance/firepit
 .. _kestrel-lang on PyPI: https://pypi.org/project/kestrel-lang/
