@@ -609,8 +609,8 @@ def _filter_prefetched_process(
         return None
 
 
-def _add_projection(store, entity_table, query, paths):
-    proj = query.proj.cols if query.proj else []
+def _set_projection(store, entity_table, query, paths):
+    proj = []
     cols = store.columns(entity_table)
     joined = set()
     for path in paths:
@@ -638,7 +638,7 @@ def _build_query(store, entity_table, qry, stmt):
     attrs = stmt.get("attrs", "*")
     if attrs != "*":
         cols = attrs.split(",")
-        _add_projection(store, entity_table, qry, cols)
+        _set_projection(store, entity_table, qry, cols)
     sort_by = stmt.get("path")
     if sort_by:
         direction = "ASC" if stmt["ascending"] else "DESC"
