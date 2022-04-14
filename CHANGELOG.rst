@@ -6,6 +6,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.3.0 (2022-04-14)
+==================
+
+Added
+-----
+
+- update to firepit 2.0.0: the database layout has changed; it is now "normalized."  Older hunts will need to be re-executed.
+- TIMESTAMPED() transform: associate the timestamps from STIX ``observed-data`` with the entities in a Kestrel variable
+- updated ``DISP`` syntax: can now filter, sort, limit, etc. directly in a ``DISP`` statement
+- updated assignment/copy syntax: can now filter, sort, limit, etc. directly in an assignment statement
+
 1.2.3 (2022-03-23)
 ==================
 
