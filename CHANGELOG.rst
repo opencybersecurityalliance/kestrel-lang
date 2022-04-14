@@ -12,22 +12,22 @@ The format is based on `Keep a Changelog`_.
 Added
 -----
 
-- internal data model upgrade to firepit 2.0.0 with full graph-like database schema:
+- internal data model upgraded to firepit 2.0.0 with full graph-like database schema:
 
   - new firepit data schema named `normalized <https://firepit.readthedocs.io/en/latest/database.html>`_.
   - the normalized schema extracts/recognizes entities/SCOs from STIX observations and stores them and their relations.
   - the normalized schema fully enables a Kestrel variable to refer to a list of homogeneous entities as a view in a relational-DB table.
   - older hunts will need to be re-executed.
 
-- syntax upgrade: introduce the language construct *expression* to process a variable, e.g., adding a ``WHERE`` clause, and the processed variable can be
+- syntax upgrade: introducing the language construct *expression* to process a variable, e.g., adding a ``WHERE`` clause, and the processed variable can be
 
   - assigned to another variable, so one do not need another STIX pattern to do filtering.
   - passed to ``DISP``, so ``DISP`` is naturally upgraded to support many clauses such as ``SORT``, ``LIMIT``, etc.
 
-- new syntax of initial events handling besides entities:
+- new syntax for initial events handling besides entities:
 
-  - entities in a variable do not have timestamps anymore (previously all observations of the entities are listed in a variable with timestamps).
-  - use the function ``TIMESTAMPED()`` to wrap a variable into an expression when the user needs timestamps of the observations/events the entity appeared. This is useful for analyzing and visualizing events of entities through time, e.g., time series analytis of visited `ipv4-addr` entities in a variable.
+  - entities in a variable do not have timestamps anymore; previously all observations of the entities are listed in a variable with timestamps.
+  - use the function ``TIMESTAMPED()`` to wrap a variable into an expression when the user needs timestamps of the observations/events in which the entities appeared. This is useful for analyzing and visualizing events of entities through time, e.g., time series analytis of visited ``ipv4-addr`` entities in a variable.
 
 - unit tests:
 
