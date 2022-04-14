@@ -12,10 +12,50 @@ The format is based on `Keep a Changelog`_.
 Added
 -----
 
-- update to firepit 2.0.0: the database layout has changed; it is now "normalized."  Older hunts will need to be re-executed.
-- TIMESTAMPED() transform: associate the timestamps from STIX ``observed-data`` with the entities in a Kestrel variable
-- updated ``DISP`` syntax: can now filter, sort, limit, etc. directly in a ``DISP`` statement
-- updated assignment/copy syntax: can now filter, sort, limit, etc. directly in an assignment statement
+- internal data model upgrade to firepit 2.0.0 with full graph-like database schema:
+
+  - new firepit data schema named `normalized <https://firepit.readthedocs.io/en/latest/database.html>`_.
+  - the normalized schema extracts/recognizes entities/SCOs from STIX observations and stores them and their relations.
+  - the normalized schema fully enables a Kestrel variable to refer to a list of homogeneous entities as a view in a relational-DB table.
+  - older hunts will need to be re-executed.
+
+- syntax upgrade: introduce the language construct *expression* to process a variable, e.g., adding a ``WHERE`` clause, and the processed variable can be
+
+  - assigned to another variable, so one do not need another STIX pattern to do filtering.
+  - passed to ``DISP``, so ``DISP`` is naturally upgraded to support many clauses such as ``SORT``, ``LIMIT``, etc.
+
+- new syntax of initial events handling besides entities:
+
+  - entities in a variable do not have timestamps anymore (previously all observations of the entities are listed in a variable with timestamps).
+  - use the function ``TIMESTAMPED()`` to wrap a variable into an expression when the user needs timestamps of the observations/events the entity appeared. This is useful for analyzing and visualizing events of entities through time, e.g., time series analytis of visited `ipv4-addr` entities in a variable.
+
+- unit tests:
+
+  - 5 more unit tests for command ``FIND``.
+  - 2 more unit tests for command ``SAVE``.
+  - 2 unite tests for expression ``TIMESTAMPED()``.
+
+- new syntax added to language reference documentation
+  
+  - ``TIMESTAMPED``
+  - ``DISP``
+  - assign
+
+- repo updates:
+
+  - Kestrel logo created.
+  - GOVERNANCE.rst including *versioning*, *release procedure*, *vulnerability disclosure*, and more.
+
+Removed
+-------
+
+- the copy command is removed (replaced by the more generic assign command).
+
+Changed
+-------
+
+- repo front-page restructured to make it shorter but providing more information/links.
+- the overview page of Kestrel doc is turned into a directory of sections. The URL of the page is changed from `overview.html <https://kestrel.readthedocs.io/en/latest/overview.html>`_ to `overview <https://kestrel.readthedocs.io/en/latest/overview>`_.
 
 1.2.3 (2022-03-23)
 ==================
