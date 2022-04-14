@@ -36,10 +36,11 @@ class VarStruct:
             self.length = get_variable_entity_count(self)
         if records_count is not None:
             self.records_count = records_count
+        elif self.entity_table:
+            summary = self.store.summary(self.entity_table)
+            self.records_count = summary["number_observed"]
         else:
-            self.records_count = (
-                self.store.count(self.entity_table) if self.entity_table else 0
-            )
+            self.records_count = 0
 
         # TODO: cache of attributes for fast code completion request
         self.attributes = []

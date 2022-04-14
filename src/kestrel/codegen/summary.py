@@ -50,13 +50,16 @@ def gen_variable_summary(var_name, var_struct):
             count = 0
 
             if query_ids and is_from_direct_datasource:
-                query_ids_filter = Filter([Predicate("query_id", "IN", query_ids)])
-                query = Query()
-                query.append(Table(entity_type))
-                query.append(Join("__queries", "id", "=", "sco_id"))
-                query.append(query_ids_filter)
-                query.append(Unique())
-                query.append(Count())
+                query = Query(
+                    [
+                        Table(entity_type),
+                        Join("__contains", "id", "=", "target_ref"),
+                        Join("__queries", "source_ref", "=", "sco_id"),
+                        Filter([Predicate("query_id", "IN", query_ids)]),
+                        Unique(),
+                        Count(),
+                    ]
+                )
                 result = var_struct.store.run_query(query).fetchall()
                 count = result[0]["count"]
                 if entity_type == var_struct.type and count:
@@ -93,14 +96,5 @@ def get_variable_entity_count(variable):
         entity_id_attr = get_entity_id_attribute(variable)
         if entity_id_attr not in variable.store.columns(variable.entity_table):
             return 0
-        query = Query()
-        query.append(Table(variable.entity_table))
-        query.append(Projection([entity_id_attr]))
-        query.append(Unique())
-        query.append(Count())
-        try:
-            rows = variable.store.run_query(query).fetchall()
-            entity_count = rows[0]["count"] if rows else 0
-        except InvalidAttr:
-            pass
+        entity_count = variable.store.count(variable.entity_table)
     return entity_count

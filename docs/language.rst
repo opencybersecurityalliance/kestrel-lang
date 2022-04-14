@@ -171,7 +171,8 @@ Kestrel Variable
 A Kestrel variable is a list of homogeneous entities---all entities in a
 variable share the same type, for example, ``process``, ``network-traffic``, ``file``.
 Each type of entities has its specialized attributes, for example, ``process`` has
-``pid``, ``network-traffic`` has ``dst_port``, ``file`` has ``hashes``.
+``pid``, ``network-traffic`` has ``dst_port``, ``file`` has ``hashes``.  You can
+use the ``INFO`` Kestrel command to see any variable's type and attributes.
 
 When using the STIX-Shifter_ data source interface, Kestrel loads `STIX Cyber
 Observable Objects`_ (SCO) as basic telemetry data. The entity types and their
@@ -189,17 +190,41 @@ in Kestrel are mutable. They can be partially updated, e.g., new attributes
 added through an analytics, and they can be overwritten by a variable
 assignment to an existing variable.
 
+
+Variable Transforms
+===================
+
+TIMESTAMPED
+-----------
+
+STIX data from STIX-Shifter_ comes in the form of "observations," or the
+``observed-data`` STIX Domain Object (SDO).  This object contains (or
+references) SCOs, along with a time range for when those observables were
+actually seen.
+
+SCOs themselves do not contain any information for when they were observed,
+but you can retrieve SCOs with timestamps from those observations by using the
+``TIMESTAMPED`` transform:
+
+::
+
+   ts_scos = TIMESTAMPED(scos)
+
+The result of this transform is no longer a list of entities, but a data
+table containing the timestamp of each observation of the entities.
+
+
 Kestrel Command
 ===============
 
 A Kestrel command describes a `hunt step`_. All Kestrel commands can be put in
-one of the four `hunt step`_ categories:
+one of the five `hunt step`_ categories:
 
 #. Retrieval: ``GET``, ``FIND``, ``NEW``.
 #. Transformation: ``SORT``, ``GROUP``.
 #. Enrichment: ``APPLY``.
 #. Inspection: ``INFO``, ``DISP``.
-#. Flow-control: ``SAVE``, ``LOAD``, ``COPY``, ``MERGE``, ``JOIN``.
+#. Flow-control: ``SAVE``, ``LOAD``, ``ASSIGN``, ``MERGE``, ``JOIN``.
 
 To achieve `composable hunt flow`_ and allow threat hunters to compose hunt
 flow freely, the input and output of any Kestrel command are defined as
@@ -246,7 +271,7 @@ display object, or both a variable and a display object.
 +---------+----------------+---------------+----------------+---------------+
 | LOAD    | no             | yes           | yes            | no            |
 +---------+----------------+---------------+----------------+---------------+
-| COPY    | yes            | no            | yes            | no            |
+| ASSIGN  | yes            | no            | yes            | no            |
 +---------+----------------+---------------+----------------+---------------+
 | MERGE   | yes (two)      | no            | yes            | no            |
 +---------+----------------+---------------+----------------+---------------+
@@ -655,10 +680,26 @@ Syntax
 ^^^^^^
 ::
 
-    DISP varx [ATTR attribute1, attribute2, ...]
+    DISP [TIMESTAMPED(varx)|varx]
+        [WHERE condition...]
+        [ATTR attribute1, attribute2, ...]
+        [SORT BY attibute [ASC|DESC]]
+	[LIMIT l [OFFSET n]]
+
+- The optional transform ``TIMESTAMPED`` retrieves the ``first_observed``
+  timestamped for each observation of each entity in ``varx``.
+
+- The optional clause ``WHERE`` specifies a boolean condition to filter
+  the entities (similar to a SQL ``WHERE`` clause).
 
 - The optional clause ``ATTR`` specifies which list of attributes you
   would like to print. If omitted, Kestrel will output all attributes.
+
+- The optional clause ``SORT BY`` specifies which attribute to use to
+  to order the entities to print.
+
+- The optional clause ``LIMIT`` specifies an upper limit on the number
+  of entities to print.
 
 - The command deduplicates rows. All rows in the display object are distinct.
 
@@ -681,6 +722,9 @@ Examples
     # display process pid, name, and command line
     procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
     DISP procs ATTR pid, name, command_line
+
+    # display the timestamps from observations of those processes:
+    DISP TIMESTAMPED(procs) ATTR pid, name, command_line
 
 SORT
 ----
@@ -832,16 +876,40 @@ Examples
          FROM stixshifter://idsX
          WHERE [network-traffic:dst_ref.value = susp_ips.value]
 
-COPY
-----
+ASSIGN
+------
 
-The command ``COPY`` is an *flow-control* hunt step to copy a variable to another.
+The command ``ASSIGN`` is an *flow-control* hunt step to copy data from one variable to another.
 
 Syntax
 ^^^^^^
 ::
 
     newvar = oldvar
+    newvar = TIMESTAMPED(oldvar)
+    newvar = oldvar [WHERE attr = value...][ATTR attr1,...][SORT BY attr][LIMIT n [OFFSET m]]
+
+- The first form simply assigns a new name to a variable.
+- In the second form, ``newver`` will contains a list of timestamped observations
+  of the entities in ``oldvar``.
+- In the third form, ``oldvar`` will be filtered and the result assigned to ``newvar``.
+
+Examples
+^^^^^^^^
+::
+
+    # copy procs
+    copy_of_procs = procs
+
+    # filter conns for SSH connections
+    ssh_conns = conns WHERE dst_port = 22
+
+    # get URLs with their timestamps
+    ts_urls = TIMESTAMPED(urls)
+
+    # filter procs for WMIC commands with timestamps
+    wmic_procs = TIMESTAMPED(procs) WHERE command_line LIKE '%wmic%'
+
 
 MERGE
 -----

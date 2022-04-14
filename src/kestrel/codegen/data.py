@@ -52,13 +52,14 @@ def dump_data_to_file(store, input_entity_table, file_path):
     p.parent.mkdir(parents=True, exist_ok=True)
 
     input_data = store.lookup(input_entity_table) if input_entity_table else []
+    df = pd.DataFrame(input_data)
     dump_format = _get_dump_format(p)
     if dump_format == "csv":
-        pd.DataFrame(input_data).to_csv(file_path)
+        df.to_csv(file_path)
     elif dump_format == "parquet":
-        pd.DataFrame(input_data).to_parquet(file_path)
+        df.to_parquet(file_path)
     elif dump_format == "json":
-        data = pd.DataFrame(input_data).to_json(orient="records")
+        data = df.to_json(orient="records")
         with open(file_path, "w") as output_file:
             output_file.write(data)
 
