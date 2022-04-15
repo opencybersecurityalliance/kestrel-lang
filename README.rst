@@ -117,8 +117,8 @@ Talks And Demos
 - 2022/04 `SC Media eSummit on Threat Hunting & Offense Security`_
 - 2021/12 `Infosec Jupyterthon 2021`_ [`live hunt recording <https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695>`_]
 - 2021/11 `BlackHat Europe 2021`_
-- 2021/10 `SANS Threat Hunting Summit 2021`_: [`session recording <https://www.youtube.com/watch?v=gyY5DAWLwT0>`_]
-- 2021/05 `RSA Conference 2021`_: [`session recording <https://www.youtube.com/watch?v=-Xb086R0JTk>`_]
+- 2021/10 `SANS Threat Hunting Summit 2021`_: [`SANS session recording <https://www.youtube.com/watch?v=gyY5DAWLwT0>`_]
+- 2021/05 `RSA Conference 2021`_: [`RSA session recording <https://www.youtube.com/watch?v=-Xb086R0JTk>`_]
 
 Connecting With The Community
 =============================
