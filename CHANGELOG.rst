@@ -21,19 +21,19 @@ Added
 
 - syntax upgrade: introducing the language construct *expression* to process a variable, e.g., adding a ``WHERE`` clause, and the processed variable can be
 
-  - assigned to another variable, so one do not need another STIX pattern to do filtering.
+  - assigned to another variable, so one does not need another ``GET`` command with a STIX pattern to do filtering.
   - passed to ``DISP``, so ``DISP`` is naturally upgraded to support many clauses such as ``SORT``, ``LIMIT``, etc.
 
 - new syntax for initial events handling besides entities:
 
-  - entities in a variable do not have timestamps anymore; previously all observations of the entities are listed in a variable with timestamps.
-  - use the function ``TIMESTAMPED()`` to wrap a variable into an expression when the user needs timestamps of the observations/events in which the entities appeared. This is useful for analyzing and visualizing events of entities through time, e.g., time series analytis of visited ``ipv4-addr`` entities in a variable.
+  - entities in a variable do not have timestamps anymore; previously all observations of the entities were listed in a variable with timestamps.
+  - use the function ``TIMESTAMPED()`` to wrap a variable into an expression when the user needs timestamps of the observations/events in which the entities appeared. This is useful for analyzing and visualizing events of entities through time, e.g., time series analysis of visited ``ipv4-addr`` entities in a variable.
 
 - unit tests:
 
   - 5 more unit tests for command ``FIND``.
   - 2 more unit tests for command ``SAVE``.
-  - 2 unite tests for expression ``TIMESTAMPED()``.
+  - 2 unit tests for expression ``TIMESTAMPED()``.
 
 - new syntax added to language reference documentation
   
