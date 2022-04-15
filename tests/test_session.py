@@ -63,7 +63,6 @@ def test_session_1(fake_bundle_file):
         assert len(s.index) == 5
         port_3128 = s[(s["dst_port"] == 3128)]
         assert len(port_3128.index) == 1
-        assert port_3128.iloc[0]["number_observed"] == 14
 
         conns_sym = session.symtable["conns"]
         conns_dict = dict(conns_sym)
@@ -88,8 +87,8 @@ def test_session_timeframe(fake_bundle_file):
         ("ipv4-addr", "value", "=", "'192.168.121.121'", 1),
         ("network-traffic", "src_ref.value", "=", "'192.168.121.121'", 1),
         ("network-traffic", "dst_port", "=", 22, 29),
-        ("user-account", "account_login", "=", "'henry'", 2),
-        ("user-account", "account_login", "LIKE", "'hen%'", 2),
+        ("user-account", "account_login", "=", "'henry'", 1),
+        ("user-account", "account_login", "LIKE", "'hen%'", 1),
         ("user-account", "account_login", "=", "'zane'", 0),
     ],
 )

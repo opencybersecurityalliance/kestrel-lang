@@ -11,61 +11,63 @@ import datetime
 from collections import defaultdict
 import logging
 
-from firepit.query import Query, Projection, Table, Unique
+from firepit.query import Column, Join, Query, Projection, Table, Unique
 
 _logger = logging.getLogger(__name__)
 
 stix_2_0_ref_mapping = {
-    # (EntityX, Relate, EntityY): ([STIX_Ref_i], is_Ref_in_EntityX)
+    # (EntityX, Relate, EntityY): ([EntityX_STIX_Ref_i], [EntityY_STIX_Ref_i])
     # All STIX 2.0 refs enumerated
     # file
-    ("file", "contained", "artifact"): (["content_ref"], True),
-    ("directory", "contained", "directory"): (["x_contains_of_ref"], False),
-    ("directory", "contained", "file"): (
-        ["x_contains_of_ref", "parent_directory_ref"],
-        False,
-    ),
-    ("archive-ext", "contained", "file"): (["x_contains_of_ref"], False),
+    ("file", "contained", "artifact"): (["content_ref"], []),
+    ("directory", "contained", "directory"): (["contains_refs"], ["contains_refs"]),
+    ("directory", "contained", "file"): (["contains_refs"], ["parent_directory_ref"]),
+    ("archive-ext", "contained", "file"): (["contains_refs"], []),
     # email
-    ("user-account", "owned", "email-addr"): (["belongs_to_ref"], False),
-    ("email-addr", "created", "email-message"): (["from_ref", "sender_ref"], False),
+    ("user-account", "owned", "email-addr"): ([], ["belongs_to_ref"]),
+    ("email-addr", "created", "email-message"): ([], ["from_ref", "sender_ref"]),
     ("email-addr", "accepted", "email-message"): (
-        ["x_to_of_ref", "x_cc_of_ref", "x_bcc_of_ref"],
-        True,
+        [],
+        ["to_refs", "cc_refs", "bcc_refs"],
     ),
-    ("email-message", None, "artifact"): (["raw_email_ref", "body_raw_ref"], True),
-    ("email-message", None, "file"): (["body_raw_ref"], True),
+    ("email-message", None, "artifact"): (["raw_email_ref", "body_raw_ref"], []),
+    ("email-message", None, "file"): (
+        ["body_raw_ref"],
+        [],
+    ),  # FIXME: should be mime-part-type?
     # ip address
-    ("autonomous-system", "owned", "ipv4-addr"): (["x_belongs_to_of_ref"], True),
-    ("autonomous-system", "owned", "ipv6-addr"): (["x_belongs_to_of_ref"], True),
+    ("autonomous-system", "owned", "ipv4-addr"): ([], ["belongs_to_refs"]),
+    ("autonomous-system", "owned", "ipv6-addr"): ([], ["belongs_to_refs"]),
     # network-traffic
-    ("ipv4-addr", "created", "network-traffic"): (["src_ref"], False),
-    ("ipv6-addr", "created", "network-traffic"): (["src_ref"], False),
-    ("mac-addr", "created", "network-traffic"): (["src_ref"], False),
-    ("domain-name", "created", "network-traffic"): (["src_ref"], False),
-    ("artifact", "created", "network-traffic"): (["src_payload_ref"], False),
-    ("mac-addr", None, "ipv4-addr"): (["x_resolves_to_of_ref"], True),
-    ("mac-addr", None, "ipv6-addr"): (["x_resolves_to_of_ref"], True),
-    ("http-request-ext", None, "artifact"): (["message_body_data_ref"], True),
-    ("ipv4-addr", "accepted", "network-traffic"): (["dst_ref"], False),
-    ("ipv6-addr", "accepted", "network-traffic"): (["dst_ref"], False),
-    ("mac-addr", "accepted", "network-traffic"): (["dst_ref"], False),
-    ("domain-name", "accepted", "network-traffic"): (["dst_ref"], False),
-    ("artifact", "accepted", "network-traffic"): (["dst_payload_ref"], False),
+    ("ipv4-addr", "created", "network-traffic"): ([], ["src_ref"]),
+    ("ipv6-addr", "created", "network-traffic"): ([], ["src_ref"]),
+    ("mac-addr", "created", "network-traffic"): ([], ["src_ref"]),
+    ("domain-name", "created", "network-traffic"): ([], ["src_ref"]),
+    ("artifact", "created", "network-traffic"): ([], ["src_payload_ref"]),
+    ("mac-addr", None, "ipv4-addr"): ([], ["resolves_to_refs"]),
+    ("mac-addr", None, "ipv6-addr"): ([], ["resolves_to_refs"]),
+    ("http-request-ext", None, "artifact"): (["message_body_data_ref"], []),
+    ("ipv4-addr", "accepted", "network-traffic"): ([], ["dst_ref"]),
+    ("ipv6-addr", "accepted", "network-traffic"): ([], ["dst_ref"]),
+    ("mac-addr", "accepted", "network-traffic"): ([], ["dst_ref"]),
+    ("domain-name", "accepted", "network-traffic"): ([], ["dst_ref"]),
+    ("artifact", "accepted", "network-traffic"): ([], ["dst_payload_ref"]),
     ("network-traffic", "contained", "network-traffic"): (
         ["encapsulated_by_ref"],
-        False,
+        ["encapsulated_by_ref"],
     ),
     # process
-    ("process", "created", "network-traffic"): (["x_opened_connection_of_ref"], False),
-    ("user-account", "owned", "process"): (["creator_user_ref"], False),
-    ("process", "loaded", "file"): (["binary_ref"], True),
-    ("process", "created", "process"): (["parent_ref"], False),
+    ("process", "created", "network-traffic"): (["opened_connection_refs"], []),
+    ("user-account", "owned", "process"): ([], ["creator_user_ref"]),
+    ("process", "loaded", "file"): (["binary_ref"], []),
+    # ("process", "created", "process"): (["child_refs"], ["parent_ref"]),
+    ("process", "created", "process"): ([], ["parent_ref"]),
     # service
-    ("windows-service-ext", "loaded", "file"): (["x_service_dll_of_ref"], False),
-    ("windows-service-ext", "loaded", "user-account"): (["creator_user_ref"], True),
+    ("windows-service-ext", "loaded", "file"): (["service_dll_refs"], []),
+    ("windows-service-ext", "loaded", "user-account"): (["creator_user_ref"], []),
 }
 
+# FIXME: is this no longer needed?
 # the first available attribute will be used to uniquely identify the entity
 stix_2_0_identical_mapping = {
     # entity-type: id attributes candidates
@@ -207,14 +209,18 @@ def _generate_paramstix_comparison_expressions(
         (input_type, return_type) if is_reversed else (return_type, input_type)
     )
 
-    stix_refs, is_ref_in_entityx = stix_2_0_ref_mapping[(entity_x, relation, entity_y)]
-
-    is_ref_in_return_entity = is_reversed ^ is_ref_in_entityx
+    stix_src_refs, stix_tgt_refs = stix_2_0_ref_mapping[(entity_x, relation, entity_y)]
 
     comp_exps = []
-    for stix_ref in stix_refs:
-        if is_ref_in_return_entity:
-            comp_exps.append(f"{return_type}:{stix_ref}.id = {input_var_name}.id")
+    for stix_ref in stix_src_refs:
+        if stix_ref.endswith("_refs"):
+            comp_exps.append(f"{return_type}:id = {input_var_name}.{stix_ref}[*].id")
+        else:
+            comp_exps.append(f"{return_type}:id = {input_var_name}.{stix_ref}.id")
+
+    for stix_ref in stix_tgt_refs:
+        if stix_ref.endswith("_refs"):
+            comp_exps.append(f"{return_type}:id = {input_var_name}.{stix_ref}[*].id")
         else:
             comp_exps.append(f"{return_type}:id = {input_var_name}.{stix_ref}.id")
 
@@ -229,9 +235,14 @@ def fine_grained_relational_process_filtering(
         f"start fine-grained relational process filtering for prefetched table: {prefetch_entity_table}"
     )
 
-    query_ref = Query()
-    query_ref.append(Table(local_var.entity_table))
-    query_ref.append(Projection(["pid", "name", "first_observed", "last_observed"]))
+    query_ref = Query(
+        [
+            Table(local_var.entity_table),
+            Join("__contains", "id", "=", "target_ref"),
+            Join("observed-data", "source_ref", "=", "id"),
+            Projection(["pid", "name", "first_observed", "last_observed"]),
+        ]
+    )
     ref_rows = local_var.store.run_query(query_ref).fetchall()
 
     entities = defaultdict(list)
@@ -245,10 +256,21 @@ def fine_grained_relational_process_filtering(
                 (process_name, process_start_time, process_end_time)
             )
 
-    query_fil = Query()
-    query_fil.append(Table(prefetch_entity_table))
-    query_fil.append(
-        Projection(["id", "pid", "name", "first_observed", "last_observed"])
+    query_fil = Query(
+        [
+            Table(prefetch_entity_table),
+            Join("__contains", "id", "=", "target_ref"),
+            Join("observed-data", "source_ref", "=", "id"),
+            Projection(
+                [
+                    Column("id", prefetch_entity_table),
+                    "pid",
+                    "name",
+                    "first_observed",
+                    "last_observed",
+                ]
+            ),
+        ]
     )
     fil_rows = store.run_query(query_fil).fetchall()
 

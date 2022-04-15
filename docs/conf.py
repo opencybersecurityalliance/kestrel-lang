@@ -11,7 +11,7 @@ project = "Kestrel Threat Hunting Language"
 version = get_version()
 release = version
 author = "Xiaokui Shu, Paul Coccoli"
-copyright = "2021 IBM"
+copyright = "2022 Open Cybersecurity Alliance"
 
 extensions = [
     "sphinx.ext.intersphinx",

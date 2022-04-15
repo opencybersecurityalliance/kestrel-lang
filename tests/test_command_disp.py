@@ -1,5 +1,4 @@
 import pytest
-import json
 
 from kestrel.exceptions import VariableNotExist
 from kestrel.session import Session

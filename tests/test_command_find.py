@@ -1,3 +1,4 @@
+import json
 import os
 import pytest
 
@@ -8,6 +9,12 @@ from kestrel.session import Session
 def fake_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(cwd, "test_bundle.json")
+
+
+@pytest.fixture
+def proc_bundle_file():
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(cwd, "doctored-1k.json")
 
 
 def test_return_table_not_exist(fake_bundle_file):
@@ -48,3 +55,82 @@ procs = FIND process CREATED conns
     output_dict = summaries[0].to_dict()
     del output_dict["data"]["execution time"]
     assert output_dict == correct_dict
+
+
+def test_find_srcs(fake_bundle_file):
+    with Session() as s:
+        stmt = f"""
+conns = get network-traffic
+        from file://{fake_bundle_file}
+        where [network-traffic:dst_port = 22]
+srcs = FIND ipv4-addr CREATED conns
+"""
+        s.execute(stmt)
+        srcs = s.get_variable('srcs')
+        assert len(srcs) == 24
+
+
+def test_find_procs(proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+procs = get process
+        from file://{proc_bundle_file}
+        where [process:name LIKE '%']
+conns = FIND network-traffic CREATED BY procs
+"""
+        s.execute(stmt)
+        conns = s.get_variable('conns')
+        assert len(conns) == 853  # FIXME: should be 948, I think (id collisions for network-traffic)
+
+        # DISP with a ref (parent_ref) and ambiguous column (command_line)
+        disp_out = s.execute("DISP procs ATTR name, parent_ref.name, command_line")
+        data = disp_out[0].to_dict()["data"]
+        print(json.dumps(data, indent=4))
+
+
+def test_find_file_linked_to_process(proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+procs = get process
+        from file://{proc_bundle_file}
+        where [process:command_line LIKE 'wmic%']
+files = FIND file LINKED procs
+"""
+        s.execute(stmt)
+        procs = s.get_variable('procs')
+        print(json.dumps(procs, indent=4))
+        assert len(procs) == 7 * 3  # TEMP: 3 records per entity
+        files = s.get_variable('files')
+        print(json.dumps(files, indent=4))
+        assert len(files) == 6  #TODO: double check this count
+
+
+def test_find_file_loaded_by_process(proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+procs = get process
+        from file://{proc_bundle_file}
+        where [process:command_line LIKE 'wmic%']
+files = FIND file LOADED BY procs
+"""
+        s.execute(stmt)
+        procs = s.get_variable('procs')
+        print(json.dumps(procs, indent=4))
+        assert len(procs) == 7 * 3  # TEMP: 3 records per entity
+        files = s.get_variable('files')
+        print(json.dumps(files, indent=4))
+        assert len(files) == 1
+
+
+def test_find_process_created_process(proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+procs = get process
+        from file://{proc_bundle_file}
+        where [process:command_line LIKE 'wmic%']
+parents = FIND process CREATED procs
+"""
+        s.execute(stmt)
+        data = s.get_variable('parents')
+        print(json.dumps(data, indent=4))
+        assert len(data)

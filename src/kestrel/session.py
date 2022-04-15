@@ -69,6 +69,7 @@ from kestrel.syntax.utils import (
     all_relations,
     LITERALS,
     AGG_FUNCS,
+    TRANSFORMS,
 )
 from kestrel.semantics import *
 from kestrel.codegen import commands
@@ -427,6 +428,8 @@ class Session(AbstractContextManager):
                             tmp.extend(all_relations)
                     elif token == "FUNCNAME":
                         tmp.extend(AGG_FUNCS)
+                    elif token == "TRANSFORM":
+                        tmp.extend(TRANSFORMS)
                     elif token in LITERALS:
                         continue
                     elif token.startswith("__ANON"):
@@ -494,7 +497,7 @@ class Session(AbstractContextManager):
 
             # exception completion
             except StixPatternError as e:
-                raise InvalidStixPattern(e.stix)
+                raise InvalidStixPattern(e.stix) from e
 
             # post-processing: symbol table update
             if output_var_struct is not None:

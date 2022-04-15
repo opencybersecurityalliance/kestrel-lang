@@ -23,7 +23,7 @@ import logging
 import itertools
 from collections import OrderedDict
 
-from firepit.query import Aggregation, Group, Query, Table
+from firepit.query import Column, Limit, Offset, Order, Projection, Query
 from firepit.stix20 import summarize_pattern
 
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts
@@ -33,15 +33,14 @@ from kestrel.symboltable import new_var
 from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.codegen.data import load_data, load_data_file, dump_data_to_file
 from kestrel.codegen.display import DisplayDataframe, DisplayDict
-from kestrel.codegen.pattern import build_pattern, or_patterns, build_pattern_from_ids
+from kestrel.codegen.pattern import build_pattern, build_pattern_from_ids
+from kestrel.codegen.queries import (
+    compile_specific_relation_to_query,
+    compile_generic_relation_to_query,
+)
 from kestrel.codegen.relations import (
     generic_relations,
-    compile_generic_relation_to_pattern,
-    compile_specific_relation_to_pattern,
     compile_identical_entity_search_pattern,
-    compile_x_ibm_event_search_flow_in_pattern,
-    compile_x_ibm_event_search_flow_out_pattern,
-    are_entities_associated_with_x_ibm_event,
     fine_grained_relational_process_filtering,
     get_entity_id_attribute,
     stix_2_0_identical_mapping,
@@ -98,6 +97,26 @@ def _debug_logger(func):
 ################################################################
 #                 Code Generation for Commands
 ################################################################
+
+
+@_debug_logger
+@_default_output
+def assign(stmt, session):
+    entity_table = get_entity_table(stmt["input"], session.symtable)
+    transform = stmt.get("transform")
+    if transform:
+        if transform.lower() == "timestamped":
+            qry = session.store.timestamped(entity_table, run=False)
+        else:
+            qry = Query(entity_table)
+    else:
+        qry = Query(entity_table)
+
+    qry = _build_query(session.store, entity_table, qry, stmt)
+    session.store.assign_query(stmt["output"], qry)
+
+    output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
+    return output, None
 
 
 @_debug_logger
@@ -182,14 +201,20 @@ def info(stmt, session):
 
 @_debug_logger
 def disp(stmt, session):
-    if session.symtable[stmt["input"]].entity_table:
-        content = session.store.lookup(
-            get_entity_table(stmt["input"], session.symtable),
-            stmt["attrs"],
-            stmt["limit"],
-        )
+    entity_table = get_entity_table(stmt["input"], session.symtable)
+    transform = stmt.get("transform")
+    if transform and entity_table:
+        if transform.lower() == "timestamped":
+            qry = session.store.timestamped(entity_table, run=False)
+        else:
+            qry = Query(entity_table)
     else:
-        content = []
+        qry = Query(entity_table)
+
+    qry = _build_query(session.store, entity_table, qry, stmt)
+    cursor = session.store.run_query(qry)
+    content = cursor.fetchall()
+
     return None, DisplayDataframe(dedup_ordered_dicts(remove_empty_dicts(content)))
 
 
@@ -315,13 +340,12 @@ def find(stmt, session):
     input_var_name = stmt["input"]
     return_var_table = stmt["output"]
     local_var_table = stmt["output"] + "_local"
-    local_var_event_name = stmt["output"] + "_asso_event"
     relation = stmt["relation"]
     is_reversed = stmt["reversed"]
     time_range = stmt["timerange"]
-    event_type = "x-oca-event"
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
+    rel_query = None
 
     if return_type not in session.store.types():
         # return empty variable
@@ -329,82 +353,29 @@ def find(stmt, session):
 
     else:
         _symtable = {input_var_name: session.symtable[input_var_name]}
-
-        event_pattern = None
+        input_var_attrs = session.store.columns(input_type)
+        return_type_attrs = session.store.columns(return_type)
 
         # First, get information from local store
         if relation in generic_relations:
-            raw_pattern_body = compile_generic_relation_to_pattern(
+            rel_query = compile_generic_relation_to_query(
                 return_type, input_type, input_var_name
             )
 
-            if (
-                event_type in session.store.types()
-                and are_entities_associated_with_x_ibm_event([input_type, return_type])
-                and input_type != return_type
-            ):
-                try:
-                    event_in_pattern_body = compile_x_ibm_event_search_flow_in_pattern(
-                        input_type, input_var_name
-                    )
-                    event_in_pattern = build_pattern(
-                        event_in_pattern_body,
-                        time_range,
-                        start_offset,
-                        end_offset,
-                        _symtable,
-                        session.store,
-                    )
-                    session.store.extract(
-                        local_var_event_name, event_type, None, event_in_pattern
-                    )
-                    _symtable[local_var_event_name] = new_var(
-                        session.store, local_var_event_name, [], stmt, session.symtable
-                    )
-                    event_out_pattern_body = (
-                        compile_x_ibm_event_search_flow_out_pattern(
-                            return_type, local_var_event_name
-                        )
-                    )
-                    event_pattern = build_pattern(
-                        event_out_pattern_body,
-                        time_range,
-                        start_offset,
-                        end_offset,
-                        _symtable,
-                        session.store,
-                    )
-                    if not session.debug_mode:
-                        _logger.debug(f"remove temp store view {local_var_event_name}.")
-                        session.store.remove_view(local_var_event_name)
-
-                except InvalidAttribute:
-                    _logger.warning(
-                        "attributes not in DB when building event pattern for x-oca-event"
-                    )
         else:
-            raw_pattern_body = compile_specific_relation_to_pattern(
-                return_type, relation, input_type, is_reversed, input_var_name
+            rel_query = compile_specific_relation_to_query(
+                return_type,
+                relation,
+                input_type,
+                is_reversed,
+                input_var_name,
+                input_var_attrs,
+                return_type_attrs,
             )
 
-        try:
-            local_pattern = build_pattern(
-                raw_pattern_body,
-                time_range,
-                start_offset,
-                end_offset,
-                _symtable,
-                session.store,
-            )
-        except InvalidAttribute:
-            local_pattern = None
-
-        local_pattern = or_patterns([local_pattern, event_pattern])
-
-        # by default, `session.store.extract` will generate new entity_table named `local_var_table`
-        # `extract` does not support the case both query_id and pattern are None
-        if local_pattern:
-            session.store.extract(local_var_table, return_type, None, local_pattern)
+        # `session.store.assign_query` will generate new entity_table named `local_var_table`
+        if rel_query:
+            session.store.assign_query(local_var_table, rel_query, return_type)
             _output = new_var(
                 session.store, local_var_table, [], stmt, session.symtable
             )
@@ -498,13 +469,16 @@ def join(stmt, session):
 @_default_output
 @_guard_empty_input
 def group(stmt, session):
-    query = Query(
-        [Table(get_entity_table(stmt["input"], session.symtable)), Group(stmt["paths"])]
-    )
     if "aggregations" in stmt:
         aggs = [(i["func"], i["attr"], i["alias"]) for i in stmt["aggregations"]]
-        query.append(Aggregation(aggs))
-    session.store.assign_query(stmt["output"], query)
+    else:
+        aggs = None
+    session.store.group(
+        stmt["output"],
+        get_entity_table(stmt["input"], session.symtable),
+        stmt["paths"],
+        aggs,
+    )
 
 
 @_debug_logger
@@ -633,3 +607,46 @@ def _filter_prefetched_process(
     else:
         _logger.info("no prefetched process found after filtering.")
         return None
+
+
+def _set_projection(store, entity_table, query, paths):
+    proj = []
+    cols = store.columns(entity_table)
+    joined = set()
+    for path in paths:
+        if path == "*":
+            return
+        if "_ref" in path:  # This seems like a hack
+            joins, table, column = store.path_joins(entity_table, None, path)
+            if table not in joined:
+                query.extend(joins)
+                joined.add(table)
+            proj.append(Column(column, table, path))
+        elif path in cols:
+            # Prevent any ambiguity
+            proj.append(Column(path, entity_table))
+        else:
+            # Not sure where it came from
+            proj.append(path)
+    query.append(Projection(proj))
+
+
+def _build_query(store, entity_table, qry, stmt):
+    where = stmt.get("where")
+    if where:
+        qry.append(where)
+    attrs = stmt.get("attrs", "*")
+    if attrs != "*":
+        cols = attrs.split(",")
+        _set_projection(store, entity_table, qry, cols)
+    sort_by = stmt.get("path")
+    if sort_by:
+        direction = "ASC" if stmt["ascending"] else "DESC"
+        qry.append(Order([(sort_by, direction)]))
+    limit = stmt.get("limit")
+    if limit:
+        qry.append(Limit(limit))
+    offset = stmt.get("offset")
+    if offset:
+        qry.append(Offset(offset))
+    return qry

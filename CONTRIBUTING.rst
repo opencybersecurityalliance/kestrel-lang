@@ -4,86 +4,50 @@ Contributing
 
 Contributions are welcome, and they are greatly appreciated!
 
-You can contribute in many ways (more is coming):
-
 Types of Contributions
 ----------------------
 
-Report Bugs
-~~~~~~~~~~~
+- Have something to say: join us at slack (find how to join in `README`_), or create a ticket at `GitHub Issues`_.
 
-Report bugs at `Kestrel issue tracker`_:
+- Report bugs: report bugs at `GitHub Issues`_.
 
-If you are reporting a bug, please include:
+- Fix bugs: look through the `GitHub Issues`_ for bugs to fix.
 
-- Your operating system name and version.
-- Any details about your local setup that might be helpful in troubleshooting.
-- Detailed steps to reproduce the bug.
+- Implement features: look through the `GitHub Issues`_ for features to implement.
 
-Fix Bugs
-~~~~~~~~
+- Write documentation: we use the `Google Style`_ docstrings in our source code.
 
-Look through the GitHub issues for bugs. Anything tagged with "bug" and "help
-wanted" is open to whoever wants to implement it.
+  - `supported sections`_
+  - `docstring examples`_
 
-Implement Features
-~~~~~~~~~~~~~~~~~~
+- Share your Kestrel analytics: submit a PR to the `kestrel-analytics repo`_.
 
-Look through the GitHub issues for features. Anything tagged with "enhancement"
-and "help wanted" is open to whoever wants to implement it.
-
-Write Documentation
-~~~~~~~~~~~~~~~~~~~
-
-We use the `Google Style`_ docstrings in our source code. Sphinx will pick them
-up for documentation generation and publishing.
-
-- `supported sections`_
-- `docstring examples`_
-
-Submit Feedback
-~~~~~~~~~~~~~~~
-
-The best way to send feedback is to file an issue at `Kestrel issue tracker`_.
-
-If you are proposing a feature:
-
-- Explain in detail how it would work.
-- Keep the scope as narrow as possible, to make it easier to implement.
-- Remember that this is a volunteer-driven project, and that contributions
-  are welcome :)
+- Share your Kestrel huntbook: submit a PR to the `kestrel-huntbook repo`_.
 
 Code Style
 ----------
 
 We follow the `symbol naming convention`_ and use `black`_ to format the code.
 
-Development Workflow
---------------------
+How to Submit a Pull Request
+----------------------------
 
-We follow the `branching model`_ summarized by Vincent Driessen.
-
-In addition to the above model, we follow an additional branch naming rule:
-
-- Branch name: ``feature-issueID-short-description``
-
-  - prefix: either ``feature`` or ``hotfix``
-  - issueID: a integer that refers to the issue with details
-  - short-description: short description with hyphens as seperators
-
-Pull Request Guidelines
------------------------
-
-Before you submit a pull request, check that it meets these guidelines:
+Checklist before submitting a pull request:
 
 1. The pull request should include tests.
 2. If the pull request adds functionality, the docs should be updated.
-3. The pull request should work for Python 3.6 and 3.8.
+3. Run a full unittest with ``pytest``.
+4. Check unused imports with ``unimport --check --exclude __init__.py src/``.
+5. Black your code with ``black src/``.
 
-.. _Kestrel issue tracker: https://github.com/opencybersecurityalliance/kestrel-lang/issues
+All contributions must be covered by a Contributor's License Agreement (CLA) and ECLA (if you are contributing on behalf of your employer). You will get a prompt to sign CLA when you submit your first PR.
+
+.. _GitHub Issues: https://github.com/opencybersecurityalliance/kestrel-lang/issues
 .. _Symbol Naming Convention: https://google.github.io/styleguide/pyguide.html#3164-guidelines-derived-from-guidos-recommendations
 .. _black: https://github.com/psf/black
-.. _branching model: https://nvie.com/posts/a-successful-git-branching-model
 .. _Google Style: https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings
 .. _supported sections: https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html#docstring-sections
 .. _docstring examples: https://www.sphinx-doc.org/en/master/usage/extensions/example_google.html
+.. _README: README.rst
+.. _kestrel-analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
+.. _kestrel-huntbook repo: https://github.com/opencybersecurityalliance/kestrel-huntbook
