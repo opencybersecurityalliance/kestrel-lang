@@ -368,7 +368,9 @@ class Session(AbstractContextManager):
             A list of suggested strings to complete the code.
         """
         prefix = code[:cursor_pos]
-        last_word = prefix.split(" ")[-1]
+        words = prefix.split(" ")
+        last_word = words[-1]
+        _logger.debug('code="%s" prefix="%s" last_word="%s"', code, prefix, last_word)
 
         if "START" in prefix or "STOP" in prefix:
             return self._get_complete_timestamp(last_word)
@@ -397,19 +399,30 @@ class Session(AbstractContextManager):
             _logger.debug("standard auto-complete")
 
             try:
-                self.parse(prefix)
+                stmt = self.parse(prefix)
+                _logger.debug("first parse: %s", stmt)
+                last_stmt = stmt[-1]
+                if last_stmt["command"] == "assign" and last_stmt["output"] == "_":
+                    # Special case for a varname alone on a line
+                    allnames = [
+                        v for v in self.get_variable_names() if v.startswith(prefix)
+                    ]
+                    if not allnames:
+                        return ["=", "+"] if prefix.endswith(" ") else []
 
                 # If it parses successfully, add something so it will fail
                 self.parse(prefix + " @autocompletions@")
             except KestrelSyntaxError as e:
+                _logger.debug("exception: %s", e)
+                varnames = self.get_variable_names()
                 tmp = []
                 for token in e.expected:
                     if token == "VARIABLE":
-                        tmp.extend(self.get_variable_names())
+                        tmp.extend(varnames)
                     elif token == "DATASRC":
                         schemes = self.data_source_manager.schemes()
                         tmp.extend([f"{scheme}://" for scheme in schemes])
-                        tmp.extend(self.get_variable_names())
+                        tmp.extend(varnames)
                     elif token == "ANALYTICS":
                         schemes = self.analytics_manager.schemes()
                         tmp.extend([f"{scheme}://" for scheme in schemes])
@@ -418,12 +431,23 @@ class Session(AbstractContextManager):
                     elif token.startswith("STIXPATH"):
                         # TODO: figure out the varname and get its attrs
                         continue
+                    elif token.startswith("STIXPATTERNBODY"):
+                        # TODO: figure out how to complete STIX patterns
+                        continue
                     elif token == "RELATION":
-                        tmp.extend(all_relations)
+                        if last_word:
+                            tmp.extend(get_entity_types())
+                        else:
+                            tmp.extend(all_relations)
                     elif token == "REVERSED":
                         tmp.append("BY")
-                        varnames = self.get_variable_names()
-                        if last_word not in varnames:
+                        prev_word = words[-2] if len(words) >= 2 else ""
+                        _logger.debug("prev_word = %s", prev_word)
+                        if prev_word in all_relations:
+                            pass
+                        elif prev_word in varnames:
+                            pass
+                        elif last_word not in varnames:
                             # Must be FIND and not GROUP
                             tmp.extend(all_relations)
                     elif token == "FUNCNAME":
@@ -434,6 +458,8 @@ class Session(AbstractContextManager):
                         continue
                     elif token.startswith("__ANON"):
                         continue
+                    elif token == "EQUAL":
+                        tmp.append("=")
                     else:
                         tmp.append(token)
                 allnames = sorted(tmp)
@@ -441,6 +467,7 @@ class Session(AbstractContextManager):
         suggestions = [
             name[len(last_word) :] for name in allnames if name.startswith(last_word)
         ]
+        _logger.debug("%s -> %s", allnames, suggestions)
         return suggestions
 
     def close(self):
