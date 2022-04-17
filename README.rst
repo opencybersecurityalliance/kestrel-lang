@@ -114,8 +114,8 @@ Kestrel Hunting Blogs
 Talks And Demos
 ===============
 
-- 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (recording free to watch)
-- 2021/12 `Infosec Jupyterthon 2021`_ [`Infosec'21 live hunt recording`_]
+- 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (register to watch for free)
+- 2021/12 `Infosec Jupyterthon 2021`_ [`IJ'21 live hunt recording`_]
 - 2021/11 `BlackHat Europe 2021`_
 - 2021/10 `SANS Threat Hunting Summit 2021`_: [`SANS'21 session recording`_]
 - 2021/05 `RSA Conference 2021`_: [`RSA'21 session recording`_]
@@ -173,7 +173,7 @@ Connecting With The Community
 .. _SANS'21 session recording: https://www.youtube.com/watch?v=gyY5DAWLwT0
 .. _BlackHat Europe 2021: https://www.blackhat.com/eu-21/arsenal/schedule/index.html#an-open-stack-for-threat-hunting-in-hybrid-cloud-with-connected-observability-25112
 .. _Infosec Jupyterthon 2021: https://infosecjupyterthon.com/2021/agenda.html
-.. _Infosec'21 live hunt recording: https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695
+.. _IJ'21 live hunt recording: https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695
 .. _SC eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
 
 .. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
