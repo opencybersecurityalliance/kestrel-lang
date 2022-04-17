@@ -1,4 +1,4 @@
-.. image:: logo/logo_w_text.svg
+.. image:: https://github.com/opencybersecurityalliance/kestrel-lang/raw/develop/logo/logo_w_text.svg
    :width: 432
    :alt: Kestrel Threat Hunting Language
 
@@ -55,7 +55,7 @@ What does it mean by *hunt fast*?
 Kestrel in a Nutshell
 =====================
 
-.. image:: docs/images/overview.png
+.. image:: https://github.com/opencybersecurityalliance/kestrel-lang/raw/develop/docs/images/overview.png
    :width: 100%
    :alt: Kestrel overview.
 
