@@ -17,7 +17,7 @@ Changed
 Fixed
 -----
 
-- *The description failed to render* when uploading to PyPI (old twine version).
+- *The description failed to render* when uploading to PyPI.
 - README.rst misses images when rendered at non-github sites, e.g., PyPI.
 
 1.3.0 (2022-04-14)
