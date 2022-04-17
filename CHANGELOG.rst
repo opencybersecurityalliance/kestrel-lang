@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.3.1 (2022-04-16)
+==================
+
+Changed
+-------
+
+- GitHub Actions upgraded to setup-python@v3 + Python 3.10
+
+Fixed
+-----
+
+- *The description failed to render* when uploading to PyPI.
+- README.rst misses images when rendered at non-github sites, e.g., PyPI.
+
 1.3.0 (2022-04-14)
 ==================
 

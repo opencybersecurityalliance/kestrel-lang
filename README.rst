@@ -1,4 +1,4 @@
-.. image:: logo/logo_w_text.svg
+.. image:: https://github.com/opencybersecurityalliance/kestrel-lang/raw/develop/logo/logo_w_text.svg
    :width: 432
    :alt: Kestrel Threat Hunting Language
 
@@ -55,7 +55,7 @@ What does it mean by *hunt fast*?
 Kestrel in a Nutshell
 =====================
 
-.. image:: docs/images/overview.png
+.. image:: https://github.com/opencybersecurityalliance/kestrel-lang/raw/develop/docs/images/overview.png
    :width: 100%
    :alt: Kestrel overview.
 
@@ -114,11 +114,11 @@ Kestrel Hunting Blogs
 Talks And Demos
 ===============
 
-- 2022/04 `SC Media eSummit on Threat Hunting & Offense Security`_
-- 2021/12 `Infosec Jupyterthon 2021`_ [`live hunt recording <https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695>`_]
+- 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (register to watch for free)
+- 2021/12 `Infosec Jupyterthon 2021`_ [`IJ'21 live hunt recording`_]
 - 2021/11 `BlackHat Europe 2021`_
-- 2021/10 `SANS Threat Hunting Summit 2021`_: [`SANS session recording <https://www.youtube.com/watch?v=gyY5DAWLwT0>`_]
-- 2021/05 `RSA Conference 2021`_: [`RSA session recording <https://www.youtube.com/watch?v=-Xb086R0JTk>`_]
+- 2021/10 `SANS Threat Hunting Summit 2021`_: [`SANS'21 session recording`_]
+- 2021/05 `RSA Conference 2021`_: [`RSA'21 session recording`_]
 
 Connecting With The Community
 =============================
@@ -168,10 +168,13 @@ Connecting With The Community
 .. _Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
 
 .. _RSA Conference 2021: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
+.. _RSA'21 session recording: https://www.youtube.com/watch?v=-Xb086R0JTk
 .. _SANS Threat Hunting Summit 2021: https://www.sans.org/blog/a-visual-summary-of-sans-threat-hunting-summit-2021/
+.. _SANS'21 session recording: https://www.youtube.com/watch?v=gyY5DAWLwT0
 .. _BlackHat Europe 2021: https://www.blackhat.com/eu-21/arsenal/schedule/index.html#an-open-stack-for-threat-hunting-in-hybrid-cloud-with-connected-observability-25112
 .. _Infosec Jupyterthon 2021: https://infosecjupyterthon.com/2021/agenda.html
-.. _SC Media eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
+.. _IJ'21 live hunt recording: https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695
+.. _SC eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
 
 .. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
 .. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
