@@ -1,7 +1,9 @@
-import pytest
 import json
 import os
 
+import pytest
+
+from kestrel.codegen.display import DisplayWarning
 from kestrel.session import Session
 
 
@@ -80,3 +82,20 @@ def test_get_multiple_stixshifter_stix_bundles(set_stixshifter_stix_bundles):
                 "teamviewer_service.exe", "teamviewer.exe", "vmware.exe", "dashost.exe",
                 "applemobiledeviceservice.exe", "svctest.exe", "vmware-hostd.exe"]
 
+
+def test_get_wrong_type(file_stix_bundles):
+    with Session() as s:
+        stmt = f"var = GET foo FROM file://{file_stix_bundles[0]} WHERE [process:name='compattelrunner.exe']"
+
+        output = s.execute(stmt)
+        warnings = []
+        for o in output:
+            print(json.dumps(o.to_dict(), indent=4))
+            if isinstance(o, DisplayWarning):
+                warnings.append(o)
+        assert len(warnings) == 1
+        assert "foo" in warnings[0].to_string()
+        v = s.get_variable("var")
+        print(json.dumps(v, indent=4))
+        assert len(v) == 0
+        

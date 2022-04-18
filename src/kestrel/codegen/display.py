@@ -163,3 +163,20 @@ class DisplayFigure(DisplayHtml):
         figure.savefig(vfile, format="svg")
         svg = vfile.getvalue()
         super().__init__(svg)
+
+
+class DisplayWarning(AbstractDisplay):
+    def __init__(self, text):
+        self.text = text
+
+    def to_string(self):
+        return self.text
+
+    def to_html(self):
+        return f'<div class="warning">[WARNING] {self.text}</div>'
+
+    def to_json(self):
+        return json.dumps(self.to_dict())
+
+    def to_dict(self):
+        return {"display": "warning", "data": self.text}
