@@ -65,7 +65,7 @@ def compile_specific_relation_to_query(
         #       a = FIND autonomous-system OWNED ip
         #
         # It is just aligned that (not is_reversed) == whether input_var is
-        # - EntityX in stix_2_0_ref_mapping
+        # - EntityY in stix_2_0_ref_mapping
         # - the source_ref in the __reflist table of firepit v2.0
         var_is_source = not is_reversed
 
