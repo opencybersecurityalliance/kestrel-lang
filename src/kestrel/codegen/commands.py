@@ -627,7 +627,7 @@ def _set_projection(store, entity_table, query, paths):
     for path in paths:
         if path == "*":
             return
-        if "_ref" in path:  # This seems like a hack
+        if "_ref" in path and path not in cols:  # This seems like a hack
             joins, table, column = store.path_joins(entity_table, None, path)
             if table not in joined:
                 query.extend(joins)

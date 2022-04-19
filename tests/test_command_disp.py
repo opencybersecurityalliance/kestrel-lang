@@ -33,7 +33,7 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
         s.execute(stmt)
         s.execute("grpvar = group newvar by name")
         out = s.execute("DISP grpvar")
-        data = out[0].to_dict()['data']
+        data = out[0].to_dict()["data"]
         assert len(data) == 2
 
 
@@ -48,5 +48,5 @@ newvar = NEW [ {"type": "network-traffic", "src_ref.value": "1.2.3.4", "dst_ref.
         s.execute(stmt)
         s.execute("grpvar = group newvar by dst_ref.value")
         out = s.execute("DISP grpvar")
-        data = out[0].to_dict()['data']
+        data = out[0].to_dict()["data"]
         assert len(data) == 2

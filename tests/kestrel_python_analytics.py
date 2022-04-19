@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 def enrich_one_variable(dataframe):
     newattr = ["newval" + str(i) for i in range(dataframe.shape[0])]
     dataframe["x_new_attr"] = newattr
