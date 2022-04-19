@@ -21,27 +21,31 @@ conns = get network-traffic
 """
         s.execute(stmt)
         out = s.execute("DISP conns")
-        data = out[0].to_dict()['data']
+        data = out[0].to_dict()["data"]
         assert len(data) == 29
         assert "first_observed" not in data[0]
         out = s.execute("DISP TIMESTAMPED(conns)")
-        data = out[0].to_dict()['data']
+        data = out[0].to_dict()["data"]
         assert len(data) == 29
         assert "first_observed" in data[0]
         out = s.execute("DISP TIMESTAMPED(conns) LIMIT 5")
-        data = out[0].to_dict()['data']
+        data = out[0].to_dict()["data"]
         assert len(data) == 5
         assert "first_observed" in data[0]
-        out = s.execute("DISP TIMESTAMPED(conns) ATTR first_observed, src_ref.value, src_port")
-        data = out[0].to_dict()['data']
+        out = s.execute(
+            "DISP TIMESTAMPED(conns) ATTR first_observed, src_ref.value, src_port"
+        )
+        data = out[0].to_dict()["data"]
         assert len(data) == 29
         assert "first_observed" in data[0]
         assert "src_ref.value" in data[0]
         assert "src_port" in data[0]
         assert "dst_ref.value" not in data[0]
         assert "dst_port" not in data[0]
-        out = s.execute("DISP TIMESTAMPED(conns) ATTR first_observed, src_ref.value, src_port LIMIT 5")
-        data = out[0].to_dict()['data']
+        out = s.execute(
+            "DISP TIMESTAMPED(conns) ATTR first_observed, src_ref.value, src_port LIMIT 5"
+        )
+        data = out[0].to_dict()["data"]
         assert len(data) == 5
         assert "first_observed" in data[0]
         assert "src_ref.value" in data[0]

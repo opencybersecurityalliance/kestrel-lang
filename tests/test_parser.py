@@ -109,11 +109,7 @@ def test_grouping_1():
     assert result["input"] == "x"
     assert result["paths"] == ["foo"]
     assert result["aggregations"] == [
-        {
-            'attr': 'baz',
-            'func': 'sum',
-            'alias': 'sum_baz'
-        },
+        {"attr": "baz", "func": "sum", "alias": "sum_baz"},
     ]
 
 
@@ -125,40 +121,22 @@ def test_grouping_2():
     assert result["input"] == "x"
     assert result["paths"] == ["foo", "bar"]
     assert result["aggregations"] == [
-        {
-            'attr': 'baz',
-            'func': 'max',
-            'alias': 'biggest'
-        },
-        {
-            'attr': 'blah',
-            'func': 'min',
-            'alias': 'min_blah'
-        },
+        {"attr": "baz", "func": "max", "alias": "biggest"},
+        {"attr": "blah", "func": "min", "alias": "min_blah"},
     ]
 
 
 def test_grouping_3():
-    results = parse("y = group x by foo with avg(bar), count(baz), max(blah) as whatever")
+    results = parse(
+        "y = group x by foo with avg(bar), count(baz), max(blah) as whatever"
+    )
     result = results[0]
     print(result)
     assert result["command"] == "group"
     assert result["input"] == "x"
     assert result["paths"] == ["foo"]
     assert result["aggregations"] == [
-        {
-            'attr': 'bar',
-            'func': 'avg',
-            'alias': 'avg_bar'
-        },
-        {
-            'attr': 'baz',
-            'func': 'count',
-            'alias': 'count_baz'
-        },
-        {
-            'attr': 'blah',
-            'func': 'max',
-            'alias': 'whatever'
-        },
+        {"attr": "bar", "func": "avg", "alias": "avg_bar"},
+        {"attr": "baz", "func": "count", "alias": "count_baz"},
+        {"attr": "blah", "func": "max", "alias": "whatever"},
     ]
