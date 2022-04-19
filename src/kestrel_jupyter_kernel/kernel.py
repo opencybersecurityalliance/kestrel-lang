@@ -2,6 +2,7 @@ from ipykernel.kernelbase import Kernel
 import os
 import logging
 
+from kestrel.codegen.display import DisplayWarning
 from kestrel.session import Session
 from kestrel_jupyter_kernel.config import LOG_FILE_NAME
 
@@ -43,7 +44,11 @@ class KestrelKernel(Kernel):
         if not silent:
             try:
                 outputs = self.kestrel_session.execute(code)
-                output_html = "\n".join([x.to_html() for x in outputs])
+                warning = "\n".join(["[WARNING] " + x.to_string() for x in outputs if isinstance(x, DisplayWarning)])
+                self.send_response(
+                    self.iopub_socket, "stream", {"name": "stderr", "text": warning}
+                )
+                output_html = "\n".join([x.to_html() for x in outputs if not isinstance(x, DisplayWarning)])
                 self.send_response(
                     self.iopub_socket,
                     "display_data",
