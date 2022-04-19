@@ -107,7 +107,7 @@ path_list: STIXPATH ("," STIXPATH)* -> valuelist
 
 agg_list: agg ("," agg)*
 
-agg: FUNCNAME "(" STIXPATH ")" ("AS"i alias)?
+agg: funcname "(" STIXPATH ")" ("AS"i alias)?
 
 ?alias: CNAME
 
@@ -128,7 +128,7 @@ REVERSED: "by"i
 COMMENT: /#.*/
 URI: PATH
 
-FUNCNAME: (MIN|MAX|SUM|AVG|COUNT|NUNIQUE)
+?funcname: (MIN|MAX|SUM|AVG|COUNT|NUNIQUE)
 MIN: "min"i
 MAX: "max"i
 SUM: "sum"i
