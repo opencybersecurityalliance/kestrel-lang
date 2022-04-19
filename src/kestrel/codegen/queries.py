@@ -145,17 +145,17 @@ def _generate_ref_query(input_var_name, input_type, var_attr, ret_type, ret_attr
     )
 
 
-def _generate_reflist_query(input_var_name, var_is_source, ref_name, entity_y):
-    var_ref_pos, y_ref_pos = (
+def _generate_reflist_query(input_var_name, var_is_source, ref_name, ret_type):
+    var_ref_pos, ret_ref_pos = (
         ("source_ref", "target_ref") if var_is_source else ("target_ref", "source_ref")
     )
     return Query(
         [
             Table(input_var_name),
             Join("__reflist", "id", "=", var_ref_pos),
-            Join(entity_y, y_ref_pos, "=", "id"),
+            Join(ret_type, ret_ref_pos, "=", "id"),
             Filter([Predicate("ref_name", "=", ref_name)]),
-            Projection([Column("*", entity_y)]),  # All columns from entity_y
+            Projection([Column("*", ret_type)]),  # All columns from ret_type
             Unique(),
         ]
     )
