@@ -8,23 +8,27 @@ start: statement*
 // If no VARIABLE is given, default to _ in post-parsing
 //
 
-statement: VARIABLE "=" command
-         | command
+statement: assignment
+         | command_no_result
          
+assignment: VARIABLE "=" command_with_result
+          | command_with_result
+
 // "?" at the beginning will inline command
-?command: get
-        | find
-        | disp
-        | info
-        | apply
-        | join
-        | sort
-        | group
-        | load
-        | save
-        | new
-        | merge
-        | assign
+?command_with_result: get
+                    | find
+                    | join
+                    | sort
+                    | group
+                    | load
+                    | new
+                    | merge
+                    | assign
+
+?command_no_result: disp
+                  | info
+                  | apply
+                  | save
 
 assign: expression
 

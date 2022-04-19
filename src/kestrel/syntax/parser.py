@@ -40,6 +40,10 @@ class _PostParsing(Transformer):
     def statement(self, args):
         # Kestrel syntax: a statement can only has one command
         stmt = args.pop()
+        return stmt
+
+    def assignment(self, args):
+        stmt = args[1] if len(args) == 2 else args[0]
         stmt["output"] = _extract_var(args, self.default_variable)
         return stmt
 
