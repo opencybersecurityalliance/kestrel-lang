@@ -44,11 +44,11 @@ find: "find"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE (starttime endtime)?
 
 apply: "apply"i ANALYTICS "on"i variables ("with"i anaparams)?
 
-join: "join"i VARIABLE "," VARIABLE ("by"i STIXPATH "," STIXPATH)?
+join: "join"i VARIABLE "," VARIABLE (BY STIXPATH "," STIXPATH)?
 
-sort: "sort"i VARIABLE "by"i STIXPATH (ASC|DESC)?
+sort: "sort"i VARIABLE BY STIXPATH (ASC|DESC)?
 
-group: "group"i VARIABLE "by"i path_list ("with"i agg_list)?
+group: "group"i VARIABLE BY path_list ("with"i agg_list)?
 
 load: "load"i DUMPPATH ("as"i ENTITY_TYPE)?
 
@@ -63,7 +63,7 @@ expression: transform where_clause? attr_clause? sort_clause? limit_clause? offs
 
 where_clause: "where"i condition
 attr_clause: "attr"i STIXPATHS
-sort_clause: "sort"i "by"i STIXPATH (ASC|DESC)?
+sort_clause: "sort"i BY STIXPATH (ASC|DESC)?
 limit_clause: "limit"i INT
 offset_clause: "offset"i INT
 
@@ -125,6 +125,7 @@ DUMPPATH: PATH
 ASC: "asc"i
 DESC: "desc"i
 REVERSED: "by"i
+BY: "by"i
 COMMENT: /#.*/
 URI: PATH
 

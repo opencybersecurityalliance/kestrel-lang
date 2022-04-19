@@ -370,6 +370,7 @@ class Session(AbstractContextManager):
         prefix = code[:cursor_pos]
         words = prefix.split(" ")
         last_word = words[-1]
+        last_char = prefix[-1]
         _logger.debug('code="%s" prefix="%s" last_word="%s"', code, prefix, last_word)
 
         if "START" in prefix or "STOP" in prefix:
@@ -439,17 +440,16 @@ class Session(AbstractContextManager):
                             tmp.extend(get_entity_types())
                         else:
                             tmp.extend(all_relations)
-                    elif token == "REVERSED":
+                    elif token == "BY":
                         tmp.append("BY")
-                        prev_word = words[-2] if len(words) >= 2 else ""
-                        _logger.debug("prev_word = %s", prev_word)
-                        if prev_word in all_relations:
-                            pass
-                        elif prev_word in varnames:
-                            pass
-                        elif last_word not in varnames:
-                            # Must be FIND and not GROUP
-                            tmp.extend(all_relations)
+                    elif token == "REVERSED":
+                        if last_char == " ":
+                            tmp.append("BY")
+                        else:
+                            # "procs = FIND process l" will expect ['REVERSED', 'VARIABLE']
+                            # override results from the case of VARIABLE
+                            tmp = all_relations
+                            break
                     elif token == "FUNCNAME":
                         tmp.extend(AGG_FUNCS)
                     elif token == "TRANSFORM":
