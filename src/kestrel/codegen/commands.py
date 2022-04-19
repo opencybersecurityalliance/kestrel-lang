@@ -31,8 +31,9 @@ from kestrel.exceptions import *
 from kestrel.semantics import get_entity_table, get_entity_type
 from kestrel.symboltable import new_var
 from kestrel.syntax.parser import get_all_input_var_names
+from kestrel.syntax.utils import get_entity_types
 from kestrel.codegen.data import load_data, load_data_file, dump_data_to_file
-from kestrel.codegen.display import DisplayDataframe, DisplayDict
+from kestrel.codegen.display import DisplayDataframe, DisplayDict, DisplayWarning
 from kestrel.codegen.pattern import build_pattern, build_pattern_from_ids
 from kestrel.codegen.queries import (
     compile_specific_relation_to_query,
@@ -226,6 +227,7 @@ def get(stmt, session):
     return_type = stmt["type"]
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
+    display = None
 
     pattern = build_pattern(
         stmt["patternbody"],
@@ -237,10 +239,14 @@ def get(stmt, session):
     )
 
     if "variablesource" in stmt:
+        input_type = get_entity_table(stmt["variablesource"], session.symtable)
+        output_type = stmt["type"]
+        if input_type != output_type:
+            pass  # TODO: new exception type?
         session.store.filter(
             stmt["output"],
             stmt["type"],
-            get_entity_table(stmt["variablesource"], session.symtable),
+            input_type,
             pattern,
         )
         output = new_var(session.store, return_var_table, [], stmt, session.symtable)
@@ -325,10 +331,15 @@ def get(stmt, session):
 
         output = new_var(session.store, return_var_table, [], stmt, session.symtable)
 
+        if not len(output):
+            if not return_type.startswith("x-") and return_type not in (
+                set(session.store.types()) | set(get_entity_types())
+            ):
+                display = DisplayWarning(f'unknown entity type "{return_type}"')
     else:
         raise KestrelInternalError(f"unknown type of source in {str(stmt)}")
 
-    return output, None
+    return output, display
 
 
 @_debug_logger
