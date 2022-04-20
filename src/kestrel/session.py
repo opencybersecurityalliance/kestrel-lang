@@ -66,6 +66,7 @@ from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.syntax.parser import parse
 from kestrel.syntax.utils import (
     get_entity_types,
+    get_keywords,
     all_relations,
     LITERALS,
     AGG_FUNCS,
@@ -415,8 +416,11 @@ class Session(AbstractContextManager):
             except KestrelSyntaxError as e:
                 _logger.debug("exception: %s", e)
                 varnames = self.get_variable_names()
+                keywords = set(get_keywords())
+                _logger.debug("keywords: %s", keywords)
                 tmp = []
                 for token in e.expected:
+                    _logger.debug("token: %s", token)
                     if token == "VARIABLE":
                         tmp.extend(varnames)
                     elif token == "DATASRC":
@@ -460,6 +464,9 @@ class Session(AbstractContextManager):
                         continue
                     elif token == "EQUAL":
                         tmp.append("=")
+                    elif token in keywords and last_word.islower():
+                        # keywords has both upper and lower case
+                        tmp.append(token.lower())
                     else:
                         tmp.append(token)
                 allnames = sorted(tmp)

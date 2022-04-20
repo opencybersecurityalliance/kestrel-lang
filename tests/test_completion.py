@@ -58,6 +58,8 @@ def a_session():
         ("grps = GROUP ", {"conns", "_"}),
         ("grps = GROUP conns ", {"BY"}),
         ("grps = GROUP conns by ", []),  # TODO: we don't suggest attrs yet
+        ("urls = g", ["et", "roup"]),
+        ("urls = ge", ["t"]),
         ("urls = get ", KNOWN_ETYPES),
         ("urls = get url ", ["FROM", "WHERE"]),
         ("urls = get url from ", ["_", "conns", "file://", "http://", "https://", "stixshifter://"]),
