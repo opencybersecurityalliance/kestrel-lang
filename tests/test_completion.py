@@ -51,9 +51,10 @@ def a_session():
         #("procs = FIND process ", {"created", "loaded", "linked"}),
         ("procs = FIND process ", all_relations),
         ("procs = FIND process l", {"oaded", "inked"}),
-        ("procs = FIND process c", {"reated", "ontained", "onns"}),  # FIXME: shouldn't suggest var here
+        ("procs = FIND process c", {"reated", "ontained"}),
         ("procs = FIND process created ", {"conns", "_", "BY"}),
         ("procs = FIND process created BY ", {"conns", "_"}),
+        ("procs2 = SORT procs ", {"BY"}),
         ("grps = GR", {"OUP"}),
         ("grps = GROUP ", {"conns", "_"}),
         ("grps = GROUP conns ", {"BY"}),

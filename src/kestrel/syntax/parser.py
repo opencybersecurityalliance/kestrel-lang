@@ -119,21 +119,21 @@ class _PostParsing(Transformer):
                 "command": "join",
                 "input": _first(args),
                 "input_2": _second(args),
-                "path": _third(args),
-                "path_2": _fourth(args),
+                "path": _fourth(args),
+                "path_2": _fifth(args),
             }
         else:
             return {"command": "join", "input": _first(args), "input_2": _second(args)}
 
     def group(self, args):
         # args[1] was already transformed by path_list/valuelist
-        cols = _normalize_paths(args[1])
+        cols = _normalize_paths(args[2])
         result = {
             "command": "group",
             "paths": cols,
             "input": _extract_var(args, self.default_variable),
         }
-        aggregations = args[2] if len(args) > 2 else None
+        aggregations = args[3] if len(args) > 3 else None
         if aggregations:
             result["aggregations"] = aggregations
         return result
@@ -304,6 +304,10 @@ def _third(args):
 
 
 def _fourth(args):
+    return args[3].value
+
+
+def _fifth(args):
     return args[3].value
 
 
