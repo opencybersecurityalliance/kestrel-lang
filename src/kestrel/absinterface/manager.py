@@ -54,9 +54,9 @@ class InterfaceManager:
     def _get_interface_with_config(self, scheme):
         scheme = scheme.lower()
         if scheme not in self.scheme_to_interface:
-            raise nonexist_interface_exception(scheme)
+            raise self.nonexist_interface_exception(scheme)
         if scheme not in self.scheme_to_interface_name:
-            raise nonexist_interface_exception(scheme)
+            raise self.nonexist_interface_exception(scheme)
         interface_name = self.scheme_to_interface_name[scheme]
         interface_config = self.config[self.config_root_key][interface_name]
         interface = self.scheme_to_interface[scheme]
