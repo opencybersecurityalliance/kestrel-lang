@@ -23,7 +23,8 @@ import logging
 import itertools
 from collections import OrderedDict
 
-from firepit.query import Column, Limit, Offset, Order, Projection, Query
+from firepit.deref import auto_deref
+from firepit.query import Limit, Offset, Order, Projection, Query
 from firepit.stix20 import summarize_pattern
 
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts
@@ -613,7 +614,7 @@ def _filter_prefetched_process(
     id_pattern = build_pattern_from_ids(return_type, entity_ids)
     if id_pattern:
         session.store.extract(prefetch_filtered_var_name, return_type, None, id_pattern)
-        _logger.debug(f"filter successful.")
+        _logger.debug("filter successful.")
         return prefetch_filtered_var_name
     else:
         _logger.info("no prefetched process found after filtering.")
@@ -621,35 +622,30 @@ def _filter_prefetched_process(
 
 
 def _set_projection(store, entity_table, query, paths):
-    proj = []
-    cols = store.columns(entity_table)
-    joined = set()
-    for path in paths:
-        if path == "*":
-            return
-        if "_ref" in path and path not in cols:  # This seems like a hack
-            joins, table, column = store.path_joins(entity_table, None, path)
-            if table not in joined:
-                query.extend(joins)
-                joined.add(table)
-            proj.append(Column(column, table, path))
-        elif path in cols:
-            # Prevent any ambiguity
-            proj.append(Column(path, entity_table))
-        else:
-            # Not sure where it came from
-            proj.append(path)
-    query.append(Projection(proj))
+    joins, proj = auto_deref(store, entity_table, paths=paths)
+    query.joins.extend(joins)
+    if query.proj:
+        # Need to merge projections?  More-specific overrides less-specific ("*")
+        new_cols = []
+        for p in query.proj.cols:
+            if not (hasattr(p, "table") and p.table == entity_table and p.name == "*"):
+                new_cols.append(p)
+        for p in proj.cols:
+            if not (hasattr(p, "table") and p.table == entity_table and p.name == "*"):
+                new_cols.append(p)
+        query.proj = Projection(new_cols)
+    else:
+        query.proj = proj
 
 
 def _build_query(store, entity_table, qry, stmt):
     where = stmt.get("where")
     if where:
+        where.set_table(entity_table)
         qry.append(where)
     attrs = stmt.get("attrs", "*")
-    if attrs != "*":
-        cols = attrs.split(",")
-        _set_projection(store, entity_table, qry, cols)
+    cols = attrs.split(",")
+    _set_projection(store, entity_table, qry, cols)
     sort_by = stmt.get("path")
     if sort_by:
         direction = "ASC" if stmt["ascending"] else "DESC"
