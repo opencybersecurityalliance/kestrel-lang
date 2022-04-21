@@ -114,7 +114,7 @@ class _PostParsing(Transformer):
         return packet
 
     def join(self, args):
-        if len(args) == 4:
+        if len(args) == 5:
             return {
                 "command": "join",
                 "input": _first(args),
@@ -308,7 +308,7 @@ def _fourth(args):
 
 
 def _fifth(args):
-    return args[3].value
+    return args[4].value
 
 
 def _last(args):
