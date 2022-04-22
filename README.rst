@@ -118,7 +118,7 @@ Kestrel Hunting Blogs
 Talks And Demos
 ===============
 
-- 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (register to watch for free)
+- 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (free to register/playback)
 - 2021/12 `Infosec Jupyterthon 2021`_ [`IJ'21 live hunt recording`_]
 - 2021/11 `BlackHat Europe 2021`_
 - 2021/10 `SANS Threat Hunting Summit 2021`_: [`SANS'21 session recording`_]
