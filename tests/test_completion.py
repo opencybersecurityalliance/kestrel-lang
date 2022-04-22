@@ -10,11 +10,26 @@ from kestrel.syntax.utils import (
 
 
 KNOWN_ETYPES = {
-    'artifact', 'autonomous-system', 'directory', 'domain-name',
-    'email-addr', 'email-message', 'file', 'ipv4-addr', 'ipv6-addr',
-    'mac-addr', 'mutex', 'network-traffic', 'process', 'software',
-    'url', 'user-account', 'windows-registry-key', 'x-ibm-finding',
-    'x-oca-asset', 'x-oca-event'
+    "artifact",
+    "autonomous-system",
+    "directory",
+    "domain-name",
+    "email-addr",
+    "email-message",
+    "file",
+    "ipv4-addr",
+    "ipv6-addr",
+    "mac-addr",
+    "mutex",
+    "network-traffic",
+    "process",
+    "software",
+    "url",
+    "user-account",
+    "windows-registry-key",
+    "x-ibm-finding",
+    "x-oca-asset",
+    "x-oca-event",
 }
 
 
@@ -23,9 +38,11 @@ def a_session():
     cwd = os.path.dirname(os.path.abspath(__file__))
     bundle = os.path.join(cwd, "test_bundle.json")
     session = Session(debug_mode=True)
-    stmt = ("conns = get network-traffic"
-            f" from file://{bundle}"
-            " where [network-traffic:dst_port < 10000]")
+    stmt = (
+        "conns = get network-traffic"
+        f" from file://{bundle}"
+        " where [network-traffic:dst_port < 10000]"
+    )
     session.execute(stmt)
     return session
 
@@ -36,10 +53,14 @@ def a_session():
         ("x", []),  # No suggestions
         ("x ", {"=", "+"}),
         ("c", {"onns"}),
-        ("conns", ['']),  # Empty string means word is complete
+        ("conns", [""]),  # Empty string means word is complete
         ("conns ", {"=", "+"}),
         ("disp ", {"conns", "_"} | TRANSFORMS),
-        ("procs = ", {"GET", "FIND", "JOIN", "SORT", "GROUP", "LOAD", "NEW", "conns", "_"} | TRANSFORMS),
+        (
+            "procs = ",
+            {"GET", "FIND", "JOIN", "SORT", "GROUP", "LOAD", "NEW", "conns", "_"}
+            | TRANSFORMS,
+        ),
         ("procs = G", {"ET", "ROUP"}),
         ("procs = F", {"IND"}),
         ("procs = FI", {"ND"}),
@@ -47,8 +68,8 @@ def a_session():
         ("procs = FIND", []),
         ("procs = FIND ", KNOWN_ETYPES),
         ("procs = FIND p", ["rocess"]),
-        ("procs = FIND process", ['']),
-        #("procs = FIND process ", {"created", "loaded", "linked"}),
+        ("procs = FIND process", [""]),
+        # ("procs = FIND process ", {"created", "loaded", "linked"}),
         ("procs = FIND process ", all_relations),
         ("procs = FIND process l", {"oaded", "inked"}),
         ("procs = FIND process c", {"reated", "ontained"}),
@@ -63,9 +84,12 @@ def a_session():
         ("urls = ge", ["t"]),
         ("urls = get ", KNOWN_ETYPES),
         ("urls = get url ", ["FROM", "WHERE"]),
-        ("urls = get url from ", ["_", "conns", "file://", "http://", "https://", "stixshifter://"]),
+        (
+            "urls = get url from ",
+            ["_", "conns", "file://", "http://", "https://", "stixshifter://"],
+        ),
         ("urls = get url where ", []),
-   ]
+    ],
 )
 def test_do_complete_after_get(a_session, code, expected):
     result = a_session.do_complete(code, len(code))
