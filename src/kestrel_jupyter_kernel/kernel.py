@@ -44,11 +44,19 @@ class KestrelKernel(Kernel):
         if not silent:
             try:
                 outputs = self.kestrel_session.execute(code)
-                warning = "\n".join(["[WARNING] " + x.to_string() for x in outputs if isinstance(x, DisplayWarning)])
+                warning = "\n".join(
+                    [
+                        "[WARNING] " + x.to_string()
+                        for x in outputs
+                        if isinstance(x, DisplayWarning)
+                    ]
+                )
                 self.send_response(
                     self.iopub_socket, "stream", {"name": "stderr", "text": warning}
                 )
-                output_html = "\n".join([x.to_html() for x in outputs if not isinstance(x, DisplayWarning)])
+                output_html = "\n".join(
+                    [x.to_html() for x in outputs if not isinstance(x, DisplayWarning)]
+                )
                 self.send_response(
                     self.iopub_socket,
                     "display_data",
