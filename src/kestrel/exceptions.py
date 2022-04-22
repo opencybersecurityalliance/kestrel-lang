@@ -258,7 +258,7 @@ class InvalidAnalyticsInput(KestrelException):
 
 
 class InvalidAnalyticsOutput(KestrelException):
-    def __init__(self, analytcs_name, return_type):
+    def __init__(self, analytics_name, return_type):
         super().__init__(
             f"unsupported return type {return_type} from analytics: {analytics_name}"
         )

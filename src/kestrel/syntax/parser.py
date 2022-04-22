@@ -228,9 +228,6 @@ class _PostParsing(Transformer):
     def variables(self, args):
         return {"variables": _extract_vars(args, self.default_variable)}
 
-    def variables(self, args):
-        return {"variables": _extract_vars(args, self.default_variable)}
-
     def localargs(self, args):
         return {args[0].value: args[1]}
 
