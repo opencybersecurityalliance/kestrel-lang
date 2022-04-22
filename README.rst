@@ -10,6 +10,10 @@
         :target: https://github.com/psf/black
         :alt: Code Style: Black
 
+.. image:: https://codecov.io/gh/opencybersecurityalliance/kestrel-lang/branch/develop/graph/badge.svg?token=HM4ax10IW3
+        :target: https://codecov.io/gh/opencybersecurityalliance/kestrel-lang
+        :alt: Code Coverage
+
 .. image:: https://img.shields.io/pypi/v/kestrel-lang
         :target: https://pypi.python.org/pypi/kestrel-lang
         :alt: Latest Version
@@ -114,7 +118,7 @@ Kestrel Hunting Blogs
 Talks And Demos
 ===============
 
-- 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (register to watch for free)
+- 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (free to register/playback)
 - 2021/12 `Infosec Jupyterthon 2021`_ [`IJ'21 live hunt recording`_]
 - 2021/11 `BlackHat Europe 2021`_
 - 2021/10 `SANS Threat Hunting Summit 2021`_: [`SANS'21 session recording`_]

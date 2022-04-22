@@ -38,9 +38,13 @@ def test_group_src_dst(fake_bundle_file):
             where [network-traffic:dst_port > 0]""",
         )
 
-        session.execute(("grps = group conns by "
-                         "network-traffic:src_ref.value,"
-                         "network-traffic:dst_ref.value"))
+        session.execute(
+            (
+                "grps = group conns by "
+                "network-traffic:src_ref.value,"
+                "network-traffic:dst_ref.value"
+            )
+        )
         assert "grps" in session.get_variable_names()
         grps = session.get_variable("grps")
         assert grps is not None
@@ -53,7 +57,7 @@ def test_group_src_dst(fake_bundle_file):
         ("max", "dst_ref.value", "max_dst_ref.value"),
         ("count", "dst_ref.value", "count_dst_ref.value"),
         ("nunique", "dst_ref.value", "nunique_dst_ref.value"),
-    ]
+    ],
 )
 def test_group_srcref_agg(fake_bundle_file, agg_func, attr, expected):
     with Session(debug_mode=True) as session:
@@ -63,8 +67,12 @@ def test_group_srcref_agg(fake_bundle_file, agg_func, attr, expected):
             where [network-traffic:dst_port > 0]""",
         )
 
-        session.execute(("src_grps = group conns by network-traffic:src_ref.value"
-                         f" with {agg_func}({attr})"))
+        session.execute(
+            (
+                "src_grps = group conns by network-traffic:src_ref.value"
+                f" with {agg_func}({attr})"
+            )
+        )
         assert "src_grps" in session.get_variable_names()
         src_grps = session.get_variable("src_grps")
         assert src_grps is not None
@@ -77,7 +85,7 @@ def test_group_srcref_agg(fake_bundle_file, agg_func, attr, expected):
         ("max", "dst_ref.value", "rand_value"),
         ("count", "dst_ref.value", "whatever"),
         ("nunique", "dst_ref.value", "unique_dests"),
-    ]
+    ],
 )
 def test_group_srcref_agg_alias(fake_bundle_file, agg_func, attr, alias):
     with Session(debug_mode=True) as session:
@@ -87,8 +95,12 @@ def test_group_srcref_agg_alias(fake_bundle_file, agg_func, attr, alias):
             where [network-traffic:dst_port > 0]""",
         )
 
-        session.execute(("src_grps = group conns by network-traffic:src_ref.value"
-                         f" with {agg_func}({attr}) as {alias}"))
+        session.execute(
+            (
+                "src_grps = group conns by network-traffic:src_ref.value"
+                f" with {agg_func}({attr}) as {alias}"
+            )
+        )
         assert "src_grps" in session.get_variable_names()
         src_grps = session.get_variable("src_grps")
         assert src_grps is not None

@@ -1,7 +1,12 @@
 import logging
 import re
 
-from kestrel.exceptions import InvalidAttribute, VariableNotExist, UnsupportedRelation
+from kestrel.exceptions import (
+    InvalidAttribute,
+    VariableNotExist,
+    UnsupportedRelation,
+    KestrelInternalError,
+)
 from kestrel.codegen.relations import stix_2_0_ref_mapping, generic_relations
 
 _logger = logging.getLogger(__name__)

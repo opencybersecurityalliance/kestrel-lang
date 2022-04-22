@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg viewBox="0 0 460 160" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .top    {fill:#FFFFFF; transform: skewX(35deg)}
+    .bottom {fill:#FFFFFF; transform: skewX(-35deg)}
+    .name   {fill:#FFFFFF; font: 80px sans-serif}
+  </style>
+  <defs>
+    <rect class="top"    width="26" height="50" id="huntstepT" />
+    <rect class="bottom" width="26" height="50" id="huntstepB" />
+  </defs>
+  <!--
+  <rect x="0" y="0" width="460" height="160" fill="#eeeeee" />
+  -->
+  <use href="#huntstepT" x="15" y="30" />
+  <use href="#huntstepB" x="85" y="80" />
+  <use href="#huntstepT" x="85" y="30" />
+  <use href="#huntstepB" x="120" y="80" />
+  <text x="170" y="108" class="name">Kestrel</text>
+</svg>

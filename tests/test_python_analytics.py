@@ -22,7 +22,7 @@ def fake_bundle_4():
 def env_setup(tmp_path):
 
     analytics_module_path = str(
-        pathlib.Path(__file__).resolve().parent / "kestrel_python_analytics.py"
+        pathlib.Path(__file__).resolve().parent / "python_analytics_mockup.py"
     )
 
     profiles = f"""profiles:

@@ -6,6 +6,41 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.3.2 (2022-04-22)
+==================
+
+Added
+-----
+
+- runtime warning generation for invalid entity type #200
+- auto-complete relation in FIND
+- auto-complete BY and variable in FIND
+- add logo to readthedocs
+- upgrade auto-complete keywords to be case sensitive #213
+- add testing coverage into github workflows
+- add codecov badge to README
+- 31 unit tests for auto-completion
+- the first unit test for JOIN
+- two unit tests for ASSIGN
+- five unit tests for EXPRESSION
+- use tmp dir for generated testing data
+- auto-deref with mixed ipv4/ipv6 in network-traffic
+
+Fixed
+-----
+
+- missing ``_refs`` handling for 2 cases out of 4 #205
+- incorrectly derefering attributes after GROUP BY
+- incorrectly yielding variable when auto-completing relation in FIND
+- pylint errors about undefined-variables
+
+Changed
+-------
+
+- update grammar to separate commands yielding (or not) a variable
+- change FUNCNAME from a terminal to an inlined rule
+- differentiate the terminal "by"i between FIND and SORT/GROUP
+
 1.3.1 (2022-04-16)
 ==================
 

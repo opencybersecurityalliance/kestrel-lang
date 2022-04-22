@@ -2,7 +2,7 @@ import ast
 from pkgutil import get_data
 
 from firepit.query import Filter, Predicate
-from lark import Lark, Transformer, Tree
+from lark import Lark, Token, Transformer, Tree
 
 
 def parse(stmts, default_variable="_", default_sort_order="desc"):
@@ -40,6 +40,10 @@ class _PostParsing(Transformer):
     def statement(self, args):
         # Kestrel syntax: a statement can only has one command
         stmt = args.pop()
+        return stmt
+
+    def assignment(self, args):
+        stmt = args[1] if len(args) == 2 else args[0]
         stmt["output"] = _extract_var(args, self.default_variable)
         return stmt
 
@@ -110,26 +114,26 @@ class _PostParsing(Transformer):
         return packet
 
     def join(self, args):
-        if len(args) == 4:
+        if len(args) == 5:
             return {
                 "command": "join",
                 "input": _first(args),
                 "input_2": _second(args),
-                "path": _third(args),
-                "path_2": _fourth(args),
+                "path": _fourth(args),
+                "path_2": _fifth(args),
             }
         else:
             return {"command": "join", "input": _first(args), "input_2": _second(args)}
 
     def group(self, args):
         # args[1] was already transformed by path_list/valuelist
-        cols = _normalize_paths(args[1])
+        cols = _normalize_paths(args[2])
         result = {
             "command": "group",
             "paths": cols,
             "input": _extract_var(args, self.default_variable),
         }
-        aggregations = args[2] if len(args) > 2 else None
+        aggregations = args[3] if len(args) > 3 else None
         if aggregations:
             result["aggregations"] = aggregations
         return result
@@ -224,9 +228,6 @@ class _PostParsing(Transformer):
     def variables(self, args):
         return {"variables": _extract_vars(args, self.default_variable)}
 
-    def variables(self, args):
-        return {"variables": _extract_vars(args, self.default_variable)}
-
     def localargs(self, args):
         return {args[0].value: args[1]}
 
@@ -249,19 +250,19 @@ class _PostParsing(Transformer):
         return {"func": func, "attr": args[1].value, "alias": alias}
 
     def disj(self, args):
-        lhs = str(args[0])
-        rhs = str(args[2])
+        lhs = str(args[0]) if isinstance(args, Token) else args[0]
+        rhs = str(args[1]) if isinstance(args, Token) else args[1]
         return Predicate(lhs, "OR", rhs)
 
     def conj(self, args):
-        lhs = str(args[0])
-        rhs = str(args[2])
+        lhs = str(args[0]) if isinstance(args, Token) else args[0]
+        rhs = str(args[1]) if isinstance(args, Token) else args[1]
         return Predicate(lhs, "AND", rhs)
 
     def comp(self, args):
-        lhs = str(args[0])
+        lhs = str(args[0]) if isinstance(args, Token) else args[0]
         op = str(args[1])
-        rhs = str(args[2])
+        rhs = str(args[2]) if isinstance(args, Token) else args[2]
         return Predicate(lhs, op, rhs)
 
     def null_comp(self, args):
@@ -301,6 +302,10 @@ def _third(args):
 
 def _fourth(args):
     return args[3].value
+
+
+def _fifth(args):
+    return args[4].value
 
 
 def _last(args):

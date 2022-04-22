@@ -299,3 +299,17 @@ def test_sha256_attr_name(cbcloud_powershell_bundle):
             df["binary_ref.hashes.'SHA-256'"][0]
             == "de96a6e69944335375dc1ac238336066889d9ffc7d73628ef4fe1b1b160ab32c"
         )
+
+
+def test_disp_after_group(fake_bundle_file):
+    with Session(debug_mode=True) as session:
+        session.execute(
+            f"""
+conns = get network-traffic from file://{fake_bundle_file}
+    where [network-traffic:dst_port < 10000]
+grouped = group conns by src_ref.value, dst_ref.value with count(src_ref.value) as count
+"""
+        )
+        out = session.execute("DISP grouped ATTR src_ref.value, dst_ref.value, count")
+        df = out[0].dataframe
+        assert list(df.columns) == ["src_ref.value", "dst_ref.value", "count"]

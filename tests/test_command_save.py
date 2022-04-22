@@ -21,11 +21,13 @@ def test_save_parquet_gz(tmp_path):
     data_file_path = os.path.join(
         os.path.dirname(__file__), "test_input_data_procs.parquet.gz"
     )
+    stmt_save = f"newvar = LOAD {data_file_path} SAVE newvar TO {save_path}"
+    stmt_load = f"newload = LOAD {save_path}"
+
     with Session() as s:
-        stmt_save = f"newvar = LOAD {data_file_path} SAVE newvar TO {save_path}"
         s.execute(stmt_save)
-        assert save_path.exists()
-        stmt_load = f"newload = LOAD {save_path}"
+    assert save_path.exists()
+
     with Session() as s:
         s.execute(stmt_load)
         v = s.get_variable("newload")
@@ -34,21 +36,25 @@ def test_save_parquet_gz(tmp_path):
         assert v[0]["name"] == "reg.exe"
 
 
-def test_save_network_traffic_v4(fake_bundle_file):
+def test_save_network_traffic_v4(tmp_path, fake_bundle_file):
+    save_path = tmp_path / "conns.csv"
     with Session(debug_mode=True) as session:
         session.execute(
-            f"""conns = get network-traffic
-            from file://{fake_bundle_file}
-            where [network-traffic:dst_port > 0]""",
+            f"""conns = GET network-traffic
+                        FROM file://{fake_bundle_file}
+                        WHERE [network-traffic:dst_port > 0]""",
         )
-        session.execute("save conns to conns.csv")
+        session.execute(f"SAVE conns TO {save_path}")
+    assert save_path.exists()
 
 
-def test_save_network_traffic_v4_v6(proc_bundle_file):
+def test_save_network_traffic_v4_v6(tmp_path, proc_bundle_file):
+    save_path = tmp_path / "conns.csv"
     with Session(debug_mode=True) as session:
         session.execute(
-            f"""conns = get network-traffic
-            from file://{proc_bundle_file}
-            where [network-traffic:dst_port > 0]""",
+            f"""conns = GET network-traffic
+                        FROM file://{proc_bundle_file}
+                        WHERE [network-traffic:dst_port > 0]""",
         )
-        session.execute("save conns to conns.csv")
+        session.execute(f"SAVE conns TO {save_path}")
+    assert save_path.exists()

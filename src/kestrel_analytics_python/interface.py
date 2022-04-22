@@ -230,7 +230,7 @@ class PythonAnalytics(AbstractContextManager):
         input_dataframes = [DataFrame(v.get_entities()) for v in arg_variables]
         if len(input_dataframes) != self._get_var_count():
             raise InvalidAnalyticsArgumentCount(
-                profile, len(input_dataframes), self._get_var_count()
+                self.name, len(input_dataframes), self._get_var_count()
             )
         else:
             try:

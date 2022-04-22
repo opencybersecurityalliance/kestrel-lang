@@ -32,4 +32,4 @@ jobs:
           python -m pip install unimport
           python -m pip install .
       - name: Check
-        run: unimport --check --exclude __init__.py src/
+        run: python -m unimport --check --exclude __init__.py src/
