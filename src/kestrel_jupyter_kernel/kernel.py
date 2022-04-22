@@ -76,9 +76,9 @@ class KestrelKernel(Kernel):
             "user_expressions": {},
         }
 
-    def _at_shutdown(self):
+    def do_shutdown(self, restart):
         self.kestrel_session.close()
-        super()._at_shutdown()
+        super().do_shutdown(restart)
 
 
 def _set_logging(debug_flag, log_file_path):
