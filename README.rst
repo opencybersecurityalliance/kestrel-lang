@@ -2,21 +2,26 @@
 Kestrel Jupyter Notebook Kernel
 ===============================
 
+.. image:: https://img.shields.io/pypi/pyversions/kestrel-lang
+        :target: https://www.python.org/
+        :alt: Python 3
+        
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+        :target: https://github.com/psf/black
+        :alt: Code Style: Black
+
+.. image:: https://codecov.io/gh/opencybersecurityalliance/kestrel-jupyter/branch/develop/graph/badge.svg?token=GUbeG7idna
+        :target: https://codecov.io/gh/opencybersecurityalliance/kestrel-jupyter
+        :alt: Code Coverage
+
 .. image:: https://img.shields.io/pypi/v/kestrel-jupyter.svg
         :target: https://pypi.python.org/pypi/kestrel-jupyter
-
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-   :target: https://github.com/psf/black
+        :alt: Latest Version
 
 This repository contains two Python packages:
 
 - ``kestrel_jupyter_kernel``
 - ``kestrel_ipython``
-
-Python Requirement
-==================
-
-This project and docs build on Python 3.
 
 Install and Setup
 =================
@@ -86,3 +91,12 @@ Uninstall Kestrel kernel:
     $ jupyter kernelspec uninstall kestrel
 
 .. _Kestrel documentation: https://kestrel.readthedocs.io/
+
+How to Contribute
+=================
+
+As a component in the Kestrel runtime, this repo follows the `contributing guideline`_ and `governance documentation`_ in the main `kestrel-lang`_ repo.
+
+.. _contributing guideline: https://github.com/opencybersecurityalliance/kestrel-lang/blob/develop/CONTRIBUTING.rst
+.. _governance documentation: https://github.com/opencybersecurityalliance/kestrel-lang/blob/develop/GOVERNANCE.rst
+.. _kestrel-lang: https://github.com/opencybersecurityalliance/kestrel-lang
