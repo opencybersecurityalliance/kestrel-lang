@@ -6,6 +6,30 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.4 (2022-04-22)
+==================
+
+Added
+-----
+
+- 2 initial unit tests
+- GitHub workflows
+
+  - unit testing
+  - style checking
+  - unimport checking
+
+- code coverage accessment and badge
+- README
+
+  - link to CONTRIBUTING
+  - link to GOVERNANCE
+
+Fixed
+-----
+
+- Jupyter notebook kernel exit error #12
+
 1.0.3 (2022-04-22)
 ==================
 
