@@ -2,7 +2,7 @@ import ast
 from pkgutil import get_data
 
 from firepit.query import Filter, Predicate
-from lark import Lark, Transformer, Tree
+from lark import Lark, Token, Transformer, Tree
 
 
 def parse(stmts, default_variable="_", default_sort_order="desc"):
@@ -253,19 +253,19 @@ class _PostParsing(Transformer):
         return {"func": func, "attr": args[1].value, "alias": alias}
 
     def disj(self, args):
-        lhs = str(args[0])
-        rhs = str(args[2])
+        lhs = str(args[0]) if isinstance(args, Token) else args[0]
+        rhs = str(args[1]) if isinstance(args, Token) else args[1]
         return Predicate(lhs, "OR", rhs)
 
     def conj(self, args):
-        lhs = str(args[0])
-        rhs = str(args[2])
+        lhs = str(args[0]) if isinstance(args, Token) else args[0]
+        rhs = str(args[1]) if isinstance(args, Token) else args[1]
         return Predicate(lhs, "AND", rhs)
 
     def comp(self, args):
-        lhs = str(args[0])
+        lhs = str(args[0]) if isinstance(args, Token) else args[0]
         op = str(args[1])
-        rhs = str(args[2])
+        rhs = str(args[2]) if isinstance(args, Token) else args[2]
         return Predicate(lhs, op, rhs)
 
     def null_comp(self, args):
