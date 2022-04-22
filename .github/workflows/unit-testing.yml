@@ -40,9 +40,8 @@ jobs:
           python -m pip install pytest-cov
           # pytest-cov does not support automatic sub-package recognition in src/
           # pass the sub-package names in through the --cov argument
-          echo $(ls src | grep -v '.egg-info' | xargs | sed 's/^\| / --cov=/g')
-          echo $(ls tests)
-          python -m pytest -vv $(ls src | grep -v '.egg-info' | xargs | sed 's/^\| / --cov=/g') --cov-report=xml
+          echo $(ls src | grep -v '.egg-info' | xargs | sed -r 's/^| / --cov=/g')
+          python -m pytest -vv --cov-report=xml $(ls src | grep -v '.egg-info' | xargs | sed -r 's/^| / --cov=/g')
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
