@@ -308,7 +308,8 @@ def test_disp_after_group(fake_bundle_file):
 conns = get network-traffic from file://{fake_bundle_file}
     where [network-traffic:dst_port < 10000]
 grouped = group conns by src_ref.value, dst_ref.value with count(src_ref.value) as count
-""")
+"""
+        )
         out = session.execute("DISP grouped ATTR src_ref.value, dst_ref.value, count")
         df = out[0].dataframe
         assert list(df.columns) == ["src_ref.value", "dst_ref.value", "count"]
