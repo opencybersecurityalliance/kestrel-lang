@@ -23,4 +23,4 @@ jobs:
           python -m pip install pytest
           python -m pip install .
       - name: Sample STIX-shifter Connector Package Verification on PyPI
-        run: pytest -vv tests/test_stixshifter.py -k test_verify_package_origin
+        run: python -m pytest -vv tests/test_stixshifter.py -k test_verify_package_origin
