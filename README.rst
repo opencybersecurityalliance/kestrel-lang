@@ -10,6 +10,10 @@
         :target: https://github.com/psf/black
         :alt: Code Style: Black
 
+.. image:: https://codecov.io/gh/opencybersecurityalliance/kestrel-lang/branch/develop/graph/badge.svg?token=HM4ax10IW3
+        :target: https://codecov.io/gh/opencybersecurityalliance/kestrel-lang
+        :alt: Code Coverage
+
 .. image:: https://img.shields.io/pypi/v/kestrel-lang
         :target: https://pypi.python.org/pypi/kestrel-lang
         :alt: Latest Version
