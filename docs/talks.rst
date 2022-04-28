@@ -27,9 +27,9 @@ Campaigns With Kestrel`_. The live hunting demo explained the basics of Kestrel
 throughout the discovery of the hybrid cloud APT campaign developed for our
 Black Hat Europe 2021 session.
 
-Kestrel will be discussed at `SC eSummit on Threat Hunting & Offense
+Kestrel was discussed at `SC eSummit on Threat Hunting & Offense
 Security`_ in an interview session `The ABCs of Kestrel: How the threat-hunting
-language enables efficiencies & interoperability`_. The session will discuss
+language enables efficiencies & interoperability`_. The session discussed
 the history, mission, key idea, community, and stories of Kestrel for
 threat hunters, enterprise executives, and security researchers.
 
