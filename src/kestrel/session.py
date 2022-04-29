@@ -55,6 +55,7 @@ import re
 import time
 import math
 import lark
+import atexit
 from datetime import datetime
 from contextlib import AbstractContextManager
 
@@ -247,6 +248,8 @@ class Session(AbstractContextManager):
         self.analytics_manager = AnalyticsManager(self.config)
         iso_ts_regex = r"\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}Z?)?)?)?)?)?"
         self._iso_ts = re.compile(iso_ts_regex)
+
+        atexit.register(self.close)
 
     def execute(self, codeblock):
         """Execute a Kestrel code block.
@@ -490,6 +493,9 @@ class Session(AbstractContextManager):
             else:
                 shutil.rmtree(self.runtime_directory)
 
+    def __exit__(self, exception_type, exception_value, traceback):
+        self.close()
+
     def _execute_ast(self, ast):
         displays = []
         new_vars = []
@@ -556,9 +562,6 @@ class Session(AbstractContextManager):
             displays.append(DisplayBlockSummary(vars_summary, execution_time_sec))
 
         return displays
-
-    def __exit__(self, exception_type, exception_value, traceback):
-        self.close()
 
     def _update_symbol_table(self, output_var_name, output_var_struct):
         self.symtable[output_var_name] = output_var_struct
