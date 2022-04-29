@@ -2,11 +2,10 @@ The entire Kestrel runtime consists of the following Python packages:
 
 - ``kestrel`` (repo: `kestrel-lang`_): The interpreter including parser,
   session management, code generation, data source and analytics interface
-  managers, and a command-line front end.
+  managers, and a command-line front-end.
 
-- ``firepit`` (repo: `firepit`_): The Kestrel internal data storage ingesting
-  data from data sources, caching related data, and linking records against
-  each Kestrel variable.
+- ``firepit`` (repo: `firepit`_): The Kestrel internal data storage ingesting,
+  processing, storing, caching, and linking data with Kestrel variables.
 
 - ``kestrel_datasource_stixshifter`` (repo: `kestrel-lang`_): The STIX-Shifter
   data source interface for managing data sources via STIX-Shifter.

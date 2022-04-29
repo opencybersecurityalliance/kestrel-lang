@@ -27,11 +27,11 @@ Campaigns With Kestrel`_. The live hunting demo explained the basics of Kestrel
 throughout the discovery of the hybrid cloud APT campaign developed for our
 Black Hat Europe 2021 session.
 
-Kestrel will be discussed at `SC Media eSummit on Threat Hunting & Offense
+Kestrel was discussed at `SC eSummit on Threat Hunting & Offense
 Security`_ in an interview session `The ABCs of Kestrel: How the threat-hunting
-language enables efficiencies & interoperability`_. The session will discuss
+language enables efficiencies & interoperability`_. The session discussed
 the history, mission, key idea, community, and stories of Kestrel for
-researchers, threat hunters, and enterprise executives to understand Kestrel.
+threat hunters, enterprise executives, and security researchers.
 
 .. _The Game of Cyber Threat Hunting\: The Return of the Fun: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
 .. _small-enterprise APT hunting demo: https://www.youtube.com/watch?v=tASFWZfD7l8
@@ -47,5 +47,5 @@ researchers, threat hunters, and enterprise executives to understand Kestrel.
 .. _Infosec Jupyterthon 2021: https://infosecjupyterthon.com/2021/agenda.html
 .. _Reason Cyber Campaigns With Kestrel: https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695
 
-.. _SC Media eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
+.. _SC eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
 .. _The ABCs of Kestrel\: How the threat-hunting language enables efficiencies & interoperability: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
