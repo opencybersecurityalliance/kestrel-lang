@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.5 (2022-04-29)
+==================
+
+Fixed
+-----
+
+- Jupyter kernel crashing upon restart
+
 1.0.4 (2022-04-22)
 ==================
 
