@@ -26,14 +26,14 @@ This repository contains two Python packages:
 Install and Setup
 =================
 
-The easy and preferred way:
+To install the released version:
 
 .. code-block:: console
 
     $ pip install kestrel-jupyter
     $ python -m kestrel_jupyter_kernel.setup
 
-If you want to install from source code:
+To install the nightly built version:
 
 .. code-block:: console
 
