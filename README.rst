@@ -85,7 +85,7 @@ Kestrel in a Nutshell
 Basic Concepts and Howto
 ========================
 
-Visit `Kestrel documentation`_ to start and dive into Kestrel:
+Visit `Kestrel documentation`_ to learn Kestrel:
 
 - Learn concepts and syntax:
 
