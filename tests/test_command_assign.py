@@ -38,12 +38,12 @@ def test_assign_after_new(stmt, expected):
 @pytest.mark.parametrize(
     "stmt, expected",
     [
-        ("x = p", 2000),
-        ("x = p WHERE pid = 1380", 106 * 2),  #FIXME: doubled due to prefetch
-        ("x = p WHERE command_line IS NULL", 948 * 2),
-        ("x = p WHERE command_line IS NOT NULL", 104),
-        ("x = p WHERE command_line LIKE '%/node%'", 1 * 2),
-        ("x = p WHERE pid = 5960 OR name = 'taskeng.exe'", 4),
+        ("x = p", 1000),
+        ("x = p WHERE pid = 1380", 106),
+        ("x = p WHERE command_line IS NULL", 948),
+        ("x = p WHERE command_line IS NOT NULL", 52),
+        ("x = p WHERE command_line LIKE '%/node%'", 1),
+        ("x = p WHERE pid = 5960 OR name = 'taskeng.exe'", 2),
         ("x = p WHERE (pid = 5960 OR name = 'taskeng.exe') AND command_line IS NULL", 0),
     ],
 )

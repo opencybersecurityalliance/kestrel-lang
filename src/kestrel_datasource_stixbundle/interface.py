@@ -21,9 +21,13 @@ from kestrel.exceptions import DataSourceManagerInternalError, DataSourceConnect
 _logger = logging.getLogger(__name__)
 
 
-def _make_query_dir(uri):
-    path = pathlib.Path(str(uuid.uuid5(uuid.NAMESPACE_URL, str(uri))))
-    path.mkdir(parents=True, exist_ok=True)
+def _make_query_id(uri):
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, str(uri)))
+
+
+def _make_query_dir(query_id):
+    path = pathlib.Path(query_id)
+    path.mkdir(parents=True, exist_ok=False)
     return path
 
 
@@ -51,8 +55,14 @@ class StixBundleInterface(AbstractDataSourceInterface):
         data_paths = data_paths.split(",")
         pattern = fixup_pattern(pattern)
         compiled_pattern = Pattern(pattern)
+        query_id = _make_query_id(uri)
 
-        ingestdir = _make_query_dir(uri)
+        try:
+            ingestdir = _make_query_dir(query_id)
+        except FileExistsError:
+            # We already cached this bundle
+            data_paths = []
+
         bundles = []
         for i, data_path in enumerate(data_paths):
             data_path_striped = "".join(filter(str.isalnum, data_path))
@@ -133,4 +143,4 @@ class StixBundleInterface(AbstractDataSourceInterface):
                 json.dump(bundle_out, f)
             bundles.append(str(ingestfile.expanduser().resolve()))
 
-        return ReturnFromFile(ingestdir.name, bundles)
+        return ReturnFromFile(query_id, bundles)
