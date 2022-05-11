@@ -1,6 +1,6 @@
 import pytest
 
-from kestrel_datasource_stixshifter.interface import (
+from kestrel_datasource_stixshifter.connector import (
     verify_package_origin,
     check_module_availability,
 )
