@@ -111,8 +111,11 @@ class StixShifterInterface(AbstractDataSourceInterface):
     @staticmethod
     def list_data_sources(config):
         """Get configured data sources from environment variable profiles."""
-        if not config:
-            config["profiles"] = load_profiles()
+
+        # CONFIG command is not supported
+        # profiles will be updated according to YAML file and env var
+        config["profiles"] = load_profiles()
+
         data_sources = list(config["profiles"].keys())
         data_sources.sort()
         return data_sources
@@ -120,12 +123,13 @@ class StixShifterInterface(AbstractDataSourceInterface):
     @staticmethod
     def query(uri, pattern, session_id, config):
         """Query a stixshifter data source."""
+
+        # CONFIG command is not supported
+        # profiles will be updated according to YAML file and env var
+        config["profiles"] = load_profiles()
+
         scheme, _, profile = uri.rpartition("://")
         profiles = profile.split(",")
-
-        if not config:
-            config["profiles"] = load_profiles()
-
         if scheme != "stixshifter":
             raise DataSourceManagerInternalError(
                 f"interface {__package__} should not process scheme {scheme}"
