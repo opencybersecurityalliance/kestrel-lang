@@ -26,14 +26,14 @@ This repository contains two Python packages:
 Install and Setup
 =================
 
-The easy and preferred way:
+To install the released version:
 
 .. code-block:: console
 
     $ pip install kestrel-jupyter
     $ python -m kestrel_jupyter_kernel.setup
 
-If you want to install from source code:
+To install the nightly built version:
 
 .. code-block:: console
 
@@ -45,11 +45,11 @@ If you want to install from source code:
 How to Use Kestrel Jupyter Notebook Kernel
 ==========================================
 
-Start Jupyter with ``jupyter notebook`` and start a new notebook with kernel
-``kestrel``. Note if you are using ``jupyter lab``, most functionalities are
-there such as code execution, error prompot, and context-aware auto-complete,
-but the syntax highlighting is not ported from our Jupyter Notebook environment
-to Jupyter Lab yet.
+Start Jupyter with ``jupyter notebook`` and start a new notebook with the
+``kestrel`` kernel. Note if you are using ``jupyter lab``, most functionalities
+are there such as code execution, error prompot, and context-aware
+auto-complete, but the syntax highlighting is not ported from our Jupyter
+Notebook environment to Jupyter Lab yet.
 
 Write your hello world hunt:
 
