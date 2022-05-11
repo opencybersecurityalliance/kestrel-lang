@@ -224,8 +224,14 @@ class Session(AbstractContextManager):
             runtime_directory_master = (
                 sys_tmp_dir / self.config["debug"]["cache_directory"]
             )
-            if runtime_directory_master.exists():
+
+            # runtime_directory_master.exists() should not be used
+            # it will return False for broken link
+            try:
                 runtime_directory_master.unlink()
+            except FileNotFoundError:
+                pass
+
             runtime_directory_master.symlink_to(self.runtime_directory)
 
         # local database of SQLite or PostgreSQL
@@ -483,15 +489,22 @@ class Session(AbstractContextManager):
     def close(self):
         """Explicitly close the session.
 
-        Only needed for non-context-managed sessions.
+        This may be executed by a context manager or when the program exits.
         """
-        del self.store
-        if not self.runtime_directory_is_owned_by_upper_layer:
-            if self.debug_mode:
-                self._leave_exit_marker()
-                self._remove_obsolete_debug_folders()
-            else:
-                shutil.rmtree(self.runtime_directory)
+        # this subroutine could be invoked twice by a context manager and program exit.
+        # only execute it once (when self.store not deleted).
+        if hasattr(self, "store"):
+
+            # release resources
+            del self.store
+
+            # manage temp folder for debug
+            if not self.runtime_directory_is_owned_by_upper_layer:
+                if self.debug_mode:
+                    self._leave_exit_marker()
+                    self._remove_obsolete_debug_folders()
+                else:
+                    shutil.rmtree(self.runtime_directory)
 
     def __exit__(self, exception_type, exception_value, traceback):
         self.close()
