@@ -24,6 +24,7 @@ import itertools
 from collections import OrderedDict
 
 from firepit.deref import auto_deref
+from firepit.exceptions import InvalidAttr
 from firepit.query import Limit, Offset, Order, Projection, Query
 from firepit.stix20 import summarize_pattern
 
@@ -80,7 +81,7 @@ def _guard_empty_input(func):
         for varname in get_all_input_var_names(stmt):
             v = session.symtable[varname]
             if v.length + v.records_count == 0:
-                raise EmptyInputVariable(v)
+                raise EmptyInputVariable(varname)
         else:
             return func(stmt, session)
 
@@ -115,9 +116,15 @@ def assign(stmt, session):
         qry = Query(entity_table)
 
     qry = _build_query(session.store, entity_table, qry, stmt)
-    session.store.assign_query(stmt["output"], qry)
 
-    output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
+    try:
+        session.store.assign_query(stmt["output"], qry)
+        output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
+    except InvalidAttr as e:
+        var_attr = str(e).split()[-1]
+        var_name, _, attr = var_attr.rpartition(".")
+        raise MissingEntityAttribute(var_name, attr) from e
+
     return output, None
 
 
@@ -214,7 +221,12 @@ def disp(stmt, session):
         qry = Query(entity_table)
 
     qry = _build_query(session.store, entity_table, qry, stmt)
-    cursor = session.store.run_query(qry)
+    try:
+        cursor = session.store.run_query(qry)
+    except InvalidAttr as e:
+        var_attr = str(e).split()[-1]
+        var_name, _, attr = var_attr.rpartition(".")
+        raise MissingEntityAttribute(var_name, attr) from e
     content = cursor.fetchall()
 
     return None, DisplayDataframe(dedup_ordered_dicts(remove_empty_dicts(content)))
@@ -630,9 +642,12 @@ def _set_projection(store, entity_table, query, paths):
         for p in query.proj.cols:
             if not (hasattr(p, "table") and p.table == entity_table and p.name == "*"):
                 new_cols.append(p)
-        for p in proj.cols:
-            if not (hasattr(p, "table") and p.table == entity_table and p.name == "*"):
-                new_cols.append(p)
+        if proj:
+            for p in proj.cols:
+                if not (
+                    hasattr(p, "table") and p.table == entity_table and p.name == "*"
+                ):
+                    new_cols.append(p)
         query.proj = Projection(new_cols)
     else:
         query.proj = proj
