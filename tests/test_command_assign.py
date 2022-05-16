@@ -35,15 +35,17 @@ def test_assign_after_new(stmt, expected):
         assert len(x) == expected, f"ASSIGN error: f{stmt}"
 
 
+# The * 2 on these counts is due to our inability to dedup process objects
+# Need unique IDs on process objects
 @pytest.mark.parametrize(
     "stmt, expected",
     [
-        ("x = p", 1000),
-        ("x = p WHERE pid = 1380", 106),
-        ("x = p WHERE command_line IS NULL", 948),
-        ("x = p WHERE command_line IS NOT NULL", 52),
-        ("x = p WHERE command_line LIKE '%/node%'", 1),
-        ("x = p WHERE pid = 5960 OR name = 'taskeng.exe'", 2),
+        ("x = p", 1000 * 2),
+        ("x = p WHERE pid = 1380", 106 * 2),
+        ("x = p WHERE command_line IS NULL", 948 * 2),
+        ("x = p WHERE command_line IS NOT NULL", 52 * 2),
+        ("x = p WHERE command_line LIKE '%/node%'", 1 * 2),
+        ("x = p WHERE pid = 5960 OR name = 'taskeng.exe'", 2 * 2),
         ("x = p WHERE (pid = 5960 OR name = 'taskeng.exe') AND command_line IS NULL", 0),
     ],
 )

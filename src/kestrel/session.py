@@ -496,6 +496,7 @@ class Session(AbstractContextManager):
         if hasattr(self, "store"):
 
             # release resources
+            self.store.close()
             del self.store
 
             # manage temp folder for debug
