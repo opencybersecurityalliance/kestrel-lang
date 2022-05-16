@@ -6,6 +6,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.3.4 (2022-05-16)
+==================
+
+Fixed
+-----
+
+- broken /tmp/kestrel symbol link will crash a new session
+- double close (double release resources) with context manager and aexit
+- AttributeError with timestamped grouped variable #224
+- subsequent GET would return no results #228
+
+Added
+-----
+
+- documentation on macOS debug folder path
+- interface figure updated with new planned interfaces
+- dynamically load stix-shifter YAML profiles #227
+- new exception: MissingEntityAttribute
+- unit test: disp timestamped group by
+
+Changed
+-------
+
+- codecov GitHub App enabled instead of codecov-bot
+- stixshifter interface module ``connector`` split from ``interface``.
+
 1.3.3 (2022-04-29)
 ==================
 

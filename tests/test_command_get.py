@@ -7,6 +7,12 @@ from kestrel.codegen.display import DisplayWarning
 from kestrel.session import Session
 
 
+@pytest.fixture
+def proc_bundle_file():
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(cwd, "doctored-1k.json")
+
+
 @pytest.fixture()
 def file_stix_bundles():
     cwd = os.path.dirname(os.path.abspath(__file__))
@@ -112,3 +118,27 @@ def test_get_wrong_type(file_stix_bundles):
         v = s.get_variable("var")
         print(json.dumps(v, indent=4))
         assert len(v) == 0
+
+
+def test_get_repeated(proc_bundle_file):
+    """process objects may not have deterministic IDs, so we need to prevent duplicate entries somehow"""
+    with Session() as s:
+        stmt = f"var = GET process FROM file://{proc_bundle_file} WHERE [process:name = 'cmd.exe']"
+        output = s.execute(stmt)
+        data = output[0].to_dict()["data"]["variables updated"][0]
+        print(json.dumps(data, indent=4))
+        n_ent = data["#(ENTITIES)"]
+        n_rec = data["#(RECORDS)"]
+
+        # Re-run; counts should not change
+        output = s.execute(stmt)
+        data = output[0].to_dict()["data"]["variables updated"][0]
+        assert n_ent == data["#(ENTITIES)"]
+        assert n_rec == data["#(RECORDS)"]
+
+        stmt = f"var = GET file FROM file://{proc_bundle_file} WHERE [file:name = 'cmd.exe']"
+        output = s.execute(stmt)
+        data = output[0].to_dict()["data"]["variables updated"][0]
+        print(json.dumps(data, indent=4))
+        assert data["#(ENTITIES)"] > 0
+        assert data["#(RECORDS)"] > 0

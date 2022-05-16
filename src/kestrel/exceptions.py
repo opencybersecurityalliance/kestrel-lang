@@ -140,6 +140,14 @@ class MissingEntityType(KestrelException):
         )
 
 
+class MissingEntityAttribute(KestrelException):
+    def __init__(self, var_name, attribute):
+        super().__init__(
+            f'variable "{var_name}" does not have required attribute "{attribute}"',
+            "remove transform or specify different variable in the Kestrel command",
+        )
+
+
 ################################################################
 #                     Data Source Errors
 ################################################################

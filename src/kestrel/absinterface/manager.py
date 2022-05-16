@@ -64,6 +64,7 @@ class InterfaceManager:
 
     def _get_default_schema(self):
         # this method is required to handle dynamic config changes
+        # where the default schema is changed on the fly
         partial_config_path = self.config
         for path_component in self.default_schema_config_path:
             partial_config_path = partial_config_path[path_component]

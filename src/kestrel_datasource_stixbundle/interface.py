@@ -21,8 +21,18 @@ from kestrel.exceptions import DataSourceManagerInternalError, DataSourceConnect
 _logger = logging.getLogger(__name__)
 
 
-def _make_query_dir(uri):
-    path = pathlib.Path(str(uuid.uuid5(uuid.NAMESPACE_URL, str(uri))))
+def _make_query_id(uri, pattern):
+    return str(uuid.uuid5(uuid.NAMESPACE_URL, str(uri) + pattern))
+
+
+def _make_query_dir(query_id):
+    path = pathlib.Path(query_id)
+    path.mkdir(parents=True, exist_ok=False)
+    return path
+
+
+def _make_download_dir():
+    path = pathlib.Path("downloads")
     path.mkdir(parents=True, exist_ok=True)
     return path
 
@@ -51,21 +61,29 @@ class StixBundleInterface(AbstractDataSourceInterface):
         data_paths = data_paths.split(",")
         pattern = fixup_pattern(pattern)
         compiled_pattern = Pattern(pattern)
+        query_id = _make_query_id(uri, pattern)
+        downloaddir = _make_download_dir()
 
-        ingestdir = _make_query_dir(uri)
+        try:
+            ingestdir = _make_query_dir(query_id)
+        except FileExistsError:
+            # We already cached this bundle
+            data_paths = []
+
         bundles = []
         for i, data_path in enumerate(data_paths):
-            data_path_striped = "".join(filter(str.isalnum, data_path))
-            bundlefile = ingestdir / f"{data_path_striped}.json"
+            data_path_stripped = "".join(filter(str.isalnum, data_path))
             ingestfile = ingestdir / f"{i}.json"
 
             if scheme == "file":
+                bundlefile = data_path
                 try:
                     with open(data_path, "r") as f:
                         bundle_in = json.load(f)
                 except Exception:
                     raise DataSourceConnectionError(uri)
             elif scheme == "http" or scheme == "https":
+                bundlefile = downloaddir / f"{data_path_stripped}.json"
                 data_uri = f"{scheme}://{data_path}"
                 last_modified = None
                 file_time = None
@@ -133,4 +151,4 @@ class StixBundleInterface(AbstractDataSourceInterface):
                 json.dump(bundle_out, f)
             bundles.append(str(ingestfile.expanduser().resolve()))
 
-        return ReturnFromFile(ingestdir.name, bundles)
+        return ReturnFromFile(query_id, bundles)

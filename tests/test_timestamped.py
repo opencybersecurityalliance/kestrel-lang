@@ -3,6 +3,7 @@ import os
 
 import pytest
 
+from kestrel.exceptions import MissingEntityAttribute
 from kestrel.session import Session
 
 
@@ -66,3 +67,29 @@ ts = timestamped(ips)
         ips = s.get_variable("ts")
         print(json.dumps(ips, indent=4))
         assert len(ips) == 100
+
+
+def test_timestamped_grouped_disp(fake_bundle_file):
+    with Session() as s:
+        stmt = f"""
+conns = GET network-traffic
+        FROM file://{fake_bundle_file}
+	WHERE [network-traffic:dst_ref.value NOT ISSUBSET '192.168.0.0/16']
+grp_conns = GROUP conns BY dst_ref.value WITH COUNT(dst_ref) AS count
+DISP TIMESTAMPED(grp_conns)
+"""
+        with pytest.raises(MissingEntityAttribute) as e:
+            s.execute(stmt)
+
+
+def test_timestamped_grouped_assign(fake_bundle_file):
+    with Session() as s:
+        stmt = f"""
+conns = GET network-traffic
+        FROM file://{fake_bundle_file}
+	WHERE [network-traffic:dst_ref.value NOT ISSUBSET '192.168.0.0/16']
+grp_conns = GROUP conns BY dst_ref.value WITH COUNT(dst_ref) AS count
+ts_grp_conns = TIMESTAMPED(grp_conns)
+"""
+        with pytest.raises(MissingEntityAttribute) as e:
+            s.execute(stmt)

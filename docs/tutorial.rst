@@ -2,8 +2,7 @@
 Threat Hunting Tutorial
 =======================
 
-For this tutorial, you will install Kestrel runtime, write your first hello world hunt, investigate into a
-data source, apply analytics, and compose larger hunt flows.
+This tutorial will guide you through the hello world hunt on the command line and Jupyter Notebook, before you take the full tutorial in the `binder cloud sandbox`_.
 
 Hello World Hunt
 ================
@@ -439,3 +438,4 @@ writing composable hunt flows, see :doc:`language`.
 .. _Logstash: https://www.elastic.co/logstash
 .. _RSAC'21 demo: https://www.youtube.com/watch?v=tASFWZfD7l8
 .. _kestrel-analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
+.. _binder cloud sandbox: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
