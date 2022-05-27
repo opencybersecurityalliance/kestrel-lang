@@ -170,7 +170,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
             if "error" in dsl:
                 raise DataSourceError(
-                    f"STIX-shifter translation failed with message: {dsl['error']}"
+                    f"STIX-shifter translation from STIX to native query failed with message: {dsl['error']}"
                 )
 
             _logger.debug(f"STIX pattern to query: {pattern}")
@@ -243,8 +243,13 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 "results",
                 query_metadata,
                 json.dumps(connector_results),
-                {},
+                translation_options,
             )
+
+            if "error" in stixbundle:
+                raise DataSourceError(
+                    f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
+                )
 
             _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
             with ingestfile.open("w") as ingest:
