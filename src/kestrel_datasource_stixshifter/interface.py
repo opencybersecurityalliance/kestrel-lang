@@ -163,8 +163,9 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 connector_name, connection_dict, configuration_dict
             )
 
+            translation_options = copy.deepcopy(connection_dict.get("options", {}))
             dsl = translation.translate(
-                connector_name, "query", query_metadata, pattern, {}
+                connector_name, "query", query_metadata, pattern, translation_options
             )
 
             if "error" in dsl:
