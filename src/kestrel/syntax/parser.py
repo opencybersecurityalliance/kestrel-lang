@@ -1,7 +1,9 @@
 import ast
+from datetime import datetime, timedelta
 from pkgutil import get_data
 
 from firepit.query import Filter, Predicate
+from firepit.timestamp import timefmt
 from lark import Lark, Token, Transformer, Tree
 
 
@@ -218,6 +220,28 @@ class _PostParsing(Transformer):
         return {
             "offset": _extract_int(args),
         }
+
+    def timespan(self, args):
+        result = {}
+        for arg in args:
+            result.update(arg)
+        return result
+
+    def relative_timespan(self, args):
+        # args should be num and unit
+        num = int(_first(args))
+        unit = _second(args).lower()
+        if unit in ("days", "d"):
+            delta = timedelta(days=num)
+        elif unit in ("hours", "h"):
+            delta = timedelta(hours=num)
+        elif unit in ("minutes", "m"):
+            delta = timedelta(minutes=num)
+        elif unit in ("seconds", "s"):
+            delta = timedelta(seconds=num)
+        stop = datetime.utcnow()
+        start = stop - delta
+        return {"start": timefmt(start, prec=6), "stop": timefmt(stop, prec=6)}
 
     def starttime(self, args):
         return {"start": _assert_and_extract_single("ISOTIMESTAMP", args)}

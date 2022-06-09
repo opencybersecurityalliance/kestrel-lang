@@ -321,9 +321,13 @@ Syntax
   kvar2.name]``. Kestrel runtime compiles this parameterized STIX pattern into
   standard STIX before querying the entity pool.
 
-  It is strongly encouraged to add time range qualifiers ``START t'timestamp'
-  STOP t'timestamp'`` at the end of the STIX pattern when the entity pool is a
-  data source and there is no referred Kestrel variable in the STIX pattern.
+  It is strongly encouraged to add time range qualifiers at the end of the STIX
+  pattern when the entity pool is a data source and there is no referred Kestrel
+  variable in the STIX pattern.
+
+  Time range qualifiers can either be standard STIX pattern qualifiers ``START
+  t'timestamp' STOP t'timestamp'`` or a relative timespan of the form ``LAST N
+  UNITS``
 
     - ``timestamp`` here should be in ISO timestamp format defined in `STIX
       timestamp`_.
@@ -345,6 +349,12 @@ Syntax
       command, it depends on the data source interface to decide how to handle
       it. For example, the STIX-Shifter interface will use last five minutes as
       the time range if not specified.
+
+    - The relative timespan accepts ``UNITS`` as ``DAYS``, ``HOURS``,
+      ``MINUTES``, or ``SECONDS`` (or their shorthand equivalents ``d``, ``h``,
+      ``m``, or ``s``).  ``N`` should be an integer.  This timespan will be
+      converted to a STIX pattern time range qualifier using the ``START/STOP``
+      form above before being sent to a data source.
 
 - Syntax sugar: If the entity pool in ``GET`` is a data source and it is the
   same as the data source used in a previous ``GET`` command, the ``FROM``

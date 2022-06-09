@@ -142,3 +142,29 @@ def test_get_repeated(proc_bundle_file):
         print(json.dumps(data, indent=4))
         assert data["#(ENTITIES)"] > 0
         assert data["#(RECORDS)"] > 0
+
+
+@pytest.mark.parametrize(
+    "num, unit, count",
+    [
+        # They're mostly out of the time range
+        (1, "d", 0),
+        (10, "days", 0),
+        (9, "h", 0),
+        (99, "hours", 0),
+        (5, "m", 0),
+        (50, "minutes", 0),
+        (3600, "s", 0),
+        (30, "SECONDS", 0),
+        (3650, "DAYS", 2),  # This will fail sometime in 2031
+    ],
+)
+def test_get_relative_timespan(file_stix_bundles, num, unit, count):
+    with Session() as s:
+        stmt = (f"var = GET process FROM file://{file_stix_bundles[0]}"
+                f" WHERE [process:name='compattelrunner.exe'] LAST {num} {unit}")
+
+        s.execute(stmt)
+        v = s.get_variable("var")
+        print(json.dumps(v, indent=4))
+        assert len(v) == count
