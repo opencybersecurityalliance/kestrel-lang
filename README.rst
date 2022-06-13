@@ -131,7 +131,7 @@ Connecting With The Community
   
   - Get a `slack invitation`_ to join `Open Cybersecurity Alliance workspace`_
   
-    .. image:: https://opencybersecurityalliance.org/img/OCA-1.png
+    .. image:: https://opencyberallia.wpengine.com/wp-content/uploads/2022/03/OCA-logo-e1646689234325.png
        :width: 20%
        :alt: OCA logo
      
