@@ -125,7 +125,7 @@ class SQLQuery(Query):
     def append(self, stage):
         raise NotImplementedError
 
-    def render(self, placeholder):
+    def render(self, placeholder, dialect=None):
         return self.text, self.values
 
 

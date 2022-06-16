@@ -105,3 +105,43 @@ def test_group_srcref_agg_alias(fake_bundle_file, agg_func, attr, alias):
         src_grps = session.get_variable("src_grps")
         assert src_grps is not None
         assert alias in src_grps[0]
+
+
+def test_group_nt_binned_timestamp(fake_bundle_file):
+    with Session(debug_mode=True) as session:
+        session.execute(
+            f"""conns = get network-traffic
+            from file://{fake_bundle_file}
+            where [network-traffic:dst_port > 0]""",
+        )
+
+        session.execute("ts_conns = TIMESTAMPED(conns)")
+        session.execute(("conns_per_min = group ts_conns by bin(first_observed, 1m)"
+                         " with count(dst_port) as count"))
+        hist = session.get_variable("conns_per_min")
+        assert len(hist) == 5
+        assert hist[0]["first_observed_bin"] == "2020-06-30T19:25:00Z"
+        assert hist[0]["count"] == 20
+        assert hist[4]["first_observed_bin"] == "2020-06-30T19:29:00Z"
+        assert hist[4]["count"] == 16
+
+
+def test_group_nt_binned_port(fake_bundle_file):
+    with Session(debug_mode=True) as session:
+        session.execute(
+            f"""conns = get network-traffic
+            from file://{fake_bundle_file}
+            where [network-traffic:dst_port > 0]""",
+        )
+
+        session.execute(("port_hist = group conns by bin(src_port, 10000)"
+                         " with count(src_port) as count"))
+        hist = session.get_variable("port_hist")
+        print(json.dumps(hist, indent=4))
+        assert len(hist) == 3
+        assert hist[0]["src_port_bin"] == 40000
+        assert hist[0]["count"] == 4
+        assert hist[1]["src_port_bin"] == 50000
+        assert hist[1]["count"] == 69
+        assert hist[2]["src_port_bin"] == 60000
+        assert hist[2]["count"] == 27

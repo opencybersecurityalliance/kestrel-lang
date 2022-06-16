@@ -48,7 +48,7 @@ join: "join"i VARIABLE "," VARIABLE (BY STIXPATH "," STIXPATH)?
 
 sort: "sort"i VARIABLE BY STIXPATH (ASC|DESC)?
 
-group: "group"i VARIABLE BY path_list ("with"i agg_list)?
+group: "group"i VARIABLE BY grp_spec ("with"i agg_list)?
 
 load: "load"i DUMPPATH ("as"i ENTITY_TYPE)?
 
@@ -115,7 +115,13 @@ endtime: "STOP" "t'" ISOTIMESTAMP "'"
 
 variables: VARIABLE ("," VARIABLE)*
 
-path_list: STIXPATH ("," STIXPATH)* -> valuelist
+grp_spec: grp_expr ("," grp_expr)*
+
+grp_expr: STIXPATH
+        | bin_func
+
+bin_func: "BIN"i "(" STIXPATH "," NUMBER timeunit? ")"
+// No other scalar funcs are supported yet
 
 agg_list: agg ("," agg)*
 

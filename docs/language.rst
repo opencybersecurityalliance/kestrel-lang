@@ -778,6 +778,16 @@ Syntax
 ::
 
     aggr_var = GROUP varx BY attr1, attr2... [WITH aggr_fun(attr3) [AS alias], ...]
+    aggr_var = GROUP varx BY BIN(attr, bin_size [time unit])... [WITH aggr_fun(attr3) [AS alias], ...]
+
+- Numerical and timestamp attributes may be "binned" or "bucketed" using the ``BIN``
+  function.  This function takes 2 arguments: an attribute, and an integer bin size.
+  For timestamp attributes, the bin size may include a unit.
+
+  - ``DAYS`` or ``d``
+  - ``MINUTES`` or ``m``
+  - ``HOURS`` or ``h``
+  - ``SECONDS`` or ``s``
 
 - If no aggregation functions are specified, they will be chosen
   automatically.  In that case, attributes of the returned entities
@@ -805,6 +815,11 @@ Examples
     procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
     aggr = GROUP procs BY name
     DISP aggr ATTR unique_name, unique_pid, unique_command_line
+
+    # group network traffic into 5 minute buckets:
+    conns = GET network-traffic FROM stixshifter://my_ndr WHERE [network-traffic:src_ref.value LIKE '%']
+    conns_ts = TIMESTAMPED(conns)
+    conns_binned = GROUP conns_ts BY BIN(first_observed, 5m) WITH COUNT(src_port) AS count
 
 SAVE
 ----
