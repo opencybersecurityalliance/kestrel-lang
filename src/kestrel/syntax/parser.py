@@ -1,7 +1,9 @@
 import ast
+from datetime import datetime, timedelta
 from pkgutil import get_data
 
-from firepit.query import Filter, Predicate
+from firepit.query import BinnedColumn, Filter, Predicate
+from firepit.timestamp import timefmt
 from lark import Lark, Token, Transformer, Tree
 
 
@@ -127,7 +129,7 @@ class _PostParsing(Transformer):
 
     def group(self, args):
         # args[1] was already transformed by path_list/valuelist
-        cols = _normalize_paths(args[2])
+        cols = args[2]
         result = {
             "command": "group",
             "paths": cols,
@@ -219,6 +221,28 @@ class _PostParsing(Transformer):
             "offset": _extract_int(args),
         }
 
+    def timespan(self, args):
+        result = {}
+        for arg in args:
+            result.update(arg)
+        return result
+
+    def relative_timespan(self, args):
+        # args should be num and unit
+        num = int(_first(args))
+        unit = _second(args).lower()
+        if unit in ("days", "d"):
+            delta = timedelta(days=num)
+        elif unit in ("hours", "h"):
+            delta = timedelta(hours=num)
+        elif unit in ("minutes", "m"):
+            delta = timedelta(minutes=num)
+        elif unit in ("seconds", "s"):
+            delta = timedelta(seconds=num)
+        stop = datetime.utcnow()
+        start = stop - delta
+        return {"start": timefmt(start, prec=6), "stop": timefmt(stop, prec=6)}
+
     def starttime(self, args):
         return {"start": _assert_and_extract_single("ISOTIMESTAMP", args)}
 
@@ -240,6 +264,25 @@ class _PostParsing(Transformer):
 
     def number(self, args):
         return {args[0].value: ast.literal_eval(args[1].value)}
+
+    def grp_spec(self, args):
+        return args
+
+    def grp_expr(self, args):
+        path = args[0]
+        if isinstance(path, str):
+            path = _normalize_paths(path)[0]
+        return path
+
+    def bin_func(self, args):
+        path = args[0].value
+        num = int(args[1].value)
+        if len(args) >= 3:
+            unit = args[2].value
+        else:
+            unit = None
+        alias = f"{path}_bin"
+        return BinnedColumn(path, num, unit, alias=alias)
 
     def agg_list(self, args):
         return [arg for arg in args]

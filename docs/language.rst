@@ -321,9 +321,13 @@ Syntax
   kvar2.name]``. Kestrel runtime compiles this parameterized STIX pattern into
   standard STIX before querying the entity pool.
 
-  It is strongly encouraged to add time range qualifiers ``START t'timestamp'
-  STOP t'timestamp'`` at the end of the STIX pattern when the entity pool is a
-  data source and there is no referred Kestrel variable in the STIX pattern.
+  It is strongly encouraged to add time range qualifiers at the end of the STIX
+  pattern when the entity pool is a data source and there is no referred Kestrel
+  variable in the STIX pattern.
+
+  Time range qualifiers can either be standard STIX pattern qualifiers ``START
+  t'timestamp' STOP t'timestamp'`` or a relative timespan of the form ``LAST N
+  UNITS``
 
     - ``timestamp`` here should be in ISO timestamp format defined in `STIX
       timestamp`_.
@@ -345,6 +349,12 @@ Syntax
       command, it depends on the data source interface to decide how to handle
       it. For example, the STIX-Shifter interface will use last five minutes as
       the time range if not specified.
+
+    - The relative timespan accepts ``UNITS`` as ``DAYS``, ``HOURS``,
+      ``MINUTES``, or ``SECONDS`` (or their shorthand equivalents ``d``, ``h``,
+      ``m``, or ``s``).  ``N`` should be an integer.  This timespan will be
+      converted to a STIX pattern time range qualifier using the ``START/STOP``
+      form above before being sent to a data source.
 
 - Syntax sugar: If the entity pool in ``GET`` is a data source and it is the
   same as the data source used in a previous ``GET`` command, the ``FROM``
@@ -768,6 +778,16 @@ Syntax
 ::
 
     aggr_var = GROUP varx BY attr1, attr2... [WITH aggr_fun(attr3) [AS alias], ...]
+    aggr_var = GROUP varx BY BIN(attr, bin_size [time unit])... [WITH aggr_fun(attr3) [AS alias], ...]
+
+- Numerical and timestamp attributes may be "binned" or "bucketed" using the ``BIN``
+  function.  This function takes 2 arguments: an attribute, and an integer bin size.
+  For timestamp attributes, the bin size may include a unit.
+
+  - ``DAYS`` or ``d``
+  - ``MINUTES`` or ``m``
+  - ``HOURS`` or ``h``
+  - ``SECONDS`` or ``s``
 
 - If no aggregation functions are specified, they will be chosen
   automatically.  In that case, attributes of the returned entities
@@ -795,6 +815,11 @@ Examples
     procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
     aggr = GROUP procs BY name
     DISP aggr ATTR unique_name, unique_pid, unique_command_line
+
+    # group network traffic into 5 minute buckets:
+    conns = GET network-traffic FROM stixshifter://my_ndr WHERE [network-traffic:src_ref.value LIKE '%']
+    conns_ts = TIMESTAMPED(conns)
+    conns_binned = GROUP conns_ts BY BIN(first_observed, 5m) WITH COUNT(src_port) AS count
 
 SAVE
 ----

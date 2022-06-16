@@ -131,7 +131,7 @@ Connecting With The Community
   
   - Get a `slack invitation`_ to join `Open Cybersecurity Alliance workspace`_
   
-    .. image:: https://opencybersecurityalliance.org/img/OCA-1.png
+    .. image:: https://opencyberallia.wpengine.com/wp-content/uploads/2022/03/OCA-logo-e1646689234325.png
        :width: 20%
        :alt: OCA logo
      
@@ -180,7 +180,7 @@ Connecting With The Community
 .. _IJ'21 live hunt recording: https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695
 .. _SC eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
 
-.. _slack invitation: https://docs.google.com/forms/d/1vEAqg9SKBF3UMtmbJJ9qqLarrXN5zeVG3_obedA3DKs/viewform?edit_requested=true
+.. _slack invitation: https://join.slack.com/t/open-cybersecurity/shared_invite/zt-19pliofsm-L7eSSB8yzABM2Pls1nS12w
 .. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
 .. _GitHub Issue: https://github.com/opencybersecurityalliance/kestrel-lang/issues
 .. _contributing guideline: CONTRIBUTING.rst

@@ -6,6 +6,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.4.0 (2022-05-16)
+==================
+
+Fixed
+-----
+
+- Fix NameError: name 'DataSourceError' is not defined
+- Pass stix-shifter profile options into translation #230
+
+Added
+-----
+
+- Relative timespans instead of START/STOP #181
+  - e.g. `LAST 5 MINUTES`
+- Group by "binned" (or "bucketed") attributes
+  - e.g. GROUP foo BY BIN(first_observed, 5m)
+
+Changed
+-------
+
+- bump min Python version to 3.7
+- update OCA slack invitation link
+
 1.3.4 (2022-05-16)
 ==================
 

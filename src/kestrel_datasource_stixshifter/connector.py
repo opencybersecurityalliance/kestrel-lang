@@ -1,9 +1,11 @@
+import logging
 import sys
 import importlib
 import subprocess
 import requests
-import logging
 from lxml import html
+
+from kestrel.exceptions import DataSourceError
 
 
 _logger = logging.getLogger(__name__)
@@ -48,7 +50,7 @@ def verify_package_origin(connector_name):
             f'STIX-shifter connector for "{connector_name}" is not installed '
             f'and Kestrel found Python package "{package_name}" is not a genuine STIX-shifter package',
             "please find the correct STIX-shifter connector Python package to install. "
-            f"And report to Kestrel developers about this malicious package",
+            "And report to Kestrel developers about this malicious package",
         )
 
     _logger.info(f'"{package_name}" verified as a STIX-shifter package.')
