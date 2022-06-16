@@ -115,8 +115,6 @@ endtime: "STOP" "t'" ISOTIMESTAMP "'"
 
 variables: VARIABLE ("," VARIABLE)*
 
-path_list: STIXPATH ("," STIXPATH)* -> valuelist
-
 grp_spec: grp_expr ("," grp_expr)*
 
 grp_expr: STIXPATH
