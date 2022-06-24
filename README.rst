@@ -122,6 +122,8 @@ Kestrel Hunting Blogs
 Talks And Demos
 ===============
 
+Visit `Kestrel documentation on talks`_ to learn more about the talks:
+
 - 2022/08 `Black Hat USA 2022`_
 - 2022/06 `Cybersecurity Automation Workshop`_
 - 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (free to register/playback)
@@ -168,6 +170,7 @@ Connecting With The Community
 .. _How to execute an analytic hunt step in Python/Docker: https://kestrel.readthedocs.io/en/latest/installation/analytics.html
 .. _Language reference book: https://kestrel.readthedocs.io/en/latest/language.html
 .. _How to use Kestrel via API: https://kestrel.readthedocs.io/en/latest/source/kestrel.session.html
+.. _Kestrel documentation on talks: https://kestrel.readthedocs.io/en/latest/talks.html
 
 .. _Kestrel huntbook: https://github.com/opencybersecurityalliance/kestrel-huntbook
 .. _Kestrel analytics: https://github.com/opencybersecurityalliance/kestrel-analytics
