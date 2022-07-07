@@ -29,6 +29,6 @@ stixquery:
 # debug options
 debug:
   env_var: "KESTREL_DEBUG" # debug mode if the environment variable exists
-  cache_directory: "kestrel" # under system temp directory
+  cache_directory_prefix: "kestrel-" # under system temp directory
   session_exit_marker: "session.exited"
   maximum_exited_session: 3
