@@ -240,7 +240,25 @@ def fine_grained_relational_process_filtering(
             Table(local_var.entity_table),
             Join("__contains", "id", "=", "target_ref"),
             Join("observed-data", "source_ref", "=", "id"),
-            Projection(["pid", "name", "first_observed", "last_observed"]),
+            # need to put the LEFT JOIN at last
+            # so do not need to specify lhs for the first two JOINS
+            Join(
+                "process",
+                "parent_ref",
+                "=",
+                "id",
+                how="LEFT OUTER",
+                lhs=local_var.entity_table,
+            ),
+            Projection(
+                [
+                    Column("pid", local_var.entity_table, "pid"),
+                    Column("name", local_var.entity_table, "name"),
+                    Column("pid", "process", "ppid"),
+                    "first_observed",
+                    "last_observed",
+                ]
+            ),
         ]
     )
     ref_rows = local_var.store.run_query(query_ref).fetchall()
@@ -250,10 +268,11 @@ def fine_grained_relational_process_filtering(
     for row in ref_rows:
         if row["pid"]:
             process_name = row["name"]
+            process_parent_pid = row["ppid"]
             process_start_time = dateutil.parser.isoparse(row["first_observed"])
             process_end_time = dateutil.parser.isoparse(row["last_observed"])
             entities[row["pid"]].append(
-                (process_name, process_start_time, process_end_time)
+                (process_name, process_parent_pid, process_start_time, process_end_time)
             )
 
     query_fil = Query(
@@ -261,11 +280,22 @@ def fine_grained_relational_process_filtering(
             Table(prefetch_entity_table),
             Join("__contains", "id", "=", "target_ref"),
             Join("observed-data", "source_ref", "=", "id"),
+            # need to put the LEFT JOIN at last
+            # so do not need to specify lhs for the first two JOINS
+            Join(
+                "process",
+                "parent_ref",
+                "=",
+                "id",
+                how="LEFT OUTER",
+                lhs=prefetch_entity_table,
+            ),
             Projection(
                 [
-                    Column("id", prefetch_entity_table),
-                    "pid",
-                    "name",
+                    Column("id", prefetch_entity_table, "id"),
+                    Column("pid", prefetch_entity_table, "pid"),
+                    Column("name", prefetch_entity_table, "name"),
+                    Column("pid", "process", "ppid"),
                     "first_observed",
                     "last_observed",
                 ]
@@ -274,8 +304,66 @@ def fine_grained_relational_process_filtering(
     )
     fil_rows = store.run_query(query_fil).fetchall()
 
-    filtered_ids = []
+    fil_rows = [
+        (
+            r["pid"],
+            r["name"],
+            r["ppid"],
+            dateutil.parser.isoparse(row["first_observed"]),
+            dateutil.parser.isoparse(row["last_observed"]),
+            r["id"],
+        )
+        for r in fil_rows
+        if r["pid"]
+    ]
 
+    # Two-step search for matched processes
+    # 1. pivot process search
+    # 2. precise process search
+
+    # search for pivot_rows in fil_rows those has more info than ref_rows, e.g., process
+    # name or ppid.
+    #
+    # two situations worth mentioning:
+    # - in Linux, a new process will be forked, then exec to change name. In this case,
+    #   we need to search for pivot_rows to identify process with even name changed,
+    #   then get all records of both process before name change and after name change.
+    # - ppid is useful to identify a process with pid, however, in one situation, the
+    #   ppid data is not available in the first phase of FIND (creating of local_var
+    #   using deref in firepit)---FIND parent process of current process. This is because
+    #   most datasource does not store *parent parent process pid* for deref to get ppid
+    #   of the parent. In this case, we need to search for pivot_rows to infer the ppid.
+    pivot_rows = []
+    for fil_row in fil_rows:
+        fil_pid = fil_row[0]
+        for ref_pname, ref_ppid, ref_start_time, ref_end_time in entities[fil_pid]:
+            ref_row = (fil_pid, ref_pname, ref_ppid, ref_start_time, ref_end_time)
+            if _identical_process_check(fil_row[:-1], ref_row, config):
+                pivot_rows.append(fil_row)
+                break
+
+    _logger.debug(
+        f"found {len(pivot_rows)} pivot rows out of {len(fil_rows)} raw prefetched results."
+    )
+
+    # search for precise process match based on pivot results
+    filtered_ids = []
+    for fil_row in fil_rows:
+        for pivot_row in pivot_rows:
+            if _identical_process_check(fil_row[:-1], pivot_row[:-1], config):
+                filtered_ids.append(fil_row[-1])
+                break
+
+    filtered_ids = list(set(filtered_ids))
+
+    _logger.debug(
+        f"found {len(filtered_ids)} out of {len(fil_rows)} raw prefetched results to be true relational process records."
+    )
+
+    return filtered_ids
+
+
+def _identical_process_check(fil_row, ref_row, config):
     pnc_start_offset = datetime.timedelta(
         seconds=config["process_name_change_timerange_start_offset"]
     )
@@ -287,33 +375,32 @@ def fine_grained_relational_process_filtering(
     )
     pls_stop_offset = datetime.timedelta(seconds=config["process_lifespan_stop_offset"])
 
-    for row in fil_rows:
-        if row["pid"]:
-            fil_start_time = dateutil.parser.isoparse(row["first_observed"])
-            fil_end_time = dateutil.parser.isoparse(row["last_observed"])
-            fil_process_name = row["name"]
-            for ref_process_name, ref_start_time, ref_end_time in entities[row["pid"]]:
-                if (
-                    (
-                        fil_process_name
-                        and fil_process_name == ref_process_name
-                        and fil_start_time > ref_start_time + pls_start_offset
-                        and fil_start_time < ref_end_time + pls_stop_offset
-                    )
-                    or (
-                        fil_start_time > ref_start_time + pnc_start_offset
-                        and fil_start_time < ref_end_time + pnc_stop_offset
-                    )
-                    or (
-                        fil_end_time > ref_start_time + pnc_start_offset
-                        and fil_end_time < ref_end_time + pnc_stop_offset
-                    )
-                ):
-                    filtered_ids.append(row["id"])
-                    break
-
-    _logger.debug(
-        f"found {len(filtered_ids)} out of {len(fil_rows)} to be true relational process records."
-    )
-
-    return filtered_ids
+    fil_pid, fil_pname, fil_ppid, fil_start_time, fil_end_time = fil_row
+    ref_pid, ref_pname, ref_ppid, ref_start_time, ref_end_time = ref_row
+    if fil_pid == ref_pid and (
+        (
+            fil_pname
+            and fil_pname == ref_pname
+            and fil_start_time > ref_start_time + pls_start_offset
+            and fil_start_time < ref_end_time + pls_stop_offset
+        )
+        or (
+            fil_ppid
+            and fil_ppid == ref_ppid
+            and fil_start_time > ref_start_time + pls_start_offset
+            and fil_start_time < ref_end_time + pls_stop_offset
+        )
+        or (
+            # name changed process, Linux fork+exec handled
+            fil_start_time > ref_start_time + pnc_start_offset
+            and fil_start_time < ref_end_time + pnc_stop_offset
+        )
+        or (
+            # name changed process, Linux fork+exec handled
+            fil_end_time > ref_start_time + pnc_start_offset
+            and fil_end_time < ref_end_time + pnc_stop_offset
+        )
+    ):
+        return True
+    else:
+        return False
