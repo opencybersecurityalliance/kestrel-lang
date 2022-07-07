@@ -30,9 +30,10 @@ You can run Kestrel in debug mode by either use the ``--debug`` flag of the
 Kestrel command-line utility, or create environment variable ``KESTREL_DEBUG``
 with any value before launching Kestrel, which is useful when you use Kestrel
 in Jupyter Notebook. In the debug mode, all runtime data including caches and
-logs at debug level are at ``/tmp/kestrel/`` (``$TMPDIR/kestrel/`` on macOS).
-The runtime logs of the latest created session is at
-``/tmp/kestrel/session.log`` (``$TMPDIR/kestrel/session.log`` on macOS).
+logs at debug level are at ``/tmp/kestrel-$USER/`` (``$TMPDIR/kestrel-$USER/``
+on macOS).  The runtime logs of the latest created session is at
+``/tmp/kestrel-$USER/session.log`` (``$TMPDIR/kestrel-$USER/session.log`` on
+macOS).
 
 Add Your Own Log Entry
 ======================
@@ -67,7 +68,7 @@ to print out some value:
         $ pip install -e .
 
 #. Rerun Kestrel (command-line utility or restart Kestrel kernel in Jupyter)
-   and check the entry you logged at ``/tmp/kestrel/session.log``.
+   and check the entry you logged at ``/tmp/kestrel-$USER/session.log``.
 
 .. _kestrel-lang: http://github.com/opencybersecurityalliance/kestrel-lang
 .. _OCA slack: https://open-cybersecurity.slack.com/
