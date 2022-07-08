@@ -84,7 +84,23 @@ files = FIND file LINKED procs
         assert len(procs) == 7 * 2
         files = s.get_variable("files")
         print(json.dumps(files, indent=4))
-        assert len(files) == 2 * 3  # FIXME: why * 3?!
+        assert len(files) == 2 * 2
+
+
+def test_find_file_linked_to_process_2():
+    stixshifter_data_url = "https://raw.githubusercontent.com/opencybersecurityalliance/stix-shifter/develop/data/cybox"
+    bundle = f"{stixshifter_data_url}/carbon_black/cb_observed_156.json"
+    with Session() as s:
+        stmt = f"""
+procs = get process
+        from {bundle}
+        where [process:name = 'svctest.exe']
+files = FIND file LINKED procs
+"""
+        s.execute(stmt)
+        files = s.get_variable("files")
+        print(json.dumps(files, indent=4))
+        assert len(files) == 3
 
 
 def test_find_file_loaded_by_process(proc_bundle_file):

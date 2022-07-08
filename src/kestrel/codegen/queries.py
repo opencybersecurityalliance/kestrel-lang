@@ -103,7 +103,7 @@ SELECT DISTINCT sco.*
    WHERE target_ref LIKE '{return_type}--%'
   INTERSECT SELECT source_ref
    FROM __contains c
-   WHERE target_ref LIKE '{input_type}--%')""",
+   WHERE target_ref IN (SELECT id FROM "{input_var_name}"))""",
         tuple(),
         input_var_name,
     )
