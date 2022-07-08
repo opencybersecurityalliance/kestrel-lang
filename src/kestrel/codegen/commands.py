@@ -383,7 +383,7 @@ def find(stmt, session):
         # First, get information from local store
         if relation in generic_relations:
             rel_query = compile_generic_relation_to_query(
-                return_type, input_type, input_var_name
+                return_type, input_type, session.symtable[input_var_name].entity_table
             )
 
         else:
