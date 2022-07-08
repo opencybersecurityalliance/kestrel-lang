@@ -15,10 +15,15 @@ session:
 prefetch:
   get: true
   find: true
-  process_name_change_timerange_start_offset: -5 # seconds
-  process_name_change_timerange_stop_offset: 5 # seconds
-  process_lifespan_start_offset: -10800 # seconds
-  process_lifespan_stop_offset: 10800 # seconds
+  process_identification:
+    pid_but_name_changed_time_begin_offset: -5 # seconds
+    pid_but_name_changed_time_end_offset: 5 # seconds
+    pid_and_name_time_begin_offset: -3600 # seconds
+    pid_and_name_time_end_offset: 3600 # seconds
+    pid_and_ppid_time_begin_offset: -3600 # seconds
+    pid_and_ppid_time_end_offset: 3600 # seconds
+    pid_and_name_and_ppid_time_begin_offset: -86400 # seconds
+    pid_and_name_and_ppid_time_end_offset: 86400 # seconds
 
 # option when generating STIX query
 stixquery:

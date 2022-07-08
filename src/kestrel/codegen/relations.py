@@ -346,41 +346,53 @@ def _search_for_potential_identical_process(ref_pid2procs, fil_pid2procs, config
 
 
 def _identical_process_check(fil_row, ref_row, config):
-    pnc_start_offset = datetime.timedelta(
-        seconds=config["process_name_change_timerange_start_offset"]
+    pbnc_bo = datetime.timedelta(
+        seconds=config["pid_but_name_changed_time_begin_offset"]
     )
-    pnc_stop_offset = datetime.timedelta(
-        seconds=config["process_name_change_timerange_stop_offset"]
+    pbnc_eo = datetime.timedelta(seconds=config["pid_but_name_changed_time_end_offset"])
+    pan_bo = datetime.timedelta(seconds=config["pid_and_name_time_begin_offset"])
+    pan_eo = datetime.timedelta(seconds=config["pid_and_name_time_end_offset"])
+    pap_bo = datetime.timedelta(seconds=config["pid_and_ppid_time_begin_offset"])
+    pap_eo = datetime.timedelta(seconds=config["pid_and_ppid_time_end_offset"])
+    panap_bo = datetime.timedelta(
+        seconds=config["pid_and_name_and_ppid_time_begin_offset"]
     )
-    pls_start_offset = datetime.timedelta(
-        seconds=config["process_lifespan_start_offset"]
+    panap_eo = datetime.timedelta(
+        seconds=config["pid_and_name_and_ppid_time_end_offset"]
     )
-    pls_stop_offset = datetime.timedelta(seconds=config["process_lifespan_stop_offset"])
 
     fil_pname, fil_ppid, fil_start_time, fil_end_time = fil_row
     ref_pname, ref_ppid, ref_start_time, ref_end_time = ref_row
     if (
         (
             fil_pname
+            and fil_ppid
             and fil_pname == ref_pname
-            and fil_start_time > ref_start_time + pls_start_offset
-            and fil_start_time < ref_end_time + pls_stop_offset
+            and fil_ppid == ref_ppid
+            and fil_start_time > ref_start_time + panap_bo
+            and fil_start_time < ref_end_time + panap_eo
+        )
+        or (
+            fil_pname
+            and fil_pname == ref_pname
+            and fil_start_time > ref_start_time + pan_bo
+            and fil_start_time < ref_end_time + pan_eo
         )
         or (
             fil_ppid
             and fil_ppid == ref_ppid
-            and fil_start_time > ref_start_time + pls_start_offset
-            and fil_start_time < ref_end_time + pls_stop_offset
+            and fil_start_time > ref_start_time + pap_bo
+            and fil_start_time < ref_end_time + pap_eo
         )
         or (
             # name changed process, Linux fork+exec handled
-            fil_start_time > ref_start_time + pnc_start_offset
-            and fil_start_time < ref_end_time + pnc_stop_offset
+            fil_start_time > ref_start_time + pbnc_bo
+            and fil_start_time < ref_end_time + pbnc_eo
         )
         or (
             # name changed process, Linux fork+exec handled
-            fil_end_time > ref_start_time + pnc_start_offset
-            and fil_end_time < ref_end_time + pnc_stop_offset
+            fil_end_time > ref_start_time + pbnc_bo
+            and fil_end_time < ref_end_time + pbnc_eo
         )
     ):
         return True
