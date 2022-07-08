@@ -84,7 +84,7 @@ def test_get_multiple_stixshifter_stix_bundles(set_stixshifter_stix_bundles):
 
         s.execute(stmt)
         v = s.get_variable("var")
-        assert len(v) == 240 or len(v) == 270  # FIXME: prefetch causing duplicates
+        assert len(v) == 240 or len(v) == 267  # FIXME: prefetch causing duplicates
         for i in range(len(v)):
             assert v[i]["type"] == "process"
             assert v[i]["name"] in [
