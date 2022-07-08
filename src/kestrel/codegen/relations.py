@@ -263,7 +263,7 @@ def fine_grained_relational_process_filtering(
     )
     ref_rows = local_var.store.run_query(query_ref).fetchall()
 
-    entities = defaultdict(list)
+    ref_processes = defaultdict(list)
 
     for row in ref_rows:
         if row["pid"]:
@@ -271,7 +271,7 @@ def fine_grained_relational_process_filtering(
             process_parent_pid = row["ppid"]
             process_start_time = dateutil.parser.isoparse(row["first_observed"])
             process_end_time = dateutil.parser.isoparse(row["last_observed"])
-            entities[row["pid"]].append(
+            ref_processes[row["pid"]].append(
                 (process_name, process_parent_pid, process_start_time, process_end_time)
             )
 
@@ -324,6 +324,9 @@ def fine_grained_relational_process_filtering(
     # search for pivot_rows in fil_rows those has more info than ref_rows, e.g., process
     # name or ppid.
     #
+    # in real implementation, for performance, ref_rows and pivot_rows are implemented as
+    # ref_processes and pivot_processes.
+    #
     # two situations worth mentioning:
     # - in Linux, a new process will be forked, then exec to change name. In this case,
     #   we need to search for pivot_rows to identify process with even name changed,
@@ -333,25 +336,28 @@ def fine_grained_relational_process_filtering(
     #   using deref in firepit)---FIND parent process of current process. This is because
     #   most datasource does not store *parent parent process pid* for deref to get ppid
     #   of the parent. In this case, we need to search for pivot_rows to infer the ppid.
-    pivot_rows = []
+    pivot_processes = defaultdict(list)
     for fil_row in fil_rows:
-        fil_pid = fil_row[0]
-        for ref_pname, ref_ppid, ref_start_time, ref_end_time in entities[fil_pid]:
-            ref_row = (fil_pid, ref_pname, ref_ppid, ref_start_time, ref_end_time)
-            if _identical_process_check(fil_row[:-1], ref_row, config):
-                pivot_rows.append(fil_row)
+        pid = fil_row[0]
+        fil_row = fil_row[1:-1]
+        for ref_row in ref_processes[pid]:
+            if _identical_process_check(fil_row, ref_row, config):
+                pivot_processes[pid].append(fil_row)
                 break
 
     _logger.debug(
-        f"found {len(pivot_rows)} pivot rows out of {len(fil_rows)} raw prefetched results."
+        f"found {sum(map(len, pivot_processes.values()))} pivot rows out of {len(fil_rows)} raw prefetched results."
     )
 
     # search for precise process match based on pivot results
     filtered_ids = []
     for fil_row in fil_rows:
-        for pivot_row in pivot_rows:
-            if _identical_process_check(fil_row[:-1], pivot_row[:-1], config):
-                filtered_ids.append(fil_row[-1])
+        pid = fil_row[0]
+        rid = fil_row[-1]
+        fil_row = fil_row[1:-1]
+        for pivot_row in pivot_processes[pid]:
+            if _identical_process_check(fil_row, pivot_row, config):
+                filtered_ids.append(rid)
                 break
 
     filtered_ids = list(set(filtered_ids))
@@ -375,9 +381,9 @@ def _identical_process_check(fil_row, ref_row, config):
     )
     pls_stop_offset = datetime.timedelta(seconds=config["process_lifespan_stop_offset"])
 
-    fil_pid, fil_pname, fil_ppid, fil_start_time, fil_end_time = fil_row
-    ref_pid, ref_pname, ref_ppid, ref_start_time, ref_end_time = ref_row
-    if fil_pid == ref_pid and (
+    fil_pname, fil_ppid, fil_start_time, fil_end_time = fil_row
+    ref_pname, ref_ppid, ref_start_time, ref_end_time = ref_row
+    if (
         (
             fil_pname
             and fil_pname == ref_pname
