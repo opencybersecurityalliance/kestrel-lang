@@ -248,11 +248,16 @@ def fine_grained_relational_process_filtering(
         f"start fine-grained relational process filtering for prefetched table: {prefetch_entity_table}"
     )
 
+    # reference processes obtained from de-referring data in firepit
+    # type(ref_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
     ref_processes = _query_process_with_time_and_ppid(store, local_var.entity_table)
 
+    # prefetched processes to be filtered
+    # type(fil_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
     fil_processes = _query_process_with_time_and_ppid(store, prefetch_entity_table)
 
-    # 1. pivot process search
+    # 1. pivot process search (a subset of fil_processes that matches ref_processes)
+    # type(pivot_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
     pivot_processes = _search_for_potential_identical_process(
         ref_processes, fil_processes, config
     )
@@ -263,7 +268,8 @@ def fine_grained_relational_process_filtering(
         f"found {pivot_proc_cnt} pivot rows out of {prefetched_proc_cnt} raw prefetched."
     )
 
-    # 2. precise process search
+    # 2. precise process search (a larger subset of fil_processes that matches pivot_processes)
+    # type(pivot_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
     filtered_processes = _search_for_potential_identical_process(
         pivot_processes, fil_processes, config
     )
