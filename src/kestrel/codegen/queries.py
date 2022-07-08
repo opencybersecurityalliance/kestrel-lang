@@ -90,7 +90,7 @@ def compile_specific_relation_to_query(
     return None
 
 
-def compile_generic_relation_to_query(return_type, input_type, input_var_name):
+def compile_generic_relation_to_query(return_type, input_type, input_var_table):
     return SQLQuery(
         f"""
 SELECT DISTINCT sco.*
@@ -103,9 +103,9 @@ SELECT DISTINCT sco.*
    WHERE target_ref LIKE '{return_type}--%'
   INTERSECT SELECT source_ref
    FROM __contains c
-   WHERE target_ref IN (SELECT id FROM "{input_var_name}"))""",
+   WHERE target_ref IN (SELECT id FROM "{input_var_table}"))""",
         tuple(),
-        input_var_name,
+        input_var_table,
     )
 
 
