@@ -15,11 +15,13 @@ Added
 - multi-user cache folder support in debug mode #236
 - ppid used in process identification (post-prefetch) #238
 - process identification upgraded to a two-step approach
+- fine-grained process identification time offsets
 
 Fixed
 -----
 
 - prefetch when parent_ref not in process table
+- false positives in generic relation resolution
 
 1.4.0 (2022-05-16)
 ==================
