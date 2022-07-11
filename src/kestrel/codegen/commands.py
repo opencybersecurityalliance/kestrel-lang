@@ -621,7 +621,7 @@ def _filter_prefetched_process(
         local_var,
         prefetched_entity_table,
         session.store,
-        session.config["prefetch"],
+        session.config["prefetch"]["process_identification"],
     )
     id_pattern = build_pattern_from_ids(return_type, entity_ids)
     if id_pattern:

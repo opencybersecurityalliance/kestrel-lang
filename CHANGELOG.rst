@@ -6,6 +6,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+Unreleased
+==========
+
+Added
+-----
+
+- multi-user cache folder support in debug mode #236
+- ppid used in process identification (post-prefetch) #238
+- process identification upgraded to a two-step approach
+
+Fixed
+-----
+
+- prefetch when parent_ref not in process table
+
 1.4.0 (2022-05-16)
 ==================
 
