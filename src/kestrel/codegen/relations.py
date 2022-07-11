@@ -231,18 +231,18 @@ def fine_grained_relational_process_filtering(
     local_var, prefetch_entity_table, store, config
 ):
     # Two-step search for matched processes
-    # 1. pivot process search (find pivot process in fil_processes against ref_processes)
-    # 2. precise process search (find process in fil_processes against pivot_processes)
+    # 1. anchor process search (find anchor process in pfeh_processes against ref_processes)
+    # 2. precise process search (find process in pfeh_processes against anchor_processes)
 
     # two situations worth mentioning:
     # - in Linux, a new process will be forked, then exec to change name. In this case,
-    #   we need to search for pivot_rows to identify process with even name changed,
+    #   we need to search for anchor_rows to identify process with even name changed,
     #   then get all records of both process before name change and after name change.
     # - ppid is useful to identify a process with pid, however, in one situation, the
     #   ppid data is not available in the first phase of FIND (creating of local_var
     #   using deref in firepit)---FIND parent process of current process. This is because
     #   most datasource does not store *parent parent process pid* for deref to get ppid
-    #   of the parent. In this case, we need to search for pivot_rows to infer the ppid.
+    #   of the parent. In this case, we need to search for anchor_rows to infer the ppid.
 
     _logger.debug(
         f"start fine-grained relational process filtering for prefetched table: {prefetch_entity_table}"
@@ -253,25 +253,25 @@ def fine_grained_relational_process_filtering(
     ref_processes = _query_process_with_time_and_ppid(store, local_var.entity_table)
 
     # prefetched processes to be filtered
-    # type(fil_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
-    fil_processes = _query_process_with_time_and_ppid(store, prefetch_entity_table)
+    # type(pfeh_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
+    pfeh_processes = _query_process_with_time_and_ppid(store, prefetch_entity_table)
 
-    # 1. pivot process search (a subset of fil_processes that matches ref_processes)
-    # type(pivot_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
-    pivot_processes = _search_for_potential_identical_process(
-        ref_processes, fil_processes, config
+    # 1. anchor process search (a subset of pfeh_processes that matches ref_processes)
+    # type(anchor_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
+    anchor_processes = _search_for_potential_identical_process(
+        ref_processes, pfeh_processes, config
     )
 
-    pivot_proc_cnt = sum(map(len, pivot_processes.values()))
-    prefetched_proc_cnt = sum(map(len, fil_processes.values()))
+    anchor_proc_cnt = sum(map(len, anchor_processes.values()))
+    prefetched_proc_cnt = sum(map(len, pfeh_processes.values()))
     _logger.debug(
-        f"found {pivot_proc_cnt} pivot rows out of {prefetched_proc_cnt} raw prefetched."
+        f"found {anchor_proc_cnt} anchor rows out of {prefetched_proc_cnt} raw prefetched."
     )
 
-    # 2. precise process search (a larger subset of fil_processes that matches pivot_processes)
-    # type(pivot_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
+    # 2. precise process search (a larger subset of pfeh_processes that matches anchor_processes)
+    # type(anchor_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
     filtered_processes = _search_for_potential_identical_process(
-        pivot_processes, fil_processes, config
+        anchor_processes, pfeh_processes, config
     )
 
     filtered_ids = [rid for procs in filtered_processes.values() for rid, _ in procs]
