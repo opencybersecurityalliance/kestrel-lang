@@ -25,6 +25,16 @@ prefetch:
     find: true
 
   # declare the list of entity types to not prefetch
+  #
+  # This can be used when a user finds prefetch hinders the performance with
+  # large amount of results for one or more generic type of entities. For
+  # example, the data source may have millions of records containing
+  # `C:\Windows\SYSTEM32\ntdll.dll` touched by all Windows processes in a short
+  # amount of time. Executing a Kestrel command `f = FIND file LINKED p` will
+  # retrieve the file from a process and then start prefetch to gain
+  # information/connections of the file from all processes. Retrieval of
+  # millions records will likely result in a performance issue, thus the user
+  # can put `file` in this list to disable prefetch for it.
   excluded_entities:
     -
     # - file
