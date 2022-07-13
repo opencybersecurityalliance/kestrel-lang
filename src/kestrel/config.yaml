@@ -13,8 +13,27 @@ session:
 
 # whether/how to prefetch all records/observations for entities
 prefetch:
-  get: true
-  find: true
+
+  # enable/disable prefetch for command
+  #
+  # If prefetch is enabled, Kestrel will send additional queries to the data
+  # source to search for related records regarding entities retrieved from the
+  # user-specified pattern, collecting more complete information (attributes,
+  # connections to other entities) of the entities from different records.
+  switch_per_command:
+    get: true
+    find: true
+
+  # declare the list of entity types to not prefetch
+  excluded_entities:
+    -
+    # - file
+    # - process
+
+  # Detailed logic to identify the same process from different records is more
+  # complex than many data source query language can express, so Kestrel
+  # retrieves potential same process candidate records and perform fine-grained
+  # process identification in Kestrel with these parameters.
   process_identification:
     pid_but_name_changed_time_begin_offset: -5 # seconds
     pid_but_name_changed_time_end_offset: 5 # seconds

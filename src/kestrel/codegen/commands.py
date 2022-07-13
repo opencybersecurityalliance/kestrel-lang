@@ -28,7 +28,7 @@ from firepit.exceptions import InvalidAttr
 from firepit.query import Limit, Offset, Order, Projection, Query
 from firepit.stix20 import summarize_pattern
 
-from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts
+from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts, lowered_str_list
 from kestrel.exceptions import *
 from kestrel.semantics import get_entity_table, get_entity_type
 from kestrel.symboltable import new_var
@@ -289,12 +289,18 @@ def get(stmt, session):
             and pat_summary[return_type] == id_attrs
         ):
             # Prefetch won't return anything new here, so skip it
-            _logger.debug("Skipping prefetch for direct query")
-            do_prefetch = False
+            _logger.debug("To skip prefetch for direct query")
+            is_direct_query = True
         else:
-            do_prefetch = True
+            is_direct_query = False
 
-        if do_prefetch and session.config["prefetch"]["get"] and len(_output):
+        if (
+            not is_direct_query
+            and _is_prefetch_allowed_in_config(
+                session.config["prefetch"], "get", return_type
+            )
+            and len(_output)
+        ):
             prefetch_ret_var_table = return_var_table + "_prefetch"
             prefetch_ret_entity_table = _prefetch(
                 return_type,
@@ -406,7 +412,9 @@ def find(stmt, session):
 
             # Second, prefetch all records of the entities and associated entities
             if (
-                session.config["prefetch"]["find"]
+                _is_prefetch_allowed_in_config(
+                    session.config["prefetch"], "find", return_type
+                )
                 and len(_output)
                 and _output.data_source
             ):
@@ -672,3 +680,12 @@ def _build_query(store, entity_table, qry, stmt):
     if offset:
         qry.append(Offset(offset))
     return qry
+
+
+def _is_prefetch_allowed_in_config(pre_fetch_config, command_name, entity_type):
+    if pre_fetch_config["switch_per_command"][
+        command_name
+    ] and entity_type not in lowered_str_list(pre_fetch_config["excluded_entities"]):
+        return True
+    else:
+        return False
