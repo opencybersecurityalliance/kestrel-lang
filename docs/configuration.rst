@@ -22,9 +22,10 @@ the following:
 .. code-block:: yaml
 
     prefetch:
-      get: false
-      find: false
+      switch_per_command:
+        get: false
+        find: false
 
 Kestrel will then not proactively search for logs/records for entities
-extracted from the return of ``GET``/``FIND``, and this will largely disable
+extracted from the return of ``GET``/``FIND``, which will largely disable
 followup ``FIND`` commands/steps.
