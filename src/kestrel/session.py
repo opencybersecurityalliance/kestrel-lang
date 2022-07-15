@@ -226,30 +226,7 @@ class Session(AbstractContextManager):
                 tmp_dir.mkdir(parents=True, exist_ok=True)
 
         if self.debug_mode:
-            user_suffix = None
-            for f in [getpass.getuser, os.getuid]:
-                if not user_suffix:
-                    try:
-                        user_suffix = f()
-                    except:
-                        pass
-            if not user_suffix:
-                user_suffix = "noUID"
-
-            runtime_directory_master = sys_tmp_dir / (
-                self.config["debug"]["cache_directory_prefix"] + user_suffix
-            )
-
-            # runtime_directory_master.exists() should not be used
-            # it will return False for broken link
-            try:
-                runtime_directory_master.unlink()
-            except FileNotFoundError:
-                pass
-            except PermissionError:
-                raise DebugCacheLinkOccupied(runtime_directory_master.resolve())
-
-            runtime_directory_master.symlink_to(self.runtime_directory)
+            self._setup_runtime_directory_master()
 
         # local database of SQLite or PostgreSQL
         if not store_path:
@@ -648,3 +625,34 @@ class Session(AbstractContextManager):
                 except:
                     _logger.debug(f"Try to match timestamp {ts} by format {vts}")
                     pass
+
+    def _get_runtime_directory_master(self):
+        sys_tmp_dir = pathlib.Path(tempfile.gettempdir())
+
+        user_suffix = None
+        for f in [getpass.getuser, os.getuid]:
+            if not user_suffix:
+                try:
+                    user_suffix = f()
+                except:
+                    pass
+        if not user_suffix:
+            user_suffix = "noUID"
+
+        return sys_tmp_dir / (
+            self.config["debug"]["cache_directory_prefix"] + user_suffix
+        )
+
+    def _setup_runtime_directory_master(self):
+        master_dir = self._get_runtime_directory_master()
+
+        # master_dir.exists() should not be used
+        # it will return False for broken link
+        try:
+            master_dir.unlink()
+        except FileNotFoundError:
+            pass
+        except PermissionError:
+            raise DebugCacheLinkOccupied(master_dir.resolve())
+
+        master_dir.symlink_to(self.runtime_directory)
