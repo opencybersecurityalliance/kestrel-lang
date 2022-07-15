@@ -216,23 +216,31 @@ def test_get_set_variable(fake_bundle_file):
 def test_session_runtime_dir():
     # standard session
     with Session() as session:
+        runtime_directory = session.runtime_directory
+        runtime_master_dirctory = session._get_runtime_directory_master()
+
         assert os.path.exists(session.runtime_directory)
-        tmp_master = pathlib.Path(tempfile.gettempdir()) / "kestrel"
-        if tmp_master.exists():
+
+        # if not executed in a clean env; it has previous debug dirs
+        if runtime_master_dirctory.exists():
             d = pathlib.Path(session.runtime_directory).resolve()
-            d_master = tmp_master.resolve()
+            d_master = runtime_master_dirctory.resolve()
             assert d != d_master
+
     assert not os.path.exists(session.runtime_directory)
 
     # debug session
     with Session(debug_mode=True) as session:
-        assert os.path.exists(session.runtime_directory)
+        runtime_directory = session.runtime_directory
+        runtime_master_dirctory = session._get_runtime_directory_master()
 
-    tmp_master = pathlib.Path(tempfile.gettempdir()) / "kestrel"
-    assert os.path.exists(session.runtime_directory)
-    if tmp_master.exists():
-        d = pathlib.Path(session.runtime_directory).resolve()
-        d_master = tmp_master.resolve()
+        assert os.path.exists(runtime_directory)
+
+    assert os.path.exists(runtime_directory)
+
+    if runtime_master_dirctory.exists():
+        d = pathlib.Path(runtime_directory).resolve()
+        d_master = runtime_master_dirctory.resolve()
         assert d == d_master
 
     # predefined runtime_dir session managed by session
