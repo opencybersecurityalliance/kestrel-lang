@@ -16,12 +16,15 @@ Added
 - ppid used in process identification (post-prefetch) #238
 - process identification upgraded to a two-step approach
 - fine-grained process identification time offsets
+- per entity type prefetch config support #241
 
 Fixed
 -----
 
 - prefetch when parent_ref not in process table
 - false positives in generic relation resolution
+- second execution of a failed query should raise exception
+- master runtime directory test case fix
 
 1.4.0 (2022-05-16)
 ==================
