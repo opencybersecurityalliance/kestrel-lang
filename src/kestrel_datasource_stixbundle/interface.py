@@ -8,6 +8,7 @@ import logging
 import re
 import uuid
 import pathlib
+import shutil
 from datetime import datetime, timezone
 from dateutil import parser
 import requests
@@ -37,6 +38,13 @@ def _make_download_dir():
     return path
 
 
+def _clean_ingestdir_and_raise_error(ingestdir, uri):
+    # it is important to clean the directory before raise error
+    # otherwise, the next execution will find the dir and assume good data there
+    shutil.rmtree(ingestdir)
+    raise DataSourceConnectionError(uri)
+
+
 def fixup_pattern(pattern):
     # The matcher doesn't accept TimestampLiterals in START/STOP
     # See https://github.com/oasis-open/cti-pattern-validator/issues/52
@@ -57,6 +65,9 @@ class StixBundleInterface(AbstractDataSourceInterface):
     @staticmethod
     def query(uri, pattern, session_id=None, config=None):
         """Query a STIX bundle locally or remotely."""
+
+        _logger.debug(f"query URI received at interface_stixbundle: {uri}")
+
         scheme, _, data_paths = uri.rpartition("://")
         data_paths = data_paths.split(",")
         pattern = fixup_pattern(pattern)
@@ -72,8 +83,11 @@ class StixBundleInterface(AbstractDataSourceInterface):
 
         bundles = []
         for i, data_path in enumerate(data_paths):
+
             data_path_stripped = "".join(filter(str.isalnum, data_path))
             ingestfile = ingestdir / f"{i}.json"
+
+            _logger.debug(f"requesting data from path: {data_path}")
 
             if scheme == "file":
                 bundlefile = data_path
@@ -81,7 +95,8 @@ class StixBundleInterface(AbstractDataSourceInterface):
                     with open(data_path, "r") as f:
                         bundle_in = json.load(f)
                 except Exception:
-                    raise DataSourceConnectionError(uri)
+                    _clean_ingestdir_and_raise_error(ingestdir, uri)
+
             elif scheme == "http" or scheme == "https":
                 bundlefile = downloaddir / f"{data_path_stripped}.json"
                 data_uri = f"{scheme}://{data_path}"
@@ -92,7 +107,8 @@ class StixBundleInterface(AbstractDataSourceInterface):
                     try:
                         resp = requests.head(data_uri)
                     except requests.exceptions.ConnectionError:
-                        raise DataSourceConnectionError(uri)
+                        _clean_ingestdir_and_raise_error(ingestdir, uri)
+
                     last_modified = resp.headers.get("Last-Modified")
                     if last_modified:
                         last_modified = parser.parse(last_modified)
@@ -111,7 +127,8 @@ class StixBundleInterface(AbstractDataSourceInterface):
                     try:
                         bundle_in = requests.get(data_uri).json()
                     except requests.exceptions.ConnectionError:
-                        raise DataSourceConnectionError(uri)
+                        _clean_ingestdir_and_raise_error(ingestdir, uri)
+
                     with bundlefile.open("w") as f:
                         json.dump(bundle_in, f)
                 else:
@@ -121,7 +138,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
                         with open(bundlefile, "r") as f:
                             bundle_in = json.load(f)
                     except Exception:
-                        raise DataSourceConnectionError(uri)
+                        _clean_ingestdir_and_raise_error(ingestdir, uri)
             else:
                 raise DataSourceManagerInternalError(
                     f"interface {__package__} should not process scheme {scheme}"
