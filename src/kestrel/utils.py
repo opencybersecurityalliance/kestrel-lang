@@ -4,6 +4,10 @@ import uuid
 import collections.abc
 
 
+def lowered_str_list(xs):
+    return [x.lower() for x in xs if isinstance(x, str)]
+
+
 def update_nested_dict(dict_old, dict_new):
     for k, v in dict_new.items():
         if isinstance(v, collections.abc.Mapping) and k in dict_old:
