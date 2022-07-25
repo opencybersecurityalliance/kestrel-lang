@@ -14,6 +14,8 @@ import requests
 
 from stix2matcher.matcher import Pattern
 
+from firepit.woodchipper import convert_to_stix
+
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
 from kestrel.exceptions import DataSourceManagerInternalError, DataSourceConnectionError
@@ -72,23 +74,26 @@ class StixBundleInterface(AbstractDataSourceInterface):
 
         bundles = []
         for i, data_path in enumerate(data_paths):
-            data_path_stripped = "".join(filter(str.isalnum, data_path))
             ingestfile = ingestdir / f"{i}.json"
 
             if scheme == "file":
-                bundlefile = data_path
+                rawfile = data_path
                 try:
                     with open(data_path, "r") as f:
                         bundle_in = json.load(f)
                 except Exception:
                     raise DataSourceConnectionError(uri)
             elif scheme == "http" or scheme == "https":
-                bundlefile = downloaddir / f"{data_path_stripped}.json"
-                data_uri = f"{scheme}://{data_path}"
+                data_path, dot, extension = data_path.rpartition(".")
+                data_path_stripped = "".join(filter(str.isalnum, data_path))
+                rawfile = downloaddir / f"{data_path_stripped}"
+                if extension:
+                    rawfile = rawfile.with_suffix(f".{extension}")
+                data_uri = f"{scheme}://{data_path}{dot}{extension}"
                 last_modified = None
                 file_time = None
-                if bundlefile.exists():
-                    _logger.debug("File exists: %s", bundlefile)
+                if rawfile.exists():
+                    _logger.debug("File exists: %s", rawfile)
                     try:
                         resp = requests.head(data_uri)
                     except requests.exceptions.ConnectionError:
@@ -97,38 +102,38 @@ class StixBundleInterface(AbstractDataSourceInterface):
                     if last_modified:
                         last_modified = parser.parse(last_modified)
                         file_time = datetime.fromtimestamp(
-                            bundlefile.stat().st_mtime, tz=timezone.utc
+                            rawfile.stat().st_mtime, tz=timezone.utc
                         )
                     else:
                         _logger.debug(
                             "HTTP/HTTPS response header does not have 'Last-Modified' field"
                         )
                 else:
-                    _logger.debug("Bundle not on disk: %s", bundlefile)
+                    _logger.debug("File not on disk: %s", rawfile)
 
                 if not last_modified or last_modified > file_time:
-                    _logger.info("Downloading %s to %s", data_uri, bundlefile)
+                    _logger.info("Downloading %s to %s", data_uri, rawfile)
                     try:
-                        bundle_in = requests.get(data_uri).json()
+                        resp = requests.get(data_uri, stream=True)
                     except requests.exceptions.ConnectionError:
                         raise DataSourceConnectionError(uri)
-                    with bundlefile.open("w") as f:
-                        json.dump(bundle_in, f)
+                    with rawfile.open("wb") as f:
+                        for chunk in resp.iter_content(chunk_size=8192):
+                            f.write(chunk)
                 else:
                     # We already have this file
-                    _logger.debug("Using cached bundle: %s", bundlefile)
-                    try:
-                        with open(bundlefile, "r") as f:
-                            bundle_in = json.load(f)
-                    except Exception:
-                        raise DataSourceConnectionError(uri)
+                    _logger.debug("Using cached file: %s", rawfile)
+                try:
+                    bundle_in = _get_bundle(rawfile)
+                except Exception:
+                    raise DataSourceConnectionError(uri)
             else:
                 raise DataSourceManagerInternalError(
                     f"interface {__package__} should not process scheme {scheme}"
                 )
 
             bundle_out = {}
-            _logger.debug("Filtering: %s", bundlefile)
+            _logger.debug("Filtering: %s", rawfile)
             count = 0
             matched = 0
             for prop, val in bundle_in.items():
@@ -143,12 +148,20 @@ class StixBundleInterface(AbstractDataSourceInterface):
                             matched += 1
                 else:
                     bundle_out[prop] = val
-            _logger.debug(
-                "Matched %d of %d observations: %s", matched, count, bundlefile
-            )
+            _logger.debug("Matched %d of %d observations: %s", matched, count, rawfile)
 
             with ingestfile.open("w") as f:
                 json.dump(bundle_out, f)
             bundles.append(str(ingestfile.expanduser().resolve()))
 
         return ReturnFromFile(query_id, bundles)
+
+
+def _get_bundle(rawfile):
+    try:
+        with open(rawfile, "r") as fp:
+            bundle = json.load(fp)
+    except (json.decoder.JSONDecodeError, UnicodeDecodeError):
+        # It's not JSON.  Maybe firepit can convert it to STIX?
+        bundle = convert_to_stix(str(rawfile))
+    return bundle
