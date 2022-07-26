@@ -5,11 +5,12 @@ bundles locally or remotely.
 
 import json
 import logging
+import os
 import re
 import uuid
 import pathlib
 import shutil
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from dateutil import parser
 import requests
 
@@ -85,10 +86,6 @@ class StixBundleInterface(AbstractDataSourceInterface):
 
         bundles = []
         for i, data_path in enumerate(data_paths):
-
-            data_path_stripped = "".join(filter(str.isalnum, data_path))
-            ingestfile = ingestdir / f"{i}.json"
-
             _logger.debug(f"requesting data from path: {data_path}")
 
             if scheme == "file":
@@ -100,12 +97,12 @@ class StixBundleInterface(AbstractDataSourceInterface):
                     _clean_ingestdir_and_raise_error(ingestdir, uri)
 
             elif scheme == "http" or scheme == "https":
-                data_path, dot, extension = data_path.rpartition(".")
+                data_uri = f"{scheme}://{data_path}"
+                data_path, extension = os.path.splitext(data_path)
                 data_path_stripped = "".join(filter(str.isalnum, data_path))
                 rawfile = downloaddir / f"{data_path_stripped}"
                 if extension:
-                    rawfile = rawfile.with_suffix(f".{extension}")
-                data_uri = f"{scheme}://{data_path}{dot}{extension}"
+                    rawfile = rawfile.with_suffix(f"{extension}")
                 last_modified = None
                 file_time = None
                 if rawfile.exists():
@@ -115,15 +112,18 @@ class StixBundleInterface(AbstractDataSourceInterface):
                     except requests.exceptions.ConnectionError:
                         _clean_ingestdir_and_raise_error(ingestdir, uri)
 
+                    file_time = datetime.fromtimestamp(
+                        rawfile.stat().st_mtime, tz=timezone.utc
+                    )
                     last_modified = resp.headers.get("Last-Modified")
                     if last_modified:
                         last_modified = parser.parse(last_modified)
-                        file_time = datetime.fromtimestamp(
-                            rawfile.stat().st_mtime, tz=timezone.utc
-                        )
                     else:
                         _logger.debug(
                             "HTTP/HTTPS response header does not have 'Last-Modified' field"
+                        )
+                        last_modified = datetime.now(timezone.utc) - timedelta(
+                            minutes=5
                         )
                 else:
                     _logger.debug("File not on disk: %s", rawfile)
@@ -169,6 +169,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
                     bundle_out[prop] = val
             _logger.debug("Matched %d of %d observations: %s", matched, count, rawfile)
 
+            ingestfile = ingestdir / f"{i}.json"
             with ingestfile.open("w") as f:
                 json.dump(bundle_out, f)
             bundles.append(str(ingestfile.expanduser().resolve()))
