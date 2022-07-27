@@ -20,6 +20,7 @@ def load_default_config():
 
 def load_user_config(config_path_env_var, config_path_default):
     config_path = os.getenv(config_path_env_var, config_path_default)
+    config_path = os.path.expanduser(config_path)
     config = {}
     if config_path:
         try:
