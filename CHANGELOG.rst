@@ -17,6 +17,7 @@ Added
 - process identification upgraded to a two-step approach
 - fine-grained process identification time offsets
 - per entity type prefetch config support #241
+- non-STIX-json file support for stix-bundle interface
 
 Fixed
 -----
