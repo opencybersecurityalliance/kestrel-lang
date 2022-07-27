@@ -26,6 +26,7 @@ Fixed
 - false positives in generic relation resolution
 - second execution of a failed query should raise exception
 - master runtime directory test case fix
+- ``~`` support in config file path (env var)
 
 1.4.0 (2022-05-16)
 ==================
@@ -40,7 +41,7 @@ Added
 -----
 
 - Relative timespans instead of START/STOP #181
-  - e.g. `LAST 5 MINUTES`
+  - e.g. ``LAST 5 MINUTES``
 - Group by "binned" (or "bucketed") attributes
   - e.g. GROUP foo BY BIN(first_observed, 5m)
 
