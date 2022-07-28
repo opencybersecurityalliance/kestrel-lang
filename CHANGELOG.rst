@@ -6,8 +6,8 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
-Unreleased
-==========
+1.4.1 (2022-07-28)
+==================
 
 Added
 -----
@@ -17,7 +17,7 @@ Added
 - process identification upgraded to a two-step approach
 - fine-grained process identification time offsets
 - per entity type prefetch config support #241
-- non-STIX-json file support for stix-bundle interface
+- support for automatically converting input files to STIX in stixbundle interface
 
 Fixed
 -----
