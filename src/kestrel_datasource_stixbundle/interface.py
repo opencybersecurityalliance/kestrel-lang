@@ -5,14 +5,18 @@ bundles locally or remotely.
 
 import json
 import logging
+import os
 import re
 import uuid
 import pathlib
-from datetime import datetime, timezone
+import shutil
+from datetime import datetime, timedelta, timezone
 from dateutil import parser
 import requests
 
 from stix2matcher.matcher import Pattern
+
+from firepit.woodchipper import convert_to_stix
 
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
@@ -37,6 +41,13 @@ def _make_download_dir():
     return path
 
 
+def _clean_ingestdir_and_raise_error(ingestdir, uri):
+    # it is important to clean the directory before raise error
+    # otherwise, the next execution will find the dir and assume good data there
+    shutil.rmtree(ingestdir)
+    raise DataSourceConnectionError(uri)
+
+
 def fixup_pattern(pattern):
     # The matcher doesn't accept TimestampLiterals in START/STOP
     # See https://github.com/oasis-open/cti-pattern-validator/issues/52
@@ -57,6 +68,9 @@ class StixBundleInterface(AbstractDataSourceInterface):
     @staticmethod
     def query(uri, pattern, session_id=None, config=None):
         """Query a STIX bundle locally or remotely."""
+
+        _logger.debug(f"query URI received at interface_stixbundle: {uri}")
+
         scheme, _, data_paths = uri.rpartition("://")
         data_paths = data_paths.split(",")
         pattern = fixup_pattern(pattern)
@@ -72,63 +86,73 @@ class StixBundleInterface(AbstractDataSourceInterface):
 
         bundles = []
         for i, data_path in enumerate(data_paths):
-            data_path_stripped = "".join(filter(str.isalnum, data_path))
-            ingestfile = ingestdir / f"{i}.json"
+            _logger.debug(f"requesting data from path: {data_path}")
 
             if scheme == "file":
-                bundlefile = data_path
+                rawfile = data_path
                 try:
                     with open(data_path, "r") as f:
                         bundle_in = json.load(f)
                 except Exception:
-                    raise DataSourceConnectionError(uri)
+                    _clean_ingestdir_and_raise_error(ingestdir, uri)
+
             elif scheme == "http" or scheme == "https":
-                bundlefile = downloaddir / f"{data_path_stripped}.json"
                 data_uri = f"{scheme}://{data_path}"
+                data_path, extension = os.path.splitext(data_path)
+                data_path_stripped = "".join(filter(str.isalnum, data_path))
+                rawfile = downloaddir / f"{data_path_stripped}"
+                if extension:
+                    rawfile = rawfile.with_suffix(f"{extension}")
                 last_modified = None
                 file_time = None
-                if bundlefile.exists():
-                    _logger.debug("File exists: %s", bundlefile)
+                if rawfile.exists():
+                    _logger.debug("File exists: %s", rawfile)
                     try:
                         resp = requests.head(data_uri)
                     except requests.exceptions.ConnectionError:
-                        raise DataSourceConnectionError(uri)
+                        _clean_ingestdir_and_raise_error(ingestdir, uri)
+
+                    file_time = datetime.fromtimestamp(
+                        rawfile.stat().st_mtime, tz=timezone.utc
+                    )
                     last_modified = resp.headers.get("Last-Modified")
                     if last_modified:
                         last_modified = parser.parse(last_modified)
-                        file_time = datetime.fromtimestamp(
-                            bundlefile.stat().st_mtime, tz=timezone.utc
-                        )
                     else:
                         _logger.debug(
                             "HTTP/HTTPS response header does not have 'Last-Modified' field"
                         )
+                        last_modified = datetime.now(timezone.utc) - timedelta(
+                            minutes=5
+                        )
                 else:
-                    _logger.debug("Bundle not on disk: %s", bundlefile)
+                    _logger.debug("File not on disk: %s", rawfile)
 
                 if not last_modified or last_modified > file_time:
-                    _logger.info("Downloading %s to %s", data_uri, bundlefile)
+                    _logger.info("Downloading %s to %s", data_uri, rawfile)
                     try:
-                        bundle_in = requests.get(data_uri).json()
+                        resp = requests.get(data_uri, stream=True)
                     except requests.exceptions.ConnectionError:
-                        raise DataSourceConnectionError(uri)
-                    with bundlefile.open("w") as f:
-                        json.dump(bundle_in, f)
+                        _clean_ingestdir_and_raise_error(ingestdir, uri)
+
+                    with rawfile.open("wb") as f:
+                        for chunk in resp.iter_content(chunk_size=8192):
+                            f.write(chunk)
                 else:
                     # We already have this file
-                    _logger.debug("Using cached bundle: %s", bundlefile)
-                    try:
-                        with open(bundlefile, "r") as f:
-                            bundle_in = json.load(f)
-                    except Exception:
-                        raise DataSourceConnectionError(uri)
+                    _logger.debug("Using cached file: %s", rawfile)
+
+                try:
+                    bundle_in = _get_bundle(rawfile)
+                except Exception:
+                    _clean_ingestdir_and_raise_error(ingestdir, uri)
             else:
                 raise DataSourceManagerInternalError(
                     f"interface {__package__} should not process scheme {scheme}"
                 )
 
             bundle_out = {}
-            _logger.debug("Filtering: %s", bundlefile)
+            _logger.debug("Filtering: %s", rawfile)
             count = 0
             matched = 0
             for prop, val in bundle_in.items():
@@ -143,12 +167,21 @@ class StixBundleInterface(AbstractDataSourceInterface):
                             matched += 1
                 else:
                     bundle_out[prop] = val
-            _logger.debug(
-                "Matched %d of %d observations: %s", matched, count, bundlefile
-            )
+            _logger.debug("Matched %d of %d observations: %s", matched, count, rawfile)
 
+            ingestfile = ingestdir / f"{i}.json"
             with ingestfile.open("w") as f:
                 json.dump(bundle_out, f)
             bundles.append(str(ingestfile.expanduser().resolve()))
 
         return ReturnFromFile(query_id, bundles)
+
+
+def _get_bundle(rawfile):
+    try:
+        with open(rawfile, "r") as fp:
+            bundle = json.load(fp)
+    except (json.decoder.JSONDecodeError, UnicodeDecodeError):
+        # It's not JSON.  Maybe firepit can convert it to STIX?
+        bundle = convert_to_stix(str(rawfile))
+    return bundle

@@ -47,6 +47,7 @@ Examples:
 
 import tempfile
 import os
+import getpass
 import pathlib
 import shutil
 import uuid
@@ -62,6 +63,7 @@ from contextlib import AbstractContextManager
 from kestrel.exceptions import (
     KestrelSyntaxError,
     InvalidStixPattern,
+    DebugCacheLinkOccupied,
 )
 from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.syntax.parser import parse
@@ -201,7 +203,10 @@ class Session(AbstractContextManager):
             self.runtime_directory = runtime_dir
         else:
             tmp_dir = sys_tmp_dir / (
-                self.config["session"]["cache_directory_prefix"] + self.session_id
+                self.config["session"]["cache_directory_prefix"]
+                + str(os.getuid())
+                + "-"
+                + self.session_id
             )
             self.runtime_directory = tmp_dir.expanduser().resolve()
             if tmp_dir.exists():
@@ -221,18 +226,7 @@ class Session(AbstractContextManager):
                 tmp_dir.mkdir(parents=True, exist_ok=True)
 
         if self.debug_mode:
-            runtime_directory_master = (
-                sys_tmp_dir / self.config["debug"]["cache_directory"]
-            )
-
-            # runtime_directory_master.exists() should not be used
-            # it will return False for broken link
-            try:
-                runtime_directory_master.unlink()
-            except FileNotFoundError:
-                pass
-
-            runtime_directory_master.symlink_to(self.runtime_directory)
+            self._setup_runtime_directory_master()
 
         # local database of SQLite or PostgreSQL
         if not store_path:
@@ -597,6 +591,8 @@ class Session(AbstractContextManager):
         for x in pathlib.Path(tempfile.gettempdir()).iterdir():
             if x.is_dir() and x.parts[-1].startswith(
                 self.config["session"]["cache_directory_prefix"]
+                + str(os.getuid())
+                + "-"
             ):
                 marker = x / self.config["debug"]["session_exit_marker"]
                 if marker.exists():
@@ -629,3 +625,34 @@ class Session(AbstractContextManager):
                 except:
                     _logger.debug(f"Try to match timestamp {ts} by format {vts}")
                     pass
+
+    def _get_runtime_directory_master(self):
+        sys_tmp_dir = pathlib.Path(tempfile.gettempdir())
+
+        user_suffix = None
+        for f in [getpass.getuser, os.getuid]:
+            if not user_suffix:
+                try:
+                    user_suffix = f()
+                except:
+                    pass
+        if not user_suffix:
+            user_suffix = "noUID"
+
+        return sys_tmp_dir / (
+            self.config["debug"]["cache_directory_prefix"] + user_suffix
+        )
+
+    def _setup_runtime_directory_master(self):
+        master_dir = self._get_runtime_directory_master()
+
+        # master_dir.exists() should not be used
+        # it will return False for broken link
+        try:
+            master_dir.unlink()
+        except FileNotFoundError:
+            pass
+        except PermissionError:
+            raise DebugCacheLinkOccupied(master_dir.resolve())
+
+        master_dir.symlink_to(self.runtime_directory)

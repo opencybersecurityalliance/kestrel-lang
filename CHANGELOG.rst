@@ -6,6 +6,28 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.4.1 (2022-07-28)
+==================
+
+Added
+-----
+
+- multi-user cache folder support in debug mode #236
+- ppid used in process identification (post-prefetch) #238
+- process identification upgraded to a two-step approach
+- fine-grained process identification time offsets
+- per entity type prefetch config support #241
+- support for automatically converting input files to STIX in stixbundle interface
+
+Fixed
+-----
+
+- prefetch when parent_ref not in process table
+- false positives in generic relation resolution
+- second execution of a failed query should raise exception
+- master runtime directory test case fix
+- ``~`` support in config file path (env var)
+
 1.4.0 (2022-05-16)
 ==================
 
@@ -19,7 +41,7 @@ Added
 -----
 
 - Relative timespans instead of START/STOP #181
-  - e.g. `LAST 5 MINUTES`
+  - e.g. ``LAST 5 MINUTES``
 - Group by "binned" (or "bucketed") attributes
   - e.g. GROUP foo BY BIN(first_observed, 5m)
 

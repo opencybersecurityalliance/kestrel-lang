@@ -13,12 +13,46 @@ session:
 
 # whether/how to prefetch all records/observations for entities
 prefetch:
-  get: true
-  find: true
-  process_name_change_timerange_start_offset: -5 # seconds
-  process_name_change_timerange_stop_offset: 5 # seconds
-  process_lifespan_start_offset: -10800 # seconds
-  process_lifespan_stop_offset: 10800 # seconds
+
+  # enable/disable prefetch for command
+  #
+  # If prefetch is enabled, Kestrel will send additional queries to the data
+  # source to search for related records regarding entities retrieved from the
+  # user-specified pattern, collecting more complete information (attributes,
+  # connections to other entities) of the entities from different records.
+  switch_per_command:
+    get: true
+    find: true
+
+  # declare the list of entity types to not prefetch
+  #
+  # This can be used when a user finds prefetch hinders the performance with
+  # large amount of results for one or more generic type of entities. For
+  # example, the data source may have millions of records containing
+  # `C:\Windows\SYSTEM32\ntdll.dll` touched by all Windows processes in a short
+  # amount of time. Executing a Kestrel command `f = FIND file LINKED p` will
+  # retrieve the file from a process and then start prefetch to gain
+  # information/connections of the file from all processes. Retrieval of
+  # millions records will likely result in a performance issue, thus the user
+  # can put `file` in this list to disable prefetch for it.
+  excluded_entities:
+    -
+    # - file
+    # - process
+
+  # Detailed logic to identify the same process from different records is more
+  # complex than many data source query language can express, so Kestrel
+  # retrieves potential same process candidate records and perform fine-grained
+  # process identification in Kestrel with these parameters.
+  process_identification:
+    pid_but_name_changed_time_begin_offset: -5 # seconds
+    pid_but_name_changed_time_end_offset: 5 # seconds
+    pid_and_name_time_begin_offset: -3600 # seconds
+    pid_and_name_time_end_offset: 3600 # seconds
+    pid_and_ppid_time_begin_offset: -3600 # seconds
+    pid_and_ppid_time_end_offset: 3600 # seconds
+    pid_and_name_and_ppid_time_begin_offset: -86400 # seconds
+    pid_and_name_and_ppid_time_end_offset: 86400 # seconds
 
 # option when generating STIX query
 stixquery:
@@ -29,6 +63,6 @@ stixquery:
 # debug options
 debug:
   env_var: "KESTREL_DEBUG" # debug mode if the environment variable exists
-  cache_directory: "kestrel" # under system temp directory
+  cache_directory_prefix: "kestrel-" # under system temp directory
   session_exit_marker: "session.exited"
   maximum_exited_session: 3

@@ -230,90 +230,177 @@ def _generate_paramstix_comparison_expressions(
 def fine_grained_relational_process_filtering(
     local_var, prefetch_entity_table, store, config
 ):
+    # Two-step search for matched processes
+    # 1. anchor process search (find anchor process in pfeh_processes against ref_processes)
+    # 2. precise process search (find process in pfeh_processes against anchor_processes)
+
+    # two situations worth mentioning:
+    # - in Linux, a new process will be forked, then exec to change name. In this case,
+    #   we need to search for anchor_rows to identify process with even name changed,
+    #   then get all records of both process before name change and after name change.
+    # - ppid is useful to identify a process with pid, however, in one situation, the
+    #   ppid data is not available in the first phase of FIND (creating of local_var
+    #   using deref in firepit)---FIND parent process of current process. This is because
+    #   most datasource does not store *parent parent process pid* for deref to get ppid
+    #   of the parent. In this case, we need to search for anchor_rows to infer the ppid.
 
     _logger.debug(
         f"start fine-grained relational process filtering for prefetched table: {prefetch_entity_table}"
     )
 
-    query_ref = Query(
-        [
-            Table(local_var.entity_table),
-            Join("__contains", "id", "=", "target_ref"),
-            Join("observed-data", "source_ref", "=", "id"),
-            Projection(["pid", "name", "first_observed", "last_observed"]),
-        ]
+    # reference processes obtained from de-referring data in firepit
+    # type(ref_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
+    ref_processes = _query_process_with_time_and_ppid(store, local_var.entity_table)
+
+    # prefetched processes to be filtered
+    # type(pfeh_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
+    pfeh_processes = _query_process_with_time_and_ppid(store, prefetch_entity_table)
+
+    # 1. anchor process search (a subset of pfeh_processes that matches ref_processes)
+    # type(anchor_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
+    anchor_processes = _search_for_potential_identical_process(
+        ref_processes, pfeh_processes, config
     )
-    ref_rows = local_var.store.run_query(query_ref).fetchall()
 
-    entities = defaultdict(list)
-
-    for row in ref_rows:
-        if row["pid"]:
-            process_name = row["name"]
-            process_start_time = dateutil.parser.isoparse(row["first_observed"])
-            process_end_time = dateutil.parser.isoparse(row["last_observed"])
-            entities[row["pid"]].append(
-                (process_name, process_start_time, process_end_time)
-            )
-
-    query_fil = Query(
-        [
-            Table(prefetch_entity_table),
-            Join("__contains", "id", "=", "target_ref"),
-            Join("observed-data", "source_ref", "=", "id"),
-            Projection(
-                [
-                    Column("id", prefetch_entity_table),
-                    "pid",
-                    "name",
-                    "first_observed",
-                    "last_observed",
-                ]
-            ),
-        ]
+    anchor_proc_cnt = sum(map(len, anchor_processes.values()))
+    prefetched_proc_cnt = sum(map(len, pfeh_processes.values()))
+    _logger.debug(
+        f"found {anchor_proc_cnt} anchor rows out of {prefetched_proc_cnt} raw prefetched."
     )
-    fil_rows = store.run_query(query_fil).fetchall()
 
-    filtered_ids = []
+    # 2. precise process search (a larger subset of pfeh_processes that matches anchor_processes)
+    # type(anchor_processes) == {pid: (rid, (pname, ppid, start_time, end_time))}
+    filtered_processes = _search_for_potential_identical_process(
+        anchor_processes, pfeh_processes, config
+    )
 
-    pnc_start_offset = datetime.timedelta(
-        seconds=config["process_name_change_timerange_start_offset"]
-    )
-    pnc_stop_offset = datetime.timedelta(
-        seconds=config["process_name_change_timerange_stop_offset"]
-    )
-    pls_start_offset = datetime.timedelta(
-        seconds=config["process_lifespan_start_offset"]
-    )
-    pls_stop_offset = datetime.timedelta(seconds=config["process_lifespan_stop_offset"])
-
-    for row in fil_rows:
-        if row["pid"]:
-            fil_start_time = dateutil.parser.isoparse(row["first_observed"])
-            fil_end_time = dateutil.parser.isoparse(row["last_observed"])
-            fil_process_name = row["name"]
-            for ref_process_name, ref_start_time, ref_end_time in entities[row["pid"]]:
-                if (
-                    (
-                        fil_process_name
-                        and fil_process_name == ref_process_name
-                        and fil_start_time > ref_start_time + pls_start_offset
-                        and fil_start_time < ref_end_time + pls_stop_offset
-                    )
-                    or (
-                        fil_start_time > ref_start_time + pnc_start_offset
-                        and fil_start_time < ref_end_time + pnc_stop_offset
-                    )
-                    or (
-                        fil_end_time > ref_start_time + pnc_start_offset
-                        and fil_end_time < ref_end_time + pnc_stop_offset
-                    )
-                ):
-                    filtered_ids.append(row["id"])
-                    break
+    filtered_ids = [rid for procs in filtered_processes.values() for rid, _ in procs]
+    filtered_ids = list(set(filtered_ids))
 
     _logger.debug(
-        f"found {len(filtered_ids)} out of {len(fil_rows)} to be true relational process records."
+        f"found {len(filtered_ids)} out of {prefetched_proc_cnt} raw prefetched results to be true relational process records."
     )
 
     return filtered_ids
+
+
+def _query_process_with_time_and_ppid(store, var_table_name):
+    pid2procs = defaultdict(list)
+
+    if "parent_ref" in store.columns(var_table_name):
+        has_parent_ref = True
+    else:
+        has_parent_ref = False
+
+    query_details = [
+        Table(var_table_name),
+        Join("__contains", "id", "=", "target_ref"),
+        Join("observed-data", "source_ref", "=", "id"),
+    ]
+
+    if has_parent_ref:
+        query_details.append(
+            # put the LEFT JOIN at last, so no need to specify lhs for the first two JOINS
+            Join(
+                "process", "parent_ref", "=", "id", how="LEFT OUTER", lhs=var_table_name
+            )
+        )
+
+    projection_details = [
+        Column("id", var_table_name, "id"),
+        Column("pid", var_table_name, "pid"),
+        Column("name", var_table_name, "name"),
+        "first_observed",
+        "last_observed",
+    ]
+
+    if has_parent_ref:
+        projection_details.append(Column("pid", "process", "ppid"))
+
+    query_details.append(Projection(projection_details))
+
+    query = Query(query_details)
+
+    rows = store.run_query(query).fetchall()
+
+    for row in rows:
+        if row["pid"]:
+            rid = row["id"]
+            pname = row["name"]
+            ppid = row["ppid"] if has_parent_ref else None
+            st = dateutil.parser.isoparse(row["first_observed"])
+            ed = dateutil.parser.isoparse(row["last_observed"])
+            pid2procs[row["pid"]].append((rid, (pname, ppid, st, ed)))
+
+    return pid2procs
+
+
+def _search_for_potential_identical_process(ref_pid2procs, fil_pid2procs, config):
+    # ref_pid2procs: {"pid":(rid, (proc_details))} for reference
+    # fil_pid2procs: {"pid":(rid, (proc_details))} to search
+
+    res_pid2procs = defaultdict(list)
+
+    for (pid, fil_procs) in fil_pid2procs.items():
+        for rid, fil_row in fil_procs:
+            for _, ref_row in ref_pid2procs[pid]:
+                if _identical_process_check(fil_row, ref_row, config):
+                    res_pid2procs[pid].append((rid, fil_row))
+                    break
+
+    return res_pid2procs
+
+
+def _identical_process_check(fil_row, ref_row, config):
+    pbnc_bo = datetime.timedelta(
+        seconds=config["pid_but_name_changed_time_begin_offset"]
+    )
+    pbnc_eo = datetime.timedelta(seconds=config["pid_but_name_changed_time_end_offset"])
+    pan_bo = datetime.timedelta(seconds=config["pid_and_name_time_begin_offset"])
+    pan_eo = datetime.timedelta(seconds=config["pid_and_name_time_end_offset"])
+    pap_bo = datetime.timedelta(seconds=config["pid_and_ppid_time_begin_offset"])
+    pap_eo = datetime.timedelta(seconds=config["pid_and_ppid_time_end_offset"])
+    panap_bo = datetime.timedelta(
+        seconds=config["pid_and_name_and_ppid_time_begin_offset"]
+    )
+    panap_eo = datetime.timedelta(
+        seconds=config["pid_and_name_and_ppid_time_end_offset"]
+    )
+
+    fil_pname, fil_ppid, fil_start_time, fil_end_time = fil_row
+    ref_pname, ref_ppid, ref_start_time, ref_end_time = ref_row
+    if (
+        (
+            fil_pname
+            and fil_ppid
+            and fil_pname == ref_pname
+            and fil_ppid == ref_ppid
+            and fil_start_time > ref_start_time + panap_bo
+            and fil_start_time < ref_end_time + panap_eo
+        )
+        or (
+            fil_pname
+            and fil_pname == ref_pname
+            and fil_start_time > ref_start_time + pan_bo
+            and fil_start_time < ref_end_time + pan_eo
+        )
+        or (
+            fil_ppid
+            and fil_ppid == ref_ppid
+            and fil_start_time > ref_start_time + pap_bo
+            and fil_start_time < ref_end_time + pap_eo
+        )
+        or (
+            # name changed process, Linux fork+exec handled
+            fil_start_time > ref_start_time + pbnc_bo
+            and fil_start_time < ref_end_time + pbnc_eo
+        )
+        or (
+            # name changed process, Linux fork+exec handled
+            fil_end_time > ref_start_time + pbnc_bo
+            and fil_end_time < ref_end_time + pbnc_eo
+        )
+    ):
+        return True
+    else:
+        return False

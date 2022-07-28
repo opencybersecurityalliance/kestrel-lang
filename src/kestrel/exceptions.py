@@ -39,6 +39,14 @@ class InvalidConfiguration(KestrelException):
         super().__init__(error, suggestion)
 
 
+class DebugCacheLinkOccupied(KestrelException):
+    def __init__(self, link):
+        super().__init__(
+            f"the path '{link}' is used by other users and cannot be removed (permission error).",
+            "Try manually remove the file/link or set 'debug.cache_directory_prefix' in the Kestrel config file to other values",
+        )
+
+
 ################################################################
 #                       Kestrel Syntax Errors
 ################################################################

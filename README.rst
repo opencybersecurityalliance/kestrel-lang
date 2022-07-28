@@ -28,6 +28,10 @@
 
 |
 
+**[News]** Kestrel arsenal session coming to `Black Hat USA 2022`_ (more talks at `Talks And Demos`_)
+
+--------
+
 Kestrel is a threat hunting language aiming to make cyber threat hunting *fast*
 by providing a layer of abstraction to build reusable, composable, and
 shareable hunt-flow.
@@ -118,6 +122,10 @@ Kestrel Hunting Blogs
 Talks And Demos
 ===============
 
+Visit `Kestrel documentation on talks`_ to learn more about the talks:
+
+- 2022/08 `Black Hat USA 2022`_
+- 2022/06 `Cybersecurity Automation Workshop`_
 - 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (free to register/playback)
 - 2021/12 `Infosec Jupyterthon 2021`_ [`IJ'21 live hunt recording`_]
 - 2021/11 `BlackHat Europe 2021`_
@@ -162,6 +170,7 @@ Connecting With The Community
 .. _How to execute an analytic hunt step in Python/Docker: https://kestrel.readthedocs.io/en/latest/installation/analytics.html
 .. _Language reference book: https://kestrel.readthedocs.io/en/latest/language.html
 .. _How to use Kestrel via API: https://kestrel.readthedocs.io/en/latest/source/kestrel.session.html
+.. _Kestrel documentation on talks: https://kestrel.readthedocs.io/en/latest/talks.html
 
 .. _Kestrel huntbook: https://github.com/opencybersecurityalliance/kestrel-huntbook
 .. _Kestrel analytics: https://github.com/opencybersecurityalliance/kestrel-analytics
@@ -179,6 +188,8 @@ Connecting With The Community
 .. _Infosec Jupyterthon 2021: https://infosecjupyterthon.com/2021/agenda.html
 .. _IJ'21 live hunt recording: https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695
 .. _SC eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
+.. _Cybersecurity Automation Workshop: http://www.cybersecurityautomationworkshop.org/
+.. _Black Hat USA 2022: https://www.blackhat.com/us-22/arsenal/schedule/index.html#streamlining-and-automating-threat-hunting-with-kestrel-28014
 
 .. _slack invitation: https://join.slack.com/t/open-cybersecurity/shared_invite/zt-19pliofsm-L7eSSB8yzABM2Pls1nS12w
 .. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
