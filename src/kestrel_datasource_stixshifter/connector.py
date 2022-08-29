@@ -3,6 +3,7 @@ import sys
 import importlib
 import subprocess
 import requests
+import pkg_resources
 from lxml import html
 
 from kestrel.exceptions import DataSourceError
@@ -69,10 +70,14 @@ def check_module_availability(connector_name):
 
         verify_package_origin(connector_name)
 
-        _logger.info(f'install Python package "{package_name}".')
+        stixshifter_version = pkg_resources.get_distribution("stix_shifter").version
+
+        package_w_ver = package_name + "==" + stixshifter_version
+
+        _logger.info(f'install Python package "{package_w_ver}".')
         try:
             subprocess.check_call(
-                [sys.executable, "-m", "pip", "install", package_name]
+                [sys.executable, "-m", "pip", "install", package_w_ver]
             )
         except:
             _logger.info("package installation with 'pip' failed.")
