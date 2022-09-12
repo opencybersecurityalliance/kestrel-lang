@@ -28,7 +28,7 @@
 
 |
 
-**[News]** Kestrel arsenal session coming to `Black Hat USA 2022`_ (spin up your copy of `BH22 demo`_ to hunt)
+**[News]** Kestrel session at `Black Hat USA 2022`_ (`BH'22 recording`_ | `BH'22 hunting lab`_)
 
 --------
 
@@ -125,7 +125,7 @@ Talks And Demos
 
 Visit `Kestrel documentation on talks`_ to learn more about the talks:
 
-- 2022/08 `Black Hat USA 2022`_ (spin up your copy of `BH22 demo`_ to hunt)
+- 2022/08 `Black Hat USA 2022`_ (`BH'22 recording`_ | `BH'22 hunting lab`_)
 - 2022/06 `Cybersecurity Automation Workshop`_
 - 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (free to register/playback)
 - 2021/12 `Infosec Jupyterthon 2021`_ [`IJ'21 live hunt recording`_]
@@ -192,7 +192,8 @@ Connecting With The Community
 .. _SC eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
 .. _Cybersecurity Automation Workshop: http://www.cybersecurityautomationworkshop.org/
 .. _Black Hat USA 2022: https://www.blackhat.com/us-22/arsenal/schedule/index.html#streamlining-and-automating-threat-hunting-with-kestrel-28014
-.. _BH22 demo: https://mybinder.org/v2/gh/opencybersecurityalliance/black-hat-us-2022/HEAD?filepath=demo
+.. _BH'22 recording: https://www.youtube.com/watch?v=tf1VLIpFefs
+.. _BH'22 hunting lab: https://mybinder.org/v2/gh/opencybersecurityalliance/black-hat-us-2022/HEAD?filepath=demo
 
 .. _slack invitation: https://join.slack.com/t/open-cybersecurity/shared_invite/zt-19pliofsm-L7eSSB8yzABM2Pls1nS12w
 .. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/
