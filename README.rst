@@ -28,7 +28,7 @@
 
 |
 
-**[News]** Kestrel session at `Black Hat USA 2022`_ (`BH'22 recording`_ | `BH'22 hunting lab`_)
+**[News]** Kestrel session at `Black Hat USA 2022`_ [`BH'22 recording`_ | `BH'22 hunting lab`_]
 
 --------
 
@@ -125,7 +125,7 @@ Talks And Demos
 
 Visit `Kestrel documentation on talks`_ to learn more about the talks:
 
-- 2022/08 `Black Hat USA 2022`_ (`BH'22 recording`_ | `BH'22 hunting lab`_)
+- 2022/08 `Black Hat USA 2022`_ [`BH'22 recording`_ | `BH'22 hunting lab`_]
 - 2022/06 `Cybersecurity Automation Workshop`_
 - 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (free to register/playback)
 - 2021/12 `Infosec Jupyterthon 2021`_ [`IJ'21 live hunt recording`_]
