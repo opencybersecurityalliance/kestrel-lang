@@ -222,12 +222,11 @@ DATASRC: (PATH ("," PATH)* |ESCAPED_STRING)
 
 //
 // Common language terminals
-// todo: rewrite COMMENT with common.SH_COMMENT
 //
 
-COMMENT: /#.*/
+COMMENT: SH_COMMENT
 
-%import common (CNAME, LETTER, DIGIT, WS, INT, WORD, ESCAPED_STRING, NUMBER)
+%import common (CNAME, LETTER, DIGIT, WS, INT, WORD, ESCAPED_STRING, NUMBER, SH_COMMENT)
 
 %ignore WS
 %ignore COMMENT
