@@ -28,7 +28,7 @@
 
 |
 
-**[News]** Kestrel arsenal session coming to `Black Hat USA 2022`_ (more talks at `Talks And Demos`_)
+**[News]** Kestrel session at `Black Hat USA 2022`_ [`BH'22 recording`_ | `BH'22 hunting lab`_]
 
 --------
 
@@ -36,7 +36,7 @@ Kestrel is a threat hunting language aiming to make cyber threat hunting *fast*
 by providing a layer of abstraction to build reusable, composable, and
 shareable hunt-flow.
 
-`Try Kestrel in a cloud sandbox without install`_.
+`Try Kestrel in a cloud sandbox without install`_ (Blog: `Try Kestrel in a Cloud Sandbox`_).
 
 Software developers write Python or Swift than machine code to quickly turn
 business logic into applications. Threat hunters write Kestrel to quickly turn
@@ -118,13 +118,14 @@ Kestrel Hunting Blogs
 #. `Practicing Backward And Forward Tracking Hunts on A Windows Host`_
 #. `Building Your Own Kestrel Analytics and Sharing With the Community`_
 #. `Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow`_
+#. `Try Kestrel in a Cloud Sandbox`_
 
 Talks And Demos
 ===============
 
 Visit `Kestrel documentation on talks`_ to learn more about the talks:
 
-- 2022/08 `Black Hat USA 2022`_
+- 2022/08 `Black Hat USA 2022`_ [`BH'22 recording`_ | `BH'22 hunting lab`_]
 - 2022/06 `Cybersecurity Automation Workshop`_
 - 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (free to register/playback)
 - 2021/12 `Infosec Jupyterthon 2021`_ [`IJ'21 live hunt recording`_]
@@ -175,10 +176,11 @@ Connecting With The Community
 .. _Kestrel huntbook: https://github.com/opencybersecurityalliance/kestrel-huntbook
 .. _Kestrel analytics: https://github.com/opencybersecurityalliance/kestrel-analytics
 
-.. _Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks: https://opencybersecurityalliance.org/posts/kestrel-2021-07-26/
-.. _Practicing Backward And Forward Tracking Hunts on A Windows Host: https://opencybersecurityalliance.org/posts/kestrel-2021-08-16/
-.. _Building Your Own Kestrel Analytics and Sharing With the Community: https://opencybersecurityalliance.org/posts/kestrel-custom-analytics/
-.. _Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow: https://opencybersecurityalliance.org/posts/kestrel-sysflow-bheu21-open-hunting-stack/
+.. _Building a Huntbook to Discover Persistent Threats from Scheduled Windows Tasks: https://opencybersecurityalliance.org/huntbook-persistent-threat-discovery-kestrel/
+.. _Practicing Backward And Forward Tracking Hunts on A Windows Host: https://opencybersecurityalliance.org/backward-and-forward-tracking-hunts-on-a-windows-host/
+.. _Building Your Own Kestrel Analytics and Sharing With the Community: https://opencybersecurityalliance.org/kestrel-custom-analytics/
+.. _Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow: https://opencybersecurityalliance.org/kestrel-sysflow-open-hunting-stack/
+.. _Try Kestrel in a Cloud Sandbox: https://opencybersecurityalliance.org/try-kestrel-in-a-cloud-sandbox/
 
 .. _RSA Conference 2021: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
 .. _RSA'21 session recording: https://www.youtube.com/watch?v=-Xb086R0JTk
@@ -190,6 +192,8 @@ Connecting With The Community
 .. _SC eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
 .. _Cybersecurity Automation Workshop: http://www.cybersecurityautomationworkshop.org/
 .. _Black Hat USA 2022: https://www.blackhat.com/us-22/arsenal/schedule/index.html#streamlining-and-automating-threat-hunting-with-kestrel-28014
+.. _BH'22 recording: https://www.youtube.com/watch?v=tf1VLIpFefs
+.. _BH'22 hunting lab: https://mybinder.org/v2/gh/opencybersecurityalliance/black-hat-us-2022/HEAD?filepath=demo
 
 .. _slack invitation: https://join.slack.com/t/open-cybersecurity/shared_invite/zt-19pliofsm-L7eSSB8yzABM2Pls1nS12w
 .. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/

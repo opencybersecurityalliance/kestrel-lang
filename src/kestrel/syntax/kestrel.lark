@@ -59,13 +59,13 @@ new: "new"i (ENTITY_TYPE)? VARDATA
 timespan: starttime endtime
         | relative_timespan
 
-relative_timespan: "LAST"i NUMBER timeunit
+relative_timespan: "last"i NUMBER timeunit
 
 ?timeunit: (DAY|HOUR|MINUTE|SECOND)
-DAY: "DAYS"i | "d"i
-HOUR: "HOURS"i | "h"i
-MINUTE: "MINUTES"i | "m"i
-SECOND: "SECONDS"i | "s"i
+DAY: "days"i | "d"i
+HOUR: "hours"i | "h"i
+MINUTE: "minutes"i | "m"i
+SECOND: "seconds"i | "s"i
 
 
 transform: TRANSFORM "(" VARIABLE ")"
