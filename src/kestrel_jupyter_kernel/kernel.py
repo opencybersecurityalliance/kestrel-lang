@@ -15,7 +15,8 @@ class KestrelKernel(Kernel):
     implementation_version = "1.0"
     language = "kestrel"
     language_version = "1.0"
-    language_info = {"name": "Kestrel", "codemirror_mode": "kestrel"}
+    # https://jupyter-client.readthedocs.io/en/stable/messaging.html#msging-kernel-info
+    language_info = {"name": "kestrel", "file_extension": ".hf"}
     banner = "Kestrel"
 
     def __init__(self, **kwargs):
