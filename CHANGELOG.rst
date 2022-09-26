@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.6 (2022-09-26)
+==================
+
+Added
+-----
+
+- Kestrel huntflow file extention (``.hf``) to support downloading a huntbook as a Kestrel huntflow for executing on the command line.
+
 1.0.5 (2022-04-29)
 ==================
 
