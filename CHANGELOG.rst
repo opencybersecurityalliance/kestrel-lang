@@ -6,6 +6,26 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.4.2 (2022-09-26)
+==================
+
+Added
+-----
+
+- links to Black Hat 2022 website, recording, and demo/lab
+- Kestrel logo in PNG
+- link to the Kestrel binder service blog post
+
+Fixed
+-----
+
+- consistent stix-shifter and connector versions
+
+Changed
+-------
+
+- lowercase grammar strings
+
 1.4.1 (2022-07-28)
 ==================
 
