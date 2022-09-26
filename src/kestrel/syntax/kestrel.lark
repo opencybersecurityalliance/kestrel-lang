@@ -224,9 +224,9 @@ DATASRC: (PATH ("," PATH)* |ESCAPED_STRING)
 // Common language terminals
 //
 
-COMMENT: SH_COMMENT
+%import common (CNAME, LETTER, DIGIT, WS, INT, WORD, ESCAPED_STRING, NUMBER)
 
-%import common (CNAME, LETTER, DIGIT, WS, INT, WORD, ESCAPED_STRING, NUMBER, SH_COMMENT)
+%import common.SH_COMMENT -> COMMENT
 
 %ignore WS
 %ignore COMMENT
