@@ -1,6 +1,8 @@
 //
 // Kestrel Grammar
 //
+// todo: ESCAPED_STRING handling
+//
 
 //
 // A huntflow is a sequence of statements
@@ -55,7 +57,7 @@ new: "NEW"i (ENTITY_TYPE)? VARDATA
 
 sort: "SORT"i VARIABLE BY STIXPATH (ASC|DESC)?
 
-apply: "APPLY"i ANALYTICS "ON"i variables ("WITH"i anaparams)?
+apply: "APPLY"i ANALYTICS "ON"i variables ("WITH"i args)?
 
 disp: "DISP"i expression
 
@@ -176,22 +178,6 @@ NUNIQUE: "nunique"i
 ?alias: CNAME
 
 //
-// APPLY command constructs
-// todo: rename anaparams to args
-// todo: replace QSTRING and NUMBER in localargs with JSON_VALUE
-//
-
-anaparams: (localargs (", " localargs)* | URI)
-
-localargs: CNAME "=" valuelist
-         | CNAME "=" QSTRING
-         | CNAME "=" NUMBER -> number
-
-valuelist: PATH ("," PATH)*
-
-URI: PATH
-
-//
 // NEW command contstructs
 // todo: replace QSTRING with JSON_VALUE
 //
@@ -205,24 +191,48 @@ JSON_DICT: WS* "{" (QSTRING ":" JSON_VALUE) ("," QSTRING ":" JSON_VALUE)* "}" WS
 JSON_VALUE: WS* (ESCAPED_STRING|NUMBER) WS*
 
 //
-// Common command terminals
+// Arguments
+//
+
+// use space after "," to avoid ambiguity between args and arg_values
+args: arg_kv_pair (", " arg_kv_pair)*
+
+arg_kv_pair: CNAME "=" arg_values
+
+arg_values: arg_value ("," arg_value)*
+
+arg_value: NUMBER
+         | SIMPLESTRING
+         | ESCAPED_STRING
+
+//
+// Shared command keywords
 //
 
 BY: "by"i
 ASC: "asc"i
 DESC: "desc"i
 REVERSED: "by"i
-DUMPPATH: PATH
+
+//
+// Common command terminals
+// todo: clean up
+//
+
 ENTITY_TYPE: LETTER ("_"|LETTER|DIGIT|"-")*
-ANALYTICS: (LETTER|DIGIT|/[-_.:\/]/)+
+
+DUMPPATH: PATH
+ANALYTICS: PATH
+PATH: (LETTER|DIGIT|/[-_.:\/]/)+
 STIXPATH: (LETTER|DIGIT|/[-_.:']/)+
 STIXPATHS: STIXPATH (/\s*,\s*/ STIXPATH)*
-PATH: (LETTER|DIGIT|/[-_.:\/]/)+
 DATASRC: (PATH ("," PATH)* |ESCAPED_STRING)
 
 //
 // Common language terminals
 //
+
+SIMPLESTRING: (LETTER|DIGIT|"-"|"_"|".")+
 
 %import common (CNAME, LETTER, DIGIT, WS, INT, WORD, ESCAPED_STRING, NUMBER)
 

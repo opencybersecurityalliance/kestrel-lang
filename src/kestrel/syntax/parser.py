@@ -4,7 +4,7 @@ from pkgutil import get_data
 
 from firepit.query import BinnedColumn, Filter, Predicate
 from firepit.timestamp import timefmt
-from lark import Lark, Token, Transformer, Tree
+from lark import Lark, Token, Transformer
 
 
 def parse(stmts, default_variable="_", default_sort_order="desc"):
@@ -149,17 +149,14 @@ class _PostParsing(Transformer):
         }
 
     def apply(self, args):
-        input_vars = []
+        result = {"command": "apply", "analytics_uri": _first(args), "arguments": {}}
         for arg in args:
-            if isinstance(arg, dict) and "variables" in arg:
-                input_vars = arg["variables"]
-                break
-        return {
-            "command": "apply",
-            "workflow": _first(args),
-            "inputs": input_vars,
-            "parameter": _merge_args("anaparams", args),
-        }
+            if isinstance(arg, dict):
+                if "variables" in arg:
+                    result["inputs"] = arg["variables"]
+                else:
+                    result.update(arg)
+        return result
 
     def load(self, args):
         return {
@@ -252,19 +249,6 @@ class _PostParsing(Transformer):
     def variables(self, args):
         return {"variables": _extract_vars(args, self.default_variable)}
 
-    def localargs(self, args):
-        return {args[0].value: args[1]}
-
-    def valuelist(self, args):
-        if len(args) == 1:
-            return args[0].value
-        elif len(args) > 1:
-            return [arg.value for arg in args]
-        return None
-
-    def number(self, args):
-        return {args[0].value: ast.literal_eval(args[1].value)}
-
     def grp_spec(self, args):
         return args
 
@@ -329,6 +313,30 @@ class _PostParsing(Transformer):
 
     def null(self, args):
         return "NULL"
+
+    def args(self, args):
+        d = {}
+        for di in args:
+            d.update(di)
+        return {"arguments": d}
+
+    def arg_kv_pair(self, args):
+        return {args[0].value: args[1]}
+
+    def arg_values(self, args):
+        if len(args) == 1:
+            return args[0]
+        else:
+            return args
+
+    def arg_value(self, args):
+        if args[0].type == "NUMBER":
+            v = ast.literal_eval(args[0].value)
+        elif args[0].type == "ESCAPED_STRING":
+            v = args[0].value[1:-1]
+        else:
+            v = args[0].value
+        return v
 
 
 def _first(args):
@@ -419,18 +427,6 @@ def _extract_direction(args, default_sort_order):
 def _extract_if_reversed(args):
     rs = [x for x in args if hasattr(x, "type") and x.type == "REVERSED"]
     return True if rs else False
-
-
-def _merge_args(arg_type, args):
-    items = dict()
-    for arg in args:
-        if not isinstance(arg, Tree) or not hasattr(arg, "data"):
-            continue
-        if arg.data != arg_type:
-            continue
-        for t in arg.children:
-            items.update(t)
-    return items
 
 
 def _normalize_paths(stixpaths):

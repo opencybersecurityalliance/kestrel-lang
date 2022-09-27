@@ -35,6 +35,9 @@ def env_setup(tmp_path):
     enrich_multiple_variables:
         module: {analytics_module_path}
         func: enrich_multiple_variables
+    enrich_variable_with_arguments:
+        module: {analytics_module_path}
+        func: enrich_variable_with_arguments
     """
 
     profile_file = tmp_path / "pythonanalytics.yaml"
@@ -103,6 +106,23 @@ APPLY python://enrich_multiple_variables ON v1, v2, v3
         assert set([v3[0]["x_new_attr"], v3[1]["x_new_attr"]]) == set(
             ["newval_c0", "newval_c1"]
         )
+
+
+def test_enrich_variable_with_arguments():
+    with Session() as s:
+        stmt = """
+newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
+             , {"type": "process", "name": "explorer.exe", "pid": "99"}
+             ]
+APPLY python://enrich_variable_with_arguments ON newvar WITH argx=abc, argy=123, argz="as\\"is"
+"""
+        s.execute(stmt)
+        v = s.get_variable("newvar")
+        assert len(v) == 2
+        assert v[0]["type"] == "process"
+        assert v[0]["x_new_argx"] == "abc"
+        assert v[0]["x_new_argy"] == 123
+        assert v[0]["x_new_argz"] == r'as\"is'
 
 
 def test_enrich_after_get_url(fake_bundle_file):

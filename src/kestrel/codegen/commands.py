@@ -532,7 +532,7 @@ def sort(stmt, session):
 def apply(stmt, session):
     arg_vars = [session.symtable[v_name] for v_name in stmt["inputs"]]
     display = session.analytics_manager.execute(
-        stmt["workflow"], arg_vars, session.session_id, stmt["parameter"]
+        stmt["analytics_uri"], arg_vars, session.session_id, stmt["arguments"]
     )
     return None, display
 

@@ -63,27 +63,27 @@ def test_apply_params():
     results = parse("apply xyz://my_analytic on foo with x=1, y=a,b,c")
     result = results[0]
     assert result["command"] == "apply"
-    assert result["workflow"] == "xyz://my_analytic"
+    assert result["analytics_uri"] == "xyz://my_analytic"
     assert result["inputs"] == ["foo"]
-    assert result["parameter"] == {"x": 1, "y": ["a", "b", "c"]}
+    assert result["arguments"] == {"x": 1, "y": ["a", "b", "c"]}
 
 
 def test_apply_params_with_dots():
     results = parse("apply xyz://my_analytic on foo with x=0.1, y=a.value")
     result = results[0]
     assert result["command"] == "apply"
-    assert result["workflow"] == "xyz://my_analytic"
+    assert result["analytics_uri"] == "xyz://my_analytic"
     assert result["inputs"] == ["foo"]
-    assert result["parameter"] == {"x": 0.1, "y": "a.value"}
+    assert result["arguments"] == {"x": 0.1, "y": "a.value"}
 
 
 def test_apply_params_with_decimal_and_dots():
     results = parse("apply xyz://my_analytic on foo with x=0.1, y=a.value,b,c")
     result = results[0]
     assert result["command"] == "apply"
-    assert result["workflow"] == "xyz://my_analytic"
+    assert result["analytics_uri"] == "xyz://my_analytic"
     assert result["inputs"] == ["foo"]
-    assert result["parameter"] == {"x": 0.1, "y": ["a.value", "b", "c"]}
+    assert result["arguments"] == {"x": 0.1, "y": ["a.value", "b", "c"]}
 
 
 def test_apply_params_no_equals():

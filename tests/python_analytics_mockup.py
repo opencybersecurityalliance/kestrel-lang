@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import os
+
 
 def enrich_one_variable(dataframe):
     newattr = ["newval" + str(i) for i in range(dataframe.shape[0])]
@@ -25,3 +27,11 @@ def enrich_multiple_variables(df1, df2, df3):
     df3["x_new_attr"] = newattr
 
     return df1, df2, df3
+
+
+def enrich_variable_with_arguments(dataframe):
+    dataframe["x_new_argx"] = os.environ.get("argx")
+    dataframe["x_new_argy"] = os.environ.get("argy")
+    dataframe["x_new_argz"] = os.environ.get("argz")
+
+    return dataframe
