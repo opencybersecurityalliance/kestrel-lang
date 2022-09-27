@@ -209,10 +209,10 @@ arg_value: NUMBER
 // Shared command keywords
 //
 
-BY: "by"i
-ASC: "asc"i
-DESC: "desc"i
-REVERSED: "by"i
+BY: "BY"i
+ASC: "ASC"i
+DESC: "DESC"i
+REVERSED: "BY"i
 
 //
 // Common command terminals
