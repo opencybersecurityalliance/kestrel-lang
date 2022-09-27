@@ -53,7 +53,7 @@ load: "LOAD"i DUMPPATH ("as"i ENTITY_TYPE)?
 
 merge: VARIABLE ("+" VARIABLE)+
 
-new: "NEW"i (ENTITY_TYPE)? VARDATA
+new: "NEW"i (ENTITY_TYPE)? VAR_DATA
 
 sort: "SORT"i VARIABLE BY STIXPATH (ASC|DESC)?
 
@@ -76,6 +76,7 @@ VARIABLE: CNAME
 //
 // Expression
 // todo: case insensitive for OP
+// todo: NUMBER and NULL (nulls missing)
 //
 
 expression: transform where_clause? attr_clause? sort_clause? limit_clause? offset_clause?
@@ -108,7 +109,7 @@ offset_clause: "OFFSET"i INT
 column: STIXPATH
 
 ?value: SQSTRING -> squoted_str
-      | NUMBER   -> num_literal
+      | NUMBER -> num_literal
       | /NULL/   -> nulls
 
 OP: /([<>!=]?=|[<>]|IN|LIKE|MATCHES)/
@@ -125,7 +126,7 @@ SQSTRING: /'[^']*'/
 timespan: starttime endtime
         | relative_timespan
 
-relative_timespan: "last"i NUMBER timeunit
+relative_timespan: "last"i INT timeunit
 
 ?timeunit: (DAY|HOUR|MINUTE|SECOND)
 DAY: "days"i | "d"i
@@ -160,7 +161,7 @@ grp_spec: grp_expr ("," grp_expr)*
 grp_expr: STIXPATH
         | bin_func
 
-bin_func: "BIN"i "(" STIXPATH "," NUMBER timeunit? ")"
+bin_func: "BIN"i "(" STIXPATH "," INT timeunit? ")"
 // No other scalar funcs are supported yet
 
 agg_list: agg ("," agg)*
@@ -178,20 +179,25 @@ NUNIQUE: "NUNIQUE"i
 ?alias: CNAME
 
 //
-// NEW command contstructs
-// todo: replace QSTRING with JSON_VALUE
+// Two-level JSON in command NEW
 //
 
-VARDATA: "[" (QSTRING ("," QSTRING)* | JSON_DICT ("," JSON_DICT)*) "]"
-
-// manually add `WS*` since `%ignore WS` doesn't apply to spaces inside terminals
+// use terminal to load the entire VAR_DATA without parsing into it
+// add `WS*` since `%ignore WS` doesn't apply to spaces inside terminals
 // https://github.com/lark-parser/lark/issues/99
-QSTRING: WS* ESCAPED_STRING WS*
-JSON_DICT: WS* "{" (QSTRING ":" JSON_VALUE) ("," QSTRING ":" JSON_VALUE)* "}" WS*
-JSON_VALUE: WS* (ESCAPED_STRING|NUMBER) WS*
+VAR_DATA: "[" (RAW_VALUES | JSON_OBJS) "]"
+
+RAW_VALUES: ESCAPED_STRING_WS ("," ESCAPED_STRING_WS)*
+
+JSON_OBJS: JSON_OBJ ("," JSON_OBJ)*
+JSON_OBJ: WS* "{" JSON_PAIR ("," JSON_PAIR)* "}" WS*
+JSON_PAIR: ESCAPED_STRING_WS ":" JSON_VALUE
+JSON_VALUE: WS* (NUMBER|SIGNED_NUMBER|ESCAPED_STRING|TRUE|FALSE|NULL) WS*
+ESCAPED_STRING_WS: WS* ESCAPED_STRING WS*
 
 //
 // Arguments
+// todo: do we need "," in values?
 //
 
 // use space after "," to avoid ambiguity between args and arg_values
@@ -202,6 +208,7 @@ arg_kv_pair: CNAME "=" arg_values
 arg_values: arg_value ("," arg_value)*
 
 arg_value: NUMBER
+         | SIGNED_NUMBER
          | SIMPLESTRING
          | ESCAPED_STRING
 
@@ -233,9 +240,12 @@ DATASRC: (PATH ("," PATH)* |ESCAPED_STRING)
 //
 
 SIMPLESTRING: (LETTER|DIGIT|"-"|"_"|".")+
+TRUE: "TRUE"i
+FALSE: "FALSE"i
+NULL: "NULL"i
 
-%import common (CNAME, LETTER, DIGIT, WS, INT, WORD, ESCAPED_STRING, NUMBER)
-
+%import common (CNAME, LETTER, DIGIT, WS, INT, WORD)
+%import common (ESCAPED_STRING, NUMBER, SIGNED_NUMBER)
 %import common.SH_COMMENT -> COMMENT
 
 %ignore WS

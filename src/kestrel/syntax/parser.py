@@ -176,7 +176,7 @@ class _PostParsing(Transformer):
         return {
             "command": "new",
             "type": _extract_entity_type(args),
-            "data": _assert_and_extract_single("VARDATA", args),
+            "data": _assert_and_extract_single("VAR_DATA", args),
         }
 
     def expression(self, args):
@@ -330,7 +330,7 @@ class _PostParsing(Transformer):
             return args
 
     def arg_value(self, args):
-        if args[0].type == "NUMBER":
+        if args[0].type in ("NUMBER", "SIGNED_NUMBER"):
             v = ast.literal_eval(args[0].value)
         elif args[0].type == "ESCAPED_STRING":
             v = args[0].value[1:-1]
