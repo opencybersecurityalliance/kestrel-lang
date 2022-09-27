@@ -168,12 +168,12 @@ agg_list: agg ("," agg)*
 agg: funcname "(" STIXPATH ")" ("AS"i alias)?
 
 ?funcname: (MIN|MAX|SUM|AVG|COUNT|NUNIQUE)
-MIN: "min"i
-MAX: "max"i
-SUM: "sum"i
-AVG: "avg"i
-COUNT: "count"i
-NUNIQUE: "nunique"i
+MIN: "MIN"i
+MAX: "MAX"i
+SUM: "SUM"i
+AVG: "AVG"i
+COUNT: "COUNT"i
+NUNIQUE: "NUNIQUE"i
 
 ?alias: CNAME
 
