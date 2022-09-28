@@ -46,7 +46,7 @@ get: "GET"i ENTITY_TYPE ("FROM"i DATASRC)? "WHERE"i STIXPATTERNBODY timespan?
 
 group: "GROUP"i VARIABLE BY grp_spec ("WITH"i agg_list)?
 
-join: "JOIN"i VARIABLE "," VARIABLE (BY STIXPATH "," STIXPATH)?
+join: "JOIN"i VARIABLE "," VARIABLE (BY ATTRIBUTE "," ATTRIBUTE)?
 
 load: "LOAD"i STDPATH ("as"i ENTITY_TYPE)?
 

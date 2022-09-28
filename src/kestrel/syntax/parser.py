@@ -121,8 +121,8 @@ class _PostParsing(Transformer):
                 "command": "join",
                 "input": _first(args),
                 "input_2": _second(args),
-                "path": _fourth(args),
-                "path_2": _fifth(args),
+                "attribute_1": _fourth(args),
+                "attribute_2": _fifth(args),
             }
         else:
             return {"command": "join", "input": _first(args), "input_2": _second(args)}

@@ -491,9 +491,9 @@ def join(stmt, session):
     session.store.join(
         stmt["output"],
         get_entity_table(stmt["input"], session.symtable),
-        stmt["path"],
+        stmt["attribute_1"],
         get_entity_table(stmt["input_2"], session.symtable),
-        stmt["path_2"],
+        stmt["attribute_2"],
     )
 
 
