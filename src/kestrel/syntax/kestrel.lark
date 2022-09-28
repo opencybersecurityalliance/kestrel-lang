@@ -87,7 +87,7 @@ TRANSFORM: (TIMESTAMPED)
 TIMESTAMPED: "TIMESTAMPED"i
 
 where_clause: "WHERE"i condition
-attr_clause: "ATTR"i STIXPATHS
+attr_clause: "ATTR"i ATTRIBUTES
 sort_clause: "SORT"i BY ATTRIBUTE (ASC|DESC)?
 limit_clause: "LIMIT"i INT
 offset_clause: "OFFSET"i INT
@@ -104,7 +104,7 @@ offset_clause: "OFFSET"i INT
            | column NULL_OP NULL -> null_comp
            | "(" disjunction ")"
 
-column: STIXPATH
+column: ATTRIBUTE
 
 ?value: SQSTRING -> squoted_str
       | NUMBER -> num_literal
@@ -241,18 +241,17 @@ NULL_OP: IS WS* (NOT)?
 
 ENTITY_TYPE: ECNAME
 ANALYTICS: STDPATH
+
 DATASRC: (ECNAME "://")? STDPATH ("," STDPATH)*
-
-STIXPATH: (ECNAME ":")? ATTRIBUTE
-STIXPATHS: STIXPATH (WS* "," WS* STIXPATH)*
-
 STDPATH: (LETTER|DIGIT|"_"|"-"|"."|":"|"/")+
        | ESCAPED_STRING
+
 ATTRIBUTE: ECNAME "[*]"? ("." ECNAME_W_QUOTE)*
 ATTRIBUTES: ATTRIBUTE (WS* "," WS* ATTRIBUTE)*
-ECNAME_W_QUOTE: (LETTER|DIGIT|"_"|"-"|"'")+
+
 SIMPLESTRING: (LETTER|DIGIT|"_"|"-"|".")+
 ECNAME: (LETTER|"_") (LETTER|DIGIT|"_"|"-")*
+ECNAME_W_QUOTE: (LETTER|DIGIT|"_"|"-"|"'")+
 
 ESCAPED_STRING : "\"" _STRING_ESC_INNER "\""
                | "'"  _STRING_ESC_INNER "'"

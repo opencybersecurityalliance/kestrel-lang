@@ -172,16 +172,11 @@ def test_disp_column_order(fake_bundle_file, caplog):
             where [network-traffic:dst_port < 10000]""",
         )
         # SCO type in attr names should be optional
-        recs = session.execute(f"disp conns attr network-traffic:src_port, dst_port")[0]
+        recs = session.execute(f"disp conns attr src_port, dst_port")[0]
         conns = recs.dataframe
         print(conns.head())
         cols = conns.columns.to_list()
         assert cols.index("src_port") < cols.index("dst_port")
-        with pytest.raises(Exception):
-            session.execute(
-                f"disp conns attr process:src_port, dst_port"
-            )  # Wrong SCO type
-
 
 def test_get_set_variable(fake_bundle_file):
     with Session() as session:

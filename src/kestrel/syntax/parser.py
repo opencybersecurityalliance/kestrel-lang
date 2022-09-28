@@ -197,7 +197,7 @@ class _PostParsing(Transformer):
         }
 
     def attr_clause(self, args):
-        paths = _assert_and_extract_single("STIXPATHS", args)
+        paths = _assert_and_extract_single("ATTRIBUTES", args)
         return {
             "attrs": paths if paths else "*",
         }
