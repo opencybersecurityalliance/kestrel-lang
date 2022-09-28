@@ -297,8 +297,8 @@ class _PostParsing(Transformer):
 
     def null_comp(self, args):
         lhs = str(args[0])
-        op = str(args[1])
-        if op == "IS NOT":
+        op = str(args[1]).upper()
+        if "NOT" in op.upper():
             op = "!="
         else:
             op = "="

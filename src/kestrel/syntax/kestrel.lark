@@ -74,7 +74,6 @@ VARIABLE: ECNAME
 
 //
 // Expression
-// todo: case insensitive for OP
 // todo: NUMBER and NULL (nulls missing)
 //
 
@@ -102,7 +101,7 @@ offset_clause: "OFFSET"i INT
             | conjunction "AND"i comparison -> conj
 
 ?comparison: column OP value -> comp
-           | column NULL_OP "NULL"i -> null_comp
+           | column NULL_OP NULL -> null_comp
            | "(" disjunction ")"
 
 column: STIXPATH
@@ -110,10 +109,6 @@ column: STIXPATH
 ?value: SQSTRING -> squoted_str
       | NUMBER -> num_literal
       | /NULL/   -> nulls
-
-OP: /([<>!=]?=|[<>]|IN|LIKE|MATCHES)/
-
-NULL_OP: /IS (NOT)?/i
 
 SQSTRING: /'[^']*'/
 
@@ -222,6 +217,24 @@ REVERSED: "BY"i
 TRUE: "TRUE"i
 FALSE: "FALSE"i
 NULL: "NULL"i
+IN: "IN"i
+LIKE: "LIKE"i
+MATCHES: "MATCHES"i
+IS: "IS"i
+NOT: "NOT"i
+
+OP: "="
+  | "=="
+  | "!="
+  | ">"
+  | "<"
+  | ">="
+  | ">="
+  | IN
+  | LIKE
+  | MATCHES
+
+NULL_OP: IS WS* (NOT)?
 
 //
 // Common language terminals
