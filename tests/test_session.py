@@ -54,11 +54,11 @@ def test_session_1(fake_bundle_file):
         )
         conns = get_df(session, "conns")
         assert len(conns.index) == 100
-        execute(session, "sort conns by network-traffic:dst_port asc")
+        execute(session, "sort conns by dst_port asc")
         s = get_df(session, "_")
         assert len(s.index) == 100
         assert s.iloc[0]["dst_port"] == 22
-        execute(session, "group conns by network-traffic:dst_port")
+        execute(session, "group conns by dst_port")
         s = get_df(session, "_")
         assert len(s.index) == 5
         port_3128 = s[(s["dst_port"] == 3128)]

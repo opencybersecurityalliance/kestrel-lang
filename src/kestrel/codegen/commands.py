@@ -508,7 +508,7 @@ def group(stmt, session):
     session.store.group(
         stmt["output"],
         get_entity_table(stmt["input"], session.symtable),
-        stmt["paths"],
+        stmt["attributes"],
         aggs,
     )
 
@@ -521,7 +521,7 @@ def sort(stmt, session):
         stmt["output"],
         get_entity_table(stmt["input"], session.symtable),
         op="sort",
-        by=stmt["path"],
+        by=stmt["attribute"],
         ascending=stmt["ascending"],
     )
 
@@ -669,7 +669,7 @@ def _build_query(store, entity_table, qry, stmt):
     attrs = stmt.get("attrs", "*")
     cols = attrs.split(",")
     _set_projection(store, entity_table, qry, cols)
-    sort_by = stmt.get("path")
+    sort_by = stmt.get("attribute")
     if sort_by:
         direction = "ASC" if stmt["ascending"] else "DESC"
         qry.append(Order([(sort_by, direction)]))

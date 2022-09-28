@@ -132,7 +132,7 @@ class _PostParsing(Transformer):
         cols = args[2]
         result = {
             "command": "group",
-            "paths": cols,
+            "attributes": cols,
             "input": _extract_var(args, self.default_variable),
         }
         aggregations = args[3] if len(args) > 3 else None
@@ -143,7 +143,7 @@ class _PostParsing(Transformer):
     def sort(self, args):
         return {
             "command": "sort",
-            "path": _extract_stixpath(args),
+            "attribute": _extract_attribute(args),
             "input": _extract_var(args, self.default_variable),
             "ascending": _extract_direction(args, self.default_sort_order),
         }
@@ -162,14 +162,14 @@ class _PostParsing(Transformer):
         return {
             "command": "load",
             "type": _extract_entity_type(args),
-            "path": _extract_dumppath(args),
+            "path": _extract_stdpath(args),
         }
 
     def save(self, args):
         return {
             "command": "save",
             "input": _extract_var(args, self.default_variable),
-            "path": _extract_dumppath(args),
+            "path": _extract_stdpath(args),
         }
 
     def new(self, args):
@@ -204,7 +204,7 @@ class _PostParsing(Transformer):
 
     def sort_clause(self, args):
         return {
-            "path": _extract_stixpath(args),
+            "attribute": _extract_attribute(args),
             "ascending": _extract_direction(args, self.default_sort_order),
         }
 
@@ -253,20 +253,23 @@ class _PostParsing(Transformer):
         return args
 
     def grp_expr(self, args):
-        path = args[0]
-        if isinstance(path, str):
-            path = _normalize_paths(path)[0]
-        return path
+        item = args[0]
+        if isinstance(item, Token):
+            # an ATTRIBUTE
+            return str(item)
+        else:
+            # bin_func
+            return item
 
     def bin_func(self, args):
-        path = args[0].value
+        attr = args[0].value
         num = int(args[1].value)
         if len(args) >= 3:
             unit = args[2].value
         else:
             unit = None
-        alias = f"{path}_bin"
-        return BinnedColumn(path, num, unit, alias=alias)
+        alias = f"{attr}_bin"
+        return BinnedColumn(attr, num, unit, alias=alias)
 
     def agg_list(self, args):
         return [arg for arg in args]
@@ -396,6 +399,11 @@ def _extract_stixpath(args):
     return _assert_and_extract_single("STIXPATH", args)
 
 
+def _extract_attribute(args):
+    # extract a single attribute from the args
+    return _assert_and_extract_single("ATTRIBUTE", args)
+
+
 def _extract_datasource(args):
     raw_ds = _assert_and_extract_single("DATASRC", args)
     ds = raw_ds.strip('"') if raw_ds else None
@@ -407,9 +415,9 @@ def _extract_entity_type(args):
     return _assert_and_extract_single("ENTITY_TYPE", args)
 
 
-def _extract_dumppath(args):
-    # extract a single stix path from the args
-    return _assert_and_extract_single("DUMPPATH", args)
+def _extract_stdpath(args):
+    # extract standard path from the args
+    return _assert_and_extract_single("STDPATH", args)
 
 
 def _extract_direction(args, default_sort_order):
@@ -427,15 +435,3 @@ def _extract_direction(args, default_sort_order):
 def _extract_if_reversed(args):
     rs = [x for x in args if hasattr(x, "type") and x.type == "REVERSED"]
     return True if rs else False
-
-
-def _normalize_paths(stixpaths):
-    if isinstance(stixpaths, str):
-        stixpaths = [stixpaths]
-    # Sanitize paths
-    cols = []
-    for stixpath in stixpaths:
-        sco_type, _, prop = stixpath.rpartition(":")
-        # We should probably verify sco_type here
-        cols.append(prop)
-    return cols

@@ -79,7 +79,7 @@ def a_session():
         ("grps = GR", {"OUP"}),
         ("grps = GROUP ", {"conns", "_"}),
         ("grps = GROUP conns ", {"BY"}),
-        ("grps = GROUP conns by ", {"BIN"}),  # TODO: we don't suggest attrs yet
+        ("grps = GROUP conns by ", {"ATTRIBUTE", "BIN"}),  # TODO: we don't suggest attrs yet
         ("urls = g", ["et", "roup"]),
         ("urls = ge", ["t"]),
         ("urls = get ", KNOWN_ETYPES),
