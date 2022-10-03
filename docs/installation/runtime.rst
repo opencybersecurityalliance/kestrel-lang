@@ -35,16 +35,16 @@ Otherwise, check the SQLite version in a terminal and upgrade ``sqlite3 >=
 3.24`` as needed, which is required by `firepit`_, a Kestrel dependency, in its
 default configuration:
 
+.. code-block:: console
+
+    $ sqlite3 --version
+
 macOS Specific Requirement
 --------------------------
 
 Full installation of `Xcode`_ is required, especially for arm64 architecture
 (2021-). ``xcode-select --install`` may not install Python header files, or set
 incorrect architecture argument for dependent package compilation.
-
-.. code-block:: console
-
-    $ sqlite3 --version
 
 Runtime Installation
 ====================
