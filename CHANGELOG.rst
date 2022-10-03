@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+Unreleased
+==========
+
+Added
+-----
+
+- documentation on macOS (arm64) install requirement
+
 1.4.2 (2022-09-26)
 ==================
 
