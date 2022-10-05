@@ -74,7 +74,6 @@ VARIABLE: ECNAME
 
 //
 // Expression
-// todo: NUMBER and NULL (nulls missing)
 //
 
 expression: transform where_clause? attr_clause? sort_clause? limit_clause? offset_clause?
@@ -92,23 +91,20 @@ sort_clause: "SORT"i BY ATTRIBUTE (ASC|DESC)?
 limit_clause: "LIMIT"i INT
 offset_clause: "OFFSET"i INT
 
-?condition: disjunction
+?condition: exp_disjunction
 
-?disjunction: conjunction
-            | disjunction "OR"i conjunction -> disj
+?exp_disjunction: exp_conjunction
+                | exp_disjunction "OR"i exp_conjunction -> exp_or
 
-?conjunction: comparison
-            | conjunction "AND"i comparison -> conj
+?exp_conjunction: exp_comparison
+                | exp_conjunction "AND"i exp_comparison -> exp_and
 
-?comparison: column OP value -> comp
-           | column NULL_OP NULL -> null_comp
-           | "(" disjunction ")"
+?exp_comparison: exp_comparison_std
+               | exp_comparison_null
+               | "(" exp_disjunction ")"
 
-column: ATTRIBUTE
-
-?value: SQSTRING -> squoted_str
-      | NUMBER -> num_literal
-      | /NULL/   -> nulls
+exp_comparison_std: ATTRIBUTE OP value
+exp_comparison_null: ATTRIBUTE NULL_OP NULL
 
 SQSTRING: /'[^']*'/
 
@@ -198,12 +194,7 @@ args: arg_kv_pair (", " arg_kv_pair)*
 
 arg_kv_pair: ECNAME "=" arg_values
 
-arg_values: arg_value ("," arg_value)*
-
-arg_value: NUMBER
-         | SIGNED_NUMBER
-         | SIMPLESTRING
-         | ESCAPED_STRING
+arg_values: value ("," value)*
 
 //
 // Shared keywords
@@ -236,8 +227,14 @@ OP: "="
 NULL_OP: IS WS* (NOT)?
 
 //
-// Common language terminals
+// Common language constructs
 //
+
+value: NUMBER
+     | SIGNED_NUMBER
+     | NULL
+     | ESCAPED_STRING
+     | SIMPLESTRING
 
 ENTITY_TYPE: ECNAME
 ANALYTICS: STDPATH
@@ -253,8 +250,8 @@ SIMPLESTRING: (LETTER|DIGIT|"_"|"-"|".")+
 ECNAME: (LETTER|"_") (LETTER|DIGIT|"_"|"-")*
 ECNAME_W_QUOTE: (LETTER|DIGIT|"_"|"-"|"'")+
 
-ESCAPED_STRING : "\"" _STRING_ESC_INNER "\""
-               | "'"  _STRING_ESC_INNER "'"
+ESCAPED_STRING: "\"" _STRING_ESC_INNER "\""
+              | "'"  _STRING_ESC_INNER "'"
 ESCAPED_STRING_WS: WS* ESCAPED_STRING WS*
 
 %import common (LETTER, DIGIT, WS, INT, WORD)

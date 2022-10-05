@@ -279,43 +279,31 @@ class _PostParsing(Transformer):
         alias = args[2].value if len(args) > 2 else f"{func}_{args[1].value}"
         return {"func": func, "attr": args[1].value, "alias": alias}
 
-    def disj(self, args):
-        lhs = str(args[0]) if isinstance(args, Token) else args[0]
-        rhs = str(args[1]) if isinstance(args, Token) else args[1]
+    def exp_or(self, args):
+        lhs = args[0]
+        rhs = args[1]
         return Predicate(lhs, "OR", rhs)
 
-    def conj(self, args):
-        lhs = str(args[0]) if isinstance(args, Token) else args[0]
-        rhs = str(args[1]) if isinstance(args, Token) else args[1]
+    def exp_and(self, args):
+        lhs = args[0]
+        rhs = args[1]
         return Predicate(lhs, "AND", rhs)
 
-    def comp(self, args):
-        lhs = str(args[0]) if isinstance(args, Token) else args[0]
-        op = str(args[1])
-        rhs = str(args[2]) if isinstance(args, Token) else args[2]
+    def exp_comparison_std(self, args):
+        lhs = args[0].value
+        op = args[1].value
+        rhs = args[2]
         return Predicate(lhs, op, rhs)
 
-    def null_comp(self, args):
-        lhs = str(args[0])
-        op = str(args[1]).upper()
-        if "NOT" in op.upper():
+    def exp_comparison_null(self, args):
+        lhs = args[0].value
+        op = args[1].value.upper()
+        if "NOT" in op:
             op = "!="
         else:
             op = "="
         rhs = "NULL"
         return Predicate(lhs, op, rhs)
-
-    def column(self, args):
-        return args[0].value
-
-    def squoted_str(self, args):
-        return args[0].value.strip("'")
-
-    def num_literal(self, args):
-        return args[0].value
-
-    def null(self, args):
-        return "NULL"
 
     def args(self, args):
         d = {}
@@ -332,7 +320,7 @@ class _PostParsing(Transformer):
         else:
             return args
 
-    def arg_value(self, args):
+    def value(self, args):
         if args[0].type in ("NUMBER", "SIGNED_NUMBER"):
             v = ast.literal_eval(args[0].value)
         elif args[0].type == "ESCAPED_STRING":
