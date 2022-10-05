@@ -143,7 +143,6 @@ def test_get_repeated(proc_bundle_file):
         assert data["#(ENTITIES)"] > 0
         assert data["#(RECORDS)"] > 0
 
-
 @pytest.mark.parametrize(
     "num, unit, count",
     [
@@ -161,8 +160,10 @@ def test_get_repeated(proc_bundle_file):
 )
 def test_get_relative_timespan(file_stix_bundles, num, unit, count):
     with Session() as s:
-        stmt = (f"var = GET process FROM file://{file_stix_bundles[0]}"
-                f" WHERE [process:name='compattelrunner.exe'] LAST {num} {unit}")
+        stmt = (
+            f"var = GET process FROM file://{file_stix_bundles[0]}"
+            f" WHERE [process:name='compattelrunner.exe'] LAST {num} {unit}"
+        )
 
         s.execute(stmt)
         v = s.get_variable("var")

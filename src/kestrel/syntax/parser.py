@@ -1,4 +1,3 @@
-import ast
 from datetime import datetime, timedelta
 from pkgutil import get_data
 
@@ -218,33 +217,26 @@ class _PostParsing(Transformer):
             "offset": _extract_int(args),
         }
 
-    def timespan(self, args):
-        result = {}
-        for arg in args:
-            result.update(arg)
-        return result
-
-    def relative_timespan(self, args):
-        # args should be num and unit
-        num = int(_first(args))
-        unit = _second(args).lower()
-        if unit in ("days", "d"):
+    def timespan_relative(self, args):
+        num = int(args[0])
+        unit = args[1]
+        if unit.type == "DAY":
             delta = timedelta(days=num)
-        elif unit in ("hours", "h"):
+        elif unit.type == "HOUR":
             delta = timedelta(hours=num)
-        elif unit in ("minutes", "m"):
+        elif unit.type == "MINUTE":
             delta = timedelta(minutes=num)
-        elif unit in ("seconds", "s"):
+        elif unit.type == "SECOND":
             delta = timedelta(seconds=num)
         stop = datetime.utcnow()
         start = stop - delta
         return {"start": timefmt(start, prec=6), "stop": timefmt(stop, prec=6)}
 
-    def starttime(self, args):
-        return {"start": _assert_and_extract_single("ISOTIMESTAMP", args)}
+    def timespan_absolute(self, args):
+        return {"start": args[0], "stop": args[1]}
 
-    def endtime(self, args):
-        return {"stop": _assert_and_extract_single("ISOTIMESTAMP", args)}
+    def timestamp(self, args):
+        return _assert_and_extract_single("ISOTIMESTAMP", args)
 
     def variables(self, args):
         return {"variables": _extract_vars(args, self.default_variable)}
@@ -322,12 +314,18 @@ class _PostParsing(Transformer):
 
     def value(self, args):
         if args[0].type in ("NUMBER", "SIGNED_NUMBER"):
-            v = ast.literal_eval(args[0].value)
+            try:
+                v = int(args[0].value)
+            except:
+                v = float(args[0].value)
         elif args[0].type == "ESCAPED_STRING":
             v = args[0].value[1:-1]
         else:
             v = args[0].value
         return v
+
+    def signed_int(self, args):
+        return int(args[0].value)
 
 
 def _first(args):

@@ -37,10 +37,9 @@ assign: expression
 
 //
 // All commands
-// todo: use timespan in FIND
 //
 
-find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE (starttime endtime)?
+find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE timespan?
 
 get: "GET"i ENTITY_TYPE ("FROM"i DATASRC)? "WHERE"i STIXPATTERNBODY timespan?
 
@@ -106,27 +105,28 @@ offset_clause: "OFFSET"i INT
 exp_comparison_std: ATTRIBUTE OP value
 exp_comparison_null: ATTRIBUTE NULL_OP NULL
 
-SQSTRING: /'[^']*'/
-
 //
-// Time span
-// todo: double quotes; optional "^t"
+// Timespan
 //
 
-timespan: starttime endtime
-        | relative_timespan
+?timespan: "start"i timestamp "stop"i timestamp -> timespan_absolute
+         | "last"i INT timeunit                 -> timespan_relative
 
-relative_timespan: "last"i INT timeunit
+?timeunit: DAY
+         | HOUR
+         | MINUTE
+         | SECOND
 
-?timeunit: (DAY|HOUR|MINUTE|SECOND)
 DAY: "days"i | "d"i
 HOUR: "hours"i | "h"i
 MINUTE: "minutes"i | "m"i
 SECOND: "seconds"i | "s"i
 
-starttime: "start"i "t'" ISOTIMESTAMP "'"
-
-endtime: "stop"i "t'" ISOTIMESTAMP "'"
+timestamp:       ISOTIMESTAMP
+         | "\""  ISOTIMESTAMP "\""
+         | "'"   ISOTIMESTAMP "'"
+         | "t\"" ISOTIMESTAMP "\""
+         | "t'"  ISOTIMESTAMP "'"
 
 ISOTIMESTAMP: /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(\.\d+)?Z/
 
