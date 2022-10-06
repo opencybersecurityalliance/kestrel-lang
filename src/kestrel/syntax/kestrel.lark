@@ -14,8 +14,7 @@ statement: assignment
          | command_no_result
          
 // If no VARIABLE is given, default to _ in post-parsing
-assignment: VARIABLE "=" command_with_result
-          | command_with_result
+assignment: (VARIABLE "=")? command_with_result
 
 // "?" at the beginning will inline command
 ?command_with_result: assign

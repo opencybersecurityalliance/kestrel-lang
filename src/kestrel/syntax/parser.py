@@ -49,9 +49,9 @@ class _PostParsing(Transformer):
         return stmt
 
     def assign(self, args):
-        result = args[0]  # Already transformed in expression method below
-        result["command"] = "assign"
-        return result
+        packet = args[0]  # Already transformed in expression method below
+        packet["command"] = "assign"
+        return packet
 
     def merge(self, args):
         return {
@@ -63,13 +63,13 @@ class _PostParsing(Transformer):
         return {"command": "info", "input": _extract_var(args, self.default_variable)}
 
     def disp(self, args):
-        result = {"command": "disp"}
+        packet = {"command": "disp"}
         for arg in args:
             if isinstance(arg, dict):
-                result.update(arg)
-        if "attrs" not in result:
-            result["attrs"] = "*"
-        return result
+                packet.update(arg)
+        if "attrs" not in packet:
+            packet["attrs"] = "*"
+        return packet
 
     def get(self, args):
         datasource = _extract_datasource(args)
@@ -115,29 +115,27 @@ class _PostParsing(Transformer):
         return packet
 
     def join(self, args):
+        packet = {
+            "command": "join",
+            "input": _first(args),
+            "input_2": _second(args),
+        }
         if len(args) == 5:
-            return {
-                "command": "join",
-                "input": _first(args),
-                "input_2": _second(args),
-                "attribute_1": _fourth(args),
-                "attribute_2": _fifth(args),
-            }
-        else:
-            return {"command": "join", "input": _first(args), "input_2": _second(args)}
+            packet["attribute_1"] = _fourth(args)
+            packet["attribute_2"] = _fifth(args)
+
+        return packet
 
     def group(self, args):
-        # args[1] was already transformed by path_list/valuelist
-        cols = args[2]
-        result = {
+        packet = {
             "command": "group",
-            "attributes": cols,
+            "attributes": args[2],
             "input": _extract_var(args, self.default_variable),
         }
         aggregations = args[3] if len(args) > 3 else None
         if aggregations:
-            result["aggregations"] = aggregations
-        return result
+            packet["aggregations"] = aggregations
+        return packet
 
     def sort(self, args):
         return {
@@ -148,14 +146,14 @@ class _PostParsing(Transformer):
         }
 
     def apply(self, args):
-        result = {"command": "apply", "analytics_uri": _first(args), "arguments": {}}
+        packet = {"command": "apply", "analytics_uri": _first(args), "arguments": {}}
         for arg in args:
             if isinstance(arg, dict):
                 if "variables" in arg:
-                    result["inputs"] = arg["variables"]
+                    packet["inputs"] = arg["variables"]
                 else:
-                    result.update(arg)
-        return result
+                    packet.update(arg)
+        return packet
 
     def load(self, args):
         return {
@@ -179,10 +177,10 @@ class _PostParsing(Transformer):
         }
 
     def expression(self, args):
-        result = args[0]
+        packet = args[0]
         for arg in args:
-            result.update(arg)
-        return result
+            packet.update(arg)
+        return packet
 
     def transform(self, args):
         return {
@@ -209,12 +207,12 @@ class _PostParsing(Transformer):
 
     def limit_clause(self, args):
         return {
-            "limit": _extract_int(args),
+            "limit": int(_first(args)),
         }
 
     def offset_clause(self, args):
         return {
-            "offset": _extract_int(args),
+            "offset": int(_first(args)),
         }
 
     def timespan_relative(self, args):
@@ -241,6 +239,7 @@ class _PostParsing(Transformer):
     def variables(self, args):
         return {"variables": _extract_vars(args, self.default_variable)}
 
+    # automatically put one or more grp_expr into a list
     def grp_spec(self, args):
         return args
 
@@ -254,10 +253,10 @@ class _PostParsing(Transformer):
             return item
 
     def bin_func(self, args):
-        attr = args[0].value
-        num = int(args[1].value)
+        attr = _first(args)
+        num = int(_second(args))
         if len(args) >= 3:
-            unit = args[2].value
+            unit = _third(args)
         else:
             unit = None
         alias = f"{attr}_bin"
@@ -267,9 +266,10 @@ class _PostParsing(Transformer):
         return [arg for arg in args]
 
     def agg(self, args):
-        func = args[0].value.lower()
-        alias = args[2].value if len(args) > 2 else f"{func}_{args[1].value}"
-        return {"func": func, "attr": args[1].value, "alias": alias}
+        func = _first(args).lower()
+        attr = _second(args)
+        alias = _third(args) if len(args) > 2 else f"{func}_{attr}"
+        return {"func": func, "attr": attr, "alias": alias}
 
     def exp_or(self, args):
         lhs = args[0]
@@ -282,14 +282,14 @@ class _PostParsing(Transformer):
         return Predicate(lhs, "AND", rhs)
 
     def exp_comparison_std(self, args):
-        lhs = args[0].value
-        op = args[1].value
+        lhs = _first(args)
+        op = _second(args)
         rhs = args[2]
         return Predicate(lhs, op, rhs)
 
     def exp_comparison_null(self, args):
-        lhs = args[0].value
-        op = args[1].value.upper()
+        lhs = _first(args)
+        op = _second(args).upper()
         if "NOT" in op:
             op = "!="
         else:
@@ -304,7 +304,7 @@ class _PostParsing(Transformer):
         return {"arguments": d}
 
     def arg_kv_pair(self, args):
-        return {args[0].value: args[1]}
+        return {_first(args): args[1]}
 
     def arg_values(self, args):
         if len(args) == 1:
@@ -323,9 +323,6 @@ class _PostParsing(Transformer):
         else:
             v = args[0].value
         return v
-
-    def signed_int(self, args):
-        return int(args[0].value)
 
 
 def _first(args):
@@ -356,11 +353,6 @@ def _assert_and_extract_single(arg_type, args):
     items = [arg.value for arg in args if hasattr(arg, "type") and arg.type == arg_type]
     assert len(items) <= 1
     return items.pop() if items else None
-
-
-def _extract_int(args):
-    value = _assert_and_extract_single("INT", args)
-    return int(value) if value else None
 
 
 def _extract_var(args, default_variable):
