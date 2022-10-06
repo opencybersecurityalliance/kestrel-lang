@@ -427,18 +427,16 @@ class Session(AbstractContextManager):
                     _logger.debug("token: %s", token)
                     if token == "VARIABLE":
                         tmp.extend(varnames)
-                    elif token == "DATASRC":
+                    elif token == "DATASRC_SIMPLE":
                         schemes = self.data_source_manager.schemes()
                         tmp.extend([f"{scheme}://" for scheme in schemes])
-                        tmp.extend(varnames)
-                    elif token == "ANALYTICS":
+                    elif token == "DATASRC_ESCAPED":
+                        continue
+                    elif token == "ANALYTICS_SIMPLE":
                         schemes = self.analytics_manager.schemes()
                         tmp.extend([f"{scheme}://" for scheme in schemes])
                     elif token == "ENTITY_TYPE":
                         tmp.extend(get_entity_types())
-                    elif token.startswith("STIXPATH"):
-                        # TODO: figure out the varname and get its attrs
-                        continue
                     elif token.startswith("STIXPATTERNBODY"):
                         # TODO: figure out how to complete STIX patterns
                         continue

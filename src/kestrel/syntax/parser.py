@@ -5,6 +5,8 @@ from firepit.query import BinnedColumn, Filter, Predicate
 from firepit.timestamp import timefmt
 from lark import Lark, Token, Transformer
 
+from kestrel.utils import unescape_quoted_string
+
 
 def parse(stmts, default_variable="_", default_sort_order="desc"):
     # the public parsing interface for Kestrel
@@ -72,23 +74,17 @@ class _PostParsing(Transformer):
         return packet
 
     def get(self, args):
-        datasource = _extract_datasource(args)
         packet = {
             "command": "get",
             "type": _extract_entity_type(args),
             "patternbody": _assert_and_extract_single("STIXPATTERNBODY", args),
         }
-        if datasource:
-            packet["datasource"] = datasource
 
-        time_range = {}
         for item in args:
             if isinstance(item, dict):
-                time_range.update(item)
+                packet.update(item)
 
-        if "start" in time_range and "stop" in time_range:
-            packet["timerange"] = (time_range["start"], time_range["stop"])
-        else:
+        if "timerange" not in packet:
             packet["timerange"] = None
 
         return packet
@@ -102,14 +98,11 @@ class _PostParsing(Transformer):
             "input": _extract_var(args, self.default_variable),
         }
 
-        time_range = {}
         for item in args:
             if isinstance(item, dict):
-                time_range.update(item)
+                packet.update(item)
 
-        if "start" in time_range and "stop" in time_range:
-            packet["timerange"] = (time_range["start"], time_range["stop"])
-        else:
+        if "timerange" not in packet:
             packet["timerange"] = None
 
         return packet
@@ -146,7 +139,7 @@ class _PostParsing(Transformer):
         }
 
     def apply(self, args):
-        packet = {"command": "apply", "analytics_uri": _first(args), "arguments": {}}
+        packet = {"command": "apply", "arguments": {}}
         for arg in args:
             if isinstance(arg, dict):
                 if "variables" in arg:
@@ -156,18 +149,24 @@ class _PostParsing(Transformer):
         return packet
 
     def load(self, args):
-        return {
+        packet = {
             "command": "load",
             "type": _extract_entity_type(args),
-            "path": _extract_stdpath(args),
         }
+        for arg in args:
+            if isinstance(arg, dict):
+                packet.update(arg)
+        return packet
 
     def save(self, args):
-        return {
+        packet = {
             "command": "save",
             "input": _extract_var(args, self.default_variable),
-            "path": _extract_stdpath(args),
         }
+        for arg in args:
+            if isinstance(arg, dict):
+                packet.update(arg)
+        return packet
 
     def new(self, args):
         return {
@@ -228,16 +227,37 @@ class _PostParsing(Transformer):
             delta = timedelta(seconds=num)
         stop = datetime.utcnow()
         start = stop - delta
-        return {"start": timefmt(start, prec=6), "stop": timefmt(stop, prec=6)}
+        return {"timerange": (timefmt(start, prec=6), timefmt(stop, prec=6))}
 
     def timespan_absolute(self, args):
-        return {"start": args[0], "stop": args[1]}
+        return {"timerange": (args[0], args[1])}
 
     def timestamp(self, args):
         return _assert_and_extract_single("ISOTIMESTAMP", args)
 
+    def entity_type(self, args):
+        return _first(args)
+
     def variables(self, args):
         return {"variables": _extract_vars(args, self.default_variable)}
+
+    def stdpath(self, args):
+        v = _first(args)
+        if args[0].type == "PATH_ESCAPED":
+            v = unescape_quoted_string(v)
+        return {"path": v}
+
+    def datasource(self, args):
+        v = _first(args)
+        if args[0].type == "DATASRC_ESCAPED":
+            v = unescape_quoted_string(v)
+        return {"datasource": v}
+
+    def analytics_uri(self, args):
+        v = _first(args)
+        if args[0].type == "ANALYTICS_ESCAPED":
+            v = unescape_quoted_string(v)
+        return {"analytics_uri": v}
 
     # automatically put one or more grp_expr into a list
     def grp_spec(self, args):
@@ -319,7 +339,7 @@ class _PostParsing(Transformer):
             except:
                 v = float(args[0].value)
         elif args[0].type == "ESCAPED_STRING":
-            v = args[0].value[1:-1]
+            v = unescape_quoted_string(args[0].value)
         else:
             v = args[0].value
         return v
@@ -391,11 +411,6 @@ def _extract_datasource(args):
 def _extract_entity_type(args):
     # extract a single entity type from the args
     return _assert_and_extract_single("ENTITY_TYPE", args)
-
-
-def _extract_stdpath(args):
-    # extract standard path from the args
-    return _assert_and_extract_single("STDPATH", args)
 
 
 def _extract_direction(args, default_sort_order):

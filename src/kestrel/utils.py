@@ -4,6 +4,10 @@ import uuid
 import collections.abc
 
 
+def unescape_quoted_string(s):
+    return s[1:-1].encode('utf-8').decode('unicode_escape')
+
+
 def lowered_str_list(xs):
     return [x.lower() for x in xs if isinstance(x, str)]
 

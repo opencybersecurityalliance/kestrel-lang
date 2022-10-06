@@ -1,8 +1,6 @@
 //
 // Kestrel Grammar
 //
-// todo: ESCAPED_STRING handling
-//
 
 //
 // A huntflow is a sequence of statements
@@ -40,27 +38,27 @@ assign: expression
 
 find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE timespan?
 
-get: "GET"i ENTITY_TYPE ("FROM"i DATASRC)? "WHERE"i STIXPATTERNBODY timespan?
+get: "GET"i ENTITY_TYPE ("FROM"i datasource)? "WHERE"i STIXPATTERNBODY timespan?
 
 group: "GROUP"i VARIABLE BY grp_spec ("WITH"i agg_list)?
 
 join: "JOIN"i VARIABLE "," VARIABLE (BY ATTRIBUTE "," ATTRIBUTE)?
 
-load: "LOAD"i STDPATH ("as"i ENTITY_TYPE)?
+load: "LOAD"i stdpath ("AS"i ENTITY_TYPE)?
 
 merge: VARIABLE ("+" VARIABLE)+
 
-new: "NEW"i (ENTITY_TYPE)? VAR_DATA
+new: "NEW"i ENTITY_TYPE? VAR_DATA
 
 sort: "SORT"i VARIABLE BY ATTRIBUTE (ASC|DESC)?
 
-apply: "APPLY"i ANALYTICS "ON"i variables ("WITH"i args)?
+apply: "APPLY"i analytics_uri "ON"i variables ("WITH"i args)?
 
 disp: "DISP"i expression
 
 info: "INFO"i VARIABLE
 
-save: "SAVE"i VARIABLE "TO"i STDPATH
+save: "SAVE"i VARIABLE "TO"i stdpath
 
 //
 // Variable definition
@@ -168,6 +166,27 @@ NUNIQUE: "NUNIQUE"i
 ?alias: ECNAME
 
 //
+// GET command constructs
+//
+
+datasource: DATASRC_SIMPLE
+          | DATASRC_ESCAPED
+          | VARIABLE
+
+DATASRC_SIMPLE: PATH_SIMPLE ("," PATH_SIMPLE)*
+DATASRC_ESCAPED: PATH_ESCAPED
+
+//
+// APPLY command constructs
+//
+
+analytics_uri: ANALYTICS_SIMPLE
+             | ANALYTICS_ESCAPED
+
+ANALYTICS_SIMPLE: PATH_SIMPLE
+ANALYTICS_ESCAPED: PATH_ESCAPED
+
+//
 // Two-level JSON in command NEW
 //
 
@@ -236,22 +255,27 @@ value: NUMBER
      | SIMPLESTRING
 
 ENTITY_TYPE: ECNAME
-ANALYTICS: STDPATH
 
-DATASRC: (ECNAME "://")? STDPATH ("," STDPATH)*
-STDPATH: (LETTER|DIGIT|"_"|"-"|"."|":"|"/")+
-       | ESCAPED_STRING
+stdpath: PATH_SIMPLE
+       | PATH_ESCAPED
 
 ATTRIBUTE: ECNAME "[*]"? ("." ECNAME_W_QUOTE)*
 ATTRIBUTES: ATTRIBUTE (WS* "," WS* ATTRIBUTE)*
 
-SIMPLESTRING: (LETTER|DIGIT|"_"|"-"|".")+
 ECNAME: (LETTER|"_") (LETTER|DIGIT|"_"|"-")*
 ECNAME_W_QUOTE: (LETTER|DIGIT|"_"|"-"|"'")+
+
+SIMPLESTRING: (LETTER|DIGIT|"_"|"-"|".")+
+
+PATH_SIMPLE: (ECNAME "://")? (LETTER|DIGIT|"_"|"-"|"."|"/")+
+
+PATH_ESCAPED: "\"" (ECNAME "://")? _STRING_ESC_INNER "\""
+            | "'"  (ECNAME "://")? _STRING_ESC_INNER "'"
 
 ESCAPED_STRING: "\"" _STRING_ESC_INNER "\""
               | "'"  _STRING_ESC_INNER "'"
 ESCAPED_STRING_WS: WS* ESCAPED_STRING WS*
+
 
 %import common (LETTER, DIGIT, WS, INT, WORD)
 %import common (NUMBER, SIGNED_NUMBER, _STRING_ESC_INNER)

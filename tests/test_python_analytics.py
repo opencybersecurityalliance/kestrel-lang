@@ -122,7 +122,7 @@ APPLY python://enrich_variable_with_arguments ON newvar WITH argx=abc, argy=123,
         assert v[0]["type"] == "process"
         assert v[0]["x_new_argx"] == "abc"
         assert v[0]["x_new_argy"] == 123
-        assert v[0]["x_new_argz"] == r'as\"is'
+        assert v[0]["x_new_argz"] == r'as"is'
 
 
 def test_enrich_after_get_url(fake_bundle_file):
