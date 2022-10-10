@@ -6,6 +6,13 @@ from firepit.timestamp import timefmt
 from lark import Lark, Token, Transformer
 
 from kestrel.utils import unescape_quoted_string
+from kestrel.syntax.ecgpattern import (
+    ECGPComparison,
+    ECGPExpressionOr,
+    ECGPExpressionAnd,
+    ExtCenteredGraphPattern,
+)
+from kestrel.exceptions import KestrelInternalError
 
 
 def parse(stmts, default_variable="_", default_sort_order="desc"):
@@ -188,8 +195,9 @@ class _PostParsing(Transformer):
         }
 
     def where_clause(self, args):
+        pattern = ExtCenteredGraphPattern(args[0])
         return {
-            "where": Filter([args[0]]),
+            "where": pattern.to_firepit(),
         }
 
     def attr_clause(self, args):
@@ -291,31 +299,48 @@ class _PostParsing(Transformer):
         alias = _third(args) if len(args) > 2 else f"{func}_{attr}"
         return {"func": func, "attr": attr, "alias": alias}
 
-    def exp_or(self, args):
-        lhs = args[0]
-        rhs = args[1]
-        return Predicate(lhs, "OR", rhs)
+    def expression_or(self, args):
+        return ECGPExpressionOr(args[0], args[1])
 
-    def exp_and(self, args):
-        lhs = args[0]
-        rhs = args[1]
-        return Predicate(lhs, "AND", rhs)
+    def expression_and(self, args):
+        return ECGPExpressionAnd(args[0], args[1])
 
-    def exp_comparison_std(self, args):
-        lhs = _first(args)
-        op = _second(args)
-        rhs = args[2]
-        return Predicate(lhs, op, rhs)
+    def comparison_std(self, args):
+        if len(args) == 4:
+            etype = _first(args)
+            attr = _second(args)
+            op = _third(args)
+            value = args[3]
+        elif len(args) == 3:
+            etype = None
+            attr = _first(args)
+            op = _second(args)
+            value = args[2]
+        else:
+            raise KestrelInternalError(
+                "mismatch between syntax and parser implementation on 'expression comparison standard'"
+            )
+        return ECGPComparison(attr, op, value, etype)
 
-    def exp_comparison_null(self, args):
-        lhs = _first(args)
-        op = _second(args).upper()
+    def comparison_null(self, args):
+        if len(args) == 4:
+            etype = _first(args)
+            attr = _second(args)
+            op = _third(args)
+        elif len(args) == 3:
+            etype = None
+            attr = _first(args)
+            op = _second(args)
+        else:
+            raise KestrelInternalError(
+                "mismatch between syntax and parser implementation on 'expression comparison null'"
+            )
         if "NOT" in op:
             op = "!="
         else:
             op = "="
-        rhs = "NULL"
-        return Predicate(lhs, op, rhs)
+        value = "NULL"
+        return ECGPComparison(attr, op, value, etype)
 
     def args(self, args):
         d = {}

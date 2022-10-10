@@ -87,20 +87,20 @@ sort_clause: "SORT"i BY ATTRIBUTE (ASC|DESC)?
 limit_clause: "LIMIT"i INT
 offset_clause: "OFFSET"i INT
 
-?condition: exp_disjunction
+?condition: disjunction
 
-?exp_disjunction: exp_conjunction
-                | exp_disjunction "OR"i exp_conjunction -> exp_or
+?disjunction: conjunction
+            | disjunction "OR"i conjunction -> expression_or
 
-?exp_conjunction: exp_comparison
-                | exp_conjunction "AND"i exp_comparison -> exp_and
+?conjunction: comparison
+            | conjunction "AND"i comparison -> expression_and
 
-?exp_comparison: exp_comparison_std
-               | exp_comparison_null
-               | "(" exp_disjunction ")"
+?comparison: comparison_std
+           | comparison_null
+           | "(" disjunction ")"
 
-exp_comparison_std: ATTRIBUTE OP value
-exp_comparison_null: ATTRIBUTE NULL_OP NULL
+comparison_std:  (ENTITY_TYPE ":")? ATTRIBUTE OP      value
+comparison_null: (ENTITY_TYPE ":")? ATTRIBUTE NULL_OP NULL
 
 //
 // Timespan

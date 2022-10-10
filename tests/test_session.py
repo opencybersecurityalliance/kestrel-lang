@@ -163,7 +163,7 @@ def test_generated_pattern_match(fake_bundle_file, fake_bundle_3):
 
 
 def test_disp_column_order(fake_bundle_file, caplog):
-    caplog.set_level(logging.DEBUG)
+    #caplog.set_level(logging.DEBUG)
     with Session(debug_mode=True) as session:
         execute(
             session,

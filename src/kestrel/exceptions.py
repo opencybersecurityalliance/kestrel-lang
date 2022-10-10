@@ -29,6 +29,11 @@ class KestrelInternalError(KestrelException):
         super().__init__(error, "please open a github issue to report")
 
 
+class KestrelNotImplemented(KestrelException):
+    def __init__(self, error):
+        super().__init__("Functionality not implemented: " + error, "please search for the github issue to add comment")
+
+
 ################################################################
 #                     Kestrel Session Errors
 ################################################################
