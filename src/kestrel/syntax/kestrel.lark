@@ -81,13 +81,14 @@ TRANSFORM: (TIMESTAMPED)
 
 TIMESTAMPED: "TIMESTAMPED"i
 
-where_clause: "WHERE"i condition
+where_clause: "WHERE"i ecg_pattern
 attr_clause: "ATTR"i ATTRIBUTES
 sort_clause: "SORT"i BY ATTRIBUTE (ASC|DESC)?
 limit_clause: "LIMIT"i INT
 offset_clause: "OFFSET"i INT
 
-?condition: disjunction
+?ecg_pattern: disjunction
+            | "[" disjunction "]" // STIX compatible
 
 ?disjunction: conjunction
             | disjunction "OR"i conjunction -> expression_or
@@ -99,8 +100,8 @@ offset_clause: "OFFSET"i INT
            | comparison_null
            | "(" disjunction ")"
 
-comparison_std:  (ENTITY_TYPE ":")? ATTRIBUTE OP      value
-comparison_null: (ENTITY_TYPE ":")? ATTRIBUTE NULL_OP NULL
+comparison_std:  ENTITY_ATTRIBUTE_PATH OP      value
+comparison_null: ENTITY_ATTRIBUTE_PATH NULL_OP NULL
 
 //
 // Timespan
@@ -253,6 +254,8 @@ value: NUMBER
      | NULL
      | ESCAPED_STRING
      | SIMPLESTRING
+
+ENTITY_ATTRIBUTE_PATH: (ENTITY_TYPE ":")? ATTRIBUTE
 
 ENTITY_TYPE: ECNAME
 

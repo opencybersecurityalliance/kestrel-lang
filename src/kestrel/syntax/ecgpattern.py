@@ -17,7 +17,9 @@ class ExtCenteredGraphConstruct(ABC):
 
 
 class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
-    def __init__(self, graph:ExtCenteredGraphConstruct, center_entity_type:str=None):
+    def __init__(
+        self, graph: ExtCenteredGraphConstruct, center_entity_type: str = None
+    ):
         self.center_entity_type = center_entity_type
         self.graph = graph
 

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from pkgutil import get_data
 
-from firepit.query import BinnedColumn, Filter, Predicate
+from firepit.query import BinnedColumn
 from firepit.timestamp import timefmt
 from lark import Lark, Token, Transformer
 
@@ -12,7 +12,6 @@ from kestrel.syntax.ecgpattern import (
     ECGPExpressionAnd,
     ExtCenteredGraphPattern,
 )
-from kestrel.exceptions import KestrelInternalError
 
 
 def parse(stmts, default_variable="_", default_sort_order="desc"):
@@ -197,7 +196,7 @@ class _PostParsing(Transformer):
     def where_clause(self, args):
         pattern = ExtCenteredGraphPattern(args[0])
         return {
-            "where": pattern.to_firepit(),
+            "where": pattern,
         }
 
     def attr_clause(self, args):
@@ -306,35 +305,14 @@ class _PostParsing(Transformer):
         return ECGPExpressionAnd(args[0], args[1])
 
     def comparison_std(self, args):
-        if len(args) == 4:
-            etype = _first(args)
-            attr = _second(args)
-            op = _third(args)
-            value = args[3]
-        elif len(args) == 3:
-            etype = None
-            attr = _first(args)
-            op = _second(args)
-            value = args[2]
-        else:
-            raise KestrelInternalError(
-                "mismatch between syntax and parser implementation on 'expression comparison standard'"
-            )
+        etype, attr = _extract_entity_and_attribute(args)
+        op = _second(args)
+        value = args[2]
         return ECGPComparison(attr, op, value, etype)
 
     def comparison_null(self, args):
-        if len(args) == 4:
-            etype = _first(args)
-            attr = _second(args)
-            op = _third(args)
-        elif len(args) == 3:
-            etype = None
-            attr = _first(args)
-            op = _second(args)
-        else:
-            raise KestrelInternalError(
-                "mismatch between syntax and parser implementation on 'expression comparison null'"
-            )
+        etype, attr = _extract_entity_and_attribute(args)
+        op = _second(args)
         if "NOT" in op:
             op = "!="
         else:
@@ -453,3 +431,12 @@ def _extract_direction(args, default_sort_order):
 def _extract_if_reversed(args):
     rs = [x for x in args if hasattr(x, "type") and x.type == "REVERSED"]
     return True if rs else False
+
+
+def _extract_entity_and_attribute(args):
+    s = _assert_and_extract_single("ENTITY_ATTRIBUTE_PATH", args)
+    if ":" in s:
+        etype, _, attr = s.partition(":")
+    else:
+        etype, attr = None, s
+    return etype, attr

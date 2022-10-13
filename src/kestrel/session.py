@@ -531,6 +531,8 @@ class Session(AbstractContextManager):
                 if "attrs" in stmt:
                     var_struct = self.symtable[stmt["input"]]
                     stmt["attrs"] = normalize_attrs(stmt, var_struct)
+                if "where" in stmt:
+                    stmt["where"] = stmt["where"].to_firepit()
 
                 # code generation and execution
                 execute_cmd = getattr(commands, stmt["command"])
