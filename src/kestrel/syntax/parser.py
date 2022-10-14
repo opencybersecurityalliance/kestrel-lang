@@ -329,14 +329,25 @@ class _PostParsing(Transformer):
     def arg_kv_pair(self, args):
         return {_first(args): args[1]}
 
-    def arg_values(self, args):
+    def value(self, args):
+        return args[0]
+
+    def literal_list(self, args):
+        # make sure the items are wrapped into a list even one item
+        if isinstance(args[0], list):
+            return args[0]
+        else:
+            return args
+
+    def literals(self, args):
+        # return the item if single, else return list
         if len(args) == 1:
             return args[0]
         else:
             return args
 
-    def value(self, args):
-        if args[0].type in ("NUMBER", "SIGNED_NUMBER"):
+    def literal(self, args):
+        if args[0].type == "NUMBER":
             try:
                 v = int(args[0].value)
             except:

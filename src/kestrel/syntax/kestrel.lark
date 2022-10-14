@@ -201,19 +201,17 @@ RAW_VALUES: ESCAPED_STRING_WS ("," ESCAPED_STRING_WS)*
 JSON_OBJS: JSON_OBJ ("," JSON_OBJ)*
 JSON_OBJ: WS* "{" JSON_PAIR ("," JSON_PAIR)* "}" WS*
 JSON_PAIR: ESCAPED_STRING_WS ":" JSON_VALUE
-JSON_VALUE: WS* (NUMBER|SIGNED_NUMBER|ESCAPED_STRING|TRUE|FALSE|NULL) WS*
+JSON_VALUE: WS* (NUMBER|ESCAPED_STRING|TRUE|FALSE|NULL) WS*
 
 //
 // Arguments
 // todo: do we need "," in values?
 //
 
-// use space after "," to avoid ambiguity between args and arg_values
+// use space after "," to avoid ambiguity between args and literals
 args: arg_kv_pair (", " arg_kv_pair)*
 
-arg_kv_pair: ECNAME "=" arg_values
-
-arg_values: value ("," value)*
+arg_kv_pair: ECNAME "=" literals
 
 //
 // Shared keywords
@@ -249,11 +247,17 @@ NULL_OP: IS WS* (NOT)?
 // Common language constructs
 //
 
-value: NUMBER
-     | SIGNED_NUMBER
-     | NULL
-     | ESCAPED_STRING
-     | SIMPLESTRING
+value: literal
+     | literal_list
+
+literal: SIMPLESTRING
+       | NULL
+       | NUMBER
+       | ESCAPED_STRING
+
+literals: literal ("," literal)*
+
+literal_list: "(" literals ")"
 
 ENTITY_ATTRIBUTE_PATH: (ENTITY_TYPE ":")? ATTRIBUTE
 
@@ -280,8 +284,7 @@ ESCAPED_STRING: "\"" _STRING_ESC_INNER "\""
 ESCAPED_STRING_WS: WS* ESCAPED_STRING WS*
 
 
-%import common (LETTER, DIGIT, WS, INT, WORD)
-%import common (NUMBER, SIGNED_NUMBER, _STRING_ESC_INNER)
+%import common (LETTER, DIGIT, WS, INT, WORD, NUMBER, _STRING_ESC_INNER)
 %import common.SH_COMMENT -> COMMENT
 
 %ignore WS
