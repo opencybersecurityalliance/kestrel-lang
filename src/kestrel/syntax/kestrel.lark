@@ -271,7 +271,7 @@ ATTRIBUTES: ATTRIBUTE (WS* "," WS* ATTRIBUTE)*
 ECNAME: (LETTER|"_") (LETTER|DIGIT|"_"|"-")*
 ECNAME_W_QUOTE: (LETTER|DIGIT|"_"|"-"|"'")+
 
-SIMPLESTRING: (LETTER|DIGIT|"_"|"-"|".")+
+SIMPLESTRING: (LETTER|DIGIT|"_"|"-"|"."|"[*]")+
 
 PATH_SIMPLE: (ECNAME "://")? (LETTER|DIGIT|"_"|"-"|"."|"/")+
 
