@@ -21,17 +21,23 @@ class ExtCenteredGraphConstruct(ABC):
 
 
 class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
-    def __init__(
-        self, graph: ExtCenteredGraphConstruct, center_entity_type: str = None
-    ):
-        self.center_entity_type = center_entity_type
+    def __init__(self, graph: ExtCenteredGraphConstruct):
         self.graph = graph
 
+    def add_center_entity(self, center_entity_type:str):
+        self.center_entity_type = center_entity_type
+
     def to_stix(self):
-        return self.graph.to_stix(self.center_entity_type)
+        try:
+            return self.graph.to_stix(self.center_entity_type)
+        except AttributeError:
+            raise KestrelInternalError("should run add_center_entity() before to_stix()")
 
     def to_firepit(self):
-        return Filter([self.graph.to_firepit(self.center_entity_type)])
+        try:
+            return Filter([self.graph.to_firepit(self.center_entity_type)])
+        except AttributeError:
+            raise KestrelInternalError("should run add_center_entity() before to_firepit()")
 
 
 class ECGPExpressionOr(ExtCenteredGraphConstruct):

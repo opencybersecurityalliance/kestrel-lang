@@ -37,7 +37,9 @@ def semantics_processing(stmt, symtable, data_source_manager):
         stmt["attrs"] = _normalize_attrs(stmt, var_struct)
 
     if "where" in stmt:
-        stmt["where"] = stmt["where"].to_firepit()
+        ecgpattern = stmt["where"]
+        ecgpattern.add_center_entity(None)
+        stmt["where"] = ecgpattern.to_firepit()
 
 
 def _check_elements_not_empty(stmt):
