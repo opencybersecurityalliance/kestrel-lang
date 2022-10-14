@@ -3,7 +3,6 @@ import datetime
 import logging
 import re
 
-from kestrel.semantics import get_entity_table
 from kestrel.syntax.paramstix import parse_extended_stix_pattern
 from kestrel.exceptions import (
     InvalidAttribute,
@@ -125,7 +124,7 @@ def _dereference_variable(store, symtable, var_name, attributes):
     attr_line = ",".join(attributes)
     _logger.debug(f'deref "{var_name}" with attributes "{attr_line}"')
 
-    var_entity_table = get_entity_table(var_name, symtable)
+    var_entity_table = symtable[var_name].entity_table
     try:
         store_return = store.lookup(var_entity_table, attr_line)
     except InvalidAttr as e:
@@ -154,8 +153,7 @@ def _get_variable_time_range(store, symtable, var_name):
         end (datetime.datetime): the time any entities is observed last.
 
     """
-    var_entity_table = get_entity_table(var_name, symtable)
-    summary = store.summary(var_entity_table)
+    summary = store.summary(symtable[var_name].entity_table)
     start = dateutil.parser.isoparse(summary["first_observed"])
     end = dateutil.parser.isoparse(summary["last_observed"])
     return start, end

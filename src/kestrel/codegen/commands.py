@@ -30,8 +30,7 @@ from firepit.stix20 import summarize_pattern
 
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts, lowered_str_list
 from kestrel.exceptions import *
-from kestrel.semantics import get_entity_table, get_entity_type
-from kestrel.symboltable import new_var
+from kestrel.symboltable.variable import new_var
 from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.syntax.utils import get_entity_types
 from kestrel.codegen.data import load_data, load_data_file, dump_data_to_file
@@ -105,7 +104,7 @@ def _debug_logger(func):
 @_debug_logger
 @_default_output
 def assign(stmt, session):
-    entity_table = get_entity_table(stmt["input"], session.symtable)
+    entity_table = session.symtable[stmt["input"]].entity_table
     transform = stmt.get("transform")
     if transform:
         if transform.lower() == "timestamped":
@@ -133,13 +132,13 @@ def assign(stmt, session):
 def merge(stmt, session):
     entity_types = list(
         set(
-            [get_entity_type(var_name, session.symtable) for var_name in stmt["inputs"]]
+            [session.symtable[var_name].type for var_name in stmt["inputs"]]
         )
     )
     if len(entity_types) > 1:
         raise NonUniformEntityType(entity_types)
     entity_tables = [
-        get_entity_table(var_name, session.symtable) for var_name in stmt["inputs"]
+        session.symtable[var_name].entity_table for var_name in stmt["inputs"]
     ]
     session.store.merge(stmt["output"], entity_tables)
     output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
@@ -164,14 +163,14 @@ def load(stmt, session):
 @_guard_empty_input
 def save(stmt, session):
     dump_data_to_file(
-        session.store, get_entity_table(stmt["input"], session.symtable), stmt["path"]
+        session.store, session.symtable[stmt["input"]].entity_table, stmt["path"]
     )
     return None, None
 
 
 @_debug_logger
 def info(stmt, session):
-    header = session.store.columns(get_entity_table(stmt["input"], session.symtable))
+    header = session.store.columns(session.symtable[stmt["input"]].entity_table)
     direct_attrs, associ_attrs, custom_attrs, references = [], [], [], []
     for field in header:
         if field.startswith("x_"):
@@ -210,7 +209,7 @@ def info(stmt, session):
 
 @_debug_logger
 def disp(stmt, session):
-    entity_table = get_entity_table(stmt["input"], session.symtable)
+    entity_table = session.symtable[stmt["input"]].entity_table
     transform = stmt.get("transform")
     if transform and entity_table:
         if transform.lower() == "timestamped":
@@ -252,7 +251,7 @@ def get(stmt, session):
     )
 
     if "variablesource" in stmt:
-        input_type = get_entity_table(stmt["variablesource"], session.symtable)
+        input_type = session.symtable[stmt["variablesource"]].type
         output_type = stmt["type"]
         if input_type != output_type:
             pass  # TODO: new exception type?
@@ -490,9 +489,9 @@ def find(stmt, session):
 def join(stmt, session):
     session.store.join(
         stmt["output"],
-        get_entity_table(stmt["input"], session.symtable),
+        session.symtable[stmt["input"]].entity_table,
         stmt["attribute_1"],
-        get_entity_table(stmt["input_2"], session.symtable),
+        session.symtable[stmt["input_2"]].entity_table,
         stmt["attribute_2"],
     )
 
@@ -507,7 +506,7 @@ def group(stmt, session):
         aggs = None
     session.store.group(
         stmt["output"],
-        get_entity_table(stmt["input"], session.symtable),
+        session.symtable[stmt["input"]].entity_table,
         stmt["attributes"],
         aggs,
     )
@@ -519,7 +518,7 @@ def group(stmt, session):
 def sort(stmt, session):
     session.store.assign(
         stmt["output"],
-        get_entity_table(stmt["input"], session.symtable),
+        session.symtable[stmt["input"]].entity_table,
         op="sort",
         by=stmt["attribute"],
         ascending=stmt["ascending"],

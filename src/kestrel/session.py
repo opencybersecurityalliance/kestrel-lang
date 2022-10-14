@@ -65,7 +65,6 @@ from kestrel.exceptions import (
     InvalidStixPattern,
     DebugCacheLinkOccupied,
 )
-from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.syntax.parser import parse
 from kestrel.syntax.utils import (
     get_entity_types,
@@ -75,10 +74,11 @@ from kestrel.syntax.utils import (
     AGG_FUNCS,
     TRANSFORMS,
 )
-from kestrel.semantics import *
+from kestrel.semantics.processor import semantics_processing
 from kestrel.codegen import commands
 from kestrel.codegen.display import DisplayBlockSummary
 from kestrel.codegen.summary import gen_variable_summary
+from kestrel.symboltable.symtable import SymbolTable
 from firepit import get_storage
 from firepit.exceptions import StixPatternError
 from kestrel.utils import set_current_working_directory
@@ -242,7 +242,7 @@ class Session(AbstractContextManager):
         # linking variables in syntax with internal data structure
         # handling fallback_var for the most recently accessed var
         # {"var": VarStruct}
-        self.symtable = {}
+        self.symtable = SymbolTable()
 
         self.data_source_manager = DataSourceManager(self.config)
         self.analytics_manager = AnalyticsManager(self.config)
@@ -510,29 +510,8 @@ class Session(AbstractContextManager):
         for stmt in ast:
 
             try:
-
-                # pre-processing: semantics check and completion
-                #   - ensure all parsed elements not empty
-                #   - check existance of argument variables
-                #   - complete data source if omitted by user
-                #   - complete input context
-                check_elements_not_empty(stmt)
-                for input_var_name in get_all_input_var_names(stmt):
-                    check_var_exists(input_var_name, self.symtable)
-                if stmt["command"] == "get":
-                    recognize_var_source(stmt, self.symtable)
-                    complete_data_source(
-                        stmt, self.data_source_manager.queried_data_sources[-1]
-                    )
-                if stmt["command"] == "load" or stmt["command"] == "save":
-                    stmt["path"] = pathlib.Path(stmt["path"]).expanduser().resolve()
-                if stmt["command"] == "find":
-                    check_semantics_on_find(stmt, self.symtable[stmt["input"]].type)
-                if "attrs" in stmt:
-                    var_struct = self.symtable[stmt["input"]]
-                    stmt["attrs"] = normalize_attrs(stmt, var_struct)
-                if "where" in stmt:
-                    stmt["where"] = stmt["where"].to_firepit()
+                # semantic checking, completion, and unfolding
+                semantics_processing(stmt, self.symtable, self.data_source_manager)
 
                 # code generation and execution
                 execute_cmd = getattr(commands, stmt["command"])
