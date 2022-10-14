@@ -131,9 +131,7 @@ def assign(stmt, session):
 @_default_output
 def merge(stmt, session):
     entity_types = list(
-        set(
-            [session.symtable[var_name].type for var_name in stmt["inputs"]]
-        )
+        set([session.symtable[var_name].type for var_name in stmt["inputs"]])
     )
     if len(entity_types) > 1:
         raise NonUniformEntityType(entity_types)
