@@ -4,6 +4,7 @@ from lark import UnexpectedToken
 import pytest
 
 from kestrel.syntax.parser import parse
+from kestrel.syntax.ecgpattern import Reference
 
 
 def test_simple_get():
@@ -74,7 +75,7 @@ def test_apply_params_with_dots():
     assert result["command"] == "apply"
     assert result["analytics_uri"] == "xyz://my_analytic"
     assert result["inputs"] == ["foo"]
-    assert result["arguments"] == {"x": 0.1, "y": "a.value"}
+    assert result["arguments"] == {"x": 0.1, "y": Reference("a", "value")}
 
 
 def test_apply_params_with_decimal_and_dots():
@@ -83,7 +84,7 @@ def test_apply_params_with_decimal_and_dots():
     assert result["command"] == "apply"
     assert result["analytics_uri"] == "xyz://my_analytic"
     assert result["inputs"] == ["foo"]
-    assert result["arguments"] == {"x": 0.1, "y": ["a.value", "b", "c"]}
+    assert result["arguments"] == {"x": 0.1, "y": [Reference("a", "value"), "b", "c"]}
 
 
 def test_apply_params_no_equals():

@@ -1,6 +1,10 @@
 from abc import ABC, abstractmethod
 from firepit.query import Filter, Predicate
-from kestrel.exceptions import KestrelNotImplemented, InvalidStixPattern
+from kestrel.exceptions import (
+    KestrelNotImplemented,
+    InvalidStixPattern,
+    KestrelInternalError,
+)
 
 
 class ExtCenteredGraphConstruct(ABC):
@@ -102,6 +106,15 @@ class Reference:
         self.variable = variable
         self.attribute = attribute
 
+    def __eq__(self, other):
+        if self.variable == other.variable and self.attribute == other.attribute:
+            return True
+        else:
+            return False
+
+    def to_string(self):
+        return f"{self.variable}.{self.attribute}"
+
 
 def value_to_stix(value):
     if isinstance(value, str):
@@ -110,5 +123,7 @@ def value_to_stix(value):
         return value
     elif isinstance(value, (list, tuple)):
         return "(" + ",".join(map(value_to_stix, value)) + ")"
+    elif isinstance(value, Reference):
+        raise KestrelInternalError("reference should be derefed before value_to_stix()")
     else:
         raise InvalidStixPattern(invalid_term_value=value)

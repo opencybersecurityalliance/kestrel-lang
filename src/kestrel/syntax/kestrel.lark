@@ -251,9 +251,8 @@ value: literal
      | literal_list
 
 literal: SIMPLESTRING
-       | NULL
-       | NUMBER
        | ESCAPED_STRING
+       | NUMBER
 
 literals: literal ("," literal)*
 

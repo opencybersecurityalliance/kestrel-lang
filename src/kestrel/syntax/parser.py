@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from pkgutil import get_data
+import importlib
+import os
 
 from firepit.query import BinnedColumn
 from firepit.timestamp import timefmt
@@ -11,6 +13,7 @@ from kestrel.syntax.ecgpattern import (
     ECGPExpressionOr,
     ECGPExpressionAnd,
     ExtCenteredGraphPattern,
+    Reference,
 )
 
 
@@ -30,6 +33,22 @@ def get_all_input_var_names(stmt):
     input_refs = ["input", "input_2", "variablesource"]
     inputs_refs = stmt["inputs"] if "inputs" in stmt else []
     return [stmt.get(k) for k in input_refs if k in stmt] + inputs_refs
+
+
+def parse_reference(value_str):
+    grammar = get_data(__name__, "reference.lark").decode("utf-8")
+    paths = importlib.util.find_spec("kestrel.syntax").submodule_search_locations
+    parser = Lark(grammar, parser="lalr", import_paths=paths)
+
+    try:
+        ast = parser.parse(value_str)
+    except:
+        return None
+
+    variable = ast.children[0].value
+    attribute = ast.children[1].value
+
+    return Reference(variable, attribute)
 
 
 ################################################################
@@ -356,6 +375,9 @@ class _PostParsing(Transformer):
             v = unescape_quoted_string(args[0].value)
         else:
             v = args[0].value
+            ref = parse_reference(v)
+            if ref:
+                v = ref
         return v
 
 
