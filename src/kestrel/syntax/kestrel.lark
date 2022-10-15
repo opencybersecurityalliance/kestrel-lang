@@ -205,11 +205,10 @@ JSON_VALUE: WS* (NUMBER|ESCAPED_STRING|TRUE|FALSE|NULL) WS*
 
 //
 // Arguments
-// todo: do we need "," in values?
+// use ";" to avoid ambiguity between args and literals
 //
 
-// use space after "," to avoid ambiguity between args and literals
-args: arg_kv_pair (", " arg_kv_pair)*
+args: arg_kv_pair (";" arg_kv_pair)*
 
 arg_kv_pair: ECNAME "=" literals
 
@@ -247,8 +246,8 @@ NULL_OP: IS WS* (NOT)?
 // Common language constructs
 //
 
-value: literal
-     | literal_list
+value: literal_list
+     | literal
 
 literal: SIMPLESTRING
        | ESCAPED_STRING

@@ -6,6 +6,21 @@ from kestrel.session import Session
 from kestrel.codegen.display import DisplayHtml
 
 
+NEW_PROCS = """
+newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
+             , {"type": "process", "name": "explorer.exe", "pid": "99"}
+             ]
+"""
+
+
+REF_PROCS = """
+ref = NEW [
+          {"type": "process", "name": "", "pid": 4},
+          {"type": "process", "name": "explorer.exe", "pid": 1380}
+        ]
+"""
+
+
 @pytest.fixture
 def fake_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
@@ -51,13 +66,8 @@ def env_setup(tmp_path):
 
 def test_enrich_one_variable():
     with Session() as s:
-        stmt = """
-newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
-             , {"type": "process", "name": "explorer.exe", "pid": "99"}
-             ]
-APPLY python://enrich_one_variable ON newvar
-"""
-        s.execute(stmt)
+        s.execute(NEW_PROCS)
+        s.execute("APPLY python://enrich_one_variable ON newvar")
         v = s.get_variable("newvar")
         assert len(v) == 2
         assert v[0]["type"] == "process"
@@ -68,13 +78,8 @@ APPLY python://enrich_one_variable ON newvar
 
 def test_html_visualization():
     with Session() as s:
-        stmt = """
-newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
-             , {"type": "process", "name": "explorer.exe", "pid": "99"}
-             ]
-APPLY python://html_visualization ON newvar
-"""
-        displays = s.execute(stmt)
+        s.execute(NEW_PROCS)
+        displays = s.execute("APPLY python://html_visualization ON newvar")
         viz = displays[0]
         assert type(viz) is DisplayHtml
         assert viz.html == "<p>Hello World! -- a Kestrel analytics</p>"
@@ -110,19 +115,38 @@ APPLY python://enrich_multiple_variables ON v1, v2, v3
 
 def test_enrich_variable_with_arguments():
     with Session() as s:
+        s.execute(NEW_PROCS)
         stmt = """
-newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
-             , {"type": "process", "name": "explorer.exe", "pid": "99"}
-             ]
-APPLY python://enrich_variable_with_arguments ON newvar WITH argx=abc, argy=123, argz="as\\"is"
+APPLY python://enrich_variable_with_arguments
+ON newvar
+WITH argx=abc,888; argy=123; argz="as\\"is"
 """
         s.execute(stmt)
         v = s.get_variable("newvar")
         assert len(v) == 2
         assert v[0]["type"] == "process"
-        assert v[0]["x_new_argx"] == "abc"
+        assert v[0]["x_new_argx"] == "abc,888"
         assert v[0]["x_new_argy"] == 123
         assert v[0]["x_new_argz"] == r'as"is'
+
+
+def test_enrich_variable_with_reference_in_arguments():
+    with Session() as s:
+        s.execute(NEW_PROCS)
+        s.execute(REF_PROCS)
+        stmt = """
+APPLY python://enrich_variable_with_arguments
+ON newvar
+WITH argx=ref.pid; argy=123; argz=ref.pid,555
+"""
+        s.execute(stmt)
+        v = s.get_variable("newvar")
+        assert len(v) == 2
+        assert v[0]["type"] == "process"
+        assert v[0]["x_new_argx"] in ("4,1380", "1380,4")
+        assert v[0]["x_new_argy"] == 123
+        assert v[0]["x_new_argz"] in ("4,1380,555", "1380,4,555")
+
 
 
 def test_enrich_after_get_url(fake_bundle_file):

@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
 from firepit.query import Filter, Predicate
+from kestrel.syntax.reference import (
+    Reference,
+    deref_and_flatten_value_to_list,
+    value_to_stix,
+)
 from kestrel.exceptions import (
     KestrelNotImplemented,
-    InvalidStixPattern,
+    InvalidECGPattern,
     KestrelInternalError,
 )
 
@@ -19,25 +24,36 @@ class ExtCenteredGraphConstruct(ABC):
     def to_firepit(self, center_entity_type: str):
         pass
 
+    @abstractmethod
+    def deref(self, deref_func):
+        pass
+
 
 class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
     def __init__(self, graph: ExtCenteredGraphConstruct):
         self.graph = graph
 
-    def add_center_entity(self, center_entity_type:str):
+    def add_center_entity(self, center_entity_type: str):
         self.center_entity_type = center_entity_type
 
     def to_stix(self):
         try:
             return self.graph.to_stix(self.center_entity_type)
         except AttributeError:
-            raise KestrelInternalError("should run add_center_entity() before to_stix()")
+            raise KestrelInternalError(
+                "should run add_center_entity() before to_stix()"
+            )
 
     def to_firepit(self):
         try:
             return Filter([self.graph.to_firepit(self.center_entity_type)])
         except AttributeError:
-            raise KestrelInternalError("should run add_center_entity() before to_firepit()")
+            raise KestrelInternalError(
+                "should run add_center_entity() before to_firepit()"
+            )
+
+    def deref(self, deref_func):
+        self.graph.deref(deref_func)
 
 
 class ECGPExpressionOr(ExtCenteredGraphConstruct):
@@ -61,6 +77,10 @@ class ECGPExpressionOr(ExtCenteredGraphConstruct):
             self.rhs.to_firepit(center_entity_type),
         )
 
+    def deref(self, deref_func):
+        self.lhs.deref(deref_func)
+        self.rhs.deref(deref_func)
+
 
 class ECGPExpressionAnd(ExtCenteredGraphConstruct):
     def __init__(self, lhs, rhs):
@@ -83,18 +103,27 @@ class ECGPExpressionAnd(ExtCenteredGraphConstruct):
             self.rhs.to_firepit(center_entity_type),
         )
 
+    def deref(self, deref_func):
+        self.lhs.deref(deref_func)
+        self.rhs.deref(deref_func)
+
 
 class ECGPComparison(ExtCenteredGraphConstruct):
     def __init__(self, entity_attribute: str, operator: str, value, entity_type=None):
         self.etype = entity_type
         self.attribute = entity_attribute
-        self.op = operator
+        self.op = operator.upper()
         self.value = value
-
-    def deref_value(self, symboltable, store):
-        # todo: implement it
-        self.op = "IN"
-        self.value = []
+        if isinstance(self.value, list):
+            if self.op != "IN":
+                raise InvalidECGPattern(
+                    'a list should be paired with the operator "IN"'
+                )
+        elif not isinstance(self.value, Reference):
+            if self.op == "IN":
+                raise InvalidECGPattern(
+                    'inappropriately pair operator "IN" with literal'
+                )
 
     def to_stix(self, center_entity_type: str):
         if not self.etype:
@@ -106,30 +135,14 @@ class ECGPComparison(ExtCenteredGraphConstruct):
             raise KestrelNotImplemented("firepit filtering on linked entities")
         return Predicate(self.attribute, self.op, self.value)
 
-
-class Reference:
-    def __init__(self, variable, attribute):
-        self.variable = variable
-        self.attribute = attribute
-
-    def __eq__(self, other):
-        if self.variable == other.variable and self.attribute == other.attribute:
-            return True
+    def deref(self, deref_func):
+        xs = deref_and_flatten_value_to_list(self.value, deref_func)
+        if len(xs) == 0:
+            raise InvalidECGPattern("empty value after deref of {self.value}")
+        elif len(xs) == 1:
+            self.value = xs[0]
+            if self.op == "IN":
+                self.op = "="
         else:
-            return False
-
-    def to_string(self):
-        return f"{self.variable}.{self.attribute}"
-
-
-def value_to_stix(value):
-    if isinstance(value, str):
-        return "'" + value + "'"
-    elif isinstance(value, (int, float)):
-        return value
-    elif isinstance(value, (list, tuple)):
-        return "(" + ",".join(map(value_to_stix, value)) + ")"
-    elif isinstance(value, Reference):
-        raise KestrelInternalError("reference should be derefed before value_to_stix()")
-    else:
-        raise InvalidStixPattern(invalid_term_value=value)
+            self.value = xs
+            self.op = "IN"

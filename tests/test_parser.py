@@ -5,6 +5,7 @@ import pytest
 
 from kestrel.syntax.parser import parse
 from kestrel.syntax.ecgpattern import Reference
+from kestrel.exceptions import InvalidECGPattern
 
 
 def test_simple_get():
@@ -14,6 +15,20 @@ def test_simple_get():
     assert result["type"] == "url"
     assert result["datasource"] == "udi://all"
     assert result["patternbody"] == "[url:value LIKE '%']"
+
+
+def test_assign_in():
+    results = parse("y = x WHERE pid IN (1, 2, 3)")
+    where = results[0]["where"]
+    where.add_center_entity("process")
+    assert where.to_stix() == "process:pid IN (1,2,3)"
+
+
+def test_ecgp_in_exception():
+    with pytest.raises(InvalidECGPattern) as einfo:
+        results = parse("y = x WHERE pid = (1, 2, 3)")
+    err = einfo.value
+    assert err.error == 'a list should be paired with the operator "IN"'
 
 
 def test_quoted_datasource():
@@ -33,7 +48,7 @@ def test_quoted_datasource():
             "X1",
             "x-custom-object",
             "myscheme://foo.bar/whatever",
-            "[x-other-custom-thing:x_custom_prop IN ('a', 'b', 'c']",
+            "[x-other-custom-thing:x_custom_prop IN ('a', 'b', 'c')]",
         ),
         (
             "urls",
@@ -61,7 +76,7 @@ def test_parser_get(outvar, sco_type, ds, pat):
 
 
 def test_apply_params():
-    results = parse("apply xyz://my_analytic on foo with x=1, y=a,b,c")
+    results = parse("apply xyz://my_analytic on foo with x=1; y=a, b,c")
     result = results[0]
     assert result["command"] == "apply"
     assert result["analytics_uri"] == "xyz://my_analytic"
@@ -70,7 +85,7 @@ def test_apply_params():
 
 
 def test_apply_params_with_dots():
-    results = parse("apply xyz://my_analytic on foo with x=0.1, y=a.value")
+    results = parse("apply xyz://my_analytic on foo with x=0.1; y=a.value")
     result = results[0]
     assert result["command"] == "apply"
     assert result["analytics_uri"] == "xyz://my_analytic"
@@ -79,7 +94,7 @@ def test_apply_params_with_dots():
 
 
 def test_apply_params_with_decimal_and_dots():
-    results = parse("apply xyz://my_analytic on foo with x=0.1, y=a.value,b,c")
+    results = parse("apply xyz://my_analytic on foo with x=0.1; y=a.value ,b,c")
     result = results[0]
     assert result["command"] == "apply"
     assert result["analytics_uri"] == "xyz://my_analytic"
@@ -89,7 +104,7 @@ def test_apply_params_with_decimal_and_dots():
 
 def test_apply_params_no_equals():
     with pytest.raises(UnexpectedToken):
-        parse("apply xyz://my_analytic on foo with x=1, y")
+        parse("apply xyz://my_analytic on foo with x=1; y")
 
 
 def test_grouping_0():

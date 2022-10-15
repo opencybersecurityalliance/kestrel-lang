@@ -8,7 +8,6 @@ from kestrel.codegen.relations import (
     stix_2_0_identical_mapping,
 )
 
-
 LITERALS = {"CNAME", "LETTER", "DIGIT", "WS", "INT", "WORD", "ESCAPED_STRING", "NUMBER"}
 AGG_FUNCS = {"MIN", "MAX", "AVG", "SUM", "COUNT", "NUNIQUE"}
 TRANSFORMS = {"TIMESTAMPED"}

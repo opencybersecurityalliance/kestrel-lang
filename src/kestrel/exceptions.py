@@ -99,6 +99,10 @@ class InvalidStixPattern(KestrelException):
         super().__init__(msg, "rewrite the STIX pattern")
 
 
+class InvalidECGPattern(KestrelException):
+    pass
+
+
 class VariableNotExist(KestrelException):
     def __init__(self, var_name):
         super().__init__(

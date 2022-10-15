@@ -511,7 +511,9 @@ class Session(AbstractContextManager):
 
             try:
                 # semantic checking, completion, and unfolding
-                semantics_processing(stmt, self.symtable, self.data_source_manager)
+                semantics_processing(
+                    stmt, self.symtable, self.store, self.data_source_manager
+                )
 
                 # code generation and execution
                 execute_cmd = getattr(commands, stmt["command"])
