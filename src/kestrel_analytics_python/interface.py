@@ -198,7 +198,9 @@ class PythonAnalytics(AbstractContextManager):
             if isinstance(self.parameters, Mapping):
                 _logger.debug(f"setting parameters as env vars: {self.parameters}")
                 for k, v in self.parameters.items():
-                    os.environ[k] = ",".join([str(w) for w in v]) if isinstance(v, list) else v
+                    os.environ[k] = (
+                        ",".join([str(w) for w in v]) if isinstance(v, list) else v
+                    )
             else:
                 raise InvalidAnalyticsInterfaceImplementation(
                     "parameters should be passed in as a Mapping"

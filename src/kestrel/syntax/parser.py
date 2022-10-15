@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from pkgutil import get_data
 import importlib
-import os
 
 from firepit.query import BinnedColumn
 from firepit.timestamp import timefmt
