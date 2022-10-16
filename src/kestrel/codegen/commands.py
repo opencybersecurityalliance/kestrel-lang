@@ -27,6 +27,7 @@ from firepit.deref import auto_deref
 from firepit.exceptions import InvalidAttr
 from firepit.query import Limit, Offset, Order, Projection, Query
 from firepit.stix20 import summarize_pattern
+from firepit.timestamp import timefmt
 
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts, lowered_str_list
 from kestrel.exceptions import *
@@ -241,7 +242,7 @@ def get(stmt, session):
 
     pattern = build_pattern(
         stmt["patternbody"],
-        stmt["timerange"],
+        list(map(timefmt, stmt["timerange"])) if stmt["timerange"] else None,
         start_offset,
         end_offset,
         session.symtable,
@@ -303,7 +304,7 @@ def get(stmt, session):
                 return_type,
                 prefetch_ret_var_table,
                 local_var_table,
-                stmt["timerange"],
+                list(map(timefmt, stmt["timerange"])) if stmt["timerange"] else None,
                 start_offset,
                 end_offset,
                 {local_var_table: _output},
@@ -369,7 +370,7 @@ def find(stmt, session):
     local_var_table = stmt["output"] + "_local"
     relation = stmt["relation"]
     is_reversed = stmt["reversed"]
-    time_range = stmt["timerange"]
+    time_range = list(map(timefmt, stmt["timerange"])) if stmt["timerange"] else None
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     rel_query = None

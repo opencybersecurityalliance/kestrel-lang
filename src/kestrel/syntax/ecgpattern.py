@@ -1,6 +1,7 @@
 import datetime
 from abc import ABC, abstractmethod
 from firepit.query import Filter, Predicate
+from firepit.timestamp import timefmt
 from kestrel.syntax.utils import merge_timeranges
 from kestrel.syntax.reference import (
     Reference,
@@ -55,8 +56,8 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
                 else:
                     start = tr[0] + timeadj[0]
                     end = tr[1] + timeadj[1]
-                start_stix = start.strftime("%Y-%m-%dT%H:%M:%S.000Z")
-                stop_stix = end.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+                start_stix = timefmt(start)
+                stop_stix = timefmt(end)
                 tr_stix = f" START t'{start_stix}' STOP t'{stop_stix}'"
             else:
                 tr_stix = ""

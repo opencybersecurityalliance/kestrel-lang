@@ -68,7 +68,7 @@ def semantics_processing(
                 config["stixquery"]["timerange_start_offset"],
                 config["stixquery"]["timerange_stop_offset"],
             )
-            stmt["patternbody"] = stmt["where"].to_stix()
+            stmt["patternbody"] = stmt["where"].to_stix(stmt["timerange"], time_adj)
 
     if "arguments" in stmt:
         stmt["arguments"] = {

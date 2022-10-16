@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import dateutil
 from pkgutil import get_data
 import importlib
 
@@ -251,10 +252,12 @@ class _PostParsing(Transformer):
             delta = timedelta(seconds=num)
         stop = datetime.utcnow()
         start = stop - delta
-        return {"timerange": (timefmt(start, prec=6), timefmt(stop, prec=6))}
+        return {"timerange": (start, stop)}
 
     def timespan_absolute(self, args):
-        return {"timerange": (args[0], args[1])}
+        start = dateutil.parser.isoparse(args[0])
+        stop = dateutil.parser.isoparse(args[1])
+        return {"timerange": (start, stop)}
 
     def timestamp(self, args):
         return _assert_and_extract_single("ISOTIMESTAMP", args)

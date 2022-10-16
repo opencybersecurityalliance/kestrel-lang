@@ -1,4 +1,4 @@
-import dateutil.parser
+import dateutil
 import logging
 from firepit.sqlstorage import SqlStorage
 from kestrel.symboltable.symtable import SymbolTable
