@@ -510,9 +510,13 @@ class Session(AbstractContextManager):
         for stmt in ast:
 
             try:
-                # semantic checking, completion, and unfolding
+                # semantic checking and unfolding
                 semantics_processing(
-                    stmt, self.symtable, self.store, self.data_source_manager
+                    stmt,
+                    self.symtable,
+                    self.store,
+                    self.data_source_manager,
+                    self.config,
                 )
 
                 # code generation and execution

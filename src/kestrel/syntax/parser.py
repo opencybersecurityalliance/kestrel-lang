@@ -9,8 +9,7 @@ from lark import Lark, Token, Transformer
 from kestrel.utils import unescape_quoted_string
 from kestrel.syntax.ecgpattern import (
     ECGPComparison,
-    ECGPExpressionOr,
-    ECGPExpressionAnd,
+    ECGPJunction,
     ExtCenteredGraphPattern,
     Reference,
 )
@@ -317,10 +316,10 @@ class _PostParsing(Transformer):
         return {"func": func, "attr": attr, "alias": alias}
 
     def expression_or(self, args):
-        return ECGPExpressionOr(args[0], args[1])
+        return ECGPJunction("OR", args[0], args[1])
 
     def expression_and(self, args):
-        return ECGPExpressionAnd(args[0], args[1])
+        return ECGPJunction("AND", args[0], args[1])
 
     def comparison_std(self, args):
         etype, attr = _extract_entity_and_attribute(args)

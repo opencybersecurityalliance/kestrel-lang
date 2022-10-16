@@ -1,9 +1,13 @@
 import logging
 import pathlib
+import datetime
 import re
 
 from kestrel.syntax.parser import get_all_input_var_names
 from kestrel.syntax.reference import deref_and_flatten_value_to_list
+from kestrel.symboltable.symtable import SymbolTable
+from firepit.sqlstorage import SqlStorage
+from kestrel.datasource.manager import DataSourceManager
 
 from kestrel.exceptions import (
     InvalidAttribute,
@@ -12,12 +16,18 @@ from kestrel.exceptions import (
     KestrelInternalError,
 )
 from kestrel.codegen.relations import stix_2_0_ref_mapping, generic_relations
-from kestrel.semantics.reference import make_deref_func
+from kestrel.semantics.reference import make_deref_func, make_var_timerange_func
 
 _logger = logging.getLogger(__name__)
 
 
-def semantics_processing(stmt, symtable, store, data_source_manager):
+def semantics_processing(
+    stmt: dict,
+    symtable: SymbolTable,
+    store: SqlStorage,
+    data_source_manager: DataSourceManager,
+    config: dict,
+):
     # semantics checking and completion
 
     _check_elements_not_empty(stmt)
@@ -39,9 +49,10 @@ def semantics_processing(stmt, symtable, store, data_source_manager):
         stmt["attrs"] = _normalize_attrs(stmt, var_struct)
 
     deref_func = make_deref_func(store, symtable)
+    get_timerange_func = make_var_timerange_func(store, symtable)
 
     if "where" in stmt:
-        stmt["where"].deref(deref_func)
+        stmt["where"].deref(deref_func, get_timerange_func)
 
         if stmt["command"] == "get":
             center_entity_type = stmt["type"]
@@ -53,11 +64,16 @@ def semantics_processing(stmt, symtable, store, data_source_manager):
         if stmt["command"] in ("assign", "disp"):
             stmt["where"] = stmt["where"].to_firepit()
         elif stmt["command"] in ("get", "find"):
+            time_adj = (
+                config["stixquery"]["timerange_start_offset"],
+                config["stixquery"]["timerange_stop_offset"],
+            )
             stmt["patternbody"] = stmt["where"].to_stix()
 
     if "arguments" in stmt:
         stmt["arguments"] = {
-            k: _arguments_deref(v, deref_func) for k, v in stmt["arguments"].items()
+            k: _arguments_deref(v, deref_func, get_timerange_func)
+            for k, v in stmt["arguments"].items()
         }
 
 
@@ -123,8 +139,9 @@ def _check_semantics_on_find(stmt, input_type):
         raise UnsupportedRelation(entity_x, relation, entity_y)
 
 
-def _arguments_deref(v, deref_func):
-    w = deref_and_flatten_value_to_list(v, deref_func)
+def _arguments_deref(v, deref_func, get_timerange_func):
+    # not bother timerange for arguments deref
+    w, _ = deref_and_flatten_value_to_list(v, deref_func, get_timerange_func)
     if len(w) == 1:
         w = w[0]
     return w

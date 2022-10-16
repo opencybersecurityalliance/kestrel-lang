@@ -21,7 +21,7 @@ def test_assign_in():
     results = parse("y = x WHERE pid IN (1, 2, 3)")
     where = results[0]["where"]
     where.add_center_entity("process")
-    assert where.to_stix() == "process:pid IN (1,2,3)"
+    assert where.to_stix(None, None) == "process:pid IN (1,2,3)"
 
 
 def test_ecgp_in_exception():

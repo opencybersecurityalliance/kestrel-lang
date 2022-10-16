@@ -1,6 +1,8 @@
 from lark import Lark
 from pkgutil import get_data
 from itertools import chain
+from collections.abc import Iterable
+import datetime
 
 from kestrel.codegen.relations import (
     all_relations,
@@ -32,3 +34,15 @@ def get_entity_types():
                 all_types.add(mapping[i])
     all_types.update(stix_2_0_identical_mapping.keys())
     return tuple(all_types)
+
+
+def merge_timeranges(trs: Iterable[(datetime.datetime, datetime.datetime)]):
+    # return the earliest start time and latest end time
+    trs = [tr for tr in trs if tr is not None]
+    if trs:
+        starts, ends = list(zip(*trs))
+        start = min(starts)
+        end = min(ends)
+        return (start, end)
+    else:
+        return None

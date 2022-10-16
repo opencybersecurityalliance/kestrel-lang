@@ -1,3 +1,4 @@
+import datetime
 from kestrel.exceptions import InvalidECGPattern
 
 
@@ -16,17 +17,31 @@ class Reference:
         return self.variable + "." + self.attribute
 
 
-def deref_and_flatten_value_to_list(value, deref_func):
-    # always return a list
+def deref_and_flatten_value_to_list(value, deref_func, get_timerange_func):
+    # always return a list of values, plus the time range: None or (start, end)
     if isinstance(value, Reference):
-        return deref_func(value)
+        tr = get_timerange_func(value)
+        vs = deref_func(value)
+        return vs, tr
     elif isinstance(value, list):
         xs = []
+        start, end = None, None
         for x in value:
-            xs.extend(deref_and_flatten_value_to_list(x, deref_func))
-        return xs
+            vs, tr = deref_and_flatten_value_to_list(x, deref_func, get_timerange_func)
+            xs.extend(vs)
+            if tr:
+                s, e = tr
+                if start is None or s < start:
+                    start = s
+                if end is None or e > end:
+                    end = e
+        if start is None and end is None:
+            timerange = None
+        else:
+            timerange = start, end
+        return xs, timerange
     else:
-        return [value]
+        return [value], None
 
 
 def value_to_stix(value):
