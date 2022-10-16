@@ -8,27 +8,52 @@ from kestrel.syntax.ecgpattern import Reference
 from kestrel.exceptions import InvalidECGPattern
 
 
-def test_simple_get():
-    results = parse("y = get url from udi://all where [url:value LIKE '%']")
+@pytest.mark.parametrize("pattern",
+    ["[url:value LIKE '%']"
+    ,"url:value LIKE '%'"
+    ,"value LIKE '%'"
+    ,"[value LIKE '%']"
+    ,"[url:value \n LIKE '%']"
+    ,"value LIKE \n '%'"
+    ],
+)
+def test_simple_get(pattern):
+    results = parse(f"y = get url from udi://all where {pattern}")
     result = results[0]
+
     assert result["command"] == "get"
     assert result["type"] == "url"
     assert result["datasource"] == "udi://all"
-    assert result["patternbody"] == "[url:value LIKE '%']"
+
+    where = results[0]["where"]
+    where.add_center_entity("url")
+    assert where.to_stix(None, None) == "[url:value LIKE '%']"
 
 
-def test_assign_in():
-    results = parse("y = x WHERE pid IN (1, 2, 3)")
+@pytest.mark.parametrize("pattern",
+    ["pid IN (1, 2, 3)"
+    ,"[pid IN (1, 2, 3)]"
+    ,"[process:pid IN (1, 2, 3)]"
+    ],
+)
+def test_assign_in(pattern):
+    results = parse(f"y = x WHERE {pattern}")
     where = results[0]["where"]
     where.add_center_entity("process")
-    assert where.to_stix(None, None) == "process:pid IN (1,2,3)"
+    assert where.to_stix(None, None) == "[process:pid IN (1,2,3)]"
 
 
-def test_ecgp_in_exception():
+@pytest.mark.parametrize(
+    "pattern, errprint",
+    [
+        ("pid = (1, 2, 3)", 'a list should be paired with the operator "IN"'),
+        ("pid IN 'asdf'", 'inappropriately pair operator "IN" with literal'),
+    ],
+)
+def test_ecgp_in_exception(pattern, errprint):
     with pytest.raises(InvalidECGPattern) as einfo:
-        results = parse("y = x WHERE pid = (1, 2, 3)")
-    err = einfo.value
-    assert err.error == 'a list should be paired with the operator "IN"'
+        results = parse(f"y = x WHERE {pattern}")
+    assert einfo.value.error == errprint
 
 
 def test_quoted_datasource():
@@ -37,7 +62,10 @@ def test_quoted_datasource():
     assert result["command"] == "get"
     assert result["type"] == "url"
     assert result["datasource"] == "udi://My QRadar"
-    assert result["patternbody"] == "[url:value LIKE '%']"
+
+    where = results[0]["where"]
+    where.add_center_entity("url")
+    assert where.to_stix(None, None) == "[url:value LIKE '%']"
 
 
 @pytest.mark.parametrize(
@@ -48,7 +76,7 @@ def test_quoted_datasource():
             "X1",
             "x-custom-object",
             "myscheme://foo.bar/whatever",
-            "[x-other-custom-thing:x_custom_prop IN ('a', 'b', 'c')]",
+            "[x-other-custom-thing:x_custom_prop IN ('a','b','c')]",
         ),
         (
             "urls",
@@ -60,19 +88,21 @@ def test_quoted_datasource():
             "ext_dns_conns",
             "network-traffic",
             '"udi://10k Traffic"',
-            "[network-traffic:dst_port = 53 AND network-traffic:dst_ref.value NOT ISSUBSET '192.168.1.0/24']",
+            "[(network-traffic:dst_port = 53) AND (network-traffic:dst_ref.value NOT ISSUBSET '192.168.1.0/24')]",
         ),
     ],
 )
 def test_parser_get(outvar, sco_type, ds, pat):
-    patbody = re.sub(r" START .* STOP .*", "", pat)
     results = parse(f"{outvar} = GET {sco_type} FROM {ds} WHERE {pat}")
     result = results[0]
     assert result["output"] == outvar
     assert result["command"] == "get"
     assert result["type"] == sco_type
     assert result["datasource"] == ds.strip('"')  # We strip the double quotes
-    assert result["patternbody"] == patbody
+
+    where = results[0]["where"]
+    where.add_center_entity("sco_type")
+    assert where.to_stix(result["timerange"], None) == pat
 
 
 def test_apply_params():

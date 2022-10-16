@@ -88,7 +88,7 @@ def a_session():
             "urls = get url from ",
             ["_", "conns", "file://", "http://", "https://", "stixshifter://"],
         ),
-        ("urls = get url where ", []),
+        ("urls = get url where ", {'ENTITY_ATTRIBUTE_PATH', 'LSQB', 'LPAR'}),
     ],
 )
 def test_do_complete_after_get(a_session, code, expected):

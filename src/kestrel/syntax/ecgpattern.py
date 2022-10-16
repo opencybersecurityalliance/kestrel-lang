@@ -45,27 +45,47 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
         timerange: (datetime.datetime, datetime.datetime),
         timeadj: (datetime.timedelta, datetime.timedelta),
     ):
-        # timerange: external timerange from user input
+        # timerange: user-specified timerange from Kestrel command
         # timeadj: time adjustments for START and STOP
+        if timerange:
+            if not (
+                len(timerange) == 2
+                and isinstance(timerange[0], datetime.datetime)
+                and isinstance(timerange[1], datetime.datetime)
+            ):
+                raise TypeError("timerange should be datetime tuple")
+        if timeadj:
+            if not (
+                len(timeadj) == 2
+                and isinstance(timeadj[0], datetime.timedelta)
+                and isinstance(timeadj[1], datetime.timedelta)
+            ):
+                raise TypeError("timeadj should be timedelta tuple")
+
         try:
-            body = self.graph.to_stix(self.center_entity_type)
-            tr = merge_timeranges((timerange, self.timerange))
-            if tr:
-                if timeadj is None:
-                    start, end = tr
-                else:
-                    start = tr[0] + timeadj[0]
-                    end = tr[1] + timeadj[1]
-                start_stix = timefmt(start)
-                stop_stix = timefmt(end)
-                tr_stix = f" START t'{start_stix}' STOP t'{stop_stix}'"
-            else:
-                tr_stix = ""
-            return body + tr_stix
+            inner = self.graph.to_stix(self.center_entity_type)
         except AttributeError:
             raise KestrelInternalError(
                 "should run add_center_entity() before to_stix()"
             )
+
+        body = "[" + inner + "]"
+
+        if timerange:
+            tr = timerange
+        elif self.timerange:
+            tr = self.timerange
+            if timeadj:
+                tr = (tr[0] + timeadj[0], tr[1] + timeadj[1])
+        else:
+            tr = None
+
+        if tr:
+            tr_stix = f" START t'{timefmt(tr[0])}' STOP t'{timefmt(tr[1])}'"
+        else:
+            tr_stix = ""
+
+        return body + tr_stix
 
     def to_firepit(self):
         try:
@@ -126,12 +146,12 @@ class ECGPComparison(ExtCenteredGraphConstruct):
         self.op = operator.upper()
         self.value = value
         if isinstance(self.value, list):
-            if self.op != "IN":
+            if self.op not in ("IN", "NOT IN"):
                 raise InvalidECGPattern(
                     'a list should be paired with the operator "IN"'
                 )
         elif not isinstance(self.value, Reference):
-            if self.op == "IN":
+            if self.op in ("IN", "NOT IN"):
                 raise InvalidECGPattern(
                     'inappropriately pair operator "IN" with literal'
                 )
@@ -156,7 +176,16 @@ class ECGPComparison(ExtCenteredGraphConstruct):
             self.value = xs[0]
             if self.op == "IN":
                 self.op = "="
+            elif self.op == "NOT IN":
+                self.op = "!="
         else:
             self.value = xs
-            self.op = "IN"
+            if self.op in ("=", "==", "IN"):
+                self.op = "IN"
+            elif self.op in ("!=", "NOT IN"):
+                self.op = "NOT IN"
+            else:
+                raise InvalidECGPattern(
+                    "operator {self.op} incompatible with value {self.value}"
+                )
         return tr

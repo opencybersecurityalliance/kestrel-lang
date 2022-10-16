@@ -101,7 +101,6 @@ class _PostParsing(Transformer):
         packet = {
             "command": "get",
             "type": _extract_entity_type(args),
-            "patternbody": _assert_and_extract_single("STIXPATTERNBODY", args),
         }
 
         for item in args:
@@ -326,7 +325,8 @@ class _PostParsing(Transformer):
 
     def comparison_std(self, args):
         etype, attr = _extract_entity_and_attribute(args)
-        op = _second(args)
+        # remove more than one spaces; capitalize op
+        op = " ".join(_second(args).split()).upper()
         value = args[2]
         return ECGPComparison(attr, op, value, etype)
 

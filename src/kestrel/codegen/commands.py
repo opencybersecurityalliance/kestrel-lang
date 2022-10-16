@@ -233,6 +233,7 @@ def disp(stmt, session):
 @_debug_logger
 @_default_output
 def get(stmt, session):
+    pattern = stmt["stixpattern"]
     local_var_table = stmt["output"] + "_local"
     return_var_table = stmt["output"]
     return_type = stmt["type"]
@@ -240,14 +241,7 @@ def get(stmt, session):
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     display = None
 
-    pattern = build_pattern(
-        stmt["patternbody"],
-        list(map(timefmt, stmt["timerange"])) if stmt["timerange"] else None,
-        start_offset,
-        end_offset,
-        session.symtable,
-        session.store,
-    )
+    _logger.debug(f"xxx {pattern}")
 
     if "variablesource" in stmt:
         input_type = session.symtable[stmt["variablesource"]].type

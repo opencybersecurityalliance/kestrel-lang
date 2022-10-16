@@ -38,7 +38,7 @@ assign: expression
 
 find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE timespan?
 
-get: "GET"i ENTITY_TYPE ("FROM"i datasource)? "WHERE"i STIXPATTERNBODY timespan?
+get: "GET"i ENTITY_TYPE ("FROM"i datasource)? where_clause timespan?
 
 group: "GROUP"i VARIABLE BY grp_spec ("WITH"i agg_list)?
 
@@ -228,19 +228,27 @@ LIKE: "LIKE"i
 MATCHES: "MATCHES"i
 IS: "IS"i
 NOT: "NOT"i
+ISSUBSET: "ISSUBSET"i
+ISSUPERSET: "ISSUPERSET"i
 
-OP: "="
-  | "=="
-  | "!="
-  | ">"
-  | "<"
-  | ">="
-  | ">="
-  | IN
-  | LIKE
-  | MATCHES
+OP: OP_SIGN
+  | (NOT WS+)? OP_KEYWORD
 
-NULL_OP: IS WS* (NOT)?
+OP_SIGN: "="
+       | "=="
+       | "!="
+       | ">"
+       | "<"
+       | ">="
+       | ">="
+
+OP_KEYWORD: IN
+          | LIKE
+          | MATCHES
+          | ISSUBSET
+          | ISSUPERSET
+
+NULL_OP: IS (WS+ NOT)?
 
 //
 // Common language constructs

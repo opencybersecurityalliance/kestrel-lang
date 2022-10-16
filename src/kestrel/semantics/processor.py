@@ -64,11 +64,16 @@ def semantics_processing(
         if stmt["command"] in ("assign", "disp"):
             stmt["where"] = stmt["where"].to_firepit()
         elif stmt["command"] in ("get", "find"):
-            time_adj = (
-                config["stixquery"]["timerange_start_offset"],
-                config["stixquery"]["timerange_stop_offset"],
+            time_adj = tuple(
+                map(
+                    _seconds_timedelta,
+                    (
+                        config["stixquery"]["timerange_start_offset"],
+                        config["stixquery"]["timerange_stop_offset"],
+                    ),
+                )
             )
-            stmt["patternbody"] = stmt["where"].to_stix(stmt["timerange"], time_adj)
+            stmt["stixpattern"] = stmt["where"].to_stix(stmt["timerange"], time_adj)
 
     if "arguments" in stmt:
         stmt["arguments"] = {
@@ -145,3 +150,7 @@ def _arguments_deref(v, deref_func, get_timerange_func):
     if len(w) == 1:
         w = w[0]
     return w
+
+
+def _seconds_timedelta(t: int):
+    return datetime.timedelta(seconds=t)
