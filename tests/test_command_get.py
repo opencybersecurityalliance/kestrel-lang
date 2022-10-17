@@ -23,6 +23,15 @@ def file_stix_bundles():
 
 
 @pytest.fixture()
+def nt_stix_bundles():
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    return [
+        os.path.join(cwd, "test_bundle_nt_1.json"),
+        os.path.join(cwd, "test_bundle_nt_2.json"),
+    ]
+
+
+@pytest.fixture()
 def set_stixshifter_stix_bundles():
     cfg = '{"auth": {"username": "","password": ""}}'
     connector = "stix_bundle"
@@ -169,3 +178,48 @@ def test_get_relative_timespan(file_stix_bundles, num, unit, count):
         v = s.get_variable("var")
         print(json.dumps(v, indent=4))
         assert len(v) == count
+
+
+def test_get_referred_variable(nt_stix_bundles):
+    with Session() as s:
+        stmt1 = f"""
+        nt111 = GET network-traffic FROM file://{nt_stix_bundles[0]}
+                WHERE dst_ref.value = '192.168.56.112'
+        """
+        s.execute(stmt1)
+
+        stmt2 = f"""
+        nt112 = GET network-traffic FROM file://{nt_stix_bundles[1]}
+                WHERE src_port = nt111.src_port
+        """
+        s.execute(stmt2)
+
+        stmt3 = f"""
+        nt112y = GET network-traffic FROM file://{nt_stix_bundles[1]}
+                 WHERE src_ref.value = nt111.src_ref.value
+        """
+        s.execute(stmt3)
+
+        s.config["stixquery"]["timerange_start_offset"] = -10
+        s.config["stixquery"]["timerange_stop_offset"] = 10
+        stmt4 = f"""
+        nt112z = GET network-traffic FROM file://{nt_stix_bundles[1]}
+                 WHERE src_ref.value = nt111.src_ref.value
+        """
+        s.execute(stmt4)
+
+        nt112 = s.get_variable("nt112")
+        nt112y = s.get_variable("nt112y")
+        nt112z = s.get_variable("nt112z")
+
+        # src_port should uniquely identify the 4 network-traffic
+        # between the two hosts: 111 and 112
+        assert len(nt112) == 4
+
+        # there are many nt from 111 to 112 in a larger time range
+        # by default, offset are -300, 300 seconds, which will give more results
+        assert len(nt112y) == 7
+
+        # reset the offsets to nearly 0 (need to tolerate clock sync diff)
+        # now it should go back to 4
+        assert len(nt112z) == 4

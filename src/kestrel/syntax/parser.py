@@ -2,11 +2,10 @@ from datetime import datetime, timedelta
 import dateutil
 from pkgutil import get_data
 import importlib
+from lark import Lark, Token, Transformer
+from lark.visitors import merge_transformers
 
 from firepit.query import BinnedColumn
-from firepit.timestamp import timefmt
-from lark import Lark, Token, Transformer
-
 from kestrel.utils import unescape_quoted_string
 from kestrel.syntax.ecgpattern import (
     ECGPComparison,
@@ -15,8 +14,13 @@ from kestrel.syntax.ecgpattern import (
     Reference,
 )
 
+DEFAULT_VARIABLE = "_"
+DEFAULT_SORT_ORDER = "DESC"
 
-def parse(stmts, default_variable="_", default_sort_order="desc"):
+
+def parse_kestrel(
+    stmts, default_variable=DEFAULT_VARIABLE, default_sort_order=DEFAULT_SORT_ORDER
+):
     # the public parsing interface for Kestrel
     # return abstract syntax tree
     # check kestrel.lark for details
@@ -24,17 +28,22 @@ def parse(stmts, default_variable="_", default_sort_order="desc"):
     return Lark(
         grammar,
         parser="lalr",
-        transformer=_PostParsing(default_variable, default_sort_order),
+        transformer=_KestrelT(default_variable, default_sort_order),
     ).parse(stmts)
 
 
-def get_all_input_var_names(stmt):
-    input_refs = ["input", "input_2", "variablesource"]
-    inputs_refs = stmt["inputs"] if "inputs" in stmt else []
-    return [stmt.get(k) for k in input_refs if k in stmt] + inputs_refs
+def parse_ecgpattern(pattern_str) -> ExtCenteredGraphPattern:
+    grammar = get_data(__name__, "ecgpattern.lark").decode("utf-8")
+    paths = importlib.util.find_spec("kestrel.syntax").submodule_search_locations
+    return Lark(
+        grammar,
+        parser="lalr",
+        import_paths=paths,
+        transformer=merge_transformers(_ECGPatternT(), kestrel=_KestrelT()),
+    ).parse(pattern_str)
 
 
-def parse_reference(value_str):
+def parse_reference(value_str) -> Reference:
     grammar = get_data(__name__, "reference.lark").decode("utf-8")
     paths = importlib.util.find_spec("kestrel.syntax").submodule_search_locations
     parser = Lark(grammar, parser="lalr", import_paths=paths)
@@ -50,13 +59,15 @@ def parse_reference(value_str):
     return Reference(variable, attribute)
 
 
-################################################################
-#                           Private
-################################################################
+class _ECGPatternT(Transformer):
+    def start(self, args):
+        return ExtCenteredGraphPattern(args[0])
 
 
-class _PostParsing(Transformer):
-    def __init__(self, default_variable, default_sort_order):
+class _KestrelT(Transformer):
+    def __init__(
+        self, default_variable=DEFAULT_VARIABLE, default_sort_order=DEFAULT_SORT_ORDER
+    ):
         self.default_variable = default_variable
         self.default_sort_order = default_sort_order
         super().__init__()
@@ -216,6 +227,61 @@ class _PostParsing(Transformer):
             "where": pattern,
         }
 
+    def expression_or(self, args):
+        return ECGPJunction("OR", args[0], args[1])
+
+    def expression_and(self, args):
+        return ECGPJunction("AND", args[0], args[1])
+
+    def comparison_std(self, args):
+        etype, attr = _extract_entity_and_attribute(args[0].value)
+        # remove more than one spaces; capitalize op
+        op = " ".join(_second(args).split()).upper()
+        value = args[2]
+        return ECGPComparison(attr, op, value, etype)
+
+    def comparison_null(self, args):
+        etype, attr = _extract_entity_and_attribute(args[0].value)
+        op = _second(args)
+        if "NOT" in op:
+            op = "!="
+        else:
+            op = "="
+        value = "NULL"
+        return ECGPComparison(attr, op, value, etype)
+
+    def value(self, args):
+        return args[0]
+
+    def literal_list(self, args):
+        # make sure the items are wrapped into a list even one item
+        if isinstance(args[0], list):
+            return args[0]
+        else:
+            return args
+
+    def literals(self, args):
+        # return the item if single, else return list
+        if len(args) == 1:
+            return args[0]
+        else:
+            return args
+
+    def literal(self, args):
+        if args[0].type == "NUMBER":
+            try:
+                v = int(args[0].value)
+            except:
+                v = float(args[0].value)
+        elif args[0].type == "ESCAPED_STRING":
+            v = unescape_quoted_string(args[0].value)
+        else:
+            v = args[0].value
+            ref = parse_reference(v)
+            if ref:
+                v = ref
+        return v
+
     def attr_clause(self, args):
         paths = _assert_and_extract_single("ATTRIBUTES", args)
         return {
@@ -317,29 +383,6 @@ class _PostParsing(Transformer):
         alias = _third(args) if len(args) > 2 else f"{func}_{attr}"
         return {"func": func, "attr": attr, "alias": alias}
 
-    def expression_or(self, args):
-        return ECGPJunction("OR", args[0], args[1])
-
-    def expression_and(self, args):
-        return ECGPJunction("AND", args[0], args[1])
-
-    def comparison_std(self, args):
-        etype, attr = _extract_entity_and_attribute(args)
-        # remove more than one spaces; capitalize op
-        op = " ".join(_second(args).split()).upper()
-        value = args[2]
-        return ECGPComparison(attr, op, value, etype)
-
-    def comparison_null(self, args):
-        etype, attr = _extract_entity_and_attribute(args)
-        op = _second(args)
-        if "NOT" in op:
-            op = "!="
-        else:
-            op = "="
-        value = "NULL"
-        return ECGPComparison(attr, op, value, etype)
-
     def args(self, args):
         d = {}
         for di in args:
@@ -348,38 +391,6 @@ class _PostParsing(Transformer):
 
     def arg_kv_pair(self, args):
         return {_first(args): args[1]}
-
-    def value(self, args):
-        return args[0]
-
-    def literal_list(self, args):
-        # make sure the items are wrapped into a list even one item
-        if isinstance(args[0], list):
-            return args[0]
-        else:
-            return args
-
-    def literals(self, args):
-        # return the item if single, else return list
-        if len(args) == 1:
-            return args[0]
-        else:
-            return args
-
-    def literal(self, args):
-        if args[0].type == "NUMBER":
-            try:
-                v = int(args[0].value)
-            except:
-                v = float(args[0].value)
-        elif args[0].type == "ESCAPED_STRING":
-            v = unescape_quoted_string(args[0].value)
-        else:
-            v = args[0].value
-            ref = parse_reference(v)
-            if ref:
-                v = ref
-        return v
 
 
 def _first(args):
@@ -467,8 +478,7 @@ def _extract_if_reversed(args):
     return True if rs else False
 
 
-def _extract_entity_and_attribute(args):
-    s = _assert_and_extract_single("ENTITY_ATTRIBUTE_PATH", args)
+def _extract_entity_and_attribute(s):
     if ":" in s:
         etype, _, attr = s.partition(":")
     else:

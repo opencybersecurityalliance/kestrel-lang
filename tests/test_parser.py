@@ -3,7 +3,7 @@ import re
 from lark import UnexpectedToken
 import pytest
 
-from kestrel.syntax.parser import parse
+from kestrel.syntax.parser import parse_kestrel
 from kestrel.syntax.ecgpattern import Reference
 from kestrel.exceptions import InvalidECGPattern
 
@@ -18,7 +18,7 @@ from kestrel.exceptions import InvalidECGPattern
     ],
 )
 def test_simple_get(pattern):
-    results = parse(f"y = get url from udi://all where {pattern}")
+    results = parse_kestrel(f"y = get url from udi://all where {pattern}")
     result = results[0]
 
     assert result["command"] == "get"
@@ -37,7 +37,7 @@ def test_simple_get(pattern):
     ],
 )
 def test_assign_in(pattern):
-    results = parse(f"y = x WHERE {pattern}")
+    results = parse_kestrel(f"y = x WHERE {pattern}")
     where = results[0]["where"]
     where.add_center_entity("process")
     assert where.to_stix(None, None) == "[process:pid IN (1,2,3)]"
@@ -52,12 +52,12 @@ def test_assign_in(pattern):
 )
 def test_ecgp_in_exception(pattern, errprint):
     with pytest.raises(InvalidECGPattern) as einfo:
-        results = parse(f"y = x WHERE {pattern}")
+        results = parse_kestrel(f"y = x WHERE {pattern}")
     assert einfo.value.error == errprint
 
 
 def test_quoted_datasource():
-    results = parse("y = get url from \"udi://My QRadar\" where [url:value LIKE '%']")
+    results = parse_kestrel("y = get url from \"udi://My QRadar\" where [url:value LIKE '%']")
     result = results[0]
     assert result["command"] == "get"
     assert result["type"] == "url"
@@ -92,8 +92,8 @@ def test_quoted_datasource():
         ),
     ],
 )
-def test_parser_get(outvar, sco_type, ds, pat):
-    results = parse(f"{outvar} = GET {sco_type} FROM {ds} WHERE {pat}")
+def test_get(outvar, sco_type, ds, pat):
+    results = parse_kestrel(f"{outvar} = GET {sco_type} FROM {ds} WHERE {pat}")
     result = results[0]
     assert result["output"] == outvar
     assert result["command"] == "get"
@@ -106,7 +106,7 @@ def test_parser_get(outvar, sco_type, ds, pat):
 
 
 def test_apply_params():
-    results = parse("apply xyz://my_analytic on foo with x=1; y=a, b,c")
+    results = parse_kestrel("apply xyz://my_analytic on foo with x=1; y=a, b,c")
     result = results[0]
     assert result["command"] == "apply"
     assert result["analytics_uri"] == "xyz://my_analytic"
@@ -115,7 +115,7 @@ def test_apply_params():
 
 
 def test_apply_params_with_dots():
-    results = parse("apply xyz://my_analytic on foo with x=0.1; y=a.value")
+    results = parse_kestrel("apply xyz://my_analytic on foo with x=0.1; y=a.value")
     result = results[0]
     assert result["command"] == "apply"
     assert result["analytics_uri"] == "xyz://my_analytic"
@@ -124,7 +124,7 @@ def test_apply_params_with_dots():
 
 
 def test_apply_params_with_decimal_and_dots():
-    results = parse("apply xyz://my_analytic on foo with x=0.1; y=a.value ,b,c")
+    results = parse_kestrel("apply xyz://my_analytic on foo with x=0.1; y=a.value ,b,c")
     result = results[0]
     assert result["command"] == "apply"
     assert result["analytics_uri"] == "xyz://my_analytic"
@@ -134,11 +134,11 @@ def test_apply_params_with_decimal_and_dots():
 
 def test_apply_params_no_equals():
     with pytest.raises(UnexpectedToken):
-        parse("apply xyz://my_analytic on foo with x=1; y")
+        parse_kestrel("apply xyz://my_analytic on foo with x=1; y")
 
 
 def test_grouping_0():
-    results = parse("y = group x by foo")
+    results = parse_kestrel("y = group x by foo")
     result = results[0]
     print(result)
     assert result["command"] == "group"
@@ -148,7 +148,7 @@ def test_grouping_0():
 
 
 def test_grouping_1():
-    results = parse("y = group x by foo with sum(baz)")
+    results = parse_kestrel("y = group x by foo with sum(baz)")
     result = results[0]
     print(result)
     assert result["command"] == "group"
@@ -160,7 +160,7 @@ def test_grouping_1():
 
 
 def test_grouping_2():
-    results = parse("y = group x BY foo, bar WITH MAX(baz) AS biggest, MIN(blah)")
+    results = parse_kestrel("y = group x BY foo, bar WITH MAX(baz) AS biggest, MIN(blah)")
     result = results[0]
     print(result)
     assert result["command"] == "group"
@@ -173,7 +173,7 @@ def test_grouping_2():
 
 
 def test_grouping_3():
-    results = parse(
+    results = parse_kestrel(
         "y = group x by foo with avg(bar), count(baz), max(blah) as whatever"
     )
     result = results[0]

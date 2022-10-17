@@ -65,7 +65,7 @@ from kestrel.exceptions import (
     InvalidStixPattern,
     DebugCacheLinkOccupied,
 )
-from kestrel.syntax.parser import parse
+from kestrel.syntax.parser import parse_kestrel
 from kestrel.syntax.utils import (
     get_entity_types,
     get_keywords,
@@ -292,7 +292,7 @@ class Session(AbstractContextManager):
             tree* for one Kestrel statement in the inputted code block.
         """
         try:
-            ast = parse(
+            ast = parse_kestrel(
                 codeblock,
                 self.config["language"]["default_variable"],
                 self.config["language"]["default_sort_order"],

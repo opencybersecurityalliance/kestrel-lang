@@ -36,6 +36,12 @@ def get_entity_types():
     return tuple(all_types)
 
 
+def get_all_input_var_names(stmt):
+    input_refs = ["input", "input_2", "variablesource"]
+    inputs_refs = stmt["inputs"] if "inputs" in stmt else []
+    return [stmt.get(k) for k in input_refs if k in stmt] + inputs_refs
+
+
 def merge_timeranges(trs: Iterable[(datetime.datetime, datetime.datetime)]):
     # return the earliest start time and latest end time
     trs = [tr for tr in trs if tr is not None]
@@ -46,3 +52,7 @@ def merge_timeranges(trs: Iterable[(datetime.datetime, datetime.datetime)]):
         return (start, end)
     else:
         return None
+
+
+def timedelta_seconds(t: int):
+    return datetime.timedelta(seconds=t)

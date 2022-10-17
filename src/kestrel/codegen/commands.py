@@ -27,16 +27,19 @@ from firepit.deref import auto_deref
 from firepit.exceptions import InvalidAttr
 from firepit.query import Limit, Offset, Order, Projection, Query
 from firepit.stix20 import summarize_pattern
-from firepit.timestamp import timefmt
 
+from kestrel.semantics.reference import make_deref_func, make_var_timerange_func
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts, lowered_str_list
 from kestrel.exceptions import *
 from kestrel.symboltable.variable import new_var
-from kestrel.syntax.parser import get_all_input_var_names
-from kestrel.syntax.utils import get_entity_types
+from kestrel.syntax.parser import parse_ecgpattern
+from kestrel.syntax.utils import (
+    get_entity_types,
+    get_all_input_var_names,
+    timedelta_seconds,
+)
 from kestrel.codegen.data import load_data, load_data_file, dump_data_to_file
 from kestrel.codegen.display import DisplayDataframe, DisplayDict, DisplayWarning
-from kestrel.codegen.pattern import build_pattern, build_pattern_from_ids
 from kestrel.codegen.queries import (
     compile_specific_relation_to_query,
     compile_generic_relation_to_query,
@@ -47,6 +50,7 @@ from kestrel.codegen.relations import (
     fine_grained_relational_process_filtering,
     get_entity_id_attribute,
     stix_2_0_identical_mapping,
+    build_pattern_from_ids,
 )
 
 _logger = logging.getLogger(__name__)
@@ -241,13 +245,13 @@ def get(stmt, session):
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     display = None
 
-    _logger.debug(f"xxx {pattern}")
-
     if "variablesource" in stmt:
         input_type = session.symtable[stmt["variablesource"]].type
         output_type = stmt["type"]
         if input_type != output_type:
-            pass  # TODO: new exception type?
+            raise InvalidECGPattern(
+                f"input variable type {input_type} does not match output type {output_type}"
+            )
         session.store.filter(
             stmt["output"],
             stmt["type"],
@@ -298,7 +302,7 @@ def get(stmt, session):
                 return_type,
                 prefetch_ret_var_table,
                 local_var_table,
-                list(map(timefmt, stmt["timerange"])) if stmt["timerange"] else None,
+                stmt["timerange"],
                 start_offset,
                 end_offset,
                 {local_var_table: _output},
@@ -364,7 +368,6 @@ def find(stmt, session):
     local_var_table = stmt["output"] + "_local"
     relation = stmt["relation"]
     is_reversed = stmt["reversed"]
-    time_range = list(map(timefmt, stmt["timerange"])) if stmt["timerange"] else None
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     rel_query = None
@@ -415,7 +418,7 @@ def find(stmt, session):
                     return_type,
                     prefetch_ret_var_table,
                     local_var_table,
-                    time_range,
+                    stmt["timerange"],
                     start_offset,
                     end_offset,
                     {local_var_table: _output},
@@ -566,7 +569,7 @@ def _prefetch(
 
         return_type (str): return entity type.
 
-        time_range ((str, str)): start and end time in ISOTIMESTAMP.
+        time_range ((datetime, datetime)).
 
         start_offset (int): start time offset by seconds.
 
@@ -586,22 +589,28 @@ def _prefetch(
 
     _logger.debug(f"prefetch {return_type} to extend {input_var_name}.")
 
-    pattern_body = compile_identical_entity_search_pattern(
+    pattern_raw = compile_identical_entity_search_pattern(
         input_var_name, symtable[input_var_name], does_support_id
     )
 
-    if pattern_body:
-        remote_pattern = build_pattern(
-            pattern_body, time_range, start_offset, end_offset, symtable, store
-        )
+    if pattern_raw:
 
-        if remote_pattern:
+        pattern_ast = parse_ecgpattern(pattern_raw)
+        deref_func = make_deref_func(store, symtable)
+        get_timerange_func = make_var_timerange_func(store, symtable)
+        pattern_ast.deref(deref_func, get_timerange_func)
+        pattern_ast.add_center_entity(symtable[input_var_name].type)
+        time_adj = tuple(map(timedelta_seconds, (start_offset, end_offset)))
+        stix_pattern = pattern_ast.to_stix(time_range, time_adj)
+        _logger.info(f"STIX pattern generated for remote execution: {stix_pattern}")
+
+        if stix_pattern:
             data_source = symtable[input_var_name].data_source
-            resp = ds_manager.query(data_source, remote_pattern, session_id)
+            resp = ds_manager.query(data_source, stix_pattern, session_id)
             query_id = resp.load_to_store(store)
 
             # build the return_var_name view in store
-            store.extract(return_var_name, return_type, query_id, remote_pattern)
+            store.extract(return_var_name, return_type, query_id, stix_pattern)
 
             _logger.debug(f"prefetch successful.")
             return return_var_name
@@ -623,8 +632,8 @@ def _filter_prefetched_process(
         session.store,
         session.config["prefetch"]["process_identification"],
     )
-    id_pattern = build_pattern_from_ids(return_type, entity_ids)
-    if id_pattern:
+    if entity_ids:
+        id_pattern = build_pattern_from_ids(return_type, entity_ids)
         session.store.extract(prefetch_filtered_var_name, return_type, None, id_pattern)
         _logger.debug("filter successful.")
         return prefetch_filtered_var_name

@@ -1,9 +1,8 @@
 import logging
 import pathlib
-import datetime
 import re
 
-from kestrel.syntax.parser import get_all_input_var_names
+from kestrel.syntax.utils import get_all_input_var_names, timedelta_seconds
 from kestrel.syntax.reference import deref_and_flatten_value_to_list
 from kestrel.symboltable.symtable import SymbolTable
 from firepit.sqlstorage import SqlStorage
@@ -66,7 +65,7 @@ def semantics_processing(
         elif stmt["command"] in ("get", "find"):
             time_adj = tuple(
                 map(
-                    _seconds_timedelta,
+                    timedelta_seconds,
                     (
                         config["stixquery"]["timerange_start_offset"],
                         config["stixquery"]["timerange_stop_offset"],
@@ -128,7 +127,7 @@ def _check_semantics_on_find(stmt, input_type):
     if stmt["command"] != "find":
         return
 
-    # relation should be in lowercase after parsing by kestrel.syntax.parser
+    # relation should be in lowercase after parsing by kestrel.syntax.parser.parse_kestrel()
     relation = stmt["relation"]
     return_type = stmt["type"]
 
@@ -150,7 +149,3 @@ def _arguments_deref(v, deref_func, get_timerange_func):
     if len(w) == 1:
         w = w[0]
     return w
-
-
-def _seconds_timedelta(t: int):
-    return datetime.timedelta(seconds=t)

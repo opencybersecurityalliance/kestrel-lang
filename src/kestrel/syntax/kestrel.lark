@@ -272,7 +272,7 @@ ENTITY_TYPE: ECNAME
 stdpath: PATH_SIMPLE
        | PATH_ESCAPED
 
-// todo: support attributes without quote for dash
+// TODO: support attributes without quote for dash
 //       x.hash.SHA-256 instead of x.hash.'SHA-256'
 ATTRIBUTE: ECNAME "[*]"? ("." ECNAME_W_QUOTE)*
 ATTRIBUTES: ATTRIBUTE (WS* "," WS* ATTRIBUTE)*

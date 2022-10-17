@@ -1,5 +1,8 @@
-import datetime
+import logging
+
 from kestrel.exceptions import InvalidECGPattern
+
+_logger = logging.getLogger(__name__)
 
 
 class Reference:
@@ -22,6 +25,7 @@ def deref_and_flatten_value_to_list(value, deref_func, get_timerange_func):
     if isinstance(value, Reference):
         tr = get_timerange_func(value)
         vs = deref_func(value)
+        _logger.debug(f"derefed {value} to {vs} with extracted timerange {tr}")
         return vs, tr
     elif isinstance(value, list):
         xs = []

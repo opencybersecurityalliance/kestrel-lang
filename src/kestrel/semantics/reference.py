@@ -2,6 +2,7 @@ import dateutil
 import logging
 from firepit.sqlstorage import SqlStorage
 from kestrel.symboltable.symtable import SymbolTable
+from kestrel.syntax.reference import Reference
 from kestrel.exceptions import (
     InvalidAttribute,
     KestrelInternalError,
@@ -11,7 +12,7 @@ _logger = logging.getLogger(__name__)
 
 
 def make_deref_func(store: SqlStorage, symtable: SymbolTable):
-    def deref(reference):
+    def deref(reference: Reference):
         _logger.debug(f"deref {reference}")
         entity_table = symtable[reference.variable].entity_table
 
@@ -40,7 +41,7 @@ def make_deref_func(store: SqlStorage, symtable: SymbolTable):
 
 
 def make_var_timerange_func(store: SqlStorage, symtable: SymbolTable):
-    def get_timerange(reference):
+    def get_timerange(reference: Reference):
 
         summary = store.summary(reference.variable)
         if summary["first_observed"] is None:
