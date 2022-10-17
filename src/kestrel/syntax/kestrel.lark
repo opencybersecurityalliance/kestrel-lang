@@ -36,7 +36,7 @@ assign: expression
 // All commands
 //
 
-find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE timespan?
+find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE where_clause? timespan?
 
 get: "GET"i ENTITY_TYPE ("FROM"i datasource)? where_clause timespan?
 

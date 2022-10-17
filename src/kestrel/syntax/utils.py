@@ -48,7 +48,7 @@ def merge_timeranges(trs: Iterable[(datetime.datetime, datetime.datetime)]):
     if trs:
         starts, ends = list(zip(*trs))
         start = min(starts)
-        end = min(ends)
+        end = max(ends)
         return (start, end)
     else:
         return None

@@ -51,15 +51,19 @@ def semantics_processing(
     get_timerange_func = make_var_timerange_func(store, symtable)
 
     if "where" in stmt:
+
+        # 1. deref()
         stmt["where"].deref(deref_func, get_timerange_func)
 
-        if stmt["command"] == "get":
-            center_entity_type = stmt["type"]
-        elif stmt["command"] in ("find", "assign", "disp"):
+        # 2. add_center_entity()
+        if stmt["command"] in ("assign", "disp"):
             center_entity_type = symtable[stmt["input"]].type
+        elif stmt["command"] in ("get", "find"):
+            center_entity_type = stmt["type"]
 
         stmt["where"].add_center_entity(center_entity_type)
 
+        # 3. to_stix() / to_firepit()
         if stmt["command"] in ("assign", "disp"):
             stmt["where"] = stmt["where"].to_firepit()
         elif stmt["command"] in ("get", "find"):

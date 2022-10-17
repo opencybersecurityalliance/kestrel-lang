@@ -1,3 +1,7 @@
+# Python 3.10 supports this by default
+# https://stackoverflow.com/questions/36286894/name-not-defined-in-type-annotation
+from __future__ import annotations
+
 import datetime
 from abc import ABC, abstractmethod
 from firepit.query import Filter, Predicate
@@ -36,6 +40,7 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
     def __init__(self, graph: ExtCenteredGraphConstruct):
         self.graph = graph
         self.timerange = None
+        self.center_entity_type = None
 
     def add_center_entity(self, center_entity_type: str):
         self.center_entity_type = center_entity_type
@@ -45,6 +50,15 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
         timerange: (datetime.datetime, datetime.datetime),
         timeadj: (datetime.timedelta, datetime.timedelta),
     ):
+        # before calling this, make sure:
+        # 1. called deref()
+        # 2. called add_center_entity()
+
+        if self.center_entity_type is None:
+            raise KestrelInternalError(
+                "should run add_center_entity() before to_stix()"
+            )
+
         # timerange: user-specified timerange from Kestrel command
         # timeadj: time adjustments for START and STOP
         if timerange:
@@ -62,13 +76,7 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
             ):
                 raise TypeError("timeadj should be timedelta tuple")
 
-        try:
-            inner = self.graph.to_stix(self.center_entity_type)
-        except AttributeError:
-            raise KestrelInternalError(
-                "should run add_center_entity() before to_stix()"
-            )
-
+        inner = self.graph.to_stix(self.center_entity_type)
         body = "[" + inner + "]"
 
         if timerange:
@@ -88,15 +96,35 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
         return body + tr_stix
 
     def to_firepit(self):
-        try:
-            return Filter([self.graph.to_firepit(self.center_entity_type)])
-        except AttributeError:
+        return Filter([self.graph.to_firepit(self.center_entity_type)])
+        if self.center_entity_type is None:
             raise KestrelInternalError(
                 "should run add_center_entity() before to_firepit()"
             )
 
     def deref(self, deref_func, get_timerange_func):
         self.timerange = self.graph.deref(deref_func, get_timerange_func)
+
+    def extend(self, junction_type: str, other_ecgp: ExtCenteredGraphPattern):
+        if self.center_entity_type is None:
+            self.center_entity_type = other_ecgp.center_entity_type
+        elif other_ecgp.center_entity_type is None:
+            pass
+        elif self.center_entity_type != other_ecgp.center_entity_type:
+            raise InvalidECGPattern(f"could not merge ECGPs with different center entities: {self.center_entity_type}, {other_ecgp.center_entity_type}")
+
+        self.timerange = merge_timeranges((self.timerange, other_ecgp.timerange))
+
+        junction_type = junction_type.upper()
+
+        if junction_type == "AND":
+            self.graph = ECGPJunction("AND", self.graph, other_ecgp.graph)
+        elif junction_type == "OR":
+            self.graph = ECGPJunction("OR", self.graph, other_ecgp.graph)
+        else:
+            raise KestrelInternalError(
+                f'Junction type {junction_type} not supported besides "AND", "OR".'
+            )
 
 
 class ECGPJunction(ExtCenteredGraphConstruct):
