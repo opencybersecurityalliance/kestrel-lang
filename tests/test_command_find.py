@@ -144,7 +144,7 @@ p = FIND process CREATED nt
 """
         s.execute(stmt)
         p = s.get_variable("p")
-        #assert len(p) == 948  # grep -c opened_connection_refs tests/doctored-1k.json
+        # assert len(p) == 948  # grep -c opened_connection_refs tests/doctored-1k.json
         assert len(p) >= 948  # FIXME: duplicate process objects
 
 

@@ -22,6 +22,7 @@ import functools
 import logging
 import itertools
 from collections import OrderedDict
+from copy import deepcopy
 
 from firepit.deref import auto_deref
 from firepit.exceptions import InvalidAttr
@@ -298,6 +299,8 @@ def get(stmt, session):
             and len(_output)
         ):
             prefetch_ret_var_table = return_var_table + "_prefetch"
+            ext_graph_pattern = deepcopy(stmt["where"])
+            ext_graph_pattern.prune_away_centered_graph(return_type)
             prefetch_ret_entity_table = _prefetch(
                 return_type,
                 prefetch_ret_var_table,
@@ -307,6 +310,7 @@ def get(stmt, session):
                 end_offset,
                 {local_var_table: _output},
                 session.store,
+                ext_graph_pattern,
                 session.session_id,
                 session.data_source_manager,
                 session.config["stixquery"]["support_id"],
@@ -414,6 +418,7 @@ def find(stmt, session):
                 and _output.data_source
             ):
                 prefetch_ret_var_table = return_var_table + "_prefetch"
+                ext_graph_pattern = stmt["where"] if "where" in stmt else None
                 prefetch_ret_entity_table = _prefetch(
                     return_type,
                     prefetch_ret_var_table,
@@ -423,6 +428,7 @@ def find(stmt, session):
                     end_offset,
                     {local_var_table: _output},
                     session.store,
+                    ext_graph_pattern,
                     session.session_id,
                     session.data_source_manager,
                     session.config["stixquery"]["support_id"],
@@ -546,6 +552,7 @@ def _prefetch(
     end_offset,
     symtable,
     store,
+    where_clause,
     session_id,
     ds_manager,
     does_support_id,
@@ -579,6 +586,8 @@ def _prefetch(
 
         store (firepit.SqlStorage): store.
 
+        where_clause (ExtCenteredGraphPattern): pattern to merge to the prefetch auto-gen pattern
+
         session_id (str): session ID.
 
         does_support_id (bool): whether "id" can be an attribute in data source query.
@@ -601,6 +610,7 @@ def _prefetch(
         pattern_ast.deref(deref_func, get_timerange_func)
         pattern_ast.add_center_entity(symtable[input_var_name].type)
         time_adj = tuple(map(timedelta_seconds, (start_offset, end_offset)))
+        pattern_ast.extend("AND", where_clause)
         stix_pattern = pattern_ast.to_stix(time_range, time_adj)
         _logger.info(f"STIX pattern generated for remote execution: {stix_pattern}")
 

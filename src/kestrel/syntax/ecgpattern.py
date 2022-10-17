@@ -42,8 +42,27 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
         self.timerange = None
         self.center_entity_type = None
 
+    def __str__(self):
+        return (
+            f"graph: {self.graph}, "
+            f"timerange: {self.timerange}, "
+            f"center_entity_type: {self.center_entity_type}"
+        )
+
     def add_center_entity(self, center_entity_type: str):
         self.center_entity_type = center_entity_type
+
+    def prune_away_centered_graph(self, center_entity_type):
+        # only leave the disconnected extended graph components
+        if self.graph is not None:
+            if_preserve_func = _make_extract_func(center_entity_type, "ext")
+            self.graph = self.graph.prune(if_preserve_func)
+
+    def prune_away_extended_graph(self, center_entity_type):
+        # only leave the connected centered graph components
+        if self.graph is not None:
+            if_preserve_func = _make_extract_func(center_entity_type, "center")
+            self.graph = self.graph.prune(if_preserve_func)
 
     def to_stix(
         self,
@@ -76,7 +95,10 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
             ):
                 raise TypeError("timeadj should be timedelta tuple")
 
-        inner = self.graph.to_stix(self.center_entity_type)
+        if self.graph is None:
+            inner = ""
+        else:
+            inner = self.graph.to_stix(self.center_entity_type)
         body = "[" + inner + "]"
 
         if timerange:
@@ -96,35 +118,47 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
         return body + tr_stix
 
     def to_firepit(self):
-        return Filter([self.graph.to_firepit(self.center_entity_type)])
         if self.center_entity_type is None:
             raise KestrelInternalError(
                 "should run add_center_entity() before to_firepit()"
             )
+        if self.graph is None:
+            return None
+        else:
+            return Filter([self.graph.to_firepit(self.center_entity_type)])
 
     def deref(self, deref_func, get_timerange_func):
-        self.timerange = self.graph.deref(deref_func, get_timerange_func)
+        if self.graph is not None:
+            self.timerange = self.graph.deref(deref_func, get_timerange_func)
 
     def extend(self, junction_type: str, other_ecgp: ExtCenteredGraphPattern):
-        if self.center_entity_type is None:
-            self.center_entity_type = other_ecgp.center_entity_type
-        elif other_ecgp.center_entity_type is None:
-            pass
-        elif self.center_entity_type != other_ecgp.center_entity_type:
-            raise InvalidECGPattern(f"could not merge ECGPs with different center entities: {self.center_entity_type}, {other_ecgp.center_entity_type}")
 
-        self.timerange = merge_timeranges((self.timerange, other_ecgp.timerange))
+        if other_ecgp is not None and other_ecgp.graph is not None:
 
-        junction_type = junction_type.upper()
+            if self.center_entity_type is None:
+                self.center_entity_type = other_ecgp.center_entity_type
+            elif other_ecgp.center_entity_type is None:
+                pass
+            elif self.center_entity_type != other_ecgp.center_entity_type:
+                raise InvalidECGPattern(
+                    "could not merge ECGPs with different center entities:"
+                    + self.center_entity_type
+                    + ", "
+                    + other_ecgp.center_entity_type
+                )
 
-        if junction_type == "AND":
-            self.graph = ECGPJunction("AND", self.graph, other_ecgp.graph)
-        elif junction_type == "OR":
-            self.graph = ECGPJunction("OR", self.graph, other_ecgp.graph)
-        else:
-            raise KestrelInternalError(
-                f'Junction type {junction_type} not supported besides "AND", "OR".'
-            )
+            self.timerange = merge_timeranges((self.timerange, other_ecgp.timerange))
+
+            junction_type = junction_type.upper()
+
+            if junction_type == "AND":
+                self.graph = ECGPJunction("AND", self.graph, other_ecgp.graph)
+            elif junction_type == "OR":
+                self.graph = ECGPJunction("OR", self.graph, other_ecgp.graph)
+            else:
+                raise KestrelInternalError(
+                    f'Junction type {junction_type} not supported besides "AND", "OR".'
+                )
 
 
 class ECGPJunction(ExtCenteredGraphConstruct):
@@ -145,11 +179,26 @@ class ECGPJunction(ExtCenteredGraphConstruct):
         else:
             raise KestrelInternalError("unsupported relation for ECGPJunction()")
 
+    def __str__(self):
+        return f"({self.lhs}) {self.relation} ({self.rhs})"
+
+    def prune(self, if_preserve_func):
+        self.lhs = self.lhs.prune(if_preserve_func)
+        self.rhs = self.rhs.prune(if_preserve_func)
+        if self.lhs is None:
+            return self.rhs
+        elif self.rhs is None:
+            return self.lhs
+        else:
+            return self
+
     def to_stix(self, center_entity_type: str):
         return (
             "("
             + self.lhs.to_stix(center_entity_type)
-            + f") {self.relation} ("
+            + " "
+            + self.relation
+            + " "
             + self.rhs.to_stix(center_entity_type)
             + ")"
         )
@@ -184,6 +233,15 @@ class ECGPComparison(ExtCenteredGraphConstruct):
                     'inappropriately pair operator "IN" with literal'
                 )
 
+    def __str__(self):
+        return f"{self.etype}:{self.attribute} {self.op} {self.value}"
+
+    def prune(self, if_preserve_func):
+        if if_preserve_func(self.etype):
+            return self
+        else:
+            return None
+
     def to_stix(self, center_entity_type: str):
         if not self.etype:
             self.etype = center_entity_type
@@ -217,3 +275,24 @@ class ECGPComparison(ExtCenteredGraphConstruct):
                     "operator {self.op} incompatible with value {self.value}"
                 )
         return tr
+
+
+def _make_extract_func(center_entity_type, preserve_center_or_ext: str):
+    def if_preserve_func(entity_type):
+        if entity_type is None:
+            connected_to_center = True
+        elif entity_type == center_entity_type:
+            connected_to_center = True
+        else:
+            connected_to_center = False
+
+        if preserve_center_or_ext == "center":
+            return connected_to_center
+        elif preserve_center_or_ext == "ext":
+            return not connected_to_center
+        else:
+            raise KestrelInternalError(
+                "unsupported argument in _make_extract_func: {prune_center_or_ext}"
+            )
+
+    return if_preserve_func

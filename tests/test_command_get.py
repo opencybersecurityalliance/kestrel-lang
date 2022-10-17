@@ -49,7 +49,11 @@ def set_stixshifter_stix_bundles():
 
 def test_get_single_file(file_stix_bundles):
     with Session() as s:
-        stmt = f"var = GET process FROM file://{file_stix_bundles[0]} WHERE [process:name='compattelrunner.exe']"
+        stmt = f"""
+                var = GET process
+                      FROM file://{file_stix_bundles[0]}
+                      WHERE [process:name='compattelrunner.exe']
+                """
 
         s.execute(stmt)
         v = s.get_variable("var")
@@ -62,7 +66,11 @@ def test_get_single_file(file_stix_bundles):
 def test_get_multiple_file_stix_bundles(file_stix_bundles):
     with Session() as s:
         file_bundles = ",".join(file_stix_bundles)
-        stmt = f"var = GET process FROM file://{file_bundles} WHERE [process:name='compattelrunner.exe']"
+        stmt = f"""
+                var = GET process
+                      FROM file://{file_bundles}
+                      WHERE name = 'compattelrunner.exe'
+                """
 
         s.execute(stmt)
         v = s.get_variable("var")
@@ -74,11 +82,15 @@ def test_get_multiple_file_stix_bundles(file_stix_bundles):
 def test_get_single_stixshifter_stix_bundle(set_stixshifter_stix_bundles):
     with Session() as s:
         # default data source schema is stixshifter
-        stmt = "var = GET process FROM HOST2 WHERE [ipv4-addr:value = '127.0.0.1']"
+        stmt = """
+               var = GET process
+                     FROM HOST2
+                     WHERE [ipv4-addr:value = '127.0.0.1']
+               """
 
         s.execute(stmt)
         v = s.get_variable("var")
-        assert len(v) == 6 or len(v) == 8  # FIXME: prefetch causing duplicates
+        assert len(v) == 6
         for i in range(len(v)):
             assert v[i]["type"] == "process"
             assert v[i]["name"] == "powershell.exe"
@@ -87,13 +99,20 @@ def test_get_single_stixshifter_stix_bundle(set_stixshifter_stix_bundles):
 def test_get_multiple_stixshifter_stix_bundles(set_stixshifter_stix_bundles):
     with Session() as s:
         # default data source schema is stixshifter
-        stmt = (
-            "var = GET process FROM HOST1,HOST2 WHERE [ipv4-addr:value = '127.0.0.1']"
-        )
+        stmt = """
+               var = GET process
+                     FROM HOST1,HOST2
+                     WHERE ipv4-addr:value = '127.0.0.1'
+               """
 
         s.execute(stmt)
         v = s.get_variable("var")
-        assert len(v) == 240 or len(v) == 267  # FIXME: prefetch causing duplicates
+
+        # The extended graph [ipv4-addr:value = '127.0.0.1'] is recognized and
+        # merged to prefetch query, resultsing in limited (32) processes. If
+        # not used by prefetch, the total number of process records prefetched
+        # is 240.
+        assert len(v) == 32
         for i in range(len(v)):
             assert v[i]["type"] == "process"
             assert v[i]["name"] in [
@@ -114,7 +133,11 @@ def test_get_multiple_stixshifter_stix_bundles(set_stixshifter_stix_bundles):
 
 def test_get_wrong_type(file_stix_bundles):
     with Session() as s:
-        stmt = f"var = GET foo FROM file://{file_stix_bundles[0]} WHERE [process:name='compattelrunner.exe']"
+        stmt = f"""
+                var = GET foo
+                      FROM file://{file_stix_bundles[0]}
+                      WHERE name = "compattelrunner.exe"
+                """
 
         output = s.execute(stmt)
         warnings = []
@@ -132,7 +155,11 @@ def test_get_wrong_type(file_stix_bundles):
 def test_get_repeated(proc_bundle_file):
     """process objects may not have deterministic IDs, so we need to prevent duplicate entries somehow"""
     with Session() as s:
-        stmt = f"var = GET process FROM file://{proc_bundle_file} WHERE [process:name = 'cmd.exe']"
+        stmt = f"""
+                var = GET process
+                      FROM file://{proc_bundle_file}
+                      WHERE name = "cmd.exe"
+                """
         output = s.execute(stmt)
         data = output[0].to_dict()["data"]["variables updated"][0]
         print(json.dumps(data, indent=4))
@@ -145,12 +172,17 @@ def test_get_repeated(proc_bundle_file):
         assert n_ent == data["#(ENTITIES)"]
         assert n_rec == data["#(RECORDS)"]
 
-        stmt = f"var = GET file FROM file://{proc_bundle_file} WHERE [file:name = 'cmd.exe']"
+        stmt = f"""
+                var = GET file
+                      FROM file://{proc_bundle_file}
+                      WHERE [file:name = 'cmd.exe']
+                """
         output = s.execute(stmt)
         data = output[0].to_dict()["data"]["variables updated"][0]
         print(json.dumps(data, indent=4))
         assert data["#(ENTITIES)"] > 0
         assert data["#(RECORDS)"] > 0
+
 
 @pytest.mark.parametrize(
     "num, unit, count",
@@ -169,10 +201,11 @@ def test_get_repeated(proc_bundle_file):
 )
 def test_get_relative_timespan(file_stix_bundles, num, unit, count):
     with Session() as s:
-        stmt = (
-            f"var = GET process FROM file://{file_stix_bundles[0]}"
-            f" WHERE [process:name='compattelrunner.exe'] LAST {num} {unit}"
-        )
+        stmt = f"""
+                var = GET process
+                      FROM file://{file_stix_bundles[0]}
+                      WHERE name='compattelrunner.exe' LAST {num} {unit}
+                """
 
         s.execute(stmt)
         v = s.get_variable("var")
@@ -183,29 +216,33 @@ def test_get_relative_timespan(file_stix_bundles, num, unit, count):
 def test_get_referred_variable(nt_stix_bundles):
     with Session() as s:
         stmt1 = f"""
-        nt111 = GET network-traffic FROM file://{nt_stix_bundles[0]}
-                WHERE dst_ref.value = '192.168.56.112'
-        """
+                 nt111 = GET network-traffic
+                         FROM file://{nt_stix_bundles[0]}
+                         WHERE dst_ref.value = '192.168.56.112'
+                 """
         s.execute(stmt1)
 
         stmt2 = f"""
-        nt112 = GET network-traffic FROM file://{nt_stix_bundles[1]}
-                WHERE src_port = nt111.src_port
-        """
+                 nt112 = GET network-traffic
+                         FROM file://{nt_stix_bundles[1]}
+                         WHERE src_port = nt111.src_port
+                 """
         s.execute(stmt2)
 
         stmt3 = f"""
-        nt112y = GET network-traffic FROM file://{nt_stix_bundles[1]}
-                 WHERE src_ref.value = nt111.src_ref.value
-        """
+                 nt112y = GET network-traffic
+                          FROM file://{nt_stix_bundles[1]}
+                          WHERE src_ref.value = nt111.src_ref.value
+                 """
         s.execute(stmt3)
 
         s.config["stixquery"]["timerange_start_offset"] = -10
         s.config["stixquery"]["timerange_stop_offset"] = 10
         stmt4 = f"""
-        nt112z = GET network-traffic FROM file://{nt_stix_bundles[1]}
-                 WHERE src_ref.value = nt111.src_ref.value
-        """
+                 nt112z = GET network-traffic
+                          FROM file://{nt_stix_bundles[1]}
+                          WHERE src_ref.value = nt111.src_ref.value
+                 """
         s.execute(stmt4)
 
         nt112 = s.get_variable("nt112")

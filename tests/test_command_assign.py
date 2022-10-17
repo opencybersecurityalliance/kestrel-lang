@@ -58,9 +58,12 @@ def test_assign_after_new(stmt, expected):
 )
 def test_assign_after_get(proc_bundle_file, stmt, expected):
     with Session() as s:
-        s.execute(("p = GET process"
-                   f" FROM file://{proc_bundle_file}"
-                   "  WHERE [process:pid > 0]"))
+        s.execute(f"""
+                   p = GET process
+                       FROM file://{proc_bundle_file}
+                       WHERE [process:pid > 0]
+                   """
+        )
         s.execute(stmt)
         x = s.get_variable("x")
         assert len(x) == expected, f"ASSIGN error: {stmt}"

@@ -88,7 +88,7 @@ def test_quoted_datasource():
             "ext_dns_conns",
             "network-traffic",
             '"udi://10k Traffic"',
-            "[(network-traffic:dst_port = 53) AND (network-traffic:dst_ref.value NOT ISSUBSET '192.168.1.0/24')]",
+            "[(network-traffic:dst_port = 53 AND network-traffic:dst_ref.value NOT ISSUBSET '192.168.1.0/24')]",
         ),
     ],
 )
