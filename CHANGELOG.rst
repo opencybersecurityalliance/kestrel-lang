@@ -36,6 +36,7 @@ Added
     - relative timespan for FIND
 - Upgrade prefetch with WHERE clause to eliminate unnecessary query
 - Multiple test cases for new syntax and features
+- documentation on macOS (arm64) install requirement
 
 Changed
 -------
