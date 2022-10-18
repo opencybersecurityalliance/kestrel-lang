@@ -93,7 +93,6 @@ from collections.abc import Mapping
 from pandas import DataFrame
 from importlib.util import spec_from_file_location, module_from_spec
 from contextlib import AbstractContextManager
-from collections.abc import Iterable
 
 from kestrel.codegen.display import AbstractDisplay, DisplayHtml, DisplayFigure
 from kestrel.analytics import AbstractAnalyticsInterface
