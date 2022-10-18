@@ -440,20 +440,9 @@ def _extract_vars(args, default_variable):
     return var_names
 
 
-def _extract_stixpath(args):
-    # extract a single stix path from the args
-    return _assert_and_extract_single("STIXPATH", args)
-
-
 def _extract_attribute(args):
     # extract a single attribute from the args
     return _assert_and_extract_single("ATTRIBUTE", args)
-
-
-def _extract_datasource(args):
-    raw_ds = _assert_and_extract_single("DATASRC", args)
-    ds = raw_ds.strip('"') if raw_ds else None
-    return ds
 
 
 def _extract_entity_type(args):
