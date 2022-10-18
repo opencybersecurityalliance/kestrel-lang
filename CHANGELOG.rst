@@ -12,6 +12,7 @@ Unreleased
 Added
 -----
 - Introduce ExtendedCenteredGraphPattern (ECGP) for WHERE clause
+
     - Support optional SCO/entity type for centered graph (STIX compatible)
     - Support optional square brackets (STIX compatible)
     - Support Single or double quotes (STIX compatible)
@@ -24,28 +25,43 @@ Added
     - Parse into STIX (now ECGP) #14
     - Normalize WHERE clause between GET and expression
     - Add WHERE clause to command FIND
+    
 - Upgrade arguments (in APPLY command)
+
     - Support quoted string in arguments #170
     - dereferring variables in arguments
+    
 - Upgrade path (in GET/APPLY/LOAD/SAVE command)
+
     - Support escaped characters in quoted datasrc/analytics/path
+    
 - Upgrade JSON parser for command NEW
+
 - Upgrade operators in syntax to be case insensitive
+
 - Upgrade timespan
+
     - absolute timespan without ``t`` and quotes
     - relative timespan for FIND
+    
 - Upgrade prefetch with WHERE clause to eliminate unnecessary query
+
 - Multiple test cases for new syntax and features
+
 - Add macOS (arm64) install requirement to documentation
 
 Changed
 -------
 - Limit STIXPATH to ATTRIBUTE
+
     - command: SORT, GROUP, JOIN
     - expression clause: sort, attr
+    
 - Use ``;`` as splitter between arguments (``,`` remains between individual values for multi-value argument)
+
 - Formalize *semantics processor* in parser-semantics-codegen procedure
-    - variable dereference extraction in semantics processor
+
+    - variable dereferencing in semantics processor
     - variable timerange extraction in semantics processor
 
 1.4.2 (2022-09-26)
