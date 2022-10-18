@@ -25,6 +25,7 @@ An analytics using this interface should follow the rules:
 import docker
 import logging
 import pandas
+from collections.abc import Iterable
 
 from kestrel.analytics import AbstractAnalyticsInterface
 from kestrel.exceptions import (
@@ -98,21 +99,12 @@ class DockerInterface(AbstractAnalyticsInterface):
                 f"{container_name} is not an avaliable docker container.",
             )
 
-        # format env vars
-        if parameters:
-            env = {
-                k: ",".join([str(w) for w in v]) if isinstance(v, list) else v
-                for k, v in parameters.items()
-            }
-        else:
-            env = None
-
         # the execution of the container
         try:
             dclient.containers.run(
                 container_name,
                 volumes={str(shared_dir): {"bind": "/data", "mode": "rw"}},
-                environment=env,
+                environment=parameters,
             )
         except docker.errors.ContainerError as e:
             error = e.stderr.decode("utf-8")

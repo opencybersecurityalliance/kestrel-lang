@@ -17,7 +17,7 @@ class Reference:
             return False
 
     def __str__(self):
-        return self.variable + "." + self.attribute
+        return "{" + self.variable + "." + self.attribute + "}"
 
 
 def deref_and_flatten_value_to_list(value, deref_func, get_timerange_func):

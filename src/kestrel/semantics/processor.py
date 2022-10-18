@@ -80,7 +80,7 @@ def semantics_processing(
 
     if "arguments" in stmt:
         stmt["arguments"] = {
-            k: _arguments_deref(v, deref_func, get_timerange_func)
+            k: _arguments_deref_and_tostring(v, deref_func, get_timerange_func)
             for k, v in stmt["arguments"].items()
         }
 
@@ -147,9 +147,11 @@ def _check_semantics_on_find(stmt, input_type):
         raise UnsupportedRelation(entity_x, relation, entity_y)
 
 
-def _arguments_deref(v, deref_func, get_timerange_func):
+def _arguments_deref_and_tostring(v, deref_func, get_timerange_func):
     # not bother timerange for arguments deref
     w, _ = deref_and_flatten_value_to_list(v, deref_func, get_timerange_func)
     if len(w) == 1:
-        w = w[0]
+        w = str(w[0])
+    else:
+        w = ",".join(map(str, w))
     return w

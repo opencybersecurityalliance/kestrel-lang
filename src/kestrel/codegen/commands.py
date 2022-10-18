@@ -610,9 +610,12 @@ def _prefetch(
         pattern_ast.deref(deref_func, get_timerange_func)
         pattern_ast.add_center_entity(symtable[input_var_name].type)
         time_adj = tuple(map(timedelta_seconds, (start_offset, end_offset)))
+        _logger.info(f"ext pattern in prefetch: {where_clause}")
+        _logger.info(f"prefetch pattern before extend: {pattern_ast}")
         pattern_ast.extend("AND", where_clause)
+        _logger.info(f"prefetch pattern after extend: {pattern_ast}")
         stix_pattern = pattern_ast.to_stix(time_range, time_adj)
-        _logger.info(f"STIX pattern generated for remote execution: {stix_pattern}")
+        _logger.info(f"STIX pattern generated in prefetch: {stix_pattern}")
 
         if stix_pattern:
             data_source = symtable[input_var_name].data_source

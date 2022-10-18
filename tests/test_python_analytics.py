@@ -126,7 +126,7 @@ WITH argx=abc,888; argy=123; argz="as\\"is"
         assert len(v) == 2
         assert v[0]["type"] == "process"
         assert v[0]["x_new_argx"] == "abc,888"
-        assert v[0]["x_new_argy"] == 123
+        assert v[0]["x_new_argy"] == '123'
         assert v[0]["x_new_argz"] == r'as"is'
 
 
@@ -144,7 +144,7 @@ WITH argx=ref.pid; argy=123; argz=ref.pid,555
         assert len(v) == 2
         assert v[0]["type"] == "process"
         assert v[0]["x_new_argx"] in ("4,1380", "1380,4")
-        assert v[0]["x_new_argy"] == 123
+        assert v[0]["x_new_argy"] == '123'
         assert v[0]["x_new_argz"] in ("4,1380,555", "1380,4,555")
 
 

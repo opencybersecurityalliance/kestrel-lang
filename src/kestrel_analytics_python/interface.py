@@ -93,6 +93,7 @@ from collections.abc import Mapping
 from pandas import DataFrame
 from importlib.util import spec_from_file_location, module_from_spec
 from contextlib import AbstractContextManager
+from collections.abc import Iterable
 
 from kestrel.codegen.display import AbstractDisplay, DisplayHtml, DisplayFigure
 from kestrel.analytics import AbstractAnalyticsInterface
@@ -197,10 +198,7 @@ class PythonAnalytics(AbstractContextManager):
         if self.parameters:
             if isinstance(self.parameters, Mapping):
                 _logger.debug(f"setting parameters as env vars: {self.parameters}")
-                for k, v in self.parameters.items():
-                    os.environ[k] = (
-                        ",".join([str(w) for w in v]) if isinstance(v, list) else v
-                    )
+                os.environ.update(self.parameters)
             else:
                 raise InvalidAnalyticsInterfaceImplementation(
                     "parameters should be passed in as a Mapping"

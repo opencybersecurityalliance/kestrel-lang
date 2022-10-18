@@ -33,6 +33,9 @@ def make_deref_func(store: SqlStorage, symtable: SymbolTable):
         # filter out None
         values = [v for v in values if v]
 
+        # dedup
+        values = tuple(set(values))
+
         _logger.debug(f"deref results: {str(values)}")
 
         return values
