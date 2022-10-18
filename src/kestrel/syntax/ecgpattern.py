@@ -2,6 +2,9 @@
 # https://stackoverflow.com/questions/36286894/name-not-defined-in-type-annotation
 from __future__ import annotations
 
+from typeguard import typechecked
+
+from typing import Tuple, Optional
 import datetime
 from abc import ABC, abstractmethod
 from firepit.query import Filter, Predicate
@@ -36,6 +39,7 @@ class ExtCenteredGraphConstruct(ABC):
         pass
 
 
+@typechecked
 class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
     def __init__(self, graph: ExtCenteredGraphConstruct):
         self.graph = graph
@@ -66,9 +70,12 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
 
     def to_stix(
         self,
-        timerange: (datetime.datetime, datetime.datetime),
-        timeadj: (datetime.timedelta, datetime.timedelta),
+        timerange: Optional[Tuple[datetime.datetime, datetime.datetime]],
+        timeadj: Optional[Tuple[datetime.timedelta, datetime.timedelta]],
     ):
+        # timerange: user-specified timerange from Kestrel command
+        # timeadj: time adjustments for START and STOP
+
         # before calling this, make sure:
         # 1. called deref()
         # 2. called add_center_entity()
@@ -77,23 +84,6 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
             raise KestrelInternalError(
                 "should run add_center_entity() before to_stix()"
             )
-
-        # timerange: user-specified timerange from Kestrel command
-        # timeadj: time adjustments for START and STOP
-        if timerange:
-            if not (
-                len(timerange) == 2
-                and isinstance(timerange[0], datetime.datetime)
-                and isinstance(timerange[1], datetime.datetime)
-            ):
-                raise TypeError("timerange should be datetime tuple")
-        if timeadj:
-            if not (
-                len(timeadj) == 2
-                and isinstance(timeadj[0], datetime.timedelta)
-                and isinstance(timeadj[1], datetime.timedelta)
-            ):
-                raise TypeError("timeadj should be timedelta tuple")
 
         if self.graph is None:
             inner = ""
@@ -131,7 +121,7 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
         if self.graph is not None:
             self.timerange = self.graph.deref(deref_func, get_timerange_func)
 
-    def extend(self, junction_type: str, other_ecgp: ExtCenteredGraphPattern):
+    def extend(self, junction_type: str, other_ecgp: Optional[ExtCenteredGraphPattern]):
 
         if other_ecgp is not None and other_ecgp.graph is not None:
 
@@ -161,6 +151,7 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
                 )
 
 
+@typechecked
 class ECGPJunction(ExtCenteredGraphConstruct):
     def __init__(
         self,
@@ -216,6 +207,7 @@ class ECGPJunction(ExtCenteredGraphConstruct):
         return merge_timeranges((ltr, rtr))
 
 
+@typechecked
 class ECGPComparison(ExtCenteredGraphConstruct):
     def __init__(self, entity_attribute: str, operator: str, value, entity_type=None):
         self.etype = entity_type

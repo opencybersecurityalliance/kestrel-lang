@@ -1,7 +1,8 @@
+from typeguard import typechecked
 from lark import Lark
 from pkgutil import get_data
 from itertools import chain
-from collections.abc import Iterable
+from typing import Tuple, Iterable
 import datetime
 
 from kestrel.codegen.relations import (
@@ -42,7 +43,8 @@ def get_all_input_var_names(stmt):
     return [stmt.get(k) for k in input_refs if k in stmt] + inputs_refs
 
 
-def merge_timeranges(trs: Iterable[(datetime.datetime, datetime.datetime)]):
+@typechecked
+def merge_timeranges(trs: Iterable[Tuple[datetime.datetime, datetime.datetime]]):
     # return the earliest start time and latest end time
     trs = [tr for tr in trs if tr is not None]
     if trs:
@@ -54,5 +56,6 @@ def merge_timeranges(trs: Iterable[(datetime.datetime, datetime.datetime)]):
         return None
 
 
+@typechecked
 def timedelta_seconds(t: int):
     return datetime.timedelta(seconds=t)
