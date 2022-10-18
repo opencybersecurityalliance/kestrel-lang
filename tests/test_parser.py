@@ -123,6 +123,15 @@ def test_apply_params_with_dots():
     assert result["arguments"] == {"x": 0.1, "y": Reference("a", "value")}
 
 
+def test_apply_params_with_at():
+    results = parse_kestrel("apply xyz://my_analytic on foo with x=\"https://www.xyz.com/123@me.com/action\"")
+    result = results[0]
+    assert result["command"] == "apply"
+    assert result["analytics_uri"] == "xyz://my_analytic"
+    assert result["inputs"] == ["foo"]
+    assert result["arguments"] == {"x": "https://www.xyz.com/123@me.com/action"}
+
+
 def test_apply_params_with_decimal_and_dots():
     results = parse_kestrel("apply xyz://my_analytic on foo with x=0.1; y=a.value ,b,c")
     result = results[0]
