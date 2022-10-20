@@ -254,14 +254,6 @@ class _KestrelT(Transformer):
         return args[0]
 
     def literal_list(self, args):
-        # make sure the items are wrapped into a list even one item
-        if isinstance(args[0], list):
-            return args[0]
-        else:
-            return args
-
-    def literals(self, args):
-        # return the item if single, else return list
         if len(args) == 1:
             return args[0]
         else:

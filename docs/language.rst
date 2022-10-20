@@ -560,17 +560,17 @@ Syntax
 ^^^^^^
 ::
 
-    APPLY analytics_identifier ON var1, var2, ... WITH x=abc; y=1,2,3; z=varx.pid
+    APPLY analytics_identifier ON var1, var2, ... WITH x=abc, y=(1,2,3), z=varx.pid
 
 - Input: The command takes in one or multiple Kestrel variables such as ``var1,
   var2, ...```.
 
 - Arguments: The ``WITH`` clause specifies arguments. Different parameters are
-  splitted by ``;``, and different values of the same parameters are splitted
-  by ``,``. Previous Kestrel variables will be de-referenced if seen, e.g.,
-  ``z=varx.pid`` will enumerate all ``pid`` of variable ``varx``, which may be
-  unfolded to ``4, 108, 8716``, and the final argument is ``z=4,108,8716`` when
-  passed to the analytics.
+  splitted by ``,``. Literal string, quoted string (with escaped characters),
+  list, and nested list are supported as values. Previous Kestrel variables
+  will be de-referenced if found, e.g., ``z=varx.pid`` will enumerate all
+  ``pid`` of variable ``varx``, which may be unfolded to ``4, 108, 8716``, and
+  the final argument is ``z=(4,108,8716)`` when passed to the analytics.
 
 - Execution: The command executes the analytics specified by
   ``analytics_identifier`` like ``docker://ip_domain_enrichment`` or

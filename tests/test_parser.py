@@ -6,6 +6,7 @@ import pytest
 from kestrel.syntax.parser import parse_kestrel
 from kestrel.syntax.ecgpattern import Reference
 from kestrel.exceptions import InvalidECGPattern
+from firepit.timestamp import timefmt
 
 
 @pytest.mark.parametrize("pattern",
@@ -105,8 +106,21 @@ def test_get(outvar, sco_type, ds, pat):
     assert where.to_stix(result["timerange"], None) == pat
 
 
+def test_get_timerange():
+    results = parse_kestrel("""
+        x = GET process
+            FROM xxx
+            WHERE name = 'asdf'
+            START 2022-10-18T01:02:03Z
+            STOP  2022-10-19T04:05:06Z
+        """)
+    result = results[0]
+    assert timefmt(result["timerange"][0]) == "2022-10-18T01:02:03.000Z"
+    assert timefmt(result["timerange"][1]) == "2022-10-19T04:05:06.000Z"
+
+
 def test_apply_params():
-    results = parse_kestrel("apply xyz://my_analytic on foo with x=1; y=a, b,c")
+    results = parse_kestrel("apply xyz://my_analytic on foo with x=1, y=(a, b,c)")
     result = results[0]
     assert result["command"] == "apply"
     assert result["analytics_uri"] == "xyz://my_analytic"
@@ -115,7 +129,7 @@ def test_apply_params():
 
 
 def test_apply_params_with_dots():
-    results = parse_kestrel("apply xyz://my_analytic on foo with x=0.1; y=a.value")
+    results = parse_kestrel("apply xyz://my_analytic on foo with x=0.1, y=a.value")
     result = results[0]
     assert result["command"] == "apply"
     assert result["analytics_uri"] == "xyz://my_analytic"
@@ -133,7 +147,7 @@ def test_apply_params_with_at():
 
 
 def test_apply_params_with_decimal_and_dots():
-    results = parse_kestrel("apply xyz://my_analytic on foo with x=0.1; y=a.value ,b,c")
+    results = parse_kestrel("apply xyz://my_analytic on foo with x=0.1, y=[a.value ,b,c]")
     result = results[0]
     assert result["command"] == "apply"
     assert result["analytics_uri"] == "xyz://my_analytic"
@@ -143,7 +157,7 @@ def test_apply_params_with_decimal_and_dots():
 
 def test_apply_params_no_equals():
     with pytest.raises(UnexpectedToken):
-        parse_kestrel("apply xyz://my_analytic on foo with x=1; y")
+        parse_kestrel("apply xyz://my_analytic on foo with x=1, y")
 
 
 def test_grouping_0():

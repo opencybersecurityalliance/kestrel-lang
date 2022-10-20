@@ -199,12 +199,11 @@ JSON_VALUE: WS* (NUMBER|ESCAPED_STRING|TRUE|FALSE|NULL) WS*
 
 //
 // Arguments
-// use ";" to avoid ambiguity between args and literals
 //
 
-args: arg_kv_pair (";" arg_kv_pair)*
+args: arg_kv_pair ("," arg_kv_pair)*
 
-arg_kv_pair: ECNAME "=" literals
+arg_kv_pair: ECNAME "=" value
 
 //
 // Shared keywords
@@ -255,9 +254,8 @@ literal: SIMPLESTRING
        | ESCAPED_STRING
        | NUMBER
 
-literals: literal ("," literal)*
-
-literal_list: "(" literals ")"
+literal_list: "(" literal ("," literal)* ")"
+            | "[" literal ("," literal)* "]"
 
 ENTITY_ATTRIBUTE_PATH: (ENTITY_TYPE ":")? ATTRIBUTE
 

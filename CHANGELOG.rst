@@ -43,7 +43,7 @@ Changed
 - Limit STIXPATH to ATTRIBUTE
     - command: SORT, GROUP, JOIN
     - expression clause: sort, attr
-- Use ``;`` as splitter between arguments (``,`` remains between individual values for multi-value argument)
+- Use explicit list like ``(1,2,3)`` or ``[1,2,3]`` for multi-value argument
 - Formalize *semantics processor* in parser-semantics-codegen procedure
     - variable dereference extraction in semantics processor
     - variable timerange extraction in semantics processor

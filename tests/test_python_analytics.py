@@ -17,7 +17,7 @@ REF_PROCS = """
 ref = NEW [
           {"type": "process", "name": "", "pid": 4},
           {"type": "process", "name": "explorer.exe", "pid": 1380}
-        ]
+          ]
 """
 
 
@@ -88,13 +88,13 @@ def test_html_visualization():
 def test_enrich_multiple_variables():
     with Session() as s:
         stmt = """
-v1 = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
-         , {"type": "process", "name": "explorer.exe", "pid": "99"}
-         ]
-v2 = NEW process ["cmd.exe", "explorer.exe", "google-chrome.exe"]
-v3 = NEW ipv4-addr ["1.1.1.1", "2.2.2.2"]
-APPLY python://enrich_multiple_variables ON v1, v2, v3
-"""
+               v1 = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
+                        , {"type": "process", "name": "explorer.exe", "pid": "99"}
+                        ]
+               v2 = NEW process ["cmd.exe", "explorer.exe", "google-chrome.exe"]
+               v3 = NEW ipv4-addr ["1.1.1.1", "2.2.2.2"]
+               APPLY python://enrich_multiple_variables ON v1, v2, v3
+               """
         s.execute(stmt)
 
         v1 = s.get_variable("v1")
@@ -117,10 +117,10 @@ def test_enrich_variable_with_arguments():
     with Session() as s:
         s.execute(NEW_PROCS)
         stmt = """
-APPLY python://enrich_variable_with_arguments
-ON newvar
-WITH argx=abc,888; argy=123; argz="as\\"is"
-"""
+               APPLY python://enrich_variable_with_arguments
+                     ON newvar
+                     WITH argx=(abc,888), argy=123, argz="as\\"is"
+               """
         s.execute(stmt)
         v = s.get_variable("newvar")
         assert len(v) == 2
@@ -135,10 +135,10 @@ def test_enrich_variable_with_reference_in_arguments():
         s.execute(NEW_PROCS)
         s.execute(REF_PROCS)
         stmt = """
-APPLY python://enrich_variable_with_arguments
-ON newvar
-WITH argx=ref.pid; argy=123; argz=ref.pid,555
-"""
+               APPLY python://enrich_variable_with_arguments
+                     ON newvar
+                     WITH argx=ref.pid, argy=123, argz=[ref.pid, 555]
+               """
         s.execute(stmt)
         v = s.get_variable("newvar")
         assert len(v) == 2
@@ -152,9 +152,11 @@ WITH argx=ref.pid; argy=123; argz=ref.pid,555
 def test_enrich_after_get_url(fake_bundle_file):
     with Session() as s:
         stmt = f"""
-newvar = get url from file://{fake_bundle_file} where [url:value LIKE '%']
-APPLY python://enrich_one_variable ON newvar
-"""
+                newvar = get url
+                         from file://{fake_bundle_file}
+                         where value LIKE '%'
+                APPLY python://enrich_one_variable ON newvar
+                """
         s.execute(stmt)
         v = s.get_variable("newvar")
         assert len(v) == 31
@@ -165,9 +167,11 @@ APPLY python://enrich_one_variable ON newvar
 def test_enrich_after_get_process(fake_bundle_4):
     with Session() as s:
         stmt = f"""
-newvar = get process from file://{fake_bundle_4} where [process:binary_ref.name LIKE '%']
-APPLY python://enrich_one_variable ON newvar
-"""
+               newvar = get process
+                        from file://{fake_bundle_4}
+                        where binary_ref.name LIKE "%"
+               APPLY python://enrich_one_variable ON newvar
+               """
         s.execute(stmt)
         v = s.get_variable("newvar")
         assert len(v) == 4
