@@ -9,6 +9,9 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.0 (2022-10-24)
+==================
+
 Added
 -----
 - Introduce ExtendedCenteredGraphPattern (ECGP) for WHERE clause
