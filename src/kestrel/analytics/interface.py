@@ -90,7 +90,7 @@ class AbstractAnalyticsInterface(ABC):
         Args:
             uri (str): the full URI including the scheme and analytics name.
 
-            argument_variables ([kestrel.symboltable.VarStruct]): the list of Kestrel variables as arguments.
+            argument_variables ([kestrel.symboltable.variable.VarStruct]): the list of Kestrel variables as arguments.
 
             config (dict): a layered list/dict that contains config for the
               interface and can be edited/updated by the interface.

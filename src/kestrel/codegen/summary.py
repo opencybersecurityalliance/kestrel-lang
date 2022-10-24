@@ -19,7 +19,7 @@ def gen_variable_summary(var_name, var_struct):
 
     Args:
 
-        variable (kestrel.symboltable.VarStruct): The target variable.
+        variable (kestrel.symboltable.variable.VarStruct): The target variable.
 
     Returns:
 

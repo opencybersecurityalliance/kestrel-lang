@@ -1,6 +1,6 @@
 from kestrel.codegen.data import dump_data_to_file
 from kestrel.codegen.summary import get_variable_entity_count
-from kestrel.syntax.parser import get_all_input_var_names
+from kestrel.syntax.utils import get_all_input_var_names
 
 
 class VarStruct:

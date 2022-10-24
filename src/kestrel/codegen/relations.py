@@ -11,6 +11,7 @@ import datetime
 from collections import defaultdict
 import logging
 
+from kestrel.syntax.reference import value_to_stix
 from firepit.query import Column, Join, Query, Projection, Table, Unique
 
 _logger = logging.getLogger(__name__)
@@ -167,11 +168,11 @@ def compile_identical_entity_search_pattern(var_name, var_struct, does_support_i
     # so `does_support_id` is set to False in default kestrel config file
     attribute = get_entity_id_attribute(var_struct)
     if attribute == "id" and not does_support_id:
-        pattern = None
+        pattern_raw = None
     else:
-        pattern = f"[{var_struct.type}:{attribute} = {var_name}.{attribute}]"
-    _logger.debug(f"identical entity search pattern compiled: {pattern}")
-    return pattern
+        pattern_raw = f"[{var_struct.type}:{attribute} = {var_name}.{attribute}]"
+    _logger.debug(f"identical entity search raw pattern generated: {pattern_raw}")
+    return pattern_raw
 
 
 def compile_x_ibm_event_search_flow_in_pattern(input_type, input_var_name):
@@ -282,6 +283,15 @@ def fine_grained_relational_process_filtering(
     )
 
     return filtered_ids
+
+
+def build_pattern_from_ids(return_type, ids):
+    if ids:
+        return (
+            "[" + return_type + ":id IN (" + ", ".join(map(value_to_stix, ids)) + ")]"
+        )
+    else:
+        return None
 
 
 def _query_process_with_time_and_ppid(store, var_table_name):

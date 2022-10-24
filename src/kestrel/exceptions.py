@@ -29,6 +29,14 @@ class KestrelInternalError(KestrelException):
         super().__init__(error, "please open a github issue to report")
 
 
+class KestrelNotImplemented(KestrelException):
+    def __init__(self, error):
+        super().__init__(
+            "Functionality not implemented: " + error,
+            "please search for the github issue to add comment",
+        )
+
+
 ################################################################
 #                     Kestrel Session Errors
 ################################################################
@@ -89,6 +97,10 @@ class InvalidStixPattern(KestrelException):
             details = f': invalid {self.invalid_term_type} "{self.invalid_term_value}" at line {self.line} column {self.column}'
             msg = msg + details
         super().__init__(msg, "rewrite the STIX pattern")
+
+
+class InvalidECGPattern(KestrelException):
+    pass
 
 
 class VariableNotExist(KestrelException):

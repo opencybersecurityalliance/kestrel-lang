@@ -2,174 +2,290 @@
 // Kestrel Grammar
 //
 
-start: statement*
+//
+// A huntflow is a sequence of statements
+//
 
-//
-// If no VARIABLE is given, default to _ in post-parsing
-//
+start: statement*
 
 statement: assignment
          | command_no_result
          
-assignment: VARIABLE "=" command_with_result
-          | command_with_result
+// If no VARIABLE is given, default to _ in post-parsing
+assignment: (VARIABLE "=")? command_with_result
 
 // "?" at the beginning will inline command
-?command_with_result: get
+?command_with_result: assign
                     | find
-                    | join
-                    | sort
+                    | get
                     | group
+                    | join
                     | load
-                    | new
                     | merge
-                    | assign
+                    | new
+                    | sort
 
-?command_no_result: disp
+?command_no_result: apply
+                  | disp
                   | info
-                  | apply
                   | save
 
 assign: expression
 
+//
+// All commands
+//
+
+find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE where_clause? timespan?
+
+get: "GET"i ENTITY_TYPE ("FROM"i datasource)? where_clause timespan?
+
+group: "GROUP"i VARIABLE BY grp_spec ("WITH"i agg_list)?
+
+join: "JOIN"i VARIABLE "," VARIABLE (BY ATTRIBUTE "," ATTRIBUTE)?
+
+load: "LOAD"i stdpath ("AS"i ENTITY_TYPE)?
+
 merge: VARIABLE ("+" VARIABLE)+
 
-disp: "disp"i expression
+new: "NEW"i ENTITY_TYPE? VAR_DATA
 
-info: "info"i VARIABLE
+sort: "SORT"i VARIABLE BY ATTRIBUTE (ASC|DESC)?
 
-get: "get"i ENTITY_TYPE ("from"i DATASRC)? "where"i STIXPATTERNBODY timespan?
+apply: "APPLY"i analytics_uri "ON"i variables ("WITH"i args)?
 
-find: "find"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE (starttime endtime)?
+disp: "DISP"i expression
 
-apply: "apply"i ANALYTICS "on"i variables ("with"i anaparams)?
+info: "INFO"i VARIABLE
 
-join: "join"i VARIABLE "," VARIABLE (BY STIXPATH "," STIXPATH)?
+save: "SAVE"i VARIABLE "TO"i stdpath
 
-sort: "sort"i VARIABLE BY STIXPATH (ASC|DESC)?
+//
+// Variable definition
+//
 
-group: "group"i VARIABLE BY grp_spec ("with"i agg_list)?
+variables: VARIABLE ("," VARIABLE)*
 
-load: "load"i DUMPPATH ("as"i ENTITY_TYPE)?
+VARIABLE: ECNAME
 
-save: "save"i VARIABLE "to"i DUMPPATH
+//
+// Expression
+//
 
-new: "new"i (ENTITY_TYPE)? VARDATA
+expression: transform where_clause? attr_clause? sort_clause? limit_clause? offset_clause?
 
-timespan: starttime endtime
-        | relative_timespan
+transform: TRANSFORM "(" VARIABLE ")"
+         | VARIABLE
 
-relative_timespan: "last"i NUMBER timeunit
+TRANSFORM: (TIMESTAMPED)
 
-?timeunit: (DAY|HOUR|MINUTE|SECOND)
+TIMESTAMPED: "TIMESTAMPED"i
+
+where_clause: "WHERE"i ecg_pattern
+attr_clause: "ATTR"i ATTRIBUTES
+sort_clause: "SORT"i BY ATTRIBUTE (ASC|DESC)?
+limit_clause: "LIMIT"i INT
+offset_clause: "OFFSET"i INT
+
+?ecg_pattern: disjunction
+            | "[" disjunction "]" // STIX compatible
+
+?disjunction: conjunction
+            | disjunction "OR"i conjunction -> expression_or
+
+?conjunction: comparison
+            | conjunction "AND"i comparison -> expression_and
+
+?comparison: comparison_std
+           | comparison_null
+           | "(" disjunction ")"
+
+comparison_std:  ENTITY_ATTRIBUTE_PATH OP      value
+comparison_null: ENTITY_ATTRIBUTE_PATH NULL_OP NULL
+
+//
+// Timespan
+//
+
+?timespan: "start"i timestamp "stop"i timestamp -> timespan_absolute
+         | "last"i INT timeunit                 -> timespan_relative
+
+?timeunit: DAY
+         | HOUR
+         | MINUTE
+         | SECOND
+
 DAY: "days"i | "d"i
 HOUR: "hours"i | "h"i
 MINUTE: "minutes"i | "m"i
 SECOND: "seconds"i | "s"i
 
+timestamp:       ISOTIMESTAMP
+         | "\""  ISOTIMESTAMP "\""
+         | "'"   ISOTIMESTAMP "'"
+         | "t\"" ISOTIMESTAMP "\""
+         | "t'"  ISOTIMESTAMP "'"
 
-transform: TRANSFORM "(" VARIABLE ")"
-         | VARIABLE
+ISOTIMESTAMP: /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(\.\d+)?Z/
 
-expression: transform where_clause? attr_clause? sort_clause? limit_clause? offset_clause?
+//
+// FIND command constructs
+//
 
-where_clause: "where"i condition
-attr_clause: "attr"i STIXPATHS
-sort_clause: "sort"i BY STIXPATH (ASC|DESC)?
-limit_clause: "limit"i INT
-offset_clause: "offset"i INT
+RELATION: WORD
 
-?condition: disjunction
-
-?disjunction: conjunction
-            | disjunction "OR"i conjunction -> disj
-
-?conjunction: comparison
-            | conjunction "AND"i comparison -> conj
-
-?comparison: column OP value -> comp
-           | column NULL_OP "null"i -> null_comp
-           | "(" disjunction ")"
-
-column: STIXPATH
-
-?value: SQSTRING -> squoted_str
-      | NUMBER   -> num_literal
-      | /NULL/   -> nulls
-
-OP: /([<>!=]?=|[<>]|IN|LIKE|MATCHES)/
-
-NULL_OP: /IS (NOT)?/i
-
-anaparams: (localargs (", " localargs)* | URI)
-
-localargs: CNAME "=" valuelist
-         | CNAME "=" QSTRING
-         | CNAME "=" NUMBER -> number
-
-valuelist: PATH ("," PATH)*
-
-starttime: "START" "t'" ISOTIMESTAMP "'"
-
-endtime: "STOP" "t'" ISOTIMESTAMP "'"
-
-variables: VARIABLE ("," VARIABLE)*
+//
+// GROUP command constructs
+//
 
 grp_spec: grp_expr ("," grp_expr)*
 
-grp_expr: STIXPATH
+grp_expr: ATTRIBUTE
         | bin_func
 
-bin_func: "BIN"i "(" STIXPATH "," NUMBER timeunit? ")"
+bin_func: "BIN"i "(" ATTRIBUTE "," INT timeunit? ")"
 // No other scalar funcs are supported yet
 
 agg_list: agg ("," agg)*
 
-agg: funcname "(" STIXPATH ")" ("AS"i alias)?
-
-?alias: CNAME
-
-TRANSFORM: (TIMESTAMPED)
-TIMESTAMPED: "timestamped"i
-
-VARIABLE: CNAME
-ENTITY_TYPE: LETTER ("_"|LETTER|DIGIT|"-")*
-ANALYTICS: (LETTER|DIGIT|/[-_.:\/]/)+
-STIXPATH: (LETTER|DIGIT|/[-_.:']/)+
-STIXPATHS: STIXPATH (/\s*,\s*/ STIXPATH)*
-PATH: (LETTER|DIGIT|/[-_.:\/]/)+
-DATASRC: (PATH ("," PATH)* |ESCAPED_STRING)
-DUMPPATH: PATH
-ASC: "asc"i
-DESC: "desc"i
-REVERSED: "by"i
-BY: "by"i
-COMMENT: /#.*/
-URI: PATH
+agg: funcname "(" ATTRIBUTE ")" ("AS"i alias)?
 
 ?funcname: (MIN|MAX|SUM|AVG|COUNT|NUNIQUE)
-MIN: "min"i
-MAX: "max"i
-SUM: "sum"i
-AVG: "avg"i
-COUNT: "count"i
-NUNIQUE: "nunique"i
+MIN: "MIN"i
+MAX: "MAX"i
+SUM: "SUM"i
+AVG: "AVG"i
+COUNT: "COUNT"i
+NUNIQUE: "NUNIQUE"i
 
-STIXPATTERNBODY: "[" /.+/ "]" | "(" /.+/ ")"
+?alias: ECNAME
 
-ISOTIMESTAMP: /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(\.\d+)?Z/
+//
+// GET command constructs
+//
 
-// manually add `WS*` since `%ignore WS` doesn't apply to spaces inside terminals
+datasource: DATASRC_SIMPLE
+          | DATASRC_ESCAPED
+          | VARIABLE
+
+DATASRC_SIMPLE: PATH_SIMPLE ("," PATH_SIMPLE)*
+DATASRC_ESCAPED: PATH_ESCAPED
+
+//
+// APPLY command constructs
+//
+
+analytics_uri: ANALYTICS_SIMPLE
+             | ANALYTICS_ESCAPED
+
+ANALYTICS_SIMPLE: PATH_SIMPLE
+ANALYTICS_ESCAPED: PATH_ESCAPED
+
+//
+// Two-level JSON in command NEW
+//
+
+// use terminal to load the entire VAR_DATA without parsing into it
+// add `WS*` since `%ignore WS` doesn't apply to spaces inside terminals
 // https://github.com/lark-parser/lark/issues/99
-QSTRING: WS* ESCAPED_STRING WS*
-JSON_VALUE: WS* (ESCAPED_STRING|NUMBER) WS*
-VARDATA: "[" (QSTRING ("," QSTRING)* | JSON_DICT ("," JSON_DICT)*) "]"
-JSON_DICT: WS* "{" (QSTRING ":" JSON_VALUE) ("," QSTRING ":" JSON_VALUE)* "}" WS*
-SQSTRING: /'[^']*'/
+VAR_DATA: "[" (RAW_VALUES | JSON_OBJS) "]"
 
-RELATION: WORD
+RAW_VALUES: ESCAPED_STRING_WS ("," ESCAPED_STRING_WS)*
 
-%import common (CNAME, LETTER, DIGIT, WS, INT, WORD, ESCAPED_STRING, NUMBER)
+JSON_OBJS: JSON_OBJ ("," JSON_OBJ)*
+JSON_OBJ: WS* "{" JSON_PAIR ("," JSON_PAIR)* "}" WS*
+JSON_PAIR: ESCAPED_STRING_WS ":" JSON_VALUE
+JSON_VALUE: WS* (NUMBER|ESCAPED_STRING|TRUE|FALSE|NULL) WS*
+
+//
+// Arguments
+//
+
+args: arg_kv_pair ("," arg_kv_pair)*
+
+arg_kv_pair: ECNAME "=" value
+
+//
+// Shared keywords
+//
+
+BY: "BY"i
+ASC: "ASC"i
+DESC: "DESC"i
+REVERSED: "BY"i
+TRUE: "TRUE"i
+FALSE: "FALSE"i
+NULL: "NULL"i
+IN: "IN"i
+LIKE: "LIKE"i
+MATCHES: "MATCHES"i
+IS: "IS"i
+NOT: "NOT"i
+ISSUBSET: "ISSUBSET"i
+ISSUPERSET: "ISSUPERSET"i
+
+OP: OP_SIGN
+  | (NOT WS+)? OP_KEYWORD
+
+OP_SIGN: "="
+       | "=="
+       | "!="
+       | ">"
+       | "<"
+       | ">="
+       | ">="
+
+OP_KEYWORD: IN
+          | LIKE
+          | MATCHES
+          | ISSUBSET
+          | ISSUPERSET
+
+NULL_OP: IS (WS+ NOT)?
+
+//
+// Common language constructs
+//
+
+value: literal_list
+     | literal
+
+literal: SIMPLESTRING
+       | ESCAPED_STRING
+       | NUMBER
+
+literal_list: "(" literal ("," literal)* ")"
+            | "[" literal ("," literal)* "]"
+
+ENTITY_ATTRIBUTE_PATH: (ENTITY_TYPE ":")? ATTRIBUTE
+
+ENTITY_TYPE: ECNAME
+
+stdpath: PATH_SIMPLE
+       | PATH_ESCAPED
+
+// TODO: support attributes without quote for dash
+//       x.hash.SHA-256 instead of x.hash.'SHA-256'
+ATTRIBUTE: ECNAME "[*]"? ("." ECNAME_W_QUOTE)*
+ATTRIBUTES: ATTRIBUTE (WS* "," WS* ATTRIBUTE)*
+
+ECNAME: (LETTER|"_") (LETTER|DIGIT|"_"|"-")*
+ECNAME_W_QUOTE: (LETTER|DIGIT|"_"|"-"|"'")+
+
+SIMPLESTRING: (LETTER|"_") (LETTER|DIGIT|"_"|"-"|"."|"'"|"[*]")*
+
+PATH_SIMPLE: (ECNAME "://")? (LETTER|DIGIT|"_"|"-"|"."|"/")+
+
+PATH_ESCAPED: "\"" (ECNAME "://")? _STRING_ESC_INNER "\""
+            | "'"  (ECNAME "://")? _STRING_ESC_INNER "'"
+
+ESCAPED_STRING: "\"" _STRING_ESC_INNER "\""
+              | "'"  _STRING_ESC_INNER "'"
+ESCAPED_STRING_WS: WS* ESCAPED_STRING WS*
+
+
+%import common (LETTER, DIGIT, WS, INT, WORD, NUMBER, _STRING_ESC_INNER)
+%import common.SH_COMMENT -> COMMENT
 
 %ignore WS
 %ignore COMMENT

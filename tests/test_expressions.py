@@ -12,11 +12,12 @@ procs = NEW [ {"type": "process", "name": "cmd.exe", "pid": 123, "x_foo": "bar"}
 
 
 @pytest.mark.parametrize(
-    "attrs, unexpected", [
+    "attrs, unexpected",
+    [
         ("pid", {"name"}),
         ("name", {"pid"}),
         ("pid,name", set()),
-    ]
+    ],
 )
 def test_expr_attr(attrs, unexpected):
     with Session() as s:
@@ -31,12 +32,13 @@ def test_expr_attr(attrs, unexpected):
 
 
 @pytest.mark.parametrize(
-    "prop, direction, expected", [
+    "prop, direction, expected",
+    [
         ("pid", "asc", [99, 123]),
         ("pid", "desc", [123, 99]),
         ("name", "asc", ["cmd.exe", "explorer.exe"]),
         ("name", "desc", ["explorer.exe", "cmd.exe"]),
-    ]
+    ],
 )
 def test_expr_sort(prop, direction, expected):
     with Session() as s:
@@ -49,12 +51,13 @@ def test_expr_sort(prop, direction, expected):
 
 
 @pytest.mark.parametrize(
-    "limit, offset, expected", [
+    "limit, offset, expected",
+    [
         (5, 0, [99, 123]),
         (1, 0, [99]),
         (2, 1, [123]),
         (1, 1, [123]),
-    ]
+    ],
 )
 def test_expr_limit_offset(limit, offset, expected):
     with Session() as s:
@@ -67,23 +70,28 @@ def test_expr_limit_offset(limit, offset, expected):
 
 
 @pytest.mark.parametrize(
-    "col, op, val, expected", [
+    "col, op, val, expected",
+    [
         ("pid", "=", 99, [99]),
         ("pid", "<", 100, [99]),
         ("pid", ">=", 100, [123]),
         ("x_foo", "IS NULL", "", [99]),
         ("x_foo", "IS NOT NULL", "", [123]),
         ("x_foo", "=", "'bar'", [123]),
-    ]
+    ],
 )
 def test_expr_where(col, op, val, expected):
     with Session() as s:
         s.execute(NEW_PROCS)
-        out = s.execute(f"DISP procs WHERE {col} {op} {val}")
-        data = out[0].to_dict()["data"]
-        print(json.dumps(data, indent=4))
-        actual = [p["pid"] for p in data]
-        assert actual == expected
+        for stmt in (
+            f"DISP procs WHERE {col} {op} {val}",
+            f"DISP procs WHERE [{col} {op} {val}]",
+        ):
+            out = s.execute(stmt)
+            data = out[0].to_dict()["data"]
+            print(json.dumps(data, indent=4))
+            actual = [p["pid"] for p in data]
+            assert actual == expected
 
 
 def test_expr_assign_where():

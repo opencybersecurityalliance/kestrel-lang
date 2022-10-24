@@ -560,9 +560,17 @@ Syntax
 ^^^^^^
 ::
 
-    APPLY analytics_identifier ON var1, var2, ... WITH x=1, y=abc
+    APPLY analytics_identifier ON var1, var2, ... WITH x=abc, y=(1,2,3), z=varx.pid
 
-- Input: The command takes in one or multiple variables.
+- Input: The command takes in one or multiple Kestrel variables such as ``var1,
+  var2, ...```.
+
+- Arguments: The ``WITH`` clause specifies arguments. Different parameters are
+  splitted by ``,``. Literal string, quoted string (with escaped characters),
+  list, and nested list are supported as values. Previous Kestrel variables
+  will be de-referenced if found, e.g., ``z=varx.pid`` will enumerate all
+  ``pid`` of variable ``varx``, which may be unfolded to ``4, 108, 8716``, and
+  the final argument is ``z=(4,108,8716)`` when passed to the analytics.
 
 - Execution: The command executes the analytics specified by
   ``analytics_identifier`` like ``docker://ip_domain_enrichment`` or
@@ -919,6 +927,9 @@ Syntax
   of the entities in ``oldvar``.
 - In the third form, ``oldvar`` will be filtered and the result assigned to ``newvar``.
 
+The ``WHERE`` condition supports *ExtendedCenterGraphPattern* and references of
+Kestrel variables can be used, which will be automatically dereferenced.
+
 Examples
 ^^^^^^^^
 ::
@@ -935,6 +946,11 @@ Examples
     # filter procs for WMIC commands with timestamps
     wmic_procs = TIMESTAMPED(procs) WHERE command_line LIKE '%wmic%'
 
+    # WHERE clause examples
+    p2 = procs WHERE pid IN (4, 198, 2874)
+    p3 = procs WHERE pid = p2.pid
+    p4 = procs WHERE pid IN (p2.pid, 8888, 10002)
+    p5 = procs WHERE pid = p2.pid AND name = "explorer.exe"
 
 MERGE
 -----

@@ -22,21 +22,25 @@ import functools
 import logging
 import itertools
 from collections import OrderedDict
+from copy import deepcopy
 
 from firepit.deref import auto_deref
 from firepit.exceptions import InvalidAttr
 from firepit.query import Limit, Offset, Order, Projection, Query
 from firepit.stix20 import summarize_pattern
 
+from kestrel.semantics.reference import make_deref_func, make_var_timerange_func
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts, lowered_str_list
 from kestrel.exceptions import *
-from kestrel.semantics import get_entity_table, get_entity_type
-from kestrel.symboltable import new_var
-from kestrel.syntax.parser import get_all_input_var_names
-from kestrel.syntax.utils import get_entity_types
+from kestrel.symboltable.variable import new_var
+from kestrel.syntax.parser import parse_ecgpattern
+from kestrel.syntax.utils import (
+    get_entity_types,
+    get_all_input_var_names,
+    timedelta_seconds,
+)
 from kestrel.codegen.data import load_data, load_data_file, dump_data_to_file
 from kestrel.codegen.display import DisplayDataframe, DisplayDict, DisplayWarning
-from kestrel.codegen.pattern import build_pattern, build_pattern_from_ids
 from kestrel.codegen.queries import (
     compile_specific_relation_to_query,
     compile_generic_relation_to_query,
@@ -47,6 +51,7 @@ from kestrel.codegen.relations import (
     fine_grained_relational_process_filtering,
     get_entity_id_attribute,
     stix_2_0_identical_mapping,
+    build_pattern_from_ids,
 )
 
 _logger = logging.getLogger(__name__)
@@ -105,7 +110,7 @@ def _debug_logger(func):
 @_debug_logger
 @_default_output
 def assign(stmt, session):
-    entity_table = get_entity_table(stmt["input"], session.symtable)
+    entity_table = session.symtable[stmt["input"]].entity_table
     transform = stmt.get("transform")
     if transform:
         if transform.lower() == "timestamped":
@@ -132,14 +137,12 @@ def assign(stmt, session):
 @_default_output
 def merge(stmt, session):
     entity_types = list(
-        set(
-            [get_entity_type(var_name, session.symtable) for var_name in stmt["inputs"]]
-        )
+        set([session.symtable[var_name].type for var_name in stmt["inputs"]])
     )
     if len(entity_types) > 1:
         raise NonUniformEntityType(entity_types)
     entity_tables = [
-        get_entity_table(var_name, session.symtable) for var_name in stmt["inputs"]
+        session.symtable[var_name].entity_table for var_name in stmt["inputs"]
     ]
     session.store.merge(stmt["output"], entity_tables)
     output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
@@ -164,14 +167,14 @@ def load(stmt, session):
 @_guard_empty_input
 def save(stmt, session):
     dump_data_to_file(
-        session.store, get_entity_table(stmt["input"], session.symtable), stmt["path"]
+        session.store, session.symtable[stmt["input"]].entity_table, stmt["path"]
     )
     return None, None
 
 
 @_debug_logger
 def info(stmt, session):
-    header = session.store.columns(get_entity_table(stmt["input"], session.symtable))
+    header = session.store.columns(session.symtable[stmt["input"]].entity_table)
     direct_attrs, associ_attrs, custom_attrs, references = [], [], [], []
     for field in header:
         if field.startswith("x_"):
@@ -210,7 +213,7 @@ def info(stmt, session):
 
 @_debug_logger
 def disp(stmt, session):
-    entity_table = get_entity_table(stmt["input"], session.symtable)
+    entity_table = session.symtable[stmt["input"]].entity_table
     transform = stmt.get("transform")
     if transform and entity_table:
         if transform.lower() == "timestamped":
@@ -235,6 +238,7 @@ def disp(stmt, session):
 @_debug_logger
 @_default_output
 def get(stmt, session):
+    pattern = stmt["stixpattern"]
     local_var_table = stmt["output"] + "_local"
     return_var_table = stmt["output"]
     return_type = stmt["type"]
@@ -242,20 +246,13 @@ def get(stmt, session):
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     display = None
 
-    pattern = build_pattern(
-        stmt["patternbody"],
-        stmt["timerange"],
-        start_offset,
-        end_offset,
-        session.symtable,
-        session.store,
-    )
-
     if "variablesource" in stmt:
-        input_type = get_entity_table(stmt["variablesource"], session.symtable)
+        input_type = session.symtable[stmt["variablesource"]].type
         output_type = stmt["type"]
         if input_type != output_type:
-            pass  # TODO: new exception type?
+            raise InvalidECGPattern(
+                f"input variable type {input_type} does not match output type {output_type}"
+            )
         session.store.filter(
             stmt["output"],
             stmt["type"],
@@ -302,6 +299,8 @@ def get(stmt, session):
             and len(_output)
         ):
             prefetch_ret_var_table = return_var_table + "_prefetch"
+            ext_graph_pattern = deepcopy(stmt["where"])
+            ext_graph_pattern.prune_away_centered_graph(return_type)
             prefetch_ret_entity_table = _prefetch(
                 return_type,
                 prefetch_ret_var_table,
@@ -311,6 +310,7 @@ def get(stmt, session):
                 end_offset,
                 {local_var_table: _output},
                 session.store,
+                ext_graph_pattern,
                 session.session_id,
                 session.data_source_manager,
                 session.config["stixquery"]["support_id"],
@@ -372,7 +372,6 @@ def find(stmt, session):
     local_var_table = stmt["output"] + "_local"
     relation = stmt["relation"]
     is_reversed = stmt["reversed"]
-    time_range = stmt["timerange"]
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     rel_query = None
@@ -419,15 +418,17 @@ def find(stmt, session):
                 and _output.data_source
             ):
                 prefetch_ret_var_table = return_var_table + "_prefetch"
+                ext_graph_pattern = stmt["where"] if "where" in stmt else None
                 prefetch_ret_entity_table = _prefetch(
                     return_type,
                     prefetch_ret_var_table,
                     local_var_table,
-                    time_range,
+                    stmt["timerange"],
                     start_offset,
                     end_offset,
                     {local_var_table: _output},
                     session.store,
+                    ext_graph_pattern,
                     session.session_id,
                     session.data_source_manager,
                     session.config["stixquery"]["support_id"],
@@ -490,10 +491,10 @@ def find(stmt, session):
 def join(stmt, session):
     session.store.join(
         stmt["output"],
-        get_entity_table(stmt["input"], session.symtable),
-        stmt["path"],
-        get_entity_table(stmt["input_2"], session.symtable),
-        stmt["path_2"],
+        session.symtable[stmt["input"]].entity_table,
+        stmt["attribute_1"],
+        session.symtable[stmt["input_2"]].entity_table,
+        stmt["attribute_2"],
     )
 
 
@@ -507,8 +508,8 @@ def group(stmt, session):
         aggs = None
     session.store.group(
         stmt["output"],
-        get_entity_table(stmt["input"], session.symtable),
-        stmt["paths"],
+        session.symtable[stmt["input"]].entity_table,
+        stmt["attributes"],
         aggs,
     )
 
@@ -519,9 +520,9 @@ def group(stmt, session):
 def sort(stmt, session):
     session.store.assign(
         stmt["output"],
-        get_entity_table(stmt["input"], session.symtable),
+        session.symtable[stmt["input"]].entity_table,
         op="sort",
-        by=stmt["path"],
+        by=stmt["attribute"],
         ascending=stmt["ascending"],
     )
 
@@ -532,7 +533,7 @@ def sort(stmt, session):
 def apply(stmt, session):
     arg_vars = [session.symtable[v_name] for v_name in stmt["inputs"]]
     display = session.analytics_manager.execute(
-        stmt["workflow"], arg_vars, session.session_id, stmt["parameter"]
+        stmt["analytics_uri"], arg_vars, session.session_id, stmt["arguments"]
     )
     return None, display
 
@@ -551,6 +552,7 @@ def _prefetch(
     end_offset,
     symtable,
     store,
+    where_clause,
     session_id,
     ds_manager,
     does_support_id,
@@ -574,7 +576,7 @@ def _prefetch(
 
         return_type (str): return entity type.
 
-        time_range ((str, str)): start and end time in ISOTIMESTAMP.
+        time_range ((datetime, datetime)).
 
         start_offset (int): start time offset by seconds.
 
@@ -583,6 +585,8 @@ def _prefetch(
         symtable ({str:VarStruct}): should has ``input_var_name``.
 
         store (firepit.SqlStorage): store.
+
+        where_clause (ExtCenteredGraphPattern): pattern to merge to the prefetch auto-gen pattern
 
         session_id (str): session ID.
 
@@ -594,22 +598,32 @@ def _prefetch(
 
     _logger.debug(f"prefetch {return_type} to extend {input_var_name}.")
 
-    pattern_body = compile_identical_entity_search_pattern(
+    pattern_raw = compile_identical_entity_search_pattern(
         input_var_name, symtable[input_var_name], does_support_id
     )
 
-    if pattern_body:
-        remote_pattern = build_pattern(
-            pattern_body, time_range, start_offset, end_offset, symtable, store
-        )
+    if pattern_raw:
 
-        if remote_pattern:
+        pattern_ast = parse_ecgpattern(pattern_raw)
+        deref_func = make_deref_func(store, symtable)
+        get_timerange_func = make_var_timerange_func(store, symtable)
+        pattern_ast.deref(deref_func, get_timerange_func)
+        pattern_ast.add_center_entity(symtable[input_var_name].type)
+        time_adj = tuple(map(timedelta_seconds, (start_offset, end_offset)))
+        _logger.info(f"ext pattern in prefetch: {where_clause}")
+        _logger.info(f"prefetch pattern before extend: {pattern_ast}")
+        pattern_ast.extend("AND", where_clause)
+        _logger.info(f"prefetch pattern after extend: {pattern_ast}")
+        stix_pattern = pattern_ast.to_stix(time_range, time_adj)
+        _logger.info(f"STIX pattern generated in prefetch: {stix_pattern}")
+
+        if stix_pattern:
             data_source = symtable[input_var_name].data_source
-            resp = ds_manager.query(data_source, remote_pattern, session_id)
+            resp = ds_manager.query(data_source, stix_pattern, session_id)
             query_id = resp.load_to_store(store)
 
             # build the return_var_name view in store
-            store.extract(return_var_name, return_type, query_id, remote_pattern)
+            store.extract(return_var_name, return_type, query_id, stix_pattern)
 
             _logger.debug(f"prefetch successful.")
             return return_var_name
@@ -631,8 +645,8 @@ def _filter_prefetched_process(
         session.store,
         session.config["prefetch"]["process_identification"],
     )
-    id_pattern = build_pattern_from_ids(return_type, entity_ids)
-    if id_pattern:
+    if entity_ids:
+        id_pattern = build_pattern_from_ids(return_type, entity_ids)
         session.store.extract(prefetch_filtered_var_name, return_type, None, id_pattern)
         _logger.debug("filter successful.")
         return prefetch_filtered_var_name
@@ -669,7 +683,7 @@ def _build_query(store, entity_table, qry, stmt):
     attrs = stmt.get("attrs", "*")
     cols = attrs.split(",")
     _set_projection(store, entity_table, qry, cols)
-    sort_by = stmt.get("path")
+    sort_by = stmt.get("attribute")
     if sort_by:
         direction = "ASC" if stmt["ascending"] else "DESC"
         qry.append(Order([(sort_by, direction)]))

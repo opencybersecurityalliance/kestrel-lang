@@ -24,7 +24,7 @@ def test_group_srcref(fake_bundle_file):
             where [network-traffic:dst_port > 0]""",
         )
 
-        session.execute("src_grps = group conns by network-traffic:src_ref.value")
+        session.execute("src_grps = group conns by src_ref.value")
         assert "src_grps" in session.get_variable_names()
         src_grps = session.get_variable("src_grps")
         assert src_grps is not None
@@ -40,9 +40,7 @@ def test_group_src_dst(fake_bundle_file):
 
         session.execute(
             (
-                "grps = group conns by "
-                "network-traffic:src_ref.value,"
-                "network-traffic:dst_ref.value"
+                "grps = group conns by src_ref.value, dst_ref.value"
             )
         )
         assert "grps" in session.get_variable_names()
@@ -69,7 +67,7 @@ def test_group_srcref_agg(fake_bundle_file, agg_func, attr, expected):
 
         session.execute(
             (
-                "src_grps = group conns by network-traffic:src_ref.value"
+                "src_grps = group conns by src_ref.value"
                 f" with {agg_func}({attr})"
             )
         )
@@ -97,7 +95,7 @@ def test_group_srcref_agg_alias(fake_bundle_file, agg_func, attr, alias):
 
         session.execute(
             (
-                "src_grps = group conns by network-traffic:src_ref.value"
+                "src_grps = group conns by src_ref.value"
                 f" with {agg_func}({attr}) as {alias}"
             )
         )

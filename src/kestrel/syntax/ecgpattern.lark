@@ -1,0 +1,9 @@
+//
+// Kestrel Extended Centered Graph Pattern
+//
+
+start: ecg_pattern
+
+%import .kestrel.ecg_pattern
+%import common.WS
+%ignore WS

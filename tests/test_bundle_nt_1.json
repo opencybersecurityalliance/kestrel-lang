@@ -1,0 +1,659 @@
+{
+  "type": "bundle",
+  "id": "bundle--8554cc7b-081e-48cb-a808-a0960b67915f",
+  "objects": [
+    {
+      "id": "identity--e1711034-8b12-43c2-8229-4eab521d6877",
+      "name": "elastic_ecs",
+      "type": "identity"
+    },
+    {
+      "id": "observed-data--bcc888d0-22b8-47ce-8ef3-118d542be26e",
+      "type": "observed-data",
+      "created_by_ref": "identity--02d128ab-2220-43dc-8709-41a08b2f6590",
+      "created": "2022-07-28T16:06:00.103Z",
+      "modified": "2022-07-28T16:06:00.103Z",
+      "objects": {
+        "0": {
+          "type": "process",
+          "name": "powershell.exe",
+          "pid": 7880,
+          "binary_ref": "3",
+          "creator_user_ref": "14",
+          "opened_connection_refs": [
+            "5"
+          ]
+        },
+        "1": {
+          "type": "x-oca-event",
+          "process_ref": "0",
+          "host_ref": "7",
+          "ingested": "2022-07-27T14:38:33.301839809Z",
+          "code": "3",
+          "provider": "Microsoft-Windows-Sysmon",
+          "created": "2022-07-27T14:38:26.957Z",
+          "kind": "event",
+          "module": "sysmon",
+          "action": "Network connection detected (rule: NetworkConnect)",
+          "category": [
+            [
+              "network"
+            ]
+          ],
+          "event_type": [
+            "start",
+            "connection",
+            "protocol"
+          ],
+          "user_ref": "14",
+          "network_ref": "5"
+        },
+        "2": {
+          "type": "x-ecs-process",
+          "entity_id": "{ca21cdf6-4ddf-62e1-5702-000000001400}"
+        },
+        "3": {
+          "type": "file",
+          "name": "powershell.exe",
+          "parent_directory_ref": "4"
+        },
+        "4": {
+          "type": "directory",
+          "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
+        },
+        "5": {
+          "type": "network-traffic",
+          "dst_port": 80,
+          "dst_ref": "6",
+          "src_port": 50383,
+          "src_ref": "11",
+          "protocols": [
+            "http",
+            "tcp",
+            "ipv4"
+          ]
+        },
+        "6": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.91"
+        },
+        "7": {
+          "type": "x-oca-asset",
+          "hostname": "victima",
+          "os_name": "Windows 10 Pro",
+          "os_version": "10.0",
+          "os_platform": "windows",
+          "ip_refs": [
+            "8",
+            "9"
+          ],
+          "name": "victima",
+          "id": "ca21cdf6-3888-4c03-ae56-9ad5ca4b5981",
+          "mac_refs": [
+            "10"
+          ],
+          "architecture": "x86_64"
+        },
+        "8": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.111"
+        },
+        "9": {
+          "type": "ipv6-addr",
+          "value": "fe80::6081:41da:9cd5:7c82"
+        },
+        "10": {
+          "type": "mac-addr",
+          "value": "08:00:27:18:81:31"
+        },
+        "11": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.111"
+        },
+        "12": {
+          "type": "x-ecs-source",
+          "domain": "victima"
+        },
+        "13": {
+          "type": "x-ecs-user",
+          "domain": "VICTIMA",
+          "id": "S-1-5-18"
+        },
+        "14": {
+          "type": "user-account",
+          "user_id": "user",
+          "account_login": "user"
+        },
+        "15": {
+          "type": "x-ecs-network",
+          "community_id": "1:pHGTrE/eoXgjpA9y1yznnjUkDkU=",
+          "direction": "egress"
+        }
+      },
+      "first_observed": "2022-07-27T14:38:23.813Z",
+      "last_observed": "2022-07-27T14:38:23.813Z",
+      "number_observed": 1
+    },
+    {
+      "id": "observed-data--fb612316-10aa-4b70-bd80-1ece2bc7917e",
+      "type": "observed-data",
+      "created_by_ref": "identity--191f8e3f-942d-4a36-a223-fbe02f7e5c68",
+      "created": "2022-07-28T16:06:13.583Z",
+      "modified": "2022-07-28T16:06:13.583Z",
+      "objects": {
+        "0": {
+          "type": "process",
+          "name": "powershell.exe",
+          "pid": 8012,
+          "binary_ref": "3",
+          "creator_user_ref": "15",
+          "opened_connection_refs": [
+            "5"
+          ]
+        },
+        "1": {
+          "type": "x-oca-event",
+          "process_ref": "0",
+          "host_ref": "8",
+          "ingested": "2022-07-27T14:35:02.127872549Z",
+          "code": "3",
+          "provider": "Microsoft-Windows-Sysmon",
+          "kind": "event",
+          "created": "2022-07-27T14:34:55.801Z",
+          "module": "sysmon",
+          "action": "Network connection detected (rule: NetworkConnect)",
+          "category": [
+            [
+              "network"
+            ]
+          ],
+          "event_type": [
+            "start",
+            "connection",
+            "protocol"
+          ],
+          "user_ref": "15",
+          "network_ref": "5"
+        },
+        "2": {
+          "type": "x-ecs-process",
+          "entity_id": "{ca21cdf6-4d0a-62e1-5202-000000001400}"
+        },
+        "3": {
+          "type": "file",
+          "name": "powershell.exe",
+          "parent_directory_ref": "4"
+        },
+        "4": {
+          "type": "directory",
+          "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
+        },
+        "5": {
+          "type": "network-traffic",
+          "dst_port": 5985,
+          "dst_ref": "6",
+          "src_port": 50371,
+          "src_ref": "12",
+          "protocols": [
+            "tcp",
+            "ipv4"
+          ]
+        },
+        "6": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.112"
+        },
+        "7": {
+          "type": "x-ecs-destination",
+          "domain": "VICTIMB"
+        },
+        "8": {
+          "type": "x-oca-asset",
+          "hostname": "victima",
+          "os_name": "Windows 10 Pro",
+          "os_version": "10.0",
+          "os_platform": "windows",
+          "ip_refs": [
+            "9",
+            "10"
+          ],
+          "name": "victima",
+          "id": "ca21cdf6-3888-4c03-ae56-9ad5ca4b5981",
+          "mac_refs": [
+            "11"
+          ],
+          "architecture": "x86_64"
+        },
+        "9": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.111"
+        },
+        "10": {
+          "type": "ipv6-addr",
+          "value": "fe80::6081:41da:9cd5:7c82"
+        },
+        "11": {
+          "type": "mac-addr",
+          "value": "08:00:27:18:81:31"
+        },
+        "12": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.111"
+        },
+        "13": {
+          "type": "x-ecs-source",
+          "domain": "victima"
+        },
+        "14": {
+          "type": "x-ecs-user",
+          "domain": "VICTIMA",
+          "id": "S-1-5-18"
+        },
+        "15": {
+          "type": "user-account",
+          "user_id": "user",
+          "account_login": "user"
+        },
+        "16": {
+          "type": "x-ecs-network",
+          "community_id": "1:LGb8Gk5GOqsWQco9neA6MYN+81M=",
+          "direction": "egress"
+        }
+      },
+      "first_observed": "2022-07-27T14:34:52.025Z",
+      "last_observed": "2022-07-27T14:34:52.025Z",
+      "number_observed": 1
+    },
+    {
+      "id": "observed-data--1cc38a7d-f49f-4aba-b760-9c5a77537c58",
+      "type": "observed-data",
+      "created_by_ref": "identity--191f8e3f-942d-4a36-a223-fbe02f7e5c68",
+      "created": "2022-07-28T16:06:13.583Z",
+      "modified": "2022-07-28T16:06:13.583Z",
+      "objects": {
+        "0": {
+          "type": "process",
+          "name": "powershell.exe",
+          "pid": 8012,
+          "binary_ref": "3",
+          "creator_user_ref": "15",
+          "opened_connection_refs": [
+            "5"
+          ]
+        },
+        "1": {
+          "type": "x-oca-event",
+          "process_ref": "0",
+          "host_ref": "8",
+          "ingested": "2022-07-27T14:35:04.149427715Z",
+          "code": "3",
+          "provider": "Microsoft-Windows-Sysmon",
+          "created": "2022-07-27T14:34:57.815Z",
+          "kind": "event",
+          "module": "sysmon",
+          "action": "Network connection detected (rule: NetworkConnect)",
+          "category": [
+            [
+              "network"
+            ]
+          ],
+          "event_type": [
+            "start",
+            "connection",
+            "protocol"
+          ],
+          "user_ref": "15",
+          "network_ref": "5"
+        },
+        "2": {
+          "type": "x-ecs-process",
+          "entity_id": "{ca21cdf6-4d0a-62e1-5202-000000001400}"
+        },
+        "3": {
+          "type": "file",
+          "name": "powershell.exe",
+          "parent_directory_ref": "4"
+        },
+        "4": {
+          "type": "directory",
+          "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
+        },
+        "5": {
+          "type": "network-traffic",
+          "dst_port": 5985,
+          "dst_ref": "6",
+          "src_port": 50372,
+          "src_ref": "12",
+          "protocols": [
+            "tcp",
+            "ipv4"
+          ]
+        },
+        "6": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.112"
+        },
+        "7": {
+          "type": "x-ecs-destination",
+          "domain": "VICTIMB"
+        },
+        "8": {
+          "type": "x-oca-asset",
+          "hostname": "victima",
+          "os_name": "Windows 10 Pro",
+          "os_version": "10.0",
+          "os_platform": "windows",
+          "ip_refs": [
+            "9",
+            "10"
+          ],
+          "name": "victima",
+          "id": "ca21cdf6-3888-4c03-ae56-9ad5ca4b5981",
+          "mac_refs": [
+            "11"
+          ],
+          "architecture": "x86_64"
+        },
+        "9": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.111"
+        },
+        "10": {
+          "type": "ipv6-addr",
+          "value": "fe80::6081:41da:9cd5:7c82"
+        },
+        "11": {
+          "type": "mac-addr",
+          "value": "08:00:27:18:81:31"
+        },
+        "12": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.111"
+        },
+        "13": {
+          "type": "x-ecs-source",
+          "domain": "victima"
+        },
+        "14": {
+          "type": "x-ecs-user",
+          "domain": "VICTIMA",
+          "id": "S-1-5-18"
+        },
+        "15": {
+          "type": "user-account",
+          "user_id": "user",
+          "account_login": "user"
+        },
+        "16": {
+          "type": "x-ecs-network",
+          "community_id": "1:mnhlt0TdJqQarhyuH5ewNn/LpmM=",
+          "direction": "egress"
+        }
+      },
+      "first_observed": "2022-07-27T14:34:54.962Z",
+      "last_observed": "2022-07-27T14:34:54.962Z",
+      "number_observed": 1
+    },
+    {
+      "id": "observed-data--d607c871-0f44-4b56-a5cb-3d7487cf6f4e",
+      "type": "observed-data",
+      "created_by_ref": "identity--191f8e3f-942d-4a36-a223-fbe02f7e5c68",
+      "created": "2022-07-28T16:06:13.584Z",
+      "modified": "2022-07-28T16:06:13.584Z",
+      "objects": {
+        "0": {
+          "type": "process",
+          "name": "powershell.exe",
+          "pid": 8012,
+          "binary_ref": "3",
+          "creator_user_ref": "15",
+          "opened_connection_refs": [
+            "5"
+          ]
+        },
+        "1": {
+          "type": "x-oca-event",
+          "process_ref": "0",
+          "host_ref": "8",
+          "ingested": "2022-07-27T14:35:06.165444827Z",
+          "code": "3",
+          "provider": "Microsoft-Windows-Sysmon",
+          "kind": "event",
+          "created": "2022-07-27T14:34:59.837Z",
+          "module": "sysmon",
+          "action": "Network connection detected (rule: NetworkConnect)",
+          "category": [
+            [
+              "network"
+            ]
+          ],
+          "event_type": [
+            "start",
+            "connection",
+            "protocol"
+          ],
+          "user_ref": "15",
+          "network_ref": "5"
+        },
+        "2": {
+          "type": "x-ecs-process",
+          "entity_id": "{ca21cdf6-4d0a-62e1-5202-000000001400}"
+        },
+        "3": {
+          "type": "file",
+          "name": "powershell.exe",
+          "parent_directory_ref": "4"
+        },
+        "4": {
+          "type": "directory",
+          "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
+        },
+        "5": {
+          "type": "network-traffic",
+          "dst_port": 5985,
+          "dst_ref": "6",
+          "src_port": 50373,
+          "src_ref": "12",
+          "protocols": [
+            "tcp",
+            "ipv4"
+          ]
+        },
+        "6": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.112"
+        },
+        "7": {
+          "type": "x-ecs-destination",
+          "domain": "VICTIMB"
+        },
+        "8": {
+          "type": "x-oca-asset",
+          "hostname": "victima",
+          "os_name": "Windows 10 Pro",
+          "os_version": "10.0",
+          "os_platform": "windows",
+          "ip_refs": [
+            "9",
+            "10"
+          ],
+          "name": "victima",
+          "id": "ca21cdf6-3888-4c03-ae56-9ad5ca4b5981",
+          "mac_refs": [
+            "11"
+          ],
+          "architecture": "x86_64"
+        },
+        "9": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.111"
+        },
+        "10": {
+          "type": "ipv6-addr",
+          "value": "fe80::6081:41da:9cd5:7c82"
+        },
+        "11": {
+          "type": "mac-addr",
+          "value": "08:00:27:18:81:31"
+        },
+        "12": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.111"
+        },
+        "13": {
+          "type": "x-ecs-source",
+          "domain": "victima"
+        },
+        "14": {
+          "type": "x-ecs-user",
+          "domain": "VICTIMA",
+          "id": "S-1-5-18"
+        },
+        "15": {
+          "type": "user-account",
+          "user_id": "user",
+          "account_login": "user"
+        },
+        "16": {
+          "type": "x-ecs-network",
+          "community_id": "1:JLBEZrofUv59I99RZcMvh686Sng=",
+          "direction": "egress"
+        }
+      },
+      "first_observed": "2022-07-27T14:34:56.093Z",
+      "last_observed": "2022-07-27T14:34:56.093Z",
+      "number_observed": 1
+    },
+    {
+      "id": "observed-data--1c8955b6-b3f8-4c30-bcea-88803924b1be",
+      "type": "observed-data",
+      "created_by_ref": "identity--191f8e3f-942d-4a36-a223-fbe02f7e5c68",
+      "created": "2022-07-28T16:06:13.584Z",
+      "modified": "2022-07-28T16:06:13.584Z",
+      "objects": {
+        "0": {
+          "type": "process",
+          "name": "powershell.exe",
+          "pid": 8012,
+          "binary_ref": "3",
+          "creator_user_ref": "15",
+          "opened_connection_refs": [
+            "5"
+          ]
+        },
+        "1": {
+          "type": "x-oca-event",
+          "process_ref": "0",
+          "host_ref": "8",
+          "ingested": "2022-07-27T14:35:08.180010670Z",
+          "code": "3",
+          "provider": "Microsoft-Windows-Sysmon",
+          "created": "2022-07-27T14:35:01.854Z",
+          "kind": "event",
+          "module": "sysmon",
+          "action": "Network connection detected (rule: NetworkConnect)",
+          "category": [
+            [
+              "network"
+            ]
+          ],
+          "event_type": [
+            "start",
+            "connection",
+            "protocol"
+          ],
+          "user_ref": "15",
+          "network_ref": "5"
+        },
+        "2": {
+          "type": "x-ecs-process",
+          "entity_id": "{ca21cdf6-4d0a-62e1-5202-000000001400}"
+        },
+        "3": {
+          "type": "file",
+          "name": "powershell.exe",
+          "parent_directory_ref": "4"
+        },
+        "4": {
+          "type": "directory",
+          "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
+        },
+        "5": {
+          "type": "network-traffic",
+          "dst_port": 5985,
+          "dst_ref": "6",
+          "src_port": 50374,
+          "src_ref": "12",
+          "protocols": [
+            "tcp",
+            "ipv4"
+          ]
+        },
+        "6": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.112"
+        },
+        "7": {
+          "type": "x-ecs-destination",
+          "domain": "VICTIMB"
+        },
+        "8": {
+          "type": "x-oca-asset",
+          "hostname": "victima",
+          "os_name": "Windows 10 Pro",
+          "os_version": "10.0",
+          "os_platform": "windows",
+          "ip_refs": [
+            "9",
+            "10"
+          ],
+          "name": "victima",
+          "id": "ca21cdf6-3888-4c03-ae56-9ad5ca4b5981",
+          "mac_refs": [
+            "11"
+          ],
+          "architecture": "x86_64"
+        },
+        "9": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.111"
+        },
+        "10": {
+          "type": "ipv6-addr",
+          "value": "fe80::6081:41da:9cd5:7c82"
+        },
+        "11": {
+          "type": "mac-addr",
+          "value": "08:00:27:18:81:31"
+        },
+        "12": {
+          "type": "ipv4-addr",
+          "value": "192.168.56.111"
+        },
+        "13": {
+          "type": "x-ecs-source",
+          "domain": "victima"
+        },
+        "14": {
+          "type": "x-ecs-user",
+          "domain": "VICTIMA",
+          "id": "S-1-5-18"
+        },
+        "15": {
+          "type": "user-account",
+          "user_id": "user",
+          "account_login": "user"
+        },
+        "16": {
+          "type": "x-ecs-network",
+          "community_id": "1:ZQXYq1g4ky7lL5cNV54DuRSt2m4=",
+          "direction": "egress"
+        }
+      },
+      "first_observed": "2022-07-27T14:34:58.006Z",
+      "last_observed": "2022-07-27T14:34:58.006Z",
+      "number_observed": 1
+    }
+  ],
+  "spec_version": "2.0"
+}

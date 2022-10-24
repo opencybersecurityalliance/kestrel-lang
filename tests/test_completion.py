@@ -79,7 +79,7 @@ def a_session():
         ("grps = GR", {"OUP"}),
         ("grps = GROUP ", {"conns", "_"}),
         ("grps = GROUP conns ", {"BY"}),
-        ("grps = GROUP conns by ", {"BIN"}),  # TODO: we don't suggest attrs yet
+        ("grps = GROUP conns by ", {"ATTRIBUTE", "BIN"}),  # TODO: we don't suggest attrs yet
         ("urls = g", ["et", "roup"]),
         ("urls = ge", ["t"]),
         ("urls = get ", KNOWN_ETYPES),
@@ -88,7 +88,7 @@ def a_session():
             "urls = get url from ",
             ["_", "conns", "file://", "http://", "https://", "stixshifter://"],
         ),
-        ("urls = get url where ", []),
+        ("urls = get url where ", {'ENTITY_ATTRIBUTE_PATH', 'LSQB', 'LPAR'}),
     ],
 )
 def test_do_complete_after_get(a_session, code, expected):
