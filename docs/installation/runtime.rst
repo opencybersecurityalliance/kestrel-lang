@@ -39,6 +39,13 @@ default configuration:
 
     $ sqlite3 --version
 
+macOS Specific Requirement
+--------------------------
+
+Full installation of `Xcode`_ is required, especially for arm64 architecture
+(2021-). ``xcode-select --install`` may not install Python header files, or set
+incorrect architecture argument for dependent package compilation.
+
 Runtime Installation
 ====================
 
@@ -125,6 +132,7 @@ What's to Do Next
 
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
+.. _Xcode: https://developer.apple.com/xcode/
 .. _kestrel-lang: http://github.com/opencybersecurityalliance/kestrel-lang
 .. _kestrel-jupyter: http://github.com/opencybersecurityalliance/kestrel-jupyter
 .. _firepit: http://github.com/opencybersecurityalliance/firepit

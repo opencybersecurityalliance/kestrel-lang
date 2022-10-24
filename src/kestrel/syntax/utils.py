@@ -1,13 +1,15 @@
+from typeguard import typechecked
 from lark import Lark
 from pkgutil import get_data
 from itertools import chain
+from typing import Tuple, Iterable
+import datetime
 
 from kestrel.codegen.relations import (
     all_relations,
     stix_2_0_ref_mapping,
     stix_2_0_identical_mapping,
 )
-
 
 LITERALS = {"CNAME", "LETTER", "DIGIT", "WS", "INT", "WORD", "ESCAPED_STRING", "NUMBER"}
 AGG_FUNCS = {"MIN", "MAX", "AVG", "SUM", "COUNT", "NUNIQUE"}
@@ -33,3 +35,27 @@ def get_entity_types():
                 all_types.add(mapping[i])
     all_types.update(stix_2_0_identical_mapping.keys())
     return tuple(all_types)
+
+
+def get_all_input_var_names(stmt):
+    input_refs = ["input", "input_2", "variablesource"]
+    inputs_refs = stmt["inputs"] if "inputs" in stmt else []
+    return [stmt.get(k) for k in input_refs if k in stmt] + inputs_refs
+
+
+@typechecked
+def merge_timeranges(trs: Iterable[Tuple[datetime.datetime, datetime.datetime]]):
+    # return the earliest start time and latest end time
+    trs = [tr for tr in trs if tr is not None]
+    if trs:
+        starts, ends = list(zip(*trs))
+        start = min(starts)
+        end = max(ends)
+        return (start, end)
+    else:
+        return None
+
+
+@typechecked
+def timedelta_seconds(t: int):
+    return datetime.timedelta(seconds=t)

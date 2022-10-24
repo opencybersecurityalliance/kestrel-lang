@@ -11,6 +11,13 @@ p = NEW [
         ]
 """
 
+REF_PROCS = """
+ref = NEW [
+          {"type": "process", "name": "", "pid": 4},
+          {"type": "process", "name": "explorer.exe", "pid": 1380}
+        ]
+"""
+
 @pytest.fixture
 def proc_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
@@ -51,9 +58,30 @@ def test_assign_after_new(stmt, expected):
 )
 def test_assign_after_get(proc_bundle_file, stmt, expected):
     with Session() as s:
-        s.execute(("p = GET process"
-                   f" FROM file://{proc_bundle_file}"
-                   "  WHERE [process:pid > 0]"))
+        s.execute(f"""
+                   p = GET process
+                       FROM file://{proc_bundle_file}
+                       WHERE [process:pid > 0]
+                   """
+        )
         s.execute(stmt)
         x = s.get_variable("x")
         assert len(x) == expected, f"ASSIGN error: {stmt}"
+
+
+def test_assign_with_reference(proc_bundle_file):
+    with Session() as s:
+        s.execute(f"p = GET process FROM file://{proc_bundle_file} WHERE [process:pid > 0]")
+        s.execute(REF_PROCS)
+        s.execute("q = p WHERE pid = ref.pid")
+        q = s.get_variable("q")
+        assert len(q) == (106 + 149) * 2
+
+
+def test_assign_with_reference_and_in(proc_bundle_file):
+    with Session() as s:
+        s.execute(f"p = GET process FROM file://{proc_bundle_file} WHERE [process:pid > 0]")
+        s.execute(REF_PROCS)
+        s.execute("q = p WHERE pid IN (ref.pid, 9240, 10020)")
+        q = s.get_variable("q")
+        assert len(q) == (106 + 149 + 1 + 1) * 2
