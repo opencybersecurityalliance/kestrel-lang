@@ -103,8 +103,14 @@ class InvalidECGPattern(KestrelException):
     pass
 
 
+class MissingDataSource(KestrelException):
+    def __init__(self, stmt):
+        super().__init__(f"missing datasource in statement: {str(stmt)}")
+
+
 class VariableNotExist(KestrelException):
     def __init__(self, var_name):
+        self.var_name = var_name
         super().__init__(
             f'variable "{var_name}" does not exist', "check the variable used"
         )
@@ -116,11 +122,6 @@ class UnsupportedRelation(KestrelException):
             f'unsupported relation "{entity_x}--{relation}--{entity_y}"',
             "check for supported relations and entity types in the documentation",
         )
-
-
-class UnsupportedStixSyntax(KestrelException):
-    def __init__(self, msg):
-        super().__init__(msg, "rewrite the STIX pattern")
 
 
 ################################################################

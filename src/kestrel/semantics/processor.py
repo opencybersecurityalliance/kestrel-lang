@@ -13,6 +13,7 @@ from kestrel.exceptions import (
     VariableNotExist,
     UnsupportedRelation,
     KestrelInternalError,
+    MissingDataSource,
 )
 from kestrel.codegen.relations import stix_2_0_ref_mapping, generic_relations
 from kestrel.semantics.reference import make_deref_func, make_var_timerange_func
@@ -122,8 +123,10 @@ def _process_datasource_in_get(stmt, symtable, data_source_manager):
     # complete default data source
     last_ds = data_source_manager.queried_data_sources[-1]
     if "variablesource" not in stmt and "datasource" not in stmt:
-        if ds:
-            stmt["datasource"] = ds
+        if last_ds:
+            stmt["datasource"] = last_ds
+        else:
+            raise MissingDataSource(stmt)
 
 
 def _check_semantics_on_find(stmt, input_type):
