@@ -45,6 +45,14 @@ def test_unexpected_eol(fake_bundle_file):
         assert err.expected == ["WHERE"]
 
 
+def test_undefined_variable(fake_bundle_file):
+    with Session(debug_mode=True) as session:
+        with pytest.raises(VariableNotExist) as einfo:
+            session.execute(f"get process from file://{fake_bundle_file} where pid=abc.pid")
+        err = einfo.value
+        assert err.var_name == 'abc'
+
+
 def test_garbage():
     with Session(debug_mode=True) as session:
         with pytest.raises(VariableNotExist) as e:

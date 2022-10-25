@@ -33,6 +33,7 @@ from kestrel.semantics.reference import make_deref_func, make_var_timerange_func
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts, lowered_str_list
 from kestrel.exceptions import *
 from kestrel.symboltable.variable import new_var
+from kestrel.symboltable.symtable import SymbolTable
 from kestrel.syntax.parser import parse_ecgpattern
 from kestrel.syntax.utils import (
     get_entity_types,
@@ -308,7 +309,7 @@ def get(stmt, session):
                 stmt["timerange"],
                 start_offset,
                 end_offset,
-                {local_var_table: _output},
+                SymbolTable({local_var_table: _output}),
                 session.store,
                 ext_graph_pattern,
                 session.session_id,
@@ -381,7 +382,7 @@ def find(stmt, session):
         output = new_var(session.store, None, [], stmt, session.symtable)
 
     else:
-        _symtable = {input_var_name: session.symtable[input_var_name]}
+        _symtable = SymbolTable({input_var_name: session.symtable[input_var_name]})
         input_var_attrs = session.store.columns(input_type)
         return_type_attrs = session.store.columns(return_type)
 
@@ -426,7 +427,7 @@ def find(stmt, session):
                     stmt["timerange"],
                     start_offset,
                     end_offset,
-                    {local_var_table: _output},
+                    SymbolTable({local_var_table: _output}),
                     session.store,
                     ext_graph_pattern,
                     session.session_id,

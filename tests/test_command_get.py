@@ -131,6 +131,23 @@ def test_get_multiple_stixshifter_stix_bundles(set_stixshifter_stix_bundles):
             ]
 
 
+def test_last_datasource(proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+                a = GET process
+                    FROM file://{proc_bundle_file}
+                    WHERE name = "cmd.exe"
+                b = GET process
+                    WHERE name = 'svchost.exe'
+                """
+
+        output = s.execute(stmt)
+        a = s.get_variable("a")
+        b = s.get_variable("b")
+        assert len(a) == 28
+        assert len(b) == 1408
+
+
 def test_get_wrong_type(file_stix_bundles):
     with Session() as s:
         stmt = f"""
