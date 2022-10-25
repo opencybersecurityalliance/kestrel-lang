@@ -9,6 +9,29 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.1 (2022-10-25)
+==================
+
+Added
+-----
+
+- Type checking in kestrel.semantics.reference
+- New exception ``MissingDataSource``
+- Unit test on variable reference in GET
+- Unit test on last data source reuse
+
+Fixed
+-----
+
+- Missing data source if not specified #257
+- SymbolTable type error in code generation
+
+Removed
+-------
+
+- Obsoleted exception ``UnsupportedStixSyntax``
+
+
 1.5.0 (2022-10-24)
 ==================
 
