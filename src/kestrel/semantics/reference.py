@@ -1,5 +1,6 @@
 import dateutil
 import logging
+from typeguard import typechecked
 from firepit.sqlstorage import SqlStorage
 from kestrel.symboltable.symtable import SymbolTable
 from kestrel.syntax.reference import Reference
@@ -11,6 +12,7 @@ from kestrel.exceptions import (
 _logger = logging.getLogger(__name__)
 
 
+@typechecked
 def make_deref_func(store: SqlStorage, symtable: SymbolTable):
     def deref(reference: Reference):
         _logger.debug(f"deref {reference}")
@@ -43,10 +45,13 @@ def make_deref_func(store: SqlStorage, symtable: SymbolTable):
     return deref
 
 
+@typechecked
 def make_var_timerange_func(store: SqlStorage, symtable: SymbolTable):
     def get_timerange(reference: Reference):
 
-        summary = store.summary(reference.variable)
+        entity_table = symtable[reference.variable].entity_table
+
+        summary = store.summary(entity_table)
         if summary["first_observed"] is None:
             start = None
         else:
