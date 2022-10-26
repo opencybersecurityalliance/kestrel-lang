@@ -9,6 +9,19 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.2 (2022-10-26)
+==================
+
+Added
+-----
+
+- Relative path support for environment variable starting with ``KESTREL`` #248
+- Relative path support for path in ``LOAD``/``SAVE``
+- Relative path support for local uri, i.e., ``file://xxx`` or ``file://./xxx`` in ``GET``
+- Unit test on relative path in environment variable
+- Unit test on relative path in LOAD
+- Unit test on relative path in data source in GET
+
 1.5.1 (2022-10-25)
 ==================
 

@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 
 import pytest
 
@@ -141,6 +142,30 @@ def test_last_datasource(proc_bundle_file):
                     WHERE name = 'svchost.exe'
                 """
 
+        output = s.execute(stmt)
+        a = s.get_variable("a")
+        b = s.get_variable("b")
+        assert len(a) == 28
+        assert len(b) == 1408
+
+
+def test_relative_file_path(tmp_path):
+    data_file_path = "doctored-1k.json"
+    ori_path = os.path.join(
+        os.path.dirname(__file__), data_file_path
+    )
+    shutil.copy2(ori_path, tmp_path)
+    os.chdir(tmp_path)
+
+    with Session() as s:
+        stmt = f"""
+                a = GET process
+                    FROM file://{data_file_path}
+                    WHERE name = "cmd.exe"
+                b = GET process
+                    FROM file://./{data_file_path}
+                    WHERE name = 'svchost.exe'
+                """
         output = s.execute(stmt)
         a = s.get_variable("a")
         b = s.get_variable("b")
