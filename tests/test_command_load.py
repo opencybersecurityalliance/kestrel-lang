@@ -1,5 +1,6 @@
 import pytest
 import os
+import shutil
 
 from kestrel.session import Session
 from kestrel.exceptions import MissingEntityType
@@ -9,6 +10,22 @@ def test_load_full_csv():
     data_file_path = os.path.join(
         os.path.dirname(__file__), "test_input_data_procs.csv"
     )
+    with Session() as s:
+        stmt = f"newvar = LOAD {data_file_path}"
+        s.execute(stmt)
+        v = s.get_variable("newvar")
+        assert len(v) == 5
+        assert v[0]["type"] == "process"
+        assert v[0]["name"] == "reg.exe"
+
+
+def test_load_relative_path_csv(tmp_path):
+    data_file_path = "test_input_data_procs.csv"
+    ori_path = os.path.join(
+        os.path.dirname(__file__), data_file_path
+    )
+    shutil.copy2(ori_path, tmp_path)
+    os.chdir(tmp_path)
     with Session() as s:
         stmt = f"newvar = LOAD {data_file_path}"
         s.execute(stmt)

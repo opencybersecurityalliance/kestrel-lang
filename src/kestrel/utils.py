@@ -60,6 +60,18 @@ def mkdtemp():
     return p
 
 
+def resolve_path_in_kestrel_env_var():
+    for key in os.environ:
+        if key.startswith("KESTREL") or key.startswith("kestrel"):
+            path = os.environ[key]
+            if os.path.exists(path):
+                os.environ[key] = resolve_path(path)
+
+
+def resolve_path(path):
+    return os.path.abspath(os.path.expanduser(os.path.expandvars(path)))
+
+
 class set_current_working_directory:
     def __init__(self, new_cwd):
         self.tmp_cwd = new_cwd

@@ -4,7 +4,9 @@ from pkgutil import get_data
 from itertools import chain
 from typing import Tuple, Iterable
 import datetime
+import os
 
+from kestrel.utils import resolve_path
 from kestrel.codegen.relations import (
     all_relations,
     stix_2_0_ref_mapping,
@@ -59,3 +61,11 @@ def merge_timeranges(trs: Iterable[Tuple[datetime.datetime, datetime.datetime]])
 @typechecked
 def timedelta_seconds(t: int):
     return datetime.timedelta(seconds=t)
+
+
+def resolve_uri(uri: str):
+    if uri.startswith("file://"):
+        path = uri[7:]
+        if os.path.exists(path):
+            uri = "file://" + resolve_path(path)
+    return uri
