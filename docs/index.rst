@@ -9,6 +9,10 @@ focus on the high-value and composable threat hypothesis development instead of
 specific realization of hypothesis testing with heterogeneous data sources,
 threat intelligence, and public or proprietary analytics.
 
+Star the `Kestrel GitHub repo`_ as the official portal of everything Kestrel
+beyond this documentation: news, demo, tutorial, sandbox, huntbooks, analytics,
+blogs, talks, community entrances, and more.
+
 .. toctree::
    :maxdepth: 2
 
@@ -30,3 +34,5 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. _Kestrel GitHub repo: https://github.com/opencybersecurityalliance/kestrel-lang
