@@ -81,7 +81,7 @@ from kestrel.codegen.summary import gen_variable_summary
 from kestrel.symboltable.symtable import SymbolTable
 from firepit import get_storage
 from firepit.exceptions import StixPatternError
-from kestrel.utils import set_current_working_directory
+from kestrel.utils import set_current_working_directory, resolve_path_in_kestrel_env_var
 from kestrel.config import load_config
 from kestrel.datasource import DataSourceManager
 from kestrel.analytics import AnalyticsManager
@@ -176,6 +176,8 @@ class Session(AbstractContextManager):
         _logger.debug(
             f"Establish session with session_id: {session_id}, runtime_dir: {runtime_dir}, store_path:{store_path}, debug_mode:{debug_mode}"
         )
+
+        resolve_path_in_kestrel_env_var()
 
         self.config = load_config()
 

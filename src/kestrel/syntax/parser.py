@@ -6,7 +6,8 @@ from lark import Lark, Token, Transformer
 from lark.visitors import merge_transformers
 
 from firepit.query import BinnedColumn
-from kestrel.utils import unescape_quoted_string
+from kestrel.utils import unescape_quoted_string, resolve_path
+from kestrel.syntax.utils import resolve_uri
 from kestrel.syntax.ecgpattern import (
     ECGPComparison,
     ECGPJunction,
@@ -329,12 +330,14 @@ class _KestrelT(Transformer):
         v = _first(args)
         if args[0].type == "PATH_ESCAPED":
             v = unescape_quoted_string(v)
+        v = resolve_path(v)
         return {"path": v}
 
     def datasource(self, args):
         v = _first(args)
         if args[0].type == "DATASRC_ESCAPED":
             v = unescape_quoted_string(v)
+        v = ",".join(map(resolve_uri, v.split(",")))
         return {"datasource": v}
 
     def analytics_uri(self, args):

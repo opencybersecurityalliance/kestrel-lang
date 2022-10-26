@@ -5,6 +5,8 @@ import pytest
 import pathlib
 import shutil
 import tempfile
+import kestrel
+import kestrel_datasource_stixshifter
 import pandas as pd
 
 from kestrel.session import Session
@@ -316,3 +318,19 @@ grouped = group conns by src_ref.value, dst_ref.value with count(src_ref.value) 
         out = session.execute("DISP grouped ATTR src_ref.value, dst_ref.value, count")
         df = out[0].dataframe
         assert list(df.columns) == ["src_ref.value", "dst_ref.value", "count"]
+
+
+def test_env_var_resolve(tmp_path):
+    os.chdir(tmp_path)
+    config_name = "abc.yaml"
+    with open(config_name, "w") as config:
+        config.write(r"""
+language:
+  default_variable: "_"
+""")
+    os.environ[kestrel.config.CONFIG_PATH_ENV_VAR] = config_name
+    os.environ[kestrel_datasource_stixshifter.config.PROFILE_PATH_ENV_VAR] = config_name
+    s = Session()
+    full_path = os.path.join(os.getcwd(), config_name)
+    assert os.environ[kestrel.config.CONFIG_PATH_ENV_VAR] == full_path 
+    assert os.environ[kestrel_datasource_stixshifter.config.PROFILE_PATH_ENV_VAR] == full_path

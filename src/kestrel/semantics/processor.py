@@ -1,5 +1,4 @@
 import logging
-import pathlib
 import re
 
 from kestrel.syntax.utils import get_all_input_var_names, timedelta_seconds
@@ -37,9 +36,6 @@ def semantics_processing(
 
     if stmt["command"] == "get":
         _process_datasource_in_get(stmt, symtable, data_source_manager)
-
-    if stmt["command"] == "load" or stmt["command"] == "save":
-        stmt["path"] = pathlib.Path(stmt["path"]).expanduser().resolve()
 
     if stmt["command"] == "find":
         _check_semantics_on_find(stmt, symtable[stmt["input"]].type)
