@@ -19,7 +19,7 @@ blogs, talks, community entrances, and more.
    overview/index
    installation/index
    tutorial
-   language
+   language/index
    configuration
    debug
    runtime

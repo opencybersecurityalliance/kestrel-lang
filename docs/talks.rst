@@ -46,9 +46,9 @@ complex comprehensive hunt flow composition.
 
 Kestrel was debuted at RSA Conference 2021: `The Game of Cyber Threat Hunting:
 The Return of the Fun`_ with the goal of an :ref:`overview/index:Human-Machine
-Symbiosis`, its key design concepts :ref:`language:Entity-Based Reasoning` and
-:ref:`language:Composable Hunt Flow`, and a `small-enterprise APT hunting
-demo`_ with TTP pattern matching, cross-host provenance tracking,
+Symbiosis`, its key design concepts :ref:`language/tac:Entity-Based Reasoning`
+and :ref:`language/tac:Composable Hunt Flow`, and a `small-enterprise APT
+hunting demo`_ with TTP pattern matching, cross-host provenance tracking,
 TI-enrichment, machine learning analytics, and more.
 
 

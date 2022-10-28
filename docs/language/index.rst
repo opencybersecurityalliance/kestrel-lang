@@ -5,6 +5,8 @@ Language Specification
 .. toctree::
    :maxdepth: 2
 
-   runtime
-   datasource
-   analytics
+   tac
+   variable
+   commands
+   ecgp
+   interface

@@ -66,8 +66,8 @@ Kestrel + Jupyter
 =================
 
 To develop a hunt flow using Jupyter Notebook, you need to first follow the
-instructions in :doc:`installation/runtime` to install the Kestrel Jupyter
-Notebook kernel if you haven't done so.
+instructions in :ref:`installation/runtime:Front-Ends Installation` to install
+the Kestrel Jupyter Notebook kernel if you haven't done so.
 
 Creating A Hunt Book
 --------------------
@@ -94,7 +94,7 @@ Creating A Hunt Book
    :alt: Hello world hunt in Jupyter.
 
 4. The result shows two process entities in the variable ``browsers``. The
-   :ref:`language:DISP` command is an inspection command that prints entity
+   :ref:`language/commands:disp` command is an inspection command that prints entity
    information.
 
 5. When you get an idea of the pid associated with the firefox process, you can
@@ -275,7 +275,7 @@ the end of the GET command, for example, ``START t'2021-05-06T00:00:00Z' STOP
 t'2021-05-07T00:00:00Z'`` to search for all data on the day May 6, 2021. You
 need to use ISO timestamp and both ``START`` and ``STOP`` keywords. Press
 ``tab`` in the middle of the timestamp to complete it. For more information,
-see the *command:GET* section in :doc:`language`.
+see :ref:`language/commands:get`.
 
 Matching A TTP Pattern
 ----------------------
@@ -309,19 +309,19 @@ Knowing Your Variables
 ======================
 
 After execution of each cell, Kestrel gives a summary on new variables such as
-how many entities and records are associated with it. For definitions of entity
-and record, see :doc:`language`. The summary also shows how many related
-records are returned from a data source and cached by Kestrel for future use,
-for example, `Finding Connected Entities`_. For example, when asking the TTP
-pattern above, the Sysflow data source also returns some network traffic
-associated with the processes in ``exp_node``. Kestrel caches it and gives the
-information in the summary.
+how many :ref:`entities<language/tac:entity>` and
+:ref:`records<language/tac:record>` are associated with it. The summary also
+shows how many related records are returned from a data source and cached by
+Kestrel for future use, for example, `Finding Connected Entities`_. For
+example, when asking the TTP pattern above, the Sysflow data source also
+returns some network traffic associated with the processes in ``exp_node``.
+Kestrel caches it and gives the information in the summary.
 
 Now that you have some entities back from data sources, you might be wondering what's
 in ``exp_node``. You need to have some hunt steps to inspect the Kestrel
 variables.  The most basic ones are ``INFO`` and ``DISP``, which shows the
 attributes and statistics of a variable as well as displays entities in it,
-respectively. Read more about them in :doc:`language`.
+respectively. Read more about them in :doc:`language/commands`.
 
 Connecting Hunt Steps
 =====================
@@ -334,14 +334,15 @@ to do this:
 Finding Connected Entities
 --------------------------
 
-You can find connected entities easily in Kestrel, for example, child processes created
-of processes, network traffic created by processes, files loaded by processes,
-users who own the processes. To do so, use the ``FIND`` command with a
-previously created Kestrel variable, which stores a list of entities from which
-to find connected entities. Note that not all data sources have relation data,
-and not all STIX-shifter connector modules are mature enough to translate
-relation data. The data sources known to work are `Sysmon`_ and `Sysflow`_ both
-through ``elastic_ecs`` STIX-shifter connector. Read more in :doc:`language`.
+You can find connected entities easily in Kestrel, for example, child processes
+created of processes, network traffic created by processes, files loaded by
+processes, users who own the processes. To do so, use the
+:ref:`language/commands:find` command with a previously created Kestrel
+variable, which stores a list of entities from which to find connected
+entities. Note that not all data sources have relation data, and not all
+STIX-shifter connector modules are mature enough to translate relation data.
+The data sources known to work are `Sysmon`_ and `Sysflow`_ both through
+``elastic_ecs`` STIX-shifter connector.
 
 A simple hunt step to get child processes of processes in ``exp_node``:
 
@@ -418,7 +419,7 @@ Threat hunters might come up with different threat hypotheses to verify from tim
 to time. And you can fork a hunt flow by running a command with a previously used
 Kestrel variable---the variable that is used in multiple commands are the point of
 fork. It is simple to merge hunt flows by merging variables like ``newvar =
-varA + varB + varC``. Read more about composable hunt flows in :doc:`language`.
+varA + varB + varC``. Read more about composable hunt flows in :ref:`language/commands:merge`.
 
 More About The Language
 =======================
@@ -426,7 +427,7 @@ More About The Language
 Congratulations! You finished this challenging full Kestrel tutorial.
 
 To learn more about the language terms, concepts, syntax, and semantics for
-writing composable hunt flows, see :doc:`language`.
+writing composable hunt flows, see :doc:`language/commands`.
 
 .. _STIX-shifter: https://github.com/opencybersecurityalliance/stix-shifter
 .. _supported list: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md#available-connectors

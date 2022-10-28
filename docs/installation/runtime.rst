@@ -128,7 +128,7 @@ What's to Do Next
 - :doc:`datasource`
 - :doc:`analytics`
 - `Explore Kestrel huntbooks`_
-- :doc:`../language`
+- :doc:`../language/index`
 
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
