@@ -15,8 +15,8 @@ To compile a local or offline copy:
 
 ``autosectionlabel`` is enabled and refernces can be used:
 
-- reference to a file: ``:doc:filePathRelativeToCurrentFile``
+- reference to a file: ``:doc:`filePathRelativeToCurrentFile```
 
-- reference to a section: ``:ref:topdir/dir/file:sectionTitle``
+- reference to a section: ``:ref:`topdir/dir/file:sectionTitle```
 
-- reference to a section with text: ``:ref:text<topdir/dir/file:sectionTitle>``
+- reference to a section with text: ``:ref:`text<topdir/dir/file:sectionTitle>```

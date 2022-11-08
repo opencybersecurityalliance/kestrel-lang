@@ -6,7 +6,7 @@ Language Specification
    :maxdepth: 2
 
    tac
-   variable
-   commands
+   eav
    ecgp
+   commands
    interface
