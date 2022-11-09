@@ -364,7 +364,6 @@ Syntax
   There is no limitation for what an analytics could do besides the input and
   output specified by its corresponding Kestrel analytics interface (see `Data
   Source And Analytics Interfaces`_).
-
   An analytics could run entirely locally and then just do a table lookup. It could
   reach out to the internet like the VirusTotal servers. It could perform
   real-time behavior analysis of binary samples. Based on specific analytics

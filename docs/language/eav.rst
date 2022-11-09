@@ -144,42 +144,107 @@ Kestrel Variable
 
 A Kestrel variable is a list of homogeneous entities---all entities in a
 variable share the same type, for example, ``process``, ``network-traffic``, ``file``.
-Each type of entities has its specialized attributes, for example, ``process`` has
-``pid``, ``network-traffic`` has ``dst_port``, ``file`` has ``hashes``.  You can
-use the ``INFO`` Kestrel command to see any variable's type and attributes.
+
+Naming
+------
 
 The naming rule of a Kestrel variable follows the variable naming rule in C
 language: a variable starts with an alphabet or underscore ``_``, followed by
 any combination of alphabet, digit, and underscore. There is no length limit
 and a variable name is case sensitive.
 
+Mutability
+----------
+
 Unlike immutable variables in pure functional programming languages, variables
 in Kestrel are mutable. They can be partially updated, e.g., new attributes
 added through an analytics, and they can be overwritten by a variable
 assignment to an existing variable.
 
+Data Representation
+-------------------
+
+A Kestrel variable points to a *data table*, which stores entity information
+regarding their appearances in different records.  Each column is an attribute
+of the entity. Each row contains information of an :ref:`language/tac:Entity`
+extracted from a single :ref:`language/tac:Record`.  Since the same entity
+could appear in multiple records, multiple rows could belong to the same
+entity.
+
+For example, there are 5 records/events in an Elasticserach index that contain
+different pieces of information about a process (pid ``1234``):
+
+- One record is about creation/fork/spawn of the process.
+- One record is about a file access operation of the process.
+- Three records are about network communication of the process.
+
+When a user get the process into a Kestrel variable ``proc``:
+
+.. code-block:: elixir
+
+    proc = GET process FROM stixshifter://sample_elastic_index WHERE pid = 1234
+
+The result variable ``proc`` contains 1 entity (process ``1234``) while there
+are 5 rows in the data table of the variable, each of which stores the process
+related information extracted from one of the 5 records/events in
+Elasticsearch.
+
+Similarly, a variable could have 3 entities, each of which is seen in 6
+records/events. In total, the data table of the variable has 18 rows, and the
+columns (set of attributes of the entities in the variable) is the union of all
+attributes seen in all rows. One can use the :ref:`language/commands:INFO`
+command to show information of the variable (how many entities; how many
+records; what are the attributes) and the :ref:`language/commands:DISP` command
+to show the data table of the variable.
+
+Internally, Kestrel stores the data table of each variable in a relational
+database (implemented in `firepit`_ as a view of an entity table).  When
+Kestrel passes a variable to an analytics via the
+:doc:`../source/kestrel_analytics_python.interface`, the data table in the
+variable is formated as a `Pandas Dataframe`_. When Kestrel passes a variable
+to an analytics via the :doc:`../source/kestrel_analytics_docker.interface`,
+the data table in the variable is dumped into a parquet file before given to
+the analytics. In addition, Kestrel has :ref:`language/commands:SAVE` and
+:ref:`language/commands:LOAD` commands to dump the data table of a variable
+to/from a CSV or parquet file.
+
 
 Variable Transforms
-===================
+-------------------
 
-TIMESTAMPED
------------
+When Kestrel extracts :ref:`language/tac:Entity` from
+:ref:`language/tac:Record` to construct the data table for a variable,
+only information about each entity is extracted, such as attributes that
+describe the entity. However, a record/event may have some additional
+information besides all entities in the record/event, such as when the record
+is observed or when the event happened.
 
-STIX data from STIX-Shifter_ comes in the form of "observations," or the
-``observed-data`` STIX Domain Object (SDO).  This object contains (or
-references) SCOs, along with a time range for when those observables were
-actually seen.
+Such information is not in a variable by default, but they could be useful in a
+hunt. In Kestrel, there are *variable transforms* that transforms the data
+table of a variable into other formats such as a data table with additional
+columns of record/event/(STIX observation) timestamps.
 
-SCOs themselves do not contain any information for when they were observed,
-but you can retrieve SCOs with timestamps from those observations by using the
-``TIMESTAMPED`` transform:
+One can use the ``TIMESTAMPED`` keyword as a function fulfill the
+transformation (resulting in a new column ``first_observed`` to all rows in the
+variable data table):
 
-::
+.. code-block:: elixir
 
-   ts_scos = TIMESTAMPED(scos)
+   ts_procs = TIMESTAMPED(procs)
 
-The result of this transform is no longer a list of entities, but a data
-table containing the timestamp of each observation of the entities.
+Hunters can then apply time-series analysis analytics or visualization
+analytics using the new column ``first_observed``. Check for an example in the
+huntbook ``5.  Apply a Kestrel Analytics.ipynb`` in the online `Kestrel
+Tutorial`_.
+
+Advanced Topics
+===============
+
+Entity Data Prefetch
+--------------------
+
+Entity Identification
+---------------------
 
 
 .. _STIX: https://oasis-open.github.io/cti-documentation/stix/intro.html
@@ -187,3 +252,6 @@ table containing the timestamp of each observation of the entities.
 .. _stix-shifter connectors: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md#available-connectors
 .. _STIX Cyber Observable Objects: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part4-cyber-observable-objects.html
 .. _OCA/stix-extension: https://github.com/opencybersecurityalliance/stix-extensions
+.. _Pandas Dataframe: https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html
+.. _firepit: https://github.com/opencybersecurityalliance/firepit
+.. _Kestrel Tutorial: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
