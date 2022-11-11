@@ -6,11 +6,11 @@ for more details.
 
 """
 
-import dateutil.parser
 import datetime
 from collections import defaultdict
 import logging
 
+from firepit.timestamp import to_datetime
 from kestrel.syntax.reference import value_to_stix
 from firepit.query import Column, Join, Query, Projection, Table, Unique
 
@@ -338,8 +338,8 @@ def _query_process_with_time_and_ppid(store, var_table_name):
             rid = row["id"]
             pname = row["name"]
             ppid = row["ppid"] if has_parent_ref else None
-            st = dateutil.parser.isoparse(row["first_observed"])
-            ed = dateutil.parser.isoparse(row["last_observed"])
+            st = to_datetime(row["first_observed"])
+            ed = to_datetime(row["last_observed"])
             pid2procs[row["pid"]].append((rid, (pname, ppid, st, ed)))
 
     return pid2procs

@@ -11,13 +11,13 @@ import uuid
 import pathlib
 import shutil
 from datetime import datetime, timedelta, timezone
-from dateutil import parser
 import requests
 
 from stix2matcher.matcher import Pattern
 
 from firepit.woodchipper import convert_to_stix
 
+from firepit.timestamp import to_datetime
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
 from kestrel.exceptions import DataSourceManagerInternalError, DataSourceConnectionError
@@ -117,7 +117,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
                     )
                     last_modified = resp.headers.get("Last-Modified")
                     if last_modified:
-                        last_modified = parser.parse(last_modified)
+                        last_modified = to_datetime(last_modified)
                     else:
                         _logger.debug(
                             "HTTP/HTTPS response header does not have 'Last-Modified' field"

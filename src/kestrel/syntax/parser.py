@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
-import dateutil
 from pkgutil import get_data
 import importlib
 from lark import Lark, Token, Transformer
 from lark.visitors import merge_transformers
 
+from firepit.timestamp import to_datetime
 from firepit.query import BinnedColumn
 from kestrel.utils import unescape_quoted_string, resolve_path
 from kestrel.syntax.utils import resolve_uri
@@ -313,8 +313,8 @@ class _KestrelT(Transformer):
         return {"timerange": (start, stop)}
 
     def timespan_absolute(self, args):
-        start = dateutil.parser.isoparse(args[0])
-        stop = dateutil.parser.isoparse(args[1])
+        start = to_datetime(args[0])
+        stop = to_datetime(args[1])
         return {"timerange": (start, stop)}
 
     def timestamp(self, args):
