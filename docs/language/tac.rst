@@ -12,9 +12,9 @@ Basic Terminology
 Record
 ------
 
-A record, log, or observation yielded by a host or network monitoring system.
-Usually a record contains information of an activity that is worth recording.
-For example:
+A record, log, or observation (STIX `Observed Data`_) yielded by a host or
+network monitoring system. Usually a record contains information of an activity
+that is worth recording.  For example:
 
     - An ssh login attempt with root
     - A user login and logout
@@ -26,10 +26,12 @@ For example:
 Formally defined, a record is a piece of machine-generated data that is part of
 a telemetry of the monitored host or network. Different monitoring systems
 yield records in their own formats and define the scope of a record
-differently. A monitoring system may yield a record for each file a process
-loaded, while another monitoring system may yield a record with a two- or
-three-level process tree plus loaded binaries and dynamic libraries as
-additional file nodes in the tree.
+differently. Some defines each system event, e.g., system call, as a record,
+while other system monitors may define a record as a set of related events. A
+monitoring system may yield a record for each file a process loaded, while
+another monitoring system may yield a record with a two- or three-level process
+tree plus loaded binaries and dynamic libraries as additional file nodes in the
+tree.
 
 Entity
 ------
@@ -44,20 +46,30 @@ monitor. For example:
 
     - A log of an ssh login attempt with root may contain three entities:
       the ssh process, the user root, and the incoming IP.
+
     - A web server, e.g., nginx, connection log entry may contain two
       entities: the incoming IP and the requested URL.
+
     - An EDR process tree record may contain several entities including the
       root process, its child processes, and maybe its grand child
       processes.
+
     - An IDS alert observation may contain two entities: the incoming IP
       and the target host.
 
-Not only can a record contain multiple entities, but the same entity
-identified by the same monitor may appear in different records. Some monitors
-generate a universal identifier for an entity they track, i.e., UUID/GUID,
-but this does not always hold. In addition, the description of an entity in a
-record may be very incomplete due to the limited monitoring capability, data
-aggregation, or software bug.
+Not only can a record contain multiple entities, but the same entity identified
+by the same monitor may appear in different records. For example, there are 5
+records in an Elasticserach index that contain different pieces of information
+of a single process entity:
+
+    - One record is about creation/fork/spawn of the process.
+
+    - One record is about a file access operation of the process.
+
+    - Three records are about network communication of the process.
+
+We discussed entity identification and extraction in Kestrel in
+:ref:`language/eav:Entity Identification`.
 
 Hunt
 ----
@@ -138,15 +150,32 @@ malicious process, and C&C host. As a language for threat hunters to express
 *what to hunt*, Kestrel helps hunters to organize their thoughts on threat
 hypotheses around entities. To compute/compile *how to hunt*, the Kestrel
 runtime assembles entities with pieces of information in different records that
-describes different aspects of the entities, e.g., some events describe process
-forking/spawning, and some other events describe network communications of the
-same processes. Kestrel also proactively asks data sources to get information
-about entities---the *prefetch* procedure in Kestrel. With this design, threat
+describes different aspects of the entities, e.g., some records describe
+process forking/spawning, and some other records describe network
+communications of the same processes.
+
+Kestrel builds an entity-graph internally after fetching data from data
+sources, which enables walking the graph. For example, in the huntflow below, a
+hunter gets data of a process (``proc``), finds its child processes (``pcs``),
+filters one of the child processes (``pc``), finds its network traffic
+(``nt``), and finally lists all remote IP addresses (``rips``) with which the
+specific child process communicates.
+
+.. code-block:: elixir
+
+    proc = GET process ...
+    pcs = FIND process CREATED BY proc
+    pc = pcs WHERE ...
+    nt = FIND network-traffic CREATED BY pc
+    rips = FIND ipv4-addr ACCEPTED nt
+
+Kestrel also proactively asks data sources to get information about
+entities---:ref:`language/eav:Entity Data Prefetch`. With this design, threat
 hunters always have all of the information available about the entities they
 are focusing on, and can confidently create and revise threat hypotheses based
 on the entities and their connected entities. Meanwhile, threat hunters do not
 need to spend time stitching and correlating records since most of this tedious
-work on *how to hunt* is solved by Kestrel runtime.
+work on *how to hunt* is solved by the Kestrel runtime.
 
 Composable Hunt Flow
 --------------------
@@ -171,3 +200,6 @@ Here's an example of a composable Kestrel hunt flow:
 .. image:: ../images/huntflow.png
    :width: 100%
    :alt: An example of composable Kestrel hunt flow.
+
+
+.. _Observed Data: https://oasis-open.github.io/cti-documentation/stix/intro.html
