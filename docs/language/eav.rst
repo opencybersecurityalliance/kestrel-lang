@@ -236,7 +236,7 @@ security data are not stored in this human-friendly view. More commonly, raw
 data is generated/structured/stored in the view of :ref:`language/tac:Record`
 around individual/aggregated system calls or network traffic.
 
-Kestrel employees two efforts to lift the information in machine-friendly
+Kestrel makes two efforts to lift the information in machine-friendly
 :ref:`language/tac:Record` into human-friendly :ref:`language/tac:Entity` to
 realize :ref:`language/tac:Entity-Based Reasoning`.
 
@@ -244,9 +244,9 @@ Entity Identification
 ---------------------
 
 An :ref:`language/tac:Entity` could reside in multiple
-:ref:`language/tac:Record` (example in :ref:`language/tac:Entity`). Kestrel
-recognizes the same entity across different records so it is possible to
-construct the graph of entities and walk the graph to fulfill
+:ref:`language/tac:Record`---Check an example in :ref:`language/tac:Entity`.
+Kestrel recognizes the same entity across different records so it is possible
+to construct the graph of entities and walk the graph to fulfill
 :ref:`language/tac:Entity-Based Reasoning`.
 
 Given the huntflow example in :ref:`language/tac:Entity-Based Reasoning`, some
@@ -259,8 +259,8 @@ huntflow.
 For many standard `STIX Cyber Observable Objects`_ entity types (detailed in
 `Common Entities and Attributes`_), there could be one or a set of attributes
 that uniquely identify the entity, e.g., the ``value`` attribute (IP address)
-in ``ipv4-addr`` entities uniquely identify them; the ``key`` attribute
-(registry key) in entity ``windows-registry-key`` uniquely identify them.
+of ``ipv4-addr`` entities uniquely identify them; the ``key`` attribute
+(registry key) of ``windows-registry-key`` entities uniquely identify them.
 Kestrel uses these obvious identifiers if they exist.
 
 However, the complexity comes regarding some important entities, especially
@@ -340,9 +340,8 @@ realization:
        discussed in `Entity Identification`_, Kestrel over-queries the data
        source with process ``pid`` in the above prefetch step, then it applies
        comprehensive logic to filter out records that do not belong to the
-       returned processes. In the future, the Kestrel implementation could be
-       simplified with such logic embedded in data source queries, e.g., with
-       process UUID support.
+       returned processes. In the future, the logic could be embedded into data
+       source queries, e.g., with process UUID support.
 
 The prefetch feature can be turned off against a specific entity type or a
 specific Kestrel command. This is useful if prefetch causes huge overhead with
