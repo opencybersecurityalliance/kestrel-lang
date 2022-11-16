@@ -109,15 +109,17 @@ def test_quoted_datasource():
         ),
     ],
 )
-def test_ecgp_in_get(ecgp, center_entity, stix):
+def test_ecgp(ecgp, center_entity, stix):
+    # test ECGP in GET
     stmt = f"x = GET {center_entity} FROM xxx WHERE {ecgp}"
     cmd = parse_kestrel(stmt)[0]
     cmd["where"].add_center_entity(cmd["type"])
     assert cmd["where"].to_stix(None, None) == stix
 
-    # pattern = parse_ecgpattern(ecgp)
-    # pattern.add_center_entity(center_entity)
-    # assert pattern.to_stix(None, None) == stix
+    # test ECGP for standalone parsing
+    pattern = parse_ecgpattern(ecgp)
+    pattern.add_center_entity(center_entity)
+    assert pattern.to_stix(None, None) == stix
 
 
 @pytest.mark.parametrize(
