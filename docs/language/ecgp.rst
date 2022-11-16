@@ -187,6 +187,64 @@ Referring to a Variable
 
 ``variable.attribute``
 
+Escaped String
+==============
+
+Kestrel string literals in comparison expressions are like standard Python
+strings (not Python raw string). It supports escaping for special characters,
+e.g., ``\n`` means new line.
+
+Some basic rules:
+
+#. If double quotes are used to mark a string literal, any double quote
+   character inside the string needs to be escaped. Otherwise, escaping for it
+   is not necessary.
+
+#. If single quotes are used to mark a string literal, any single quote
+   character inside the string needs to be escaped. Otherwise, escaping for it
+   is not necessary.
+
+#. Backslash character ``\`` always needs to be escaped in a string literal,
+   i.e., write ``\\`` to mean a single character ``\`` such as
+   ``'C:\\Windows\\System32\\cmd.exe'``.
+
+The 3rd rule means when writing regular expressions, one can first write a
+regular expression in raw string, then replace each ``\`` with ``\\`` before
+putting it into Kestrel.
+
+Examples:
+
+.. code-block:: coffeescript
+
+    # the following will generate a STIX pattern
+    # [process:command_line = 'powershell.exe "yes args"']
+    pe1 = GET process FROM stixshifter://edp1
+          WHERE command_line = "powershell.exe \"yes args\""
+
+    # an easier way is to use single quote for string literal
+    # when there are double quotes in the string
+    # pe2 is the same as pe1
+    pe2 = GET process FROM stixshifter://edp1
+          WHERE command_line = 'powershell.exe "yes args"'
+
+    # the following will generate a STIX pattern
+    # [process:command_line = 'powershell.exe \'yes args\'']
+    pe3 = GET process FROM stixshifter://edp1
+          WHERE command_line = "powershell.exe 'yes args'"
+
+    # backslash always needs to be escaped
+    pe4 = GET process FROM stixshifter://edp1
+          WHERE command_line = "C:\\Windows\\System32\\cmd.exe"
+
+    # `\.` is the dot character in regex
+    # use `\\.` since `\` needs to be escaped
+    ps5 = GET process FROM stixshifter://edp1
+          WHERE name MATCHES 'cmd\\.exe'
+
+    # another regex escaping example that uses `\w` and `\.`
+    ps5 = GET process FROM stixshifter://edp1
+          WHERE name MATCHES '\\w+\\.exe'
+
 Time Range
 ==========
 
