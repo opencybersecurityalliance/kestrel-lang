@@ -40,7 +40,9 @@ def parse_ecgpattern(pattern_str) -> ExtCenteredGraphPattern:
         grammar,
         parser="lalr",
         import_paths=paths,
-        transformer=merge_transformers(_ECGPatternT(), kestrel=_KestrelT(token_prefix = "kestrel__")),
+        transformer=merge_transformers(
+            _ECGPatternT(), kestrel=_KestrelT(token_prefix="kestrel__")
+        ),
     ).parse(pattern_str)
 
 
@@ -67,7 +69,10 @@ class _ECGPatternT(Transformer):
 
 class _KestrelT(Transformer):
     def __init__(
-        self, default_variable=DEFAULT_VARIABLE, default_sort_order=DEFAULT_SORT_ORDER, token_prefix=""
+        self,
+        default_variable=DEFAULT_VARIABLE,
+        default_sort_order=DEFAULT_SORT_ORDER,
+        token_prefix="",
     ):
         # token_prefix is the modification by Lark when using `merge_transformers()`
         self.default_variable = default_variable
@@ -404,7 +409,11 @@ class _KestrelT(Transformer):
         return var_names[0]
 
     def _assert_and_extract_single(self, arg_type, args):
-        items = [arg.value for arg in args if hasattr(arg, "type") and arg.type == self.token_prefix + arg_type]
+        items = [
+            arg.value
+            for arg in args
+            if hasattr(arg, "type") and arg.type == self.token_prefix + arg_type
+        ]
         assert len(items) <= 1
         return items.pop() if items else None
 
@@ -421,14 +430,24 @@ class _KestrelT(Transformer):
         # default direction if no variable is found
         # return: if descending
         ds = [
-            x for x in args if hasattr(x, "type") and (x.type == self.token_prefix + "ASC" or x.type == self.token_prefix + "DESC")
+            x
+            for x in args
+            if hasattr(x, "type")
+            and (
+                x.type == self.token_prefix + "ASC"
+                or x.type == self.token_prefix + "DESC"
+            )
         ]
         assert len(ds) <= 1
         d = ds.pop().type if ds else self.token_prefix + self.default_sort_order
         return True if d == self.token_prefix + "ASC" else False
 
     def _extract_if_reversed(self, args):
-        rs = [x for x in args if hasattr(x, "type") and x.type == self.token_prefix + "REVERSED"]
+        rs = [
+            x
+            for x in args
+            if hasattr(x, "type") and x.type == self.token_prefix + "REVERSED"
+        ]
         return True if rs else False
 
 
