@@ -102,6 +102,11 @@ def test_quoted_datasource():
             r"process",
             r"[process:name MATCHES 'power.+\\d{1,3}[a-zA-Z0-9]+\\.exe']",
         ),
+        (
+            r"name MATCHES 'power\\(hi\\)\\w+(real)\\.exe'",
+            r"process",
+            r"[process:name MATCHES 'power\\(hi\\)\\w+(real)\\.exe']",
+        ),
     ],
 )
 def test_ecgp_in_get(ecgp, center_entity, stix):
@@ -109,6 +114,10 @@ def test_ecgp_in_get(ecgp, center_entity, stix):
     cmd = parse_kestrel(stmt)[0]
     cmd["where"].add_center_entity(cmd["type"])
     assert cmd["where"].to_stix(None, None) == stix
+
+    # pattern = parse_ecgpattern(ecgp)
+    # pattern.add_center_entity(center_entity)
+    # assert pattern.to_stix(None, None) == stix
 
 
 @pytest.mark.parametrize(
