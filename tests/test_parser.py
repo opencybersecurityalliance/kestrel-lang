@@ -3,7 +3,7 @@ import re
 from lark import UnexpectedToken
 import pytest
 
-from kestrel.syntax.parser import parse_kestrel
+from kestrel.syntax.parser import parse_kestrel, parse_ecgpattern
 from kestrel.syntax.ecgpattern import Reference
 from kestrel.exceptions import InvalidECGPattern
 from firepit.timestamp import timefmt
@@ -70,6 +70,48 @@ def test_quoted_datasource():
 
 
 @pytest.mark.parametrize(
+    "ecgp, center_entity, stix",
+    [
+        (
+            "name = 'powershell.exe'",
+            "process",
+            "[process:name = 'powershell.exe']",
+        ),
+        (
+            "name = 'powershell.exe' AND pid = 1234",
+            "process",
+            "[(process:name = 'powershell.exe' AND process:pid = 1234)]",
+        ),
+        (
+            r"name = 'power\'xyz\'.exe'",
+            r"process",
+            r"[process:name = 'power\'xyz\'.exe']",
+        ),
+        (
+            r"command_line = 'C:\\abc\\xyz.exe /c asdf'",
+            r"process",
+            r"[process:command_line = 'C:\\abc\\xyz.exe /c asdf']",
+        ),
+        (
+            "name LIKE 'power%.exe'",
+            "process",
+            "[process:name LIKE 'power%.exe']",
+        ),
+        (
+            r"name MATCHES 'power.+\\d{1,3}[a-zA-Z0-9]+\\.exe'",
+            r"process",
+            r"[process:name MATCHES 'power.+\\d{1,3}[a-zA-Z0-9]+\\.exe']",
+        ),
+    ],
+)
+def test_ecgp_in_get(ecgp, center_entity, stix):
+    stmt = f"x = GET {center_entity} FROM xxx WHERE {ecgp}"
+    cmd = parse_kestrel(stmt)[0]
+    cmd["where"].add_center_entity(cmd["type"])
+    assert cmd["where"].to_stix(None, None) == stix
+
+
+@pytest.mark.parametrize(
     "outvar, sco_type, ds, pat",
     [
         ("_my_var", "ipv4-addr", "something", "[ipv4-addr:value = '192.168.121.121']"),
@@ -117,6 +159,10 @@ def test_get_timerange():
     result = results[0]
     assert timefmt(result["timerange"][0]) == "2022-10-18T01:02:03.000Z"
     assert timefmt(result["timerange"][1]) == "2022-10-19T04:05:06.000Z"
+
+    stix = "[process:name = 'asdf'] START t'2022-10-18T01:02:03.000Z' STOP t'2022-10-19T04:05:06.000Z'"
+    result["where"].add_center_entity(result["type"])
+    assert result["where"].to_stix(result["timerange"], None) == stix
 
 
 def test_apply_params():
