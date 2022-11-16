@@ -88,6 +88,16 @@ def test_quoted_datasource():
             r"[process:name = 'power\'xyz\'.exe']",
         ),
         (
+            r"""name = 'po\'wer"xyz\".exe'""",
+            r"""process""",
+            r"""[process:name = 'po\'wer"xyz".exe']""",
+        ),
+        (
+            r"""name = "po'wer\"xyz\".exe" """,
+            r"""process""",
+            r"""[process:name = 'po\'wer"xyz".exe']""",
+        ),
+        (
             r"command_line = 'C:\\abc\\xyz.exe /c asdf'",
             r"process",
             r"[process:command_line = 'C:\\abc\\xyz.exe /c asdf']",
