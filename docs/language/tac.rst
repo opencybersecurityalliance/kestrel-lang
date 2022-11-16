@@ -161,7 +161,7 @@ filters one of the child processes (``pc``), finds its network traffic
 (``nt``), and finally lists all remote IP addresses (``rips``) with which the
 specific child process communicates.
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
     proc = GET process ...
     pcs = FIND process CREATED BY proc

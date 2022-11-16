@@ -98,8 +98,12 @@ Below is a list of common entities and attributes when using
   * - user-account
     - | user_id
       | account_login
+      | account_type
+      | is_privileged
     - | 1001
       | ubuntu
+      | unix
+      | true
   * - email-addr
     - | value
       | display_name
@@ -173,7 +177,7 @@ Using the 5-Elasticsearch-record example in :ref:`language/tac:Entity`, assume
 the 5 records are all around process with pid ``1234``, a user can get them all
 into a Kestrel variable ``proc``:
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
     proc = GET process FROM stixshifter://sample_elastic_index WHERE pid = 1234
 
@@ -220,7 +224,7 @@ One can use the ``TIMESTAMPED`` keyword as a function to conduct such
 transformation, which results in a new column ``first_observed`` in the
 transformed data table:
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
    ts_procs = TIMESTAMPED(procs)
 
@@ -301,7 +305,7 @@ different records when building Kestrel variables.
 For example, the user may write the following pattern to get processes that
 were executed from binary ``explorer.exe``:
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
     procs = GET process FROM ... WHERE binary_ref.name = 'explorer.exe'
 

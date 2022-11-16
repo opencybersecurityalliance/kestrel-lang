@@ -4,7 +4,8 @@ Graph Pattern and Matching
 
 This section describes *Extended Centered Graph Pattern* (ECGP), which goes
 into the body of the ``WHERE`` clause in Kestrel :ref:`language/commands:GET`
-and :ref:`language/commands:FIND` commands.
+and :ref:`language/commands:FIND` commands. This section also covers timestamp
+formating and styling in Kestrel.
 
 *In a nutshell, ECGP describes a forest with one of the trees named the centered
 (sub-)graph and other trees as extended (sub-)graphs.*
@@ -24,7 +25,7 @@ according to one of their attributes. For example, one may want to get all
 ``powershell.exe`` processes executed on a monitored endpoint during a time
 range. The pattern is very simple:
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
     name = "powershell.exe"
 
@@ -32,11 +33,11 @@ Actually, this is called a *Comparison Expression*. In this case, a single
 comparison expression constructs this simple pattern (ECGP).
 
 Assuming the endpoint can be specified by a Kestrel data source
-``stixshfiter://edp1`` and the time range (in `ISO 8601`_ format) is
-``2022-11-11T15:05:00Z`` to ``2022-11-12T08:00:00Z``, we can put the pattern in
-the ``WHERE`` clause of the command, and the entire ``GET`` command is:
+``stixshfiter://edp1`` and the `Time Range`_ is ``2022-11-11T15:05:00Z`` to
+``2022-11-12T08:00:00Z``, we can put the pattern in the ``WHERE`` clause of the
+command, and the entire ``GET`` command is:
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
     ps = GET process
          FROM stixshifter://edp1
@@ -51,7 +52,7 @@ Kestrel supports multiple stylings of writing a comparison expression:
        variable ``ps`` has the same entities as the following ``ps1`` and
        ``ps2``:
 
-       .. code-block:: elixir
+       .. code-block:: coffeescript
 
             ps1 = GET process FROM stixshifter://edp1 WHERE name = "powershell.exe"
                   START 2022-11-11T15:05:00Z STOP 2022-11-12T08:00:00Z
@@ -66,7 +67,7 @@ Kestrel supports multiple stylings of writing a comparison expression:
     #. One can use either single or double quotes around string literals, which
        means the following patterns are equivalent:
 
-       .. code-block:: elixir
+       .. code-block:: coffeescript
 
             name = 'powershell.exe'
             name = "powershell.exe"
@@ -79,7 +80,7 @@ Kestrel supports multiple stylings of writing a comparison expression:
        short, the following command returns exactly same results into ``ps3``
        as in ``ps``.
 
-       .. code-block:: elixir
+       .. code-block:: coffeescript
 
             ps3 = GET process
                   FROM stixshifter://edp1
@@ -88,16 +89,12 @@ Kestrel supports multiple stylings of writing a comparison expression:
 
     #. To be STIX pattern compatible, one can put square brackets in the
        ``WHERE`` clause before the time range specification
-       (``START``/``STOP``). The following are equivalent to ``ps``:
+       (``START``/``STOP``). That is to say, the following command returns
+       exactly same results into ``ps4`` as in ``ps``.
 
-       .. code-block:: elixir
+       .. code-block:: coffeescript
 
             ps4 = GET process
-                  FROM stixshifter://edp1
-                  WHERE [name = 'powershell.exe']
-                  START 2022-11-11T15:05:00Z STOP 2022-11-12T08:00:00Z
-
-            ps5 = GET process
                   FROM stixshifter://edp1
                   WHERE [process:name = 'powershell.exe']
                   START 2022-11-11T15:05:00Z STOP 2022-11-12T08:00:00Z
@@ -136,26 +133,48 @@ specific stix-shifter connecotr may currently supports a subset of these):
       another subnet/IP, e.g., ``ipv4-addr:value ISSUPERSET
       '198.51.100.0/24'``. Details in `STIX pattern`_.
 
-Regarding timestamp, the following stylings are supported/equivalent:
-
-    - unquoted: ``2022-11-11T15:05:00Z``
-
-    - single-quoted: ``'2022-11-11T15:05:00Z'``
-
-    - double-quoted: ``"2022-11-11T15:05:00Z"``
-
-    - STIX-compatible: ``t'2022-11-11T15:05:00Z'``
-
-    - STIX-compatible (variant): ``t"2022-11-11T15:05:00Z"``
-
-    - sub-second support: ``2022-11-11T15:05:00.5Z``
-
-    - millisecond support: ``2022-11-11T15:05:00.001Z``
-
-    - microsecond support: ``2022-11-11T15:05:00.00001Z``
-
 Single Node Graph Pattern
 =========================
+
+Upgrading from specifying a single comparison expression to describing multiple
+attributes of the returned entity in a pattern, one can use logical operators
+``AND`` and ``OR`` to combine comparison expressions and use parenthesis ``()``
+to specify the precedence of combined expressions. The result is a graph
+pattern that has a single node---the returned entity.
+
+Examples:
+
+.. code-block:: coffeescript
+
+    # a single (process) node graph pattern
+    proc1 = GET process FROM stixshifter://edp1
+            WHERE name = "powershell.exe" AND pid = 1234
+            START 2022-11-11T15:05:00Z STOP 2022-11-12T08:00:00Z
+
+    # a single (network-traffic) node graph pattern
+    # this pattern is equivalent to `dst_port IN (80, 443)`
+    netflow1 = GET network-traffic FROM stixshifter://gateway1
+               WHERE dst_port = 80 OR dst_port = 443
+               START 2022-11-11T15:05:00Z STOP 2022-11-12T08:00:00Z
+
+    # a single (file) node graph pattern
+    minikatz = GET file FROM stixshifter://edp1
+               WHERE name = "C:\ProgramData\p.exe"
+                  OR hashes.MD5 IN ( "1a4fe4413a92d478625d97b7df1bd0cf"
+                                   , "b6ff8f31007a3629a3c4be8999001ec9"
+                                   , "e8994399f1656e58f72443b8861ce5d1"
+                                   , "9ae602fddb5d2f9b63c5eb6aad0a2612"
+                                   )
+               START 2022-11-11T15:05:00Z STOP 2022-11-12T08:00:00Z
+
+    # a single (user-account) node graph pattern
+    users = GET user-account FROM stixshifter://authlogs
+            WHERE (user_id = 1001 AND account_login = "Tracy")
+               OR  user_id = 0
+               OR (user_id = 1003 AND is_privileged = true)
+               OR (account_login = "JJ" AND is_privileged = true)
+            START 2022-11-11T15:05:00Z STOP 2022-11-12T08:00:00Z
+
 
 Centered Graph Pattern
 ======================
@@ -168,6 +187,57 @@ Referring to a Variable
 
 ``variable.attribute``
 
+Time Range
+==========
+
+Both absolute and relative time ranges are supported in Kestrel (commands
+:ref:`language/commands:GET` and :ref:`language/commands:FIND`).
+
+Absolute Time Range
+-------------------
+
+Absolute time range is specified as ``START isotime STOP isotime`` where
+``isotime`` is a string following the basic rules:
+
+- `ISO 8601`_ format should be used.
+
+- Both date and time are required. `ISO 8601`_ requires letter ``T`` between the two parts.
+
+- UTC is the only timezone currently supported, which is indicated by the letter ``Z`` at the end.
+
+- The time should be at least specified to *second*:
+
+    - standard precision to *second*: ``2022-11-11T15:05:00Z``
+
+    - sub-second support: ``2022-11-11T15:05:00.5Z``
+
+    - millisecond support: ``2022-11-11T15:05:00.001Z``
+
+    - microsecond support: ``2022-11-11T15:05:00.00001Z``
+
+- Quoted or unquoted are both valid.
+
+    - unquoted: ``2022-11-11T15:05:00Z``
+
+    - single-quoted: ``'2022-11-11T15:05:00Z'``
+
+    - double-quoted: ``"2022-11-11T15:05:00Z"``
+
+- STIX compatible stylings:
+
+    - standard STIX timestamp: ``t'2022-11-11T15:05:00Z'``
+
+    - STIX variant (double quotes): ``t"2022-11-11T15:05:00Z"``
+
+Relative Time Range
+-------------------
+
+Relative time range is specified as ``LAST int TIMEUNIT`` where ``TIMEUNIT``
+are one of the keywords ``DAY``, ``HOUR``, ``MINUTE``, or ``SECOND``. When
+executing, the parser will generate the absoluate time range using the system
+time (where the Kestrel runtime executes) as the ``STOP`` time, and the
+``START`` time goes back ``int`` ``TIMEUNIT`` according to the relative time
+range specified.
 
 
 .. _STIX pattern: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part5-stix-patterning.html

@@ -14,7 +14,7 @@ Write Your First Hunt Flow
 
 Let's create some entities in Kestrel for a test run.
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
     # create four process entities in Kestrel and store them in the variable `proclist`
     proclist = NEW process [ {"name": "cmd.exe", "pid": "123"}
@@ -101,7 +101,7 @@ Creating A Hunt Book
    add another hunt step in a new notebook cell to capture the firefox process
    only, and then show the results.
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
     firefox = GET process FROM browsers WHERE [process:pid = '201']
     DISP firefox ATTR name, pid
@@ -249,13 +249,13 @@ auto-complete the available data sources:
 You can put up a simple pattern to search the entity pool of the Sysmon data
 source:
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
     newvar = GET process FROM stixshifter://host101 WHERE [process:name = 'svchost.exe']
 
 You can add a second hunt step to display the entities:
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
     DISP newvar ATTR name, pid
 
@@ -293,7 +293,7 @@ and the common binary to execute is a shell, for example, ``bash``.
 Put the TTP in a STIX pattern, and return the exploited processes as the first
 hunt step in the Kestrel `RSAC'21 demo`_:
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
     exp_node = GET process FROM stixshifter://linuxserver31
                WHERE [process:parent_ref.name = 'node' AND process:binary_ref.name != 'node']
@@ -346,7 +346,7 @@ The data sources known to work are `Sysmon`_ and `Sysflow`_ both through
 
 A simple hunt step to get child processes of processes in ``exp_node``:
 
-.. code-block:: elixir
+.. code-block:: coffeescript
 
     nc = FIND process CREATED BY exp_node
     DISP nc ATTR name, pid, command_line
