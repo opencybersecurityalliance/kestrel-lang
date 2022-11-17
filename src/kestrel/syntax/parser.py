@@ -40,7 +40,9 @@ def parse_ecgpattern(pattern_str) -> ExtCenteredGraphPattern:
         grammar,
         parser="lalr",
         import_paths=paths,
-        transformer=merge_transformers(_ECGPatternT(), kestrel=_KestrelT()),
+        transformer=merge_transformers(
+            _ECGPatternT(), kestrel=_KestrelT(token_prefix="kestrel__")
+        ),
     ).parse(pattern_str)
 
 
@@ -67,10 +69,15 @@ class _ECGPatternT(Transformer):
 
 class _KestrelT(Transformer):
     def __init__(
-        self, default_variable=DEFAULT_VARIABLE, default_sort_order=DEFAULT_SORT_ORDER
+        self,
+        default_variable=DEFAULT_VARIABLE,
+        default_sort_order=DEFAULT_SORT_ORDER,
+        token_prefix="",
     ):
+        # token_prefix is the modification by Lark when using `merge_transformers()`
         self.default_variable = default_variable
         self.default_sort_order = default_sort_order
+        self.token_prefix = token_prefix
         super().__init__()
 
     def start(self, args):
@@ -83,7 +90,7 @@ class _KestrelT(Transformer):
 
     def assignment(self, args):
         stmt = args[1] if len(args) == 2 else args[0]
-        stmt["output"] = _extract_var(args, self.default_variable)
+        stmt["output"] = self._extract_var(args)
         return stmt
 
     def assign(self, args):
@@ -94,11 +101,11 @@ class _KestrelT(Transformer):
     def merge(self, args):
         return {
             "command": "merge",
-            "inputs": _extract_vars(args, self.default_variable),
+            "inputs": self._extract_vars(args),
         }
 
     def info(self, args):
-        return {"command": "info", "input": _extract_var(args, self.default_variable)}
+        return {"command": "info", "input": self._extract_var(args)}
 
     def disp(self, args):
         packet = {"command": "disp"}
@@ -112,7 +119,7 @@ class _KestrelT(Transformer):
     def get(self, args):
         packet = {
             "command": "get",
-            "type": _extract_entity_type(args),
+            "type": self._extract_entity_type(args),
         }
 
         for item in args:
@@ -127,10 +134,10 @@ class _KestrelT(Transformer):
     def find(self, args):
         packet = {
             "command": "find",
-            "type": _extract_entity_type(args),
-            "relation": _assert_and_extract_single("RELATION", args).lower(),
-            "reversed": _extract_if_reversed(args),
-            "input": _extract_var(args, self.default_variable),
+            "type": self._extract_entity_type(args),
+            "relation": self._assert_and_extract_single("RELATION", args).lower(),
+            "reversed": self._extract_if_reversed(args),
+            "input": self._extract_var(args),
         }
 
         for item in args:
@@ -158,7 +165,7 @@ class _KestrelT(Transformer):
         packet = {
             "command": "group",
             "attributes": args[2],
-            "input": _extract_var(args, self.default_variable),
+            "input": self._extract_var(args),
         }
         aggregations = args[3] if len(args) > 3 else None
         if aggregations:
@@ -168,9 +175,9 @@ class _KestrelT(Transformer):
     def sort(self, args):
         return {
             "command": "sort",
-            "attribute": _extract_attribute(args),
-            "input": _extract_var(args, self.default_variable),
-            "ascending": _extract_direction(args, self.default_sort_order),
+            "attribute": self._extract_attribute(args),
+            "input": self._extract_var(args),
+            "ascending": self._extract_direction(args),
         }
 
     def apply(self, args):
@@ -186,7 +193,7 @@ class _KestrelT(Transformer):
     def load(self, args):
         packet = {
             "command": "load",
-            "type": _extract_entity_type(args),
+            "type": self._extract_entity_type(args),
         }
         for arg in args:
             if isinstance(arg, dict):
@@ -196,7 +203,7 @@ class _KestrelT(Transformer):
     def save(self, args):
         packet = {
             "command": "save",
-            "input": _extract_var(args, self.default_variable),
+            "input": self._extract_var(args),
         }
         for arg in args:
             if isinstance(arg, dict):
@@ -206,8 +213,8 @@ class _KestrelT(Transformer):
     def new(self, args):
         return {
             "command": "new",
-            "type": _extract_entity_type(args),
-            "data": _assert_and_extract_single("VAR_DATA", args),
+            "type": self._extract_entity_type(args),
+            "data": self._assert_and_extract_single("VAR_DATA", args),
         }
 
     def expression(self, args):
@@ -216,10 +223,10 @@ class _KestrelT(Transformer):
             packet.update(arg)
         return packet
 
-    def transform(self, args):
+    def vtrans(self, args):
         return {
-            "input": _extract_var(args, self.default_variable),
-            "transform": _assert_and_extract_single("TRANSFORM", args),
+            "input": self._extract_var(args),
+            "transform": self._assert_and_extract_single("TRANSFORM", args),
         }
 
     def where_clause(self, args):
@@ -261,12 +268,12 @@ class _KestrelT(Transformer):
             return args
 
     def literal(self, args):
-        if args[0].type == "NUMBER":
+        if args[0].type == self.token_prefix + "NUMBER":
             try:
                 v = int(args[0].value)
             except:
                 v = float(args[0].value)
-        elif args[0].type == "ESCAPED_STRING":
+        elif args[0].type == self.token_prefix + "ESCAPED_STRING":
             v = unescape_quoted_string(args[0].value)
         else:
             v = args[0].value
@@ -276,15 +283,15 @@ class _KestrelT(Transformer):
         return v
 
     def attr_clause(self, args):
-        paths = _assert_and_extract_single("ATTRIBUTES", args)
+        paths = self._assert_and_extract_single("ATTRIBUTES", args)
         return {
             "attrs": paths if paths else "*",
         }
 
     def sort_clause(self, args):
         return {
-            "attribute": _extract_attribute(args),
-            "ascending": _extract_direction(args, self.default_sort_order),
+            "attribute": self._extract_attribute(args),
+            "ascending": self._extract_direction(args),
         }
 
     def limit_clause(self, args):
@@ -300,13 +307,13 @@ class _KestrelT(Transformer):
     def timespan_relative(self, args):
         num = int(args[0])
         unit = args[1]
-        if unit.type == "DAY":
+        if unit.type == self.token_prefix + "DAY":
             delta = timedelta(days=num)
-        elif unit.type == "HOUR":
+        elif unit.type == self.token_prefix + "HOUR":
             delta = timedelta(hours=num)
-        elif unit.type == "MINUTE":
+        elif unit.type == self.token_prefix + "MINUTE":
             delta = timedelta(minutes=num)
-        elif unit.type == "SECOND":
+        elif unit.type == self.token_prefix + "SECOND":
             delta = timedelta(seconds=num)
         stop = datetime.utcnow()
         start = stop - delta
@@ -318,31 +325,31 @@ class _KestrelT(Transformer):
         return {"timerange": (start, stop)}
 
     def timestamp(self, args):
-        return _assert_and_extract_single("ISOTIMESTAMP", args)
+        return self._assert_and_extract_single("ISOTIMESTAMP", args)
 
     def entity_type(self, args):
         return _first(args)
 
     def variables(self, args):
-        return {"variables": _extract_vars(args, self.default_variable)}
+        return {"variables": self._extract_vars(args)}
 
     def stdpath(self, args):
         v = _first(args)
-        if args[0].type == "PATH_ESCAPED":
+        if args[0].type == self.token_prefix + "PATH_ESCAPED":
             v = unescape_quoted_string(v)
         v = resolve_path(v)
         return {"path": v}
 
     def datasource(self, args):
         v = _first(args)
-        if args[0].type == "DATASRC_ESCAPED":
+        if args[0].type == self.token_prefix + "DATASRC_ESCAPED":
             v = unescape_quoted_string(v)
         v = ",".join(map(resolve_uri, v.split(",")))
         return {"datasource": v}
 
     def analytics_uri(self, args):
         v = _first(args)
-        if args[0].type == "ANALYTICS_ESCAPED":
+        if args[0].type == self.token_prefix + "ANALYTICS_ESCAPED":
             v = unescape_quoted_string(v)
         return {"analytics_uri": v}
 
@@ -387,6 +394,62 @@ class _KestrelT(Transformer):
     def arg_kv_pair(self, args):
         return {_first(args): args[1]}
 
+    def _extract_vars(self, args):
+        var_names = []
+        for arg in args:
+            if hasattr(arg, "type") and arg.type == self.token_prefix + "VARIABLE":
+                var_names.append(arg.value)
+        if not var_names:
+            var_names = [self.default_variable]
+        return var_names
+
+    def _extract_var(self, args):
+        var_names = self._extract_vars(args)
+        assert len(var_names) == 1
+        return var_names[0]
+
+    def _assert_and_extract_single(self, arg_type, args):
+        items = [
+            arg.value
+            for arg in args
+            if hasattr(arg, "type") and arg.type == self.token_prefix + arg_type
+        ]
+        assert len(items) <= 1
+        return items.pop() if items else None
+
+    def _extract_attribute(self, args):
+        # extract a single attribute from the args
+        return self._assert_and_extract_single("ATTRIBUTE", args)
+
+    def _extract_entity_type(self, args):
+        # extract a single entity type from the args
+        return self._assert_and_extract_single("ENTITY_TYPE", args)
+
+    def _extract_direction(self, args):
+        # extract sort direction from args
+        # default direction if no variable is found
+        # return: if descending
+        ds = [
+            x
+            for x in args
+            if hasattr(x, "type")
+            and (
+                x.type == self.token_prefix + "ASC"
+                or x.type == self.token_prefix + "DESC"
+            )
+        ]
+        assert len(ds) <= 1
+        d = ds.pop().type if ds else self.token_prefix + self.default_sort_order
+        return True if d == self.token_prefix + "ASC" else False
+
+    def _extract_if_reversed(self, args):
+        rs = [
+            x
+            for x in args
+            if hasattr(x, "type") and x.type == self.token_prefix + "REVERSED"
+        ]
+        return True if rs else False
+
 
 def _first(args):
     return args[0].value
@@ -410,56 +473,6 @@ def _fifth(args):
 
 def _last(args):
     return args[-1].value
-
-
-def _assert_and_extract_single(arg_type, args):
-    items = [arg.value for arg in args if hasattr(arg, "type") and arg.type == arg_type]
-    assert len(items) <= 1
-    return items.pop() if items else None
-
-
-def _extract_var(args, default_variable):
-    # extract a single variable from the args
-    # default variable if no variable is found
-    v = _assert_and_extract_single("VARIABLE", args)
-    return v if v else default_variable
-
-
-def _extract_vars(args, default_variable):
-    var_names = []
-    for arg in args:
-        if hasattr(arg, "type") and arg.type == "VARIABLE":
-            var_names.append(arg.value)
-    if not var_names:
-        var_names = [default_variable]
-    return var_names
-
-
-def _extract_attribute(args):
-    # extract a single attribute from the args
-    return _assert_and_extract_single("ATTRIBUTE", args)
-
-
-def _extract_entity_type(args):
-    # extract a single entity type from the args
-    return _assert_and_extract_single("ENTITY_TYPE", args)
-
-
-def _extract_direction(args, default_sort_order):
-    # extract sort direction from args
-    # default direction if no variable is found
-    # return: if descending
-    ds = [
-        x for x in args if hasattr(x, "type") and (x.type == "ASC" or x.type == "DESC")
-    ]
-    assert len(ds) <= 1
-    d = ds.pop().type if ds else default_sort_order
-    return True if d == "ASC" else False
-
-
-def _extract_if_reversed(args):
-    rs = [x for x in args if hasattr(x, "type") and x.type == "REVERSED"]
-    return True if rs else False
 
 
 def _extract_entity_and_attribute(s):

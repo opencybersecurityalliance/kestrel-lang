@@ -72,10 +72,12 @@ VARIABLE: ECNAME
 // Expression
 //
 
-expression: transform where_clause? attr_clause? sort_clause? limit_clause? offset_clause?
+expression: vtrans where_clause? attr_clause? sort_clause? limit_clause? offset_clause?
 
-transform: TRANSFORM "(" VARIABLE ")"
-         | VARIABLE
+// not use rule name `transform` since it is a special function in Lark
+// the function in transformer will mal-function in `merge_transformers()`
+vtrans: TRANSFORM "(" VARIABLE ")"
+      | VARIABLE
 
 TRANSFORM: (TIMESTAMPED)
 
