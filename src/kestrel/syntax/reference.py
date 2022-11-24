@@ -50,6 +50,8 @@ def deref_and_flatten_value_to_list(value, deref_func, get_timerange_func):
 
 def value_to_stix(value):
     if isinstance(value, str):
+        value = value.replace("\\", "\\\\")
+        value = value.replace("'", "\\'")
         return "'" + value + "'"
     elif isinstance(value, (int, float)):
         return str(value)

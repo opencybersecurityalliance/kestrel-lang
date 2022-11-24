@@ -1,7 +1,7 @@
-import dateutil
 import logging
 from typeguard import typechecked
 from firepit.sqlstorage import SqlStorage
+from firepit.timestamp import to_datetime
 from kestrel.symboltable.symtable import SymbolTable
 from kestrel.syntax.reference import Reference
 from kestrel.exceptions import (
@@ -55,11 +55,11 @@ def make_var_timerange_func(store: SqlStorage, symtable: SymbolTable):
         if summary["first_observed"] is None:
             start = None
         else:
-            start = dateutil.parser.isoparse(summary["first_observed"])
+            start = to_datetime(summary["first_observed"])
         if summary["last_observed"] is None:
             end = None
         else:
-            end = dateutil.parser.isoparse(summary["last_observed"])
+            end = to_datetime(summary["last_observed"])
         if start is None and end is None:
             tr = None
         else:

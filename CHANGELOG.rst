@@ -9,6 +9,31 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.3 (2022-11-23)
+==================
+
+Added
+-----
+
+- Multiple test cases for escaped string parsed with main/ECGP parsers
+
+Fixed
+-----
+
+- Escaped string in value for both ECGP and argument
+- Token prefix not handled in 
+
+Changed
+-------
+
+- Use firepit time function for timestamp parsing
+- Update Lark rule ``transform`` to ``vtrans`` to avoid Lark special function misfire
+
+Removed
+-------
+
+- Explicit dependency ``python-dateutil``
+
 1.5.2 (2022-10-26)
 ==================
 
@@ -43,7 +68,6 @@ Removed
 -------
 
 - Obsoleted exception ``UnsupportedStixSyntax``
-
 
 1.5.0 (2022-10-24)
 ==================
