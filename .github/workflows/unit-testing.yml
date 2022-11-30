@@ -12,9 +12,7 @@ on:
       - edited
       - reopened
       - synchronize
-      - ready_for_review
       - unlocked
-      - review_requested
 
 jobs:
   unittest:
@@ -22,11 +20,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.7', '3.8', '3.9', '3.10', '3.11']
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Kestrel
@@ -34,16 +32,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools
           python -m pip install .
-      - name: Unit testing with coverage report
+      - name: Unit testing
         run: |
           python -m pip install pytest
-          python -m pip install pytest-cov
-          # pytest-cov does not support automatic sub-package recognition in src/
-          # pass in all sub-package names through multiple --cov arguments
-          # use ls, xargs, and sed carefully regarding diff between mac/BSD and linux
-          python -m pytest -vv --cov-report=xml $(ls src | grep -v '.egg-info' | xargs | sed -r 's/^| / --cov=/g')
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          fail_ci_if_error: true
-          verbose: true
+          python -m pytest -vv
