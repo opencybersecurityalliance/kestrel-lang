@@ -8,9 +8,9 @@ performing entity-based reasoning), to implementation logic.
 Entities in Kestrel
 ===================
 
-:ref:`language/tac:Entity` defines an object in a :ref:`language/tac:Record`.
-In theory, Kestrel can handle any type of entities as data sources provide. In
-real-world uses, users could primarily use
+:ref:`language/tac:Entity` defines an object in a
+:ref:`record<language/tac:Record>`.  In theory, Kestrel can handle any type of
+entities as data sources provide. In real-world uses, users could primarily use
 :doc:`../source/kestrel_datasource_stixshifter.interface`---the first Kestrel
 supported data source interface---to retrieve data. `stix-shifter`_ is a
 federated search engine with `stix-shifter connectors`_ to a variety of data
@@ -168,8 +168,8 @@ Data Representation
 
 A Kestrel variable points to a *data table*, which stores entity information
 regarding their appearances in different records. Each column is an attribute
-of the entities. Each row contains information of an :ref:`language/tac:Entity`
-extracted from a single :ref:`language/tac:Record`. Since the same entity could
+of the entities. Each row contains information of an :ref:`entity<language/tac:Entity>`
+extracted from a single :ref:`record<language/tac:Record>`. Since the same entity could
 appear in multiple records, multiple rows could contain information of the same
 entity (extracted from different records).
 
@@ -208,12 +208,12 @@ to/from a CSV or parquet file.
 Variable Transforms
 -------------------
 
-When Kestrel extracts :ref:`language/tac:Entity` from
-:ref:`language/tac:Record` to construct the data table for a variable, only
-information about each entity is extracted, such as attributes of that entity.
-However, a record may have some additional information besides all entities in
-it, such as when the record is observed or when the event happened (if a record
-is defined as an individual event by a data source).
+When Kestrel extracts :ref:`entities<language/tac:Entity>` from
+:ref:`records<language/tac:Record>` to construct the data table for a variable,
+only information about each entity is extracted, such as attributes of that
+entity.  However, a record may have some additional information besides all
+entities in it, such as when the record is observed or when the event happened
+(if a record is defined as an individual event by a data source).
 
 Such information is not in a Kestrel variable, but they could be useful in a
 hunt. In Kestrel, there are *variable transforms* that transforms the data
@@ -237,21 +237,23 @@ Advanced Topics
 
 Kestrel implements :ref:`language/tac:Entity-Based Reasoning`, while most
 security data are not stored in this human-friendly view. More commonly, raw
-data is generated/structured/stored in the view of :ref:`language/tac:Record`
-around individual/aggregated system calls or network traffic.
+data is generated/structured/stored in the view of
+:ref:`record<language/tac:Record>` around individual/aggregated system calls or
+network traffic.
 
 Kestrel makes two efforts to lift the information in machine-friendly
-:ref:`language/tac:Record` into human-friendly :ref:`language/tac:Entity` to
-realize :ref:`language/tac:Entity-Based Reasoning`.
+:ref:`records<language/tac:Record>` into human-friendly
+:ref:`entities<language/tac:Entity>` to realize :ref:`language/tac:Entity-Based
+Reasoning`.
 
 Entity Identification
 ---------------------
 
-An :ref:`language/tac:Entity` could reside in multiple
-:ref:`language/tac:Record`---Check an example in :ref:`language/tac:Entity`.
-Kestrel recognizes the same entity across different records so it is possible
-to construct the graph of entities and walk the graph to fulfill
-:ref:`language/tac:Entity-Based Reasoning`.
+An :ref:`entity<language/tac:Entity>` could reside in multiple
+:ref:`records<language/tac:Record>`---Check an example in
+:ref:`language/tac:Entity`. Kestrel recognizes the same entity across different
+records so it is possible to construct the graph of entities and walk the graph
+to fulfill :ref:`language/tac:Entity-Based Reasoning`.
 
 Given the huntflow example in :ref:`language/tac:Entity-Based Reasoning`, some
 records Kestrel get from the data source may contain information about the
@@ -297,9 +299,9 @@ identification, especially for ``process``:
 Entity Data Prefetch
 --------------------
 
-Since an :ref:`language/tac:Entity` could reside in multiple
-:ref:`language/tac:Record` (example in :ref:`language/tac:Entity`), Kestrel
-proactively asks data sources to get information about the entities in
+Since an :ref:`entity<language/tac:Entity>` could reside in multiple
+:ref:`records<language/tac:Record>` (example in :ref:`language/tac:Entity`),
+Kestrel proactively asks data sources to get information about the entities in
 different records when building Kestrel variables.
 
 For example, the user may write the following pattern to get processes that

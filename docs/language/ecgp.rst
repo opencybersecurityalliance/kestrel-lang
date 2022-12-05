@@ -8,7 +8,7 @@ and :ref:`language/commands:FIND` commands. This section also covers timestamp
 formating and styling in Kestrel.
 
 *In a nutshell, ECGP describes a forest with one of the trees named the centered
-subgraph and other trees as extended subgraphs.*
+subgraph and other trees named extended subgraphs.*
 
 ECGP is a superset of `STIX pattern`_, which means one can directly write a
 STIX pattern in the ``WHERE`` clause. ECGP gives semantic explanation of
@@ -29,8 +29,10 @@ range. The pattern is very simple:
 
     name = "powershell.exe"
 
-This is called a *Comparison Expression*. In this case, a single comparison
-expression constructs this simple pattern (ECGP).
+This is called a *Comparison Expression*, which is composed of an attribute and
+the specified value (check more in :ref:`language/eav:Common Entities and
+Attributes`). In this case, a single comparison expression constructs this
+simple pattern (ECGP). 
 
 Assuming the endpoint can be specified by a Kestrel data source
 ``stixshfiter://edp1`` and the `Time Range`_ is ``2022-11-11T15:05:00Z`` to
@@ -75,8 +77,10 @@ Kestrel supports multiple stylings of writing a comparison expression:
     #. To be STIX pattern compatible, one can specify entity type before the
        attribute like ``entity_type:attribute``. For the simple powershell
        pattern, since the return entity type is already specified earlier in
-       the ``GET`` command, this is redudant. However, this syntax is required
-       for `Extended Centered Graph Pattern`_ where we will discuss more. In
+       the ``GET`` command, this is redudant and optional. However, the
+       specification of the entity type is required for :ref:`extended
+       subgraphs<language/ecgp:Extended Centered Graph Pattern>`, which we will
+       discuss in the more complex `Extended Centered Graph Pattern`_. In
        short, the following command returns exactly same results into ``ps3``
        as in ``ps``.
 
@@ -111,7 +115,8 @@ number, or a list (or nested list). For examples:
     - Nested list support (flattened after parsing): ``name IN ('bash', ('csh', ('zsh')), "sh")``
 
 Kestrel supports the following operators in comparison expression (yet a
-specific stix-shifter connecotr may currently supports a subset of these):
+specific `stix-shifter connector`_ in a hunt step may only implement a subset
+of these, resulting not full capability retrieving data with that connector):
 
     - ``=``/``==``: They are the same.
 
@@ -201,13 +206,13 @@ The above figure illustrates the centered graph pattern around the center node
             WHERE name = 'cmd.exe'                                     # blue attribute
               AND binary_ref.name MATCHES '.+\.(exe|dll|bat)$'         # orange branch
               AND opened_connection_refs[*].dst_ref.value = '10.1.1.1' # green branch
-              AND ( ( parent_ref.name = 'explorer.exe' AND
-                      parent_ref.binary_ref.name = 'explorer.exe'
+              AND ( ( parent_ref.name = 'explorer.exe' AND             # yellow branch
+                      parent_ref.binary_ref.name = 'explorer.exe'      # lightblue branch
                     ) OR
-                    ( parent_ref.name LIKE '%.exe' AND
-                      parent_ref.binary_ref.name != 'powershell.exe'
+                    ( parent_ref.name LIKE '%.exe' AND                 # yellow branch
+                      parent_ref.binary_ref.name != 'powershell.exe'   # lightblue branch
                     )
-                  )                                                    # lightblue branch
+                  )
             START 2022-11-11T15:05:00Z STOP 2022-11-12T08:00:00Z
 
 Pattern Matching Explained
@@ -256,9 +261,9 @@ This is a fundamental limitation when we run Kestrel
 record-based systems. A Kestrel runtime can potentially split one ECGP into
 multiple STIX Observation Expressions to match against multiple records, but:
 
-    #. STIX does not define/rule the size/boundary of a
-       :ref:`language/tac:Record` (STIX observation), so it is unknown how many
-       Observation Expressions to split into.
+    #. STIX does not define the size/boundary of a :ref:`language/tac:Record`
+       (STIX observation), and it is unknown into how many STIX Observation
+       Expressions to split an ECGP.
 
     #. Each data source defines the size/boundary of :ref:`language/tac:Record`
        differently, and the definition is not always well documented or
@@ -307,13 +312,13 @@ root of the centered subgraph; ``E`` is the root of extended subgraph):
               AND binary_ref.name MATCHES '.+\.(exe|dll|bat)$'         # orange branch
               AND opened_connection_refs[*].dst_ref.value = '10.1.1.1' # green branch
               AND ipv4-addr:value NOT ISSUBSET '192.168.0.0/24'        # red subgraph
-              AND ( ( parent_ref.name = 'explorer.exe' AND
-                      parent_ref.binary_ref.name = 'explorer.exe'
+              AND ( ( parent_ref.name = 'explorer.exe' AND             # yellow branch
+                      parent_ref.binary_ref.name = 'explorer.exe'      # lightblue branch
                     ) OR
-                    ( parent_ref.name LIKE '%.exe' AND
-                      parent_ref.binary_ref.name != 'powershell.exe'
+                    ( parent_ref.name LIKE '%.exe' AND                 # yellow branch
+                      parent_ref.binary_ref.name != 'powershell.exe'   # lightblue branch
                     )
-                  )                                                    # lightblue branch
+                  )
               AND email-message:from_ref.value = 'admin@xyz.com'       # purple subgraph
             START 2022-11-11T15:05:00Z STOP 2022-11-12T08:00:00Z
 
@@ -338,15 +343,121 @@ e.g.,
 Standard STIX does not have an `STIX Cyber Observable Objects`_ (SCO) for
 host/pod/container, so OCA provides the customized SCO (entity) ``x-oca-asset``
 as STIX extension at `OCA/stix-extension`_ (more description in
-:ref:`language/eav:Entities in Kestrel`). The entity ``x-oca-asset`` has no
-reference from standard STIX SCO (entity) so it is an isolated subgraph in a
-record, and the extended subgraph enables pattern matching using such
-information.
+:ref:`language/eav:Entities in Kestrel`). ``x-oca-asset`` is supported by most
+`stix-shifter connector`_. It has no reference from standard STIX SCO (entity)
+so it is an isolated subgraph in a record, and the extended subgraph enables
+pattern matching using such information.
 
 Referring to a Variable
 =======================
 
-``variable.attribute``
+Beyond static patterns, Kestrel allows references to variables in ECGP, i.e.,
+one can use ``variable.attribute`` to pass in a list of values in a
+:ref:`comparison expression<language/ecgp:Single Comparison Expression
+Pattern>` (not the variable itself since a comparison expression does not take
+variable but values). This supports quick pattern building using existing
+results, and it enables building patterns for cross-data source hunts. Examples:
+
+.. code-block:: coffeescript
+
+    # basic usage
+    # `px` is a Kestrel variable of processes
+    py1 = GET process FROM stixshifter://edp
+          WHERE pid = px.pid
+
+    # both `=` and `IN` are valid to use as operator for referred variable
+    # py2 returns the same as py1
+    py2 = GET process FROM stixshifter://edp
+          WHERE pid IN px.pid
+
+    # nested list is valid to use
+    # all values will be flattened when parsed
+    py3 = GET process FROM stixshifter://edp
+          WHERE pid IN (123, px.pid, (4, 10548))
+
+When one or more variable references are used in an ECGP, Kestrel automatically
+
+#. Extracts the time ranges of entities (in the variables) from their
+   :ref:`matched/retrieved records<language/ecgp:Pattern Matching Explained>`,
+
+#. Unions the time ranges,
+
+#. Adjusts the unioned time range with
+   ``timerange_start/stop_offset`` in
+   :doc:`../configuration`,
+
+#. Generates the STIX pattern with the adjusted time range,
+
+#. Passes the STIX pattern to a data source to match.
+
+A user can override the generated time range by specifying ``START``/``STOP``
+in the command where the the ECGP reside, e.g., :ref:`language/commands:GET`.
+
+Two examples of variable reference in an ECGP:
+
+#. A hunter is traking lateral movement across two endpoints ``edp1`` and
+   ``edp2``. She already grabbed a bunch of suspicious processes on ``edp1``
+   into a Kestrel variable ``procs1``, and she found all network traffic
+   associated with processes in ``procs1``. Some of the network traffic have
+   destination IP associated with ``edp2``, so she wants to trace the network
+   traffic from ``procs1`` on ``edp1`` to a unknown list of processes on
+   ``edp2`` and print their command lines. Assume ``edp1`` and ``edp2`` are
+   configured as two Kestrel data sources, and she can do:
+
+    .. code-block:: coffeescript
+
+        # hunting with data source `stixshifter://edp1`
+        procs1 = ...
+        nt1 = FIND network-traffic CREATED BY procs1
+
+        # display the source/destination IP/port
+        # this is for human inspection purpose
+        DISP nt1 ATTR src_ref.value, src_port, dst_ref.value, dst_port
+
+        # get the other end of the network traffic, not in edp1 data, but in edp2 data/view
+        # use <src IP, src port, dst IP, dst port, time> to uniquely identify the traffic
+        nt2 = GET network-traffic
+              FROM stixshifter://edp2
+              WHERE src_ref.value = nt1.src_ref.value
+                AND src_port      = nt1.src_port
+                AND dst_ref.value = nt1.dst_ref.value
+                AND dst_port      = nt1.dst_port
+
+        # more generally, <src_port, time> is usually sufficient as the unique identifier
+        # `nt2x` usually gets the same results as `nt2`
+        nt2x = GET network-traffic
+               FROM stixshifter://edp2
+               WHERE src_ref.value = nt1.src_ref.value
+
+        # now get the processes handling the traffic on `edp2` and print their command line
+        procs2 = FIND process CREATED nt2
+        DISP procs2 ATTR command_line
+
+#. An endpoint ``edp`` is accessing the Internet through a proxy server
+   ``pxy``. The Kestrel data source ``stixshifter://edp`` is the EDR on
+   ``edp``, and another Kestrel data source ``stixshifter://pxy`` manages the
+   proxy logs. Since all network traffic are proxyed, network traffic observed
+   on ``edp`` all have remote IP as the proxy server, but not real remote IP.
+   In order to get their real remote IP and run a Kestrel analytics to enrich
+   the IP with some Threat Intelligence, the hunter needs to correlate the data
+   first:
+
+    .. code-block:: coffeescript
+
+        # get the network traffic from `stixshifter://edp` to inspect
+        nt_inner = ...
+
+        # get the outter half of network traffic from the proxy using variable reference
+        nt_outter = GET network-traffic
+                    FROM stixshifter://pxy
+                    WHERE src_ref.value = nt_inner.src_ref.value
+                      AND src_port = nt_inner.src_port
+
+        # display the real remote IP for human inspection
+        DISP nt_outter ATTR dst_ref.value, dst_port
+
+        # enrich the IPs in network-traffic with x-force threat intelligence
+        APPLY python://xfeipenrich ON nt_outter
 
 Escaped String
 ==============
@@ -461,6 +572,7 @@ range specified.
 
 .. _STIX pattern: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part5-stix-patterning.html
 .. _stix-shifter: https://github.com/opencybersecurityalliance/stix-shifter
+.. _stix-shifter connector: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md#available-connectors
 .. _ISO 8601: https://en.wikipedia.org/wiki/ISO_8601
 .. _PCRE: https://www.pcre.org/
 .. _firepit: https://github.com/opencybersecurityalliance/firepit
