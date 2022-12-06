@@ -2,8 +2,7 @@
 Kestrel Command
 ===============
 
-A Kestrel command describes a :ref:`language/tac:hunt step`. All Kestrel commands can be put in
-one of the five :ref:`language/tac:hunt step` categories:
+A Kestrel command describes a :ref:`language/tac:hunt step` in one of the five categories:
 
 #. Retrieval: ``GET``, ``FIND``, ``NEW``.
 #. Transformation: ``SORT``, ``GROUP``.
@@ -72,74 +71,36 @@ entities in the pool satisfying the pattern).
 
 Syntax
 ^^^^^^
+
 ::
 
-    returned_variable = GET returned_entity_type FROM entity_pool WHERE stix_pattern
+    returned_variable = GET returned_entity_type FROM entity_pool WHERE ecgp [time_range]
 
-- The returned entity type is specified right after the keyword ``GET``.
+- The ``returned_entity_type`` is specified right after the keyword ``GET``.
 
-- The pool of entities should be specified in the ``FROM`` clause of ``GET``.
+- The ``entity_pool`` is the pool of entities from which to retrieve data:
 
     - The pool can be a data source, for example, a data lake where monitored logs are
       stored, an EDR, a firewall, an IDS, a proxy server, or a SIEM system. In
       this case, the user needs to know the identifier of the data source (more
-      in section :doc:`interface`). For example:
+      in :doc:`interface`). For example:
 
-        - ``stixshifter://server101``: EDR on server 101 accessible via STIX-Shifter.
+        - ``stixshifter://host101``: EDR on host 101 via
+          :doc:`../source/kestrel_datasource_stixshifter.interface`.
         - ``https://a.com/b.json``: sealed telemetry data in a STIX bundle.
 
     - The pool can also be an existing Kestrel variable. In this case, just use
       the variable name.
 
-- The `STIX pattern`_ (what is interesting) should be specified in the
-  ``WHERE`` clause of ``GET``. The STIX pattern should be described around the
-  returned entity---all comparison expressions in the STIX pattern should start
-  with the entity type as same as the returned entity type of the ``GET``.
+- The ``ecgp`` in the ``WHERE`` clause describe the returned entities. Check
+  out :doc:`ecgp` to learn ECGP and how to write a pattern.
 
-  For example, when getting back processes ``newvar = GET process ...``, all
-  comparison expressions in the STIX pattern in the ``WHERE`` cause should
-  start with ``process:``, e.g., ``process:attributeA = 'xxx'``,
-  ``process:attributeB = 'yyy'``.
-
-  The STIX pattern in Kestrel goes beyond standard STIX to allow variable
-  reference in the pattern, e.g., ``[process:pid = kvar1.pid AND process:name =
-  kvar2.name]``. Kestrel runtime compiles this parameterized STIX pattern into
-  standard STIX before querying the entity pool.
-
-  It is strongly encouraged to add time range qualifiers at the end of the STIX
-  pattern when the entity pool is a data source and there is no referred Kestrel
-  variable in the STIX pattern.
-
-  Time range qualifiers can either be standard STIX pattern qualifiers ``START
-  t'timestamp' STOP t'timestamp'`` or a relative timespan of the form ``LAST N
-  UNITS``
-
-    - ``timestamp`` here should be in ISO timestamp format defined in `STIX
-      timestamp`_.
-
-    - Press ``tab`` to auto-complete a half-way input timestamp to the closet
-      next timetamp, e.g., ``2021-05`` to ``2021-05-01T00:00:00Z``
-
-    - The time range, when used, should always have both ``START`` and
-      ``STOP``.
-
-    - Time range inference: If one or more Kestrel variables are referred in
-      the STIX pattern, Kestrel runtime infers the time range from all entities
-      in the referred variables.
-
-    - Time range override: If a user provides time range at the same time, it
-      overrides the inferred time range if any.
-
-    - Missing time range: If no time range provided or inferred in a ``GET``
-      command, it depends on the data source interface to decide how to handle
-      it. For example, the STIX-Shifter interface will use last five minutes as
-      the time range if not specified.
-
-    - The relative timespan accepts ``UNITS`` as ``DAYS``, ``HOURS``,
-      ``MINUTES``, or ``SECONDS`` (or their shorthand equivalents ``d``, ``h``,
-      ``m``, or ``s``).  ``N`` should be an integer.  This timespan will be
-      converted to a STIX pattern time range qualifier using the ``START/STOP``
-      form above before being sent to a data source.
+- The ``time_range`` is described in :ref:`language/ecgp:Time Range` with both
+  absolute and relative time range syntax avaliable. If no ``time_range`` is
+  specified, and no referred variable in the ECGP (no time range to be inferred
+  by Kestel), the default time range of a STIX-shifter connector (last five
+  minutes) will be added by STIX-shifter if the
+  :doc:`../source/kestrel_datasource_stixshifter.interface` is used.
 
 - Syntax sugar: If the entity pool in ``GET`` is a data source and it is the
   same as the data source used in a previous ``GET`` command, the ``FROM``
@@ -150,31 +111,31 @@ Syntax
 
 Examples
 ^^^^^^^^
-::
 
-    # get processes from server101 which has a parent process with name 'abc.exe'
-    procs = GET process FROM stixshifter://server101 WHERE [process:parent_ref.name = 'abc.exe']
-            START t'2021-05-06T00:00:00Z' STOP t'2021-05-07T00:00:00Z'
+.. code-block:: coffeescript
+
+    # get processes from host101 which has a parent process with name 'abc.exe'
+    procs = GET process FROM stixshifter://host101 WHERE parent_ref.name = 'abc.exe'
+            START 2021-05-06T00:00:00Z STOP 2021-05-07T00:00:00Z
 
     # get files from a sealed STIX bundle with hash 'dbfcdd3a1ef5186a3e098332b499070a'
     # Kestrel allows to write a command in multiple lines
     binx = GET file
            FROM https://a.com/b.json
-           WHERE [file:hashes.'MD5'= 'dbfcdd3a1ef5186a3e098332b499070a']
-           START t'2021-05-06T00:00:00Z' STOP t'2021-05-07T00:00:00Z'
+           WHERE hashes.MD5 = 'dbfcdd3a1ef5186a3e098332b499070a'
+           START 2021-05-06T00:00:00Z STOP 2021-05-07T00:00:00Z
 
     # get processes from the above procs variable with pid 10578 and name 'xyz'
     # no time range needed since the entity pool is a varible
-    procs2 = GET process FROM procs WHERE [process:pid = 10578 AND process:name = 'xyz']
+    procs2 = GET process FROM procs WHERE pid = 10578 AND name = 'xyz'
 
-    # refer to another Kestrel variable in the STIX pattern (not standard STIX)
+    # refer to another Kestrel variable in the WHERE clause (ECGP)
     # note that the attribute of a variable should be var.attribute, not var:attribute
-    # no time range needed: (1) the entity pool is a varible (2) there is a referred variable
-    procs3 = GET process FROM procs WHERE [process:pid = procs2.pid]
+    procs3 = GET process FROM procs WHERE pid = procs2.pid
 
     # omitting the FROM clause, which will be desugarred as 'FROM https://a.com/b.json'
-    procs4 = GET process WHERE [process:pid = 1234]
-             START t'2021-05-06T00:00:00Z' STOP t'2021-05-07T00:00:00Z'
+    procs4 = GET process WHERE pid = 1234
+             START 2021-05-06T00:00:00Z STOP 2021-05-07T00:00:00Z
 
 FIND
 ----
@@ -186,7 +147,7 @@ Syntax
 ^^^^^^
 ::
 
-    returned_variable = FIND returned_entity_type RELATIONFROM input_variable [START t'timestamp' STOP t'timestamp']
+    returned_variable = FIND returned_entity_type RELATIONFROM input_variable [time_range]
 
 Kestrel defines the relation abstraction between entities as shown in the
 entity-relation chart:
@@ -199,14 +160,10 @@ To find child processes of processes in a variable ``varA``, you can look up
 the entity-relation chart and get relation ``CREATED BY``, then write the
 command ``varB = FIND process CREATED BY varA``.
 
-The optional time range works similar to that in the STIX pattern of ``GET``.
-However, it is not often used in ``FIND`` since ``FIND`` always has an input
-variable to infer time range. If you want Kestrel to search for a
-specific time range instead of the inferred range, use ``START/STOP``.
-
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     # find parent processes of processes in procs
     parent_procs = FIND process CREATED procs
@@ -232,6 +189,53 @@ Examples
     # find network-traffic which have source IP src_ip
     ntspecial = FIND network-traffic CREATED BY src_ip
 
+Time Range in FIND
+^^^^^^^^^^^^^^^^^^
+
+The ``time_range`` is optional---Kestrel will infer time range from the
+``input_variable`` similarly to the time inference in
+:ref:`language/ecgp:Referring to a Variable` in an ECGP. The user needs to
+provide a :ref:`language/ecgp:Time Range` only if he/she wants to override the
+inferred time range from ``input_variable``.
+
+*Example of overrode time range*: A service process run on a host for several
+days. The :ref:`record<language/tac:Record>` of the process creation/forking
+happends on day 1, while most of its activities happend on day 4-5. A hunt of
+the process starts covering day 4-5 with a few `GET`_. When the hunter wants to
+``FIND`` the parent process of the service process, he/she retrieves nothing if
+he/she does not specify a time range (the process creation record is beside the
+inferred time range: day 4-5). The hunter can broaden and override the time
+range in the ``FIND`` command with a specified :ref:`language/ecgp:Time Range`
+to finally retrieve the parent process. No one (the hunter or Kestrel) knows
+when the process is created/forked, so it may take a few trial and error before
+the hunter broadens the time range in ``FIND`` large enough to retrieve the
+parent process. Sketches of the huntbook:
+
+.. code-block:: coffeescript
+
+    # some early hunt steps
+    nt = GET network-traffic
+         FROM stixshifter://edp
+         WHERE dst_ref.value = '10.10.30.1'
+         LAST 5 DAY
+
+    # it is OK to write this FIND without time range
+    # which only search for the time range of `nt` for any records of `p1`
+    p1 = FIND process CREATED nt
+
+    # then, `pp1` will be empty (if the process is created 10 days ago)
+    # - `p1` is assocaited with time range inferred from `nt` (last 5 days)
+    # - no record in the last 5 days is about process creation of `p1`
+    # - so Kestrel cannot grab anything about the parent process of `p1`
+    pp1 = FIND process CREATED p1
+
+    # alternatively, override the time range when retrieving data for `p2`
+    # telling Kestrel to search for all `p2` records within the last 10 days
+    p2 = FIND process CREATED nt LAST 10 DAY
+    
+    # now the parent process will be discovered
+    pp2 = FIND process CREATED p2
+
 Relation With GET
 ^^^^^^^^^^^^^^^^^
 
@@ -253,14 +257,13 @@ is not possible with STIX pattern in ``GET``.
   ``*_ref`` attributes in STIX 2.0. It can also be recorded via a hidden object
   like the *SRO* object in STIX 2.1.
 
-- STIX pattern does not allow reference to an object directly, for example,
-  ``[process:parent_ref = xxx]`` is not a valid STIX pattern. Also one cannot
-  use ``[process:parent_ref.id = xxx.id]`` since the ``id`` of entities are not
-  persistent across different records/observations.
-
-- STIX pattern does not support expressing one-to-many mapping, for example, there is
-  a reference ``opened_connection_refs`` in a process record, but there is no
-  way to express all ``network-traffic`` entities referred in that list.
+- STIX does not maintain entity identification across
+  :ref:`record<language/tac:Record>` (STIX observation). It is unclear how to
+  refer to an existing entity in a new STIX pattern, e.g., is the process from
+  the forking and networking records/events/observations the same process even
+  with the same ``pid``? Kestrel uses comprehensive :ref:`language/eav:Entity
+  Identification` logic to identify entities across
+  :ref:`record<language/tac:Record>`.
 
 NEW
 ---
@@ -318,7 +321,8 @@ single quotes.
 
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     # create a list of processes with their names
     newprocs = NEW process ["cmd.exe", "explorer.exe", "google-chrome.exe"]
@@ -345,17 +349,24 @@ Syntax
 ^^^^^^
 ::
 
-    APPLY analytics_identifier ON var1, var2, ... WITH x=abc, y=(1,2,3), z=varx.pid
+    APPLY analytics_identifier ON var1, var2, ... WITH x=abc, y=[1,2,3], z=varx.pid
 
 - Input: The command takes in one or multiple Kestrel variables such as ``var1,
   var2, ...```.
 
-- Arguments: The ``WITH`` clause specifies arguments. Different parameters are
-  splitted by ``,``. Literal string, quoted string (with escaped characters),
-  list, and nested list are supported as values. Previous Kestrel variables
-  will be de-referenced if found, e.g., ``z=varx.pid`` will enumerate all
-  ``pid`` of variable ``varx``, which may be unfolded to ``4, 108, 8716``, and
-  the final argument is ``z=(4,108,8716)`` when passed to the analytics.
+- Arguments: The ``WITH`` clause specifies arguments.
+
+    - Different parameters are splitted by ``,``.
+
+    - Values are literal string, quoted string (with escaped characters), list,
+      or nested list.
+
+    - List is wrapped by either ``()`` or ``[]``.
+
+    - Previous Kestrel variables, if used for value, will be de-referenced,
+      e.g., ``z=varx.pid`` will enumerate all ``pid`` of variable ``varx``,
+      which may be unfolded to ``4, 108, 8716``, and the final argument is
+      ``z=[4,108,8716]`` when passed to the analytics.
 
 - Execution: The command executes the analytics specified by
   ``analytics_identifier`` like ``docker://ip_domain_enrichment`` or
@@ -364,8 +375,8 @@ Syntax
   There is no limitation for what an analytics could do besides the input and
   output specified by its corresponding Kestrel analytics interface (see
   :doc:`interface`). An analytics could run entirely locally and then just do
-  a table lookup. It could reach out to the internet like the VirusTotal
-  servers. It could perform real-time behavior analysis of binary samples.
+  a table lookup. It could reach out to the Internet like the VirusTotal
+  service. It could perform real-time behavior analysis of binary samples.
   Based on specific analytics interfaces, some analytics can run entirely in
   the cloud, and the interface harvests the results to local Kestrel runtime.
 
@@ -411,11 +422,12 @@ Syntax
 
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     # A visualization analytics:
     # Finding the geolocation of IPs in network traffic and pin them on a map
-    nt = GET network-traffic FROM stixshifter://idsX WHERE [network-traffic:dst_port = 80]
+    nt = GET network-traffic FROM stixshifter://idsX WHERE dst_port = 80
     APPLY docker://pin_ip ON nt
 
     # A beaconing detection analytics:
@@ -424,12 +436,12 @@ Examples
 
     # A suspicious process scoring analytics:
     # a new attribute "x_suspiciousness" is added to the input variable
-    procs = GET process FROM stixshifter://server101 WHERE [process:parent_ref.name = 'bash']
+    procs = GET process FROM stixshifter://server101 WHERE parent_ref.name = 'bash'
     APPLY docker://susp_proc_scoring on procs
     # sort the processes
     procs_desc = SORT procs BY x_suspiciousness DESC
     # get the most suspicous ones
-    procs_sus = GET process FROM procs WHERE [process:x_suspiciousness > 0.9]
+    procs_sus = GET process FROM procs WHERE x_suspiciousness > 0.9
 
     # A domain name lookup analytics:
     # a new attribute "x_domain_name" is added to the input variable for its dest IPs
@@ -464,7 +476,8 @@ command with ``ATTR`` clause.
 
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     # showing information like attributes and how many entities in a variable
     nt = GET network-traffic FROM stixshifter://idsX WHERE [network-traffic:dst_port = 80]
@@ -514,7 +527,8 @@ Syntax
 
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     # display <source IP, source port, destination IP, destination port>
     nt = GET network-traffic FROM stixshifter://idsX WHERE [network-traffic:dst_port = 80]
@@ -548,7 +562,8 @@ Syntax
 
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     # get network traffic and sort them by their destination port
     nt = GET network-traffic FROM stixshifter://idsX WHERE [network-traffic:dst_ref_value = '1.2.3.4']
@@ -600,7 +615,8 @@ Syntax
 
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     # group processes by their name and display
     procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
@@ -639,7 +655,8 @@ Syntax
 
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     # save all process records into /tmp/kestrel_procs.parquet.gz
     procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
@@ -674,7 +691,8 @@ Syntax
 
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     # save all process records into /tmp/kestrel_procs.parquet.gz
     procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
@@ -715,7 +733,8 @@ Kestrel variables can be used, which will be automatically dereferenced.
 
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     # copy procs
     copy_of_procs = procs
@@ -753,7 +772,8 @@ Syntax
 
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     # one TTP matching
     procsA = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
@@ -791,7 +811,8 @@ Syntax
 
 Examples
 ^^^^^^^^
-::
+
+.. code-block:: coffeescript
 
     procsA = GET process FROM stixshifter://edrA WHERE [process:name = 'bash']
     procsB = GET process WHERE [process:binary_ref.name = 'sudo']
@@ -812,5 +833,4 @@ Comment strings in Kestrel start with ``#`` to the end of the line.
 .. _STIX-Shifter: https://github.com/opencybersecurityalliance/stix-shifter
 .. _STIX specification: https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html
 .. _STIX Cyber Observable Objects: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part4-cyber-observable-objects.html
-.. _STIX pattern: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part5-stix-patterning.html
 .. _STIX timestamp: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part5-stix-patterning.html

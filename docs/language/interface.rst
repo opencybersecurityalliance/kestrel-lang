@@ -1,6 +1,6 @@
-====================================
-Data Source And Analytics Interfaces
-====================================
+==================
+Kestrel Interfaces
+==================
 
 Kestrel aims to keep it open and easy to add data source and analytics---not
 only adding data source through the STIX-Shifter interface and adding analytics
