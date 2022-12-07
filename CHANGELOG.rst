@@ -14,6 +14,11 @@ Fixed
 - install broke with Jupyter ``notebook>=6.5``
 - GitHub workflow failed on Python 3.11
 
+Removed
+-------
+
+- ``pandas`` as explicit dependency (in ``kestrel-lang`` package already)
+
 1.0.6 (2022-09-26)
 ==================
 
