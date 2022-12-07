@@ -45,7 +45,7 @@ To install the nightly built version:
 How to Use Kestrel Jupyter Notebook Kernel
 ==========================================
 
-Start Jupyter with ``jupyter notebook`` and start a new notebook with the
+Start Jupyter with ``jupyter nbclassic`` and start a new notebook with the
 ``kestrel`` kernel. Note if you are using ``jupyter lab``, most functionalities
 are there such as code execution, error prompot, and context-aware
 auto-complete, but the syntax highlighting is not ported from our Jupyter
