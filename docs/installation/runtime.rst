@@ -63,7 +63,7 @@ a Python virtual environment named ``huntingspace``:
 
     $ python -m venv huntingspace
     $ . huntingspace/bin/activate
-    $ pip install --upgrade pip setuptools
+    $ pip install --upgrade pip setuptools wheel
 
 Stable Release
 --------------
