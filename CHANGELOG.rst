@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.7 (2022-12-07)
+
+Fixed
+-----
+
+- install broke with Jupyter ``notebook>=6.5``
+- mitigate pip resolution issue #24
+- codecov upload failed with multiple tests
+
+Removed
+-------
+
+- ``pandas`` as explicit dependency (in ``kestrel-lang`` package already)
+
 1.0.6 (2022-09-26)
 ==================
 
