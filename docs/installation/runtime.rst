@@ -119,7 +119,7 @@ interactively (``huntingspace`` activated):
 
 .. code-block:: console
 
-    $ jupyter notebook
+    $ jupyter nbclassic
 
 What's to Do Next
 =================
