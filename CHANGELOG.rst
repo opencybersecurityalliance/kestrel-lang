@@ -12,7 +12,8 @@ Fixed
 -----
 
 - install broke with Jupyter ``notebook>=6.5``
-- GitHub workflow failed on Python 3.11
+- mitigate pip resolution issue #24
+- codecov upload failed with multiple tests
 
 Removed
 -------
