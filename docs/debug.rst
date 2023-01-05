@@ -12,9 +12,8 @@ Kestrel Errors
 Generally there are two categories of Kestrel errors:
 
 - Kestrel exceptions: the errors that have been thought by Kestrel developers
-  and encapsulated in a Kestrel Exception class listed here:
-  :doc:`source/kestrel.exceptions`. These errors can be quickly explained by a
-  Kestrel developer and their root causes are limited.
+  and encapsulated in a Kestrel Exception class. These errors can be quickly
+  explained by a Kestrel developer and their root causes are limited.
 
 - Generic Python exceptions: the errors that haven't been captured by Kestrel
   runtime, which may be due to the incomplete try/catch coverage in Kestrel
