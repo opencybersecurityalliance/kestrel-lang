@@ -18,10 +18,10 @@ follows:
    :width: 40%
    :alt: Kestrel hunt step model.
 
-A command takes in one or more variables and maybe some metadata, for example, the
-path of a data source, the attributes to display, or the arguments to
-analytics. In general, the command can either yield nothing, a variable, a
-display object, or both a variable and a display object.
+A command takes in one or more variables and maybe some metadata, for example,
+the path of a data source, the attributes to display, or the arguments to
+analytics. Then, the command can either yield nothing, a variable, a display
+object, or both a variable and a display object.
 
 - As illustrated in the figure of :ref:`language/tac:composable hunt flow`,
   Kestrel variables consumed and yielded by commands play the key role to
@@ -65,49 +65,66 @@ display object, or both a variable and a display object.
 GET
 ---
 
-The command ``GET`` is a *retrieval* hunt step to match a STIX pattern against
-a pool of entities and return a list of homogeneous entities (a subset of
-entities in the pool satisfying the pattern).
+The command ``GET`` is a *retrieval* hunt step to match a Extended Centered
+Graph Pattern (ECGP) defined in :doc:`ecgp` against a pool of entities and
+return a list of homogeneous entities (a subset of entities in the pool
+satisfying the pattern).
 
 Syntax
 ^^^^^^
 
 ::
 
-    returned_variable = GET returned_entity_type FROM entity_pool WHERE ecgp [time_range]
+    returned_variable = GET returned_entity_type [FROM entity_pool] WHERE ecgp [time_range]
 
 - The ``returned_entity_type`` is specified right after the keyword ``GET``.
 
 - The ``entity_pool`` is the pool of entities from which to retrieve data:
 
-    - The pool can be a data source, for example, a data lake where monitored logs are
-      stored, an EDR, a firewall, an IDS, a proxy server, or a SIEM system. In
-      this case, the user needs to know the identifier of the data source (more
-      in :doc:`interface`). For example:
+    - The pool can be a data source, which has different types of
+      :ref:`entities<language/tac:Entity>` in the
+      :ref:`records<language/tac:Record>` yielded/stored in that data source.
+      For example, a data source could be a data lake where monitored logs are
+      stored, an EDR, a firewall, an IDS, a proxy server, or a SIEM system.
+      ``entity_pool`` is the identifier of the data source (defined in
+      :doc:`interface`), e.g.:
 
         - ``stixshifter://host101``: EDR on host 101 via
           :doc:`../source/kestrel_datasource_stixshifter.interface`.
         - ``https://a.com/b.json``: sealed telemetry data in a STIX bundle.
 
-    - The pool can also be an existing Kestrel variable. In this case, just use
-      the variable name.
+    - The pool can also be an existing Kestrel variable (all entities of the
+      same type in that variable). In this case, ``entity_pool`` is the
+      variable name.
+
+    - In general, the ``FROM`` clause is required for a ``GET`` command. There
+      is one exception: the Kestrel runtime remembers the last data source used
+      in a ``GET`` command in a hunting session. If there already are ``GET``
+      commands with data source (not variable) as ``entity_pool`` executed in
+      the session, and the user wants to write a new ``GET`` command with the
+      same data source, the ``FROM`` clause can be omitted (see examples in the
+      next subsection). Note if the front-end allows out-of-order execution,
+      e.g., executing the first cell after the second cell in Jupyter Notebook,
+      Kestrel runtime will treat the ``GET`` command in the first (not the
+      second) cell as the last ``GET`` command in this session.
 
 - The ``ecgp`` in the ``WHERE`` clause describe the returned entities. Check
   out :doc:`ecgp` to learn ECGP and how to write a pattern.
 
 - The ``time_range`` is described in :ref:`language/ecgp:Time Range` with both
-  absolute and relative time range syntax avaliable. If no ``time_range`` is
-  specified, and no referred variable in the ECGP (no time range to be inferred
-  by Kestel), the default time range of a STIX-shifter connector (last five
-  minutes) will be added by STIX-shifter if the
-  :doc:`../source/kestrel_datasource_stixshifter.interface` is used.
+  absolute and relative time range syntax avaliable. This is optional, and
+  Kestrel will try to specify a time range for the pattern with the following
+  order (smaller number means higher priority):
 
-- Syntax sugar: If the entity pool in ``GET`` is a data source and it is the
-  same as the data source used in a previous ``GET`` command, the ``FROM``
-  clause can be omitted. Kestrel runtime completes the ``FROM`` clause for a
-  ``GET`` command (if it is omitted) using the last *data source* in the
-  execution. The variable entity pool is not used. See an example (the last one)
-  below.
+    #. User-specified time range using the :ref:`language/ecgp:Time Range`
+       syntax if provided.
+
+    #. Time range from Kestrel variables in ECGP if exist.
+
+    #. STIX-shifter connector default time range, e.g., last five minutes, if
+       the :doc:`../source/kestrel_datasource_stixshifter.interface` is used.
+
+    #. No time range specified for the generated query to a data source.
 
 Examples
 ^^^^^^^^
@@ -126,11 +143,11 @@ Examples
            START 2021-05-06T00:00:00Z STOP 2021-05-07T00:00:00Z
 
     # get processes from the above procs variable with pid 10578 and name 'xyz'
-    # no time range needed since the entity pool is a varible
+    # usually no time range is used when the entity pool is a varible
     procs2 = GET process FROM procs WHERE pid = 10578 AND name = 'xyz'
 
     # refer to another Kestrel variable in the WHERE clause (ECGP)
-    # note that the attribute of a variable should be var.attribute, not var:attribute
+    # Kestrel will infer time range from `procs2`; users can override it by providing one
     procs3 = GET process FROM procs WHERE pid = procs2.pid
 
     # omitting the FROM clause, which will be desugarred as 'FROM https://a.com/b.json'
@@ -147,18 +164,25 @@ Syntax
 ^^^^^^
 ::
 
-    returned_variable = FIND returned_entity_type RELATIONFROM input_variable [time_range]
+    returned_variable = FIND returned_entity_type RELATIONFROM input_variable [WHERE ecgp] [time_range]
 
-Kestrel defines the relation abstraction between entities as shown in the
-entity-relation chart:
+Kestrel defines two categories of relations: 5 sepcific relations and 1 generic
+relation. Specifc relations are directed, and the generic relation is
+non-directed. Details in the figure:
 
 .. image:: ../images/entityrelation.png
    :width: 100%
    :alt: Entity relationship.
 
-To find child processes of processes in a variable ``varA``, you can look up
-the entity-relation chart and get relation ``CREATED BY``, then write the
-command ``varB = FIND process CREATED BY varA``.
+The Kestrel relation is largely based on the standard STIX data model, e.g.,
+``_ref`` in STIX 2.0 and *SRO* in STIX 2.1. While STIX is extensible and a
+data source can bring their own mappings of custom relations, Kestrel only
+implements the relation supported in standard STIX to ensure its commonality.
+The good part is this automatically works on all `stix-shifter connectors`_,
+which mostly follow standard STIX. The bad part is standard STIX does not
+define file ``read``/``write``/``create``/``delete`` by process, so these
+specific relations are missing currently. Users can use the generic relation to
+find a superset of related entities as a partial solution.
 
 Examples
 ^^^^^^^^
@@ -188,6 +212,55 @@ Examples
 
     # find network-traffic which have source IP src_ip
     ntspecial = FIND network-traffic CREATED BY src_ip
+
+Limited ECGP in FIND
+^^^^^^^^^^^^^^^^^^^^
+
+The ``WHERE`` clause in ``FIND`` is an optional component to add constraints
+when generating low-level queries to data sources. The
+:ref:`ECGP<language/ecgp:Extended Centered Graph Pattern>` in ``WHERE`` clause
+has *centered subgraph* and *extended subgraph* components. Since the relation
+specified in ``FIND`` already describes related entities, which is a form of
+one-hop centered subgraph, the centered subgraph in ECGP (if exist in the
+``WHERE`` clause in ``FIND``) is abandoned. In another word, only the extended
+subgraphs of the ECGP in ``FIND`` is evaluated in execution, and there is no
+need to write the centered subgraphs in an ECGP in ``FIND``.
+
+For example, the following is a fully valid ``FIND`` with ECGP:
+
+.. code-block:: coffeescript
+
+    # find parent processes of processes in procs
+    #
+    # the added WHERE clause limits the search to be performed against endpoint101
+    #
+    # if there are other endpoints data in the data source (used to get `procs`),
+    # they will not be matched against
+    #
+    # assume the process identifier such as pid is reused across endpoints,
+    # this will reduce false positives and avoid unnecessary computation/transmision
+    #
+    parent_procs_ww = FIND process CREATED procs
+                      WHERE x-oca-asset:hostname = 'endpoint101'
+
+If a user writes the following, it actually results the same as the above example:
+
+.. code-block:: coffeescript
+
+    # the centered subgraph `process:name = 'bash'` in the following command
+    # will be abandoned when executing, resulting parent_procs_ww2 == parent_procs_ww
+    parent_procs_ww2 = FIND process CREATED procs
+                       WHERE name = 'bash' AND x-oca-asset:hostname = 'endpoint101'
+
+If the user wants to match parent processes that are only ``bash``, he/she needs
+a two-step huntflow:
+
+.. code-block:: coffeescript
+
+    parent_procs_ww = FIND process CREATED procs
+                      WHERE x-oca-asset:hostname = 'endpoint101'
+
+    parent_procs_bash = parent_procs_ww WHERE name = 'bash'
 
 Time Range in FIND
 ^^^^^^^^^^^^^^^^^^
@@ -831,6 +904,7 @@ Comment strings in Kestrel start with ``#`` to the end of the line.
 
 .. _STIX: https://oasis-open.github.io/cti-documentation/stix/intro.html
 .. _STIX-Shifter: https://github.com/opencybersecurityalliance/stix-shifter
+.. _stix-shifter connectors: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md#available-connectors
 .. _STIX specification: https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html
 .. _STIX Cyber Observable Objects: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part4-cyber-observable-objects.html
 .. _STIX timestamp: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part5-stix-patterning.html

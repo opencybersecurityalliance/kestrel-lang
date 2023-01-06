@@ -343,9 +343,9 @@ an email from ``admin@xyz.com``. Three rules for extended subgraph:
    extended subgraph root.
 
 #. The extended subgraphs can be spcified *anywhere* in the ECGP, which makes
-   it possible to write complex logic, e.g., an extended graph is used when the
-   centered graph is in one shape; otherwise, another extended subgraph or no
-   extended subgraph is specified to help the match.
+   it possible to write complex logic, e.g., an extended subgraph is used when
+   the centered graph is in one shape; otherwise, another extended subgraph or
+   no extended subgraph is specified to help the match.
 
 The example above is an extreme complex case to illustrate multiple unrelated
 extended subgraphs in an ECGP. In real uses, the most commonly used extended
