@@ -217,14 +217,29 @@ Limited ECGP in FIND
 ^^^^^^^^^^^^^^^^^^^^
 
 The ``WHERE`` clause in ``FIND`` is an optional component to add constraints
-when generating low-level queries to data sources. The
-:ref:`ECGP<language/ecgp:Extended Centered Graph Pattern>` in ``WHERE`` clause
-has *centered subgraph* and *extended subgraph* components. Since the relation
-specified in ``FIND`` already describes related entities, which is a form of
-one-hop centered subgraph, the centered subgraph in ECGP (if exist in the
-``WHERE`` clause in ``FIND``) is abandoned. In another word, only the extended
-subgraphs of the ECGP in ``FIND`` is evaluated in execution, and there is no
-need to write the centered subgraphs in an ECGP in ``FIND``.
+when generating low-level queries to data sources. Similar to the ``GET``
+command, an :ref:`ECGP<language/ecgp:Extended Centered Graph Pattern>` is used
+in the ``WHERE`` clause of ``FIND``. However, one only needs to write the
+*extended subgraph* component in the ECGP in ``FIND``. If there is a *centered
+subgraph* component in the ECGP in ``FIND``, it will be discarded/abandoned in
+the evaluation, a.k.a., when Kestrel generates low-level queries. The design
+rationale:
+
+1. In ``GET``, the ``WHERE`` clause is the only place to describe constraints
+   for the return variable.
+
+2. In ``FIND``, the major constraint for the return variable is provided by the
+   *relation* already. The return variable connected from the input variable by
+   a given relation is, in essence, an one-hop centered subgraph.
+
+3. If the ECGP has centered subgraph component, it could conflict with the
+   generated one-hop centered subgraph in the second point. So Kestrel discards
+   the centered subgraph component in ECGP in ``FIND`` if exist.
+
+4. The extended subgraph does not conflict with the relation in ``FIND``, and
+   it could give extra constraints to avoid unnecessary
+   computation/transmision, so it is included in the low-level queries
+   generated to the data source.
 
 For example, the following is a fully valid ``FIND`` with ECGP:
 
@@ -414,9 +429,13 @@ APPLY
 -----
 
 The command ``APPLY`` is an *enrichment* hunt step to compute and add
-attributes to Kestrel variables. Enrichment, in this context, includes the computation of
-enriched data, such as malware detection analytics, and associating the data to
-the entities, such as adding the detection labels to the entities.
+attributes to Kestrel variables, as well as generating visualization objects.
+This is called enrichment since the results of an external computation is
+merged back to a huntflow as new attributes of the returned entities. The
+external computation, a.k.a., an analytics in Kestrel, can perform detection,
+threat intelligence enrichment, anomaly detection, clustering, visualization,
+or any computation in any language. This mechanism makes the ``APPLY`` command
+a foreign language interface to Kestrel.
 
 Syntax
 ^^^^^^
@@ -424,26 +443,31 @@ Syntax
 
     APPLY analytics_identifier ON var1, var2, ... WITH x=abc, y=[1,2,3], z=varx.pid
 
-- Input: The command takes in one or multiple Kestrel variables such as ``var1,
-  var2, ...```.
+- Input: The command takes in one or multiple Kestrel variables such as ``var1``,
+  ``var2``.
 
-- Arguments: The ``WITH`` clause specifies arguments.
+- Arguments: The ``WITH`` clause specifies arguments used in the analytics.
 
-    - Different parameters are splitted by ``,``.
+    - Arguments are provided in key-value pairs, split by ``,``.
 
-    - Values are literal string, quoted string (with escaped characters), list,
-      or nested list.
+    - A value is either a literal string, quoted string (with escaped
+      characters), list, or nested list.
 
-    - List is wrapped by either ``()`` or ``[]``.
+    - A list in a value is specified/wrapped by either ``()`` or ``[]``.
 
-    - Previous Kestrel variables, if used for value, will be de-referenced,
-      e.g., ``z=varx.pid`` will enumerate all ``pid`` of variable ``varx``,
-      which may be unfolded to ``4, 108, 8716``, and the final argument is
-      ``z=[4,108,8716]`` when passed to the analytics.
+    - A nested list in value will be flattened before passing to the analytics.
+
+    - A value can contain references to Kestrel variables. Like :ref:`variable
+      reference in ECGP<language/ecgp:Referring to a Variable>`, an attribute
+      of entities needs to be specified when a Kestrel variable is referred.
+      Kestrel will de-reference the attribute/variable, e.g., ``z=varx.pid``
+      will enumerate all ``pid`` of variable ``varx``, which may be unfolded to
+      ``[4, 108, 8716]``, and the final argument is ``z=[4,108,8716]`` when
+      passed to the analytics.
 
 - Execution: The command executes the analytics specified by
   ``analytics_identifier`` like ``docker://ip_domain_enrichment`` or
-  ``docker://pin_ip_on_map``.
+  ``python://pin_ip_on_map``.
 
   There is no limitation for what an analytics could do besides the input and
   output specified by its corresponding Kestrel analytics interface (see
@@ -460,11 +484,11 @@ Syntax
   easily develop new analytics interfaces to provide special running
   environments (check :doc:`../source/kestrel.analytics.interface`).
 
-- Output: The executed analytics could yield either *(a)* data for variable
-  updates, or *(b)* a display object, or both. The ``APPLY`` command passes
-  the impacts to the Kestrel session:
+- Output: The executed analytics could yield either or both of *(a)* data for
+  variable updates, or *(b)* a display object. The ``APPLY`` command passes the
+  impacts to the Kestrel session:
 
-    - Updated variable(s): The most common enrichment is adding/updating
+    - Updating variable(s): The most common enrichment is adding/updating
       attributes to input variables (existing entities). The attributes can be,
       yet not limited to:
 
@@ -487,11 +511,20 @@ Syntax
 
     - Kestrel display object: An analytics can also yield a display object for
       the front end to show. Visualization analytics yield such data such as
-      our ``docker://pin_ip`` analytics that looks up the geolocation of IP
-      addresses in ``network-traffic`` or ``ipv4-addr`` entities and pin them
-      on a map, which can be shown in Jupyter Notebooks.
+      our ``python://pin_ip_on_map`` analytics that looks up the geolocation of
+      IP addresses in ``network-traffic`` or ``ipv4-addr`` entities and pin
+      them on a map, which can be shown in Jupyter Notebooks.
 
 - There is no *new* return variable from the command.
+
+Community-Contributed Kestrel Analytics
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The community-contributed Kestrel analytics are in the `kestrel-analytics
+repo`_, covering detection, TI enrichment, information lookup, visualization,
+machine learning, and more. They can be invoked either through the Docker or
+the Python analytics interface. More in
+:doc:`../installation/analytics`.
 
 Examples
 ^^^^^^^^
@@ -568,13 +601,14 @@ Syntax
 ::
 
     DISP [TIMESTAMPED(varx)|varx]
-        [WHERE condition...]
-        [ATTR attribute1, attribute2, ...]
-        [SORT BY attibute [ASC|DESC]]
-	[LIMIT l [OFFSET n]]
+         [WHERE condition...]
+         [ATTR attribute1, attribute2, ...]
+         [SORT BY attibute [ASC|DESC]]
+         [LIMIT l [OFFSET n]]
 
 - The optional transform ``TIMESTAMPED`` retrieves the ``first_observed``
-  timestamped for each observation of each entity in ``varx``.
+  timestamped for each observation of each entity in ``varx``. More is
+  discussed in :ref:`language/eav:Variable Transforms`.
 
 - The optional clause ``WHERE`` specifies a boolean condition to filter
   the entities (similar to a SQL ``WHERE`` clause).
@@ -908,3 +942,4 @@ Comment strings in Kestrel start with ``#`` to the end of the line.
 .. _STIX specification: https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html
 .. _STIX Cyber Observable Objects: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part4-cyber-observable-objects.html
 .. _STIX timestamp: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part5-stix-patterning.html
+.. _kestrel-analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics/
