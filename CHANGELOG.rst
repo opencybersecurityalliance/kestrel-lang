@@ -9,6 +9,20 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.4 (2023-01-11)
+==================
+
+Added
+-----
+
+- Faster dependency installation for all github workflows using Python wheels
+
+Fixed
+-----
+
+- STIX-shifter module verification failure due to pypi website update
+
+
 1.5.3 (2022-11-23)
 ==================
 
