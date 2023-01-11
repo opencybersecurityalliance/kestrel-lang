@@ -28,6 +28,8 @@
 
 |
 
+**[News]** Kestrel hunt at `Infosec Jupyterthon 2022`_ [`IJ'22 live hunt recording`_]
+
 **[News]** Kestrel session at `Black Hat USA 2022`_ [`BH'22 recording`_ | `BH'22 hunting lab`_]
 
 --------
@@ -126,6 +128,7 @@ Talks And Demos
 
 Visit `Kestrel documentation on talks`_ to learn more about the talks:
 
+- 2022/12 `Infosec Jupyterthon 2022`_ [`IJ'22 live hunt recording`_]
 - 2022/08 `Black Hat USA 2022`_ [`BH'22 recording`_ | `BH'22 hunting lab`_]
 - 2022/06 `Cybersecurity Automation Workshop`_
 - 2022/04 `SC eSummit on Threat Hunting & Offense Security`_ (free to register/playback)
@@ -191,6 +194,8 @@ Connecting With The Community
 .. _BlackHat Europe 2021: https://www.blackhat.com/eu-21/arsenal/schedule/index.html#an-open-stack-for-threat-hunting-in-hybrid-cloud-with-connected-observability-25112
 .. _Infosec Jupyterthon 2021: https://infosecjupyterthon.com/2021/agenda.html
 .. _IJ'21 live hunt recording: https://www.youtube.com/embed/nMnHBnYfIaI?start=20557&end=22695
+.. _Infosec Jupyterthon 2022: https://infosecjupyterthon.com/2022/agenda.html
+.. _IJ'22 live hunt recording: https://www.youtube.com/embed/8Mw1yyYkeqM?start=23586&end=26545
 .. _SC eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
 .. _Cybersecurity Automation Workshop: http://www.cybersecurityautomationworkshop.org/
 .. _Black Hat USA 2022: https://www.blackhat.com/us-22/arsenal/schedule/index.html#streamlining-and-automating-threat-hunting-with-kestrel-28014
