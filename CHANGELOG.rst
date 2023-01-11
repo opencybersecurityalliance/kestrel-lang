@@ -16,11 +16,13 @@ Added
 -----
 
 - Faster dependency installation for all github workflows using Python wheels
+- Python 3.11 in unit test (github workflow)
 
 Fixed
 -----
 
 - STIX-shifter module verification failure due to pypi website update
+- codecov rate limit for public repo
 
 
 1.5.3 (2022-11-23)
