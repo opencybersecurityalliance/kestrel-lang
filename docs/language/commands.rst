@@ -589,7 +589,7 @@ Examples
 .. code-block:: coffeescript
 
     # showing information like attributes and how many entities in a variable
-    nt = GET network-traffic FROM stixshifter://idsX dst_port = 80
+    nt = GET network-traffic FROM stixshifter://idsX WHERE dst_port = 80
     INFO nt
 
 DISP
@@ -736,7 +736,7 @@ Examples
 .. code-block:: coffeescript
 
     # group processes by their name and display
-    procs = GET process FROM stixshifter://edrA parent_ref.name = 'bash'
+    procs = GET process FROM stixshifter://edrA WHERE parent_ref.name = 'bash'
     aggr = GROUP procs BY name
     DISP aggr ATTR unique_name, unique_pid, unique_command_line
 
