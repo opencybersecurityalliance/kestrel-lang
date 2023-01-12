@@ -431,11 +431,11 @@ APPLY
 The command ``APPLY`` is an *enrichment* hunt step to compute and add
 attributes to Kestrel variables, as well as generating visualization objects.
 This is called enrichment since the results of an external computation is
-merged back to a huntflow as new attributes of the returned entities. The
-external computation, a.k.a., an analytics in Kestrel, can perform detection,
-threat intelligence enrichment, anomaly detection, clustering, visualization,
-or any computation in any language. This mechanism makes the ``APPLY`` command
-a foreign language interface to Kestrel.
+merged back to a huntflow as new/updated attributes of the returned entities.
+The external computation, a.k.a., an analytics in Kestrel, can perform
+detection, threat intelligence enrichment, anomaly detection, clustering,
+visualization, or any computation in any language. This mechanism makes the
+``APPLY`` command a foreign language interface to Kestrel.
 
 Syntax
 ^^^^^^
@@ -483,6 +483,9 @@ Syntax
   (check :doc:`../source/kestrel_analytics_docker.interface`). You can also
   easily develop new analytics interfaces to provide special running
   environments (check :doc:`../source/kestrel.analytics.interface`).
+
+  Check :doc:`../installation/analytics` to learn more about setup/using
+  Kestrel analytics.
 
 - Output: The executed analytics could yield either or both of *(a)* data for
   variable updates, or *(b)* a display object. The ``APPLY`` command passes the
@@ -586,7 +589,7 @@ Examples
 .. code-block:: coffeescript
 
     # showing information like attributes and how many entities in a variable
-    nt = GET network-traffic FROM stixshifter://idsX WHERE [network-traffic:dst_port = 80]
+    nt = GET network-traffic FROM stixshifter://idsX dst_port = 80
     INFO nt
 
 DISP
@@ -601,7 +604,7 @@ Syntax
 ::
 
     DISP [TIMESTAMPED(varx)|varx]
-         [WHERE condition...]
+         [WHERE ecgp]
          [ATTR attribute1, attribute2, ...]
          [SORT BY attibute [ASC|DESC]]
          [LIMIT l [OFFSET n]]
@@ -610,8 +613,9 @@ Syntax
   timestamped for each observation of each entity in ``varx``. More is
   discussed in :ref:`language/eav:Variable Transforms`.
 
-- The optional clause ``WHERE`` specifies a boolean condition to filter
-  the entities (similar to a SQL ``WHERE`` clause).
+- The optional clause ``WHERE`` specifies an ECGP (defined in :doc:`ecgp`) as
+  filter. Only the centered subgraph component (not extended subgraph) of the
+  ECGP will be processed for the ``DISP`` command.
 
 - The optional clause ``ATTR`` specifies which list of attributes you
   would like to print. If omitted, Kestrel will output all attributes.
@@ -638,11 +642,11 @@ Examples
 .. code-block:: coffeescript
 
     # display <source IP, source port, destination IP, destination port>
-    nt = GET network-traffic FROM stixshifter://idsX WHERE [network-traffic:dst_port = 80]
+    nt = GET network-traffic FROM stixshifter://idsX WHERE dst_port = 80
     DISP nt ATTR src_ref.value, src_port, dst_ref.value, dst_port
 
     # display process pid, name, and command line
-    procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
+    procs = GET process FROM stixshifter://edrA WHERE parent_ref.name = 'bash'
     DISP procs ATTR pid, name, command_line
 
     # display the timestamps from observations of those processes:
@@ -652,17 +656,23 @@ SORT
 ----
 
 The command ``SORT`` is a *transformation* hunt step to reorder entities in a
-Kestrel variable and output the same set of entities with the new order to a new
-variable.
+Kestrel variable and output the same set of entities with the new order to a
+new variable. While the ``SORT`` clause in ``DISP`` only alters the order of
+entities once for the display, the ``SORT`` command reorders the entities (in a
+variable) in the store of the session, thus all follow-up commands using the
+variable will see entities in the updated order. Most Kestrel commands are
+order insensitive, yet an entity-order-sensitive analytics can be developed and
+invoked by ``APPLY``.
 
 Syntax
 ^^^^^^
 ::
 
-    newvar = SORT varx BY stixpath [ASC|DESC]
+    newvar = SORT varx BY attribute [ASC|DESC]
 
-- The ``stixpath`` can be a full STIX path like ``process:attribute`` or just
-  an attribute name like ``pid`` if ``varx`` is ``process``.
+- ``attribute`` is an attribute name like ``pid`` or ``x_suspicious_score``
+  (after running the `Suspicious Process Scoring analytics`_) if ``varx`` is
+  ``process``.
 
 - By default, data will be sorted by descending order. The user can specify the
   direction explicitly such as ``ASC``: ascending order.
@@ -673,7 +683,7 @@ Examples
 .. code-block:: coffeescript
 
     # get network traffic and sort them by their destination port
-    nt = GET network-traffic FROM stixshifter://idsX WHERE [network-traffic:dst_ref_value = '1.2.3.4']
+    nt = GET network-traffic FROM stixshifter://idsX WHERE dst_ref_value = '1.2.3.4'
     ntx = SORT nt BY dst_port ASC
 
     # display all destination port and now it is easy to check important ports
@@ -726,12 +736,12 @@ Examples
 .. code-block:: coffeescript
 
     # group processes by their name and display
-    procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
+    procs = GET process FROM stixshifter://edrA parent_ref.name = 'bash'
     aggr = GROUP procs BY name
     DISP aggr ATTR unique_name, unique_pid, unique_command_line
 
     # group network traffic into 5 minute buckets:
-    conns = GET network-traffic FROM stixshifter://my_ndr WHERE [network-traffic:src_ref.value LIKE '%']
+    conns = GET network-traffic FROM stixshifter://my_ndr WHERE src_ref.value LIKE '%'
     conns_ts = TIMESTAMPED(conns)
     conns_binned = GROUP conns_ts BY BIN(first_observed, 5m) WITH COUNT(src_port) AS count
 
@@ -747,18 +757,19 @@ Syntax
 
     SAVE varx TO file_path
 
-- All records of the entities in the input variable will be packaged in the
-  output file.
+- All records of the entities in the input variable (:ref:`data
+  table<language/eav:Data Representation>`) will be packaged in the output
+  file.
 
-- The suffix of the file path decides the format of the file. Current supported formats:
+- The suffix of the file path decides the format of the file. Currently supported formats:
 
     - ``.csv``: CSV file.
     - ``.parquet``: parquet file.
     - ``.parquet.gz``: gzipped parquet file.
 
-- It is useful to save a Kestrel variable into a file for analytics development.
-  The docker analytics interface actually does the same to prepare the input
-  for a docker container.
+- It is useful to save a Kestrel variable into a file for analytics
+  development.  The :doc:`../source/kestrel_analytics_docker.interface`
+  actually does the same to prepare the input for a docker container.
 
 Examples
 ^^^^^^^^
@@ -766,7 +777,7 @@ Examples
 .. code-block:: coffeescript
 
     # save all process records into /tmp/kestrel_procs.parquet.gz
-    procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
+    procs = GET process FROM stixshifter://edrA WHERE parent_ref.name = 'bash'
     SAVE procs TO /tmp/kestrel_procs.parquet.gz
 
 LOAD
@@ -802,7 +813,7 @@ Examples
 .. code-block:: coffeescript
 
     # save all process records into /tmp/kestrel_procs.parquet.gz
-    procs = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
+    procs = GET process FROM stixshifter://edrA WHERE parent_ref.name = 'bash'
     SAVE procs TO /tmp/kestrel_procs.parquet.gz
 
     # in another hunt, load the processes
@@ -815,7 +826,7 @@ Examples
     # check whether there is any network-traffic goes to susp_ips
     nt = GET network-traffic
          FROM stixshifter://idsX
-         WHERE [network-traffic:dst_ref.value = susp_ips.value]
+         WHERE dst_ref.value = susp_ips.value
 
 ASSIGN
 ------
@@ -828,15 +839,16 @@ Syntax
 
     newvar = oldvar
     newvar = TIMESTAMPED(oldvar)
-    newvar = oldvar [WHERE attr = value...][ATTR attr1,...][SORT BY attr][LIMIT n [OFFSET m]]
+    newvar = oldvar [WHERE ecgp] [ATTR attr1,...] [SORT BY attr] [LIMIT n [OFFSET m]]
 
 - The first form simply assigns a new name to a variable.
-- In the second form, ``newver`` will contains a list of timestamped observations
-  of the entities in ``oldvar``.
+- In the second form, ``newver`` has the additional ``first_observed`` attribute than ``oldvar``.
 - In the third form, ``oldvar`` will be filtered and the result assigned to ``newvar``.
-
-The ``WHERE`` condition supports *ExtendedCenterGraphPattern* and references of
-Kestrel variables can be used, which will be automatically dereferenced.
+- ``ecgp`` in ``WHERE`` is ECGP defined in :doc:`ecgp`. Only the centered
+  subgraph component (not extended subgraph) of the ECGP will be processed for the
+  ``ASSIGN`` command.
+- ``attr`` and ``attr1`` are entity attributes defined in :doc:`eav`.
+- ``n`` and ``m`` are integers.
 
 Examples
 ^^^^^^^^
@@ -883,10 +895,10 @@ Examples
 .. code-block:: coffeescript
 
     # one TTP matching
-    procsA = GET process FROM stixshifter://edrA WHERE [process:parent_ref.name = 'bash']
+    procsA = GET process FROM stixshifter://edrA WHERE parent_ref.name = 'bash'
 
     # another TTP matching
-    procsB = GET process FROM stixshifter://edrA WHERE [process:binary_ref.name = 'sudo']
+    procsB = GET process FROM stixshifter://edrA WHERE binary_ref.name = 'sudo'
 
     # merge results of both
     procs = procsA + procsB
@@ -921,20 +933,21 @@ Examples
 
 .. code-block:: coffeescript
 
-    procsA = GET process FROM stixshifter://edrA WHERE [process:name = 'bash']
-    procsB = GET process WHERE [process:binary_ref.name = 'sudo']
+    procsA = GET process FROM stixshifter://edrA WHERE name = 'bash'
+    procsB = GET process WHERE binary_ref.name = 'sudo'
 
     # get only processes from procsA that have a child process in procsB
     procsC = JOIN procsA, procsB BY pid, parent_ref.pid
 
     # an alternative way of doing it without knowing the reference attribute
     procsD = FIND process CREATED procsB
-    procsE = GET process FROM procsD WHERE [process:pid = procsA.pid]
+    procsE = GET process FROM procsD WHERE pid = procsA.pid
 
 Comment
-=======
+^^^^^^^
 
-Comment strings in Kestrel start with ``#`` to the end of the line.
+A momment in Kestrel start with ``#`` to the end of the line. Kestrel does not
+define multi-line comment blocks currently.
 
 .. _STIX: https://oasis-open.github.io/cti-documentation/stix/intro.html
 .. _STIX-Shifter: https://github.com/opencybersecurityalliance/stix-shifter
@@ -943,3 +956,4 @@ Comment strings in Kestrel start with ``#`` to the end of the line.
 .. _STIX Cyber Observable Objects: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part4-cyber-observable-objects.html
 .. _STIX timestamp: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part5-stix-patterning.html
 .. _kestrel-analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics/
+.. _Suspicious Process Scoring analytics: https://github.com/opencybersecurityalliance/kestrel-analytics/tree/release/analytics/suspiciousscoring
