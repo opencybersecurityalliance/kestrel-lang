@@ -86,8 +86,7 @@ Syntax
       :ref:`records<language/tac:Record>` yielded/stored in that data source.
       For example, a data source could be a data lake where monitored logs are
       stored, an EDR, a firewall, an IDS, a proxy server, or a SIEM system.
-      ``entity_pool`` is the identifier of the data source (defined in
-      :doc:`interface`), e.g.:
+      ``entity_pool`` is the identifier of the data source, e.g.:
 
         - ``stixshifter://host101``: EDR on host 101 via
           :doc:`../source/kestrel_datasource_stixshifter.interface`.
@@ -125,6 +124,12 @@ Syntax
        the :doc:`../source/kestrel_datasource_stixshifter.interface` is used.
 
     #. No time range specified for the generated query to a data source.
+
+Learn how to setup data sources via existing Kestrel data source interfaces
+such as :doc:`../source/kestrel_datasource_stixshifter.interface` at
+:doc:`../installation/datasource`. Read :doc:`interface` to understand more
+about the abstraction of interface and how to develop new data source
+interfaces.
 
 Examples
 ^^^^^^^^
