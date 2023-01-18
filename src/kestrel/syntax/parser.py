@@ -108,12 +108,6 @@ class _KestrelT(Transformer):
             stmt["output"] = self.default_variable
         return stmt
 
-    def merge(self, args):
-        return {
-            "command": "merge",
-            "inputs": self._extract_vars(args),
-        }
-
     def info(self, args):
         return {"command": "info", "input": self._extract_var(args)}
 
