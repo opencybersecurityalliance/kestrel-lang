@@ -469,7 +469,10 @@ class Session(AbstractContextManager):
                     elif token.startswith("__ANON"):
                         continue
                     elif token == "EQUAL":
-                        tmp.append("=")
+                        if last_word:
+                            tmp.extend(varnames)
+                        else:
+                            tmp.append("=")
                     elif token in keywords and last_word.islower():
                         # keywords has both upper and lower case
                         tmp.append(token.lower())

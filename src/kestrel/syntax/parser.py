@@ -89,14 +89,24 @@ class _KestrelT(Transformer):
         return stmt
 
     def assignment(self, args):
-        stmt = args[1] if len(args) == 2 else args[0]
-        stmt["output"] = self._extract_var(args)
+        if len(args) > 2:
+            variables = self._extract_vars(args)
+            stmt = {
+                "command": "merge",
+                "output": variables[0],
+                "inputs": variables[1:]
+            }
+        elif len(args) == 2:
+            stmt = args[1]
+            # the tree is already processed, and the only thing left is the result variable
+            # get it using `self._extract_var()`
+            stmt["output"] = self._extract_var(args)
+            if "command" not in stmt:
+                stmt["command"] = "assign"
+        else:
+            stmt = args[0]
+            stmt["output"] = self.default_variable
         return stmt
-
-    def assign(self, args):
-        packet = args[0]  # Already transformed in expression method below
-        packet["command"] = "assign"
-        return packet
 
     def merge(self, args):
         return {

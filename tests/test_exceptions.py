@@ -55,6 +55,7 @@ def test_undefined_variable(fake_bundle_file):
 
 def test_garbage():
     with Session(debug_mode=True) as session:
-        with pytest.raises(VariableNotExist) as e:
+        with pytest.raises(KestrelSyntaxError) as einfo:
             session.execute("garbage")
-        print(e)
+        err = einfo.value
+        assert err.expected == ["EQUAL"]
