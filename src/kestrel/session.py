@@ -300,14 +300,17 @@ class Session(AbstractContextManager):
                 self.config["language"]["default_sort_order"],
             )
         except lark.UnexpectedEOF as err:
+            # use `err.expected` as used in lark.exceptions.UnexpectedEOF
             raise KestrelSyntaxError(
                 err.line, err.column, "end of line", "", err.expected
             )
         except lark.UnexpectedCharacters as err:
+            # use `err.allowed` as used in lark.exceptions.UnexpectedCharacters
             raise KestrelSyntaxError(
                 err.line, err.column, "character", err.char, err.allowed
             )
         except lark.UnexpectedToken as err:
+            # use `err.accepts or err.expected` as used in lark.exceptions.UnexpectedToken
             raise KestrelSyntaxError(
                 err.line, err.column, "token", err.token, err.accepts or err.expected
             )
