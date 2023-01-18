@@ -91,11 +91,7 @@ class _KestrelT(Transformer):
     def assignment(self, args):
         if len(args) > 2:
             variables = self._extract_vars(args)
-            stmt = {
-                "command": "merge",
-                "output": variables[0],
-                "inputs": variables[1:]
-            }
+            stmt = {"command": "merge", "output": variables[0], "inputs": variables[1:]}
         elif len(args) == 2:
             stmt = args[1]
             # the tree is already processed, and the only thing left is the result variable
