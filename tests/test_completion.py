@@ -51,10 +51,10 @@ def a_session():
     "code, expected",
     [
         ("x", []),  # No suggestions
-        ("x ", {"=", "+"}),
+        ("x ", {"="}),
         ("c", {"onns"}),
         ("conns", [""]),  # Empty string means word is complete
-        ("conns ", {"=", "+"}),
+        ("conns ", {"="}),
         ("disp ", {"conns", "_"} | TRANSFORMS),
         (
             "procs = ",
