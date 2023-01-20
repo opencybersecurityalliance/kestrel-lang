@@ -31,6 +31,7 @@ test case in `tests/test_completion.py` to verify the logic.
 """
 
 import logging
+from typeguard import typechecked
 import re
 import lark
 import typing
@@ -53,6 +54,7 @@ _logger = logging.getLogger(__name__)
 ISO_TS_RE = re.compile(r"\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}Z?)?)?)?)?)?")
 
 
+@typechecked
 def do_complete(
     code: str,
     cursor_pos: int,
@@ -74,7 +76,7 @@ def do_complete(
     _logger.debug(f"line to parse: {line_to_parse}")
 
     try:
-        parse_kestrel(line_to_parse)
+        ast = parse_kestrel(line_to_parse)
 
     except lark.exceptions.UnexpectedCharacters as e:
         suggestions = ["% illegal char in huntflow %"]
@@ -144,6 +146,8 @@ def do_complete(
                 # TODO: attribute completion
                 # https://github.com/opencybersecurityalliance/kestrel-lang/issues/79
                 expected_values.append("% TODO: ATTRIBUTE COMPLETION %")
+            elif token == "COMMA":
+                expected_values.append(",")
             elif token in keywords:
                 if last_word_prefix and last_word_prefix.islower():
                     token = token.lower()
@@ -166,22 +170,60 @@ def do_complete(
     else:
         suggestions = []
 
+        # handle optional components
+        if ast:
+            last_stmt = ast[-1]
+            if last_stmt["command"] in ["assign", "disp"]:
+                if "where" not in last_stmt:
+                    suggestions.append("WHERE")
+                if last_stmt["command"] == "disp" and last_stmt["attrs"] == "*":
+                    suggestions.append("ATTR")
+                if "attribute" not in last_stmt:
+                    suggestions.append("SORT")
+                if "limit" not in last_stmt:
+                    suggestions.append("LIMIT")
+                if "offset" not in last_stmt:
+                    suggestions.append("OFFSET")
+            elif last_stmt["command"] == "find":
+                if "where" not in last_stmt:
+                    suggestions.append("WHERE")
+                if not last_stmt["timerange"]:
+                    suggestions.append("START")
+            elif last_stmt["command"] == "get":
+                if not last_stmt["timerange"]:
+                    suggestions.append("START")
+            elif last_stmt["command"] == "group":
+                if "aggregations" not in last_stmt:
+                    suggestions.append("WITH")
+            elif last_stmt["command"] == "join":
+                if "attribute_1" not in last_stmt:
+                    suggestions.append("BY")
+            elif last_stmt["command"] == "load":
+                if not last_stmt["type"]:
+                    suggestions.append("AS")
+            elif last_stmt["command"] == "apply":
+                if not last_stmt["arguments"]:
+                    suggestions.append("WITH")
+
     return suggestions
 
 
-def _end_with_blank(s: str) -> bool:
-    return s[-1] in [" ", "\t", "\n", "\r", "\f", "\v"] if s else True
+@typechecked
+def _end_with_blank_or_comma(s: str) -> bool:
+    return s[-1] in [" ", "\t", "\n", "\r", "\f", "\v", ","] if s else True
 
 
+@typechecked
 def _split_last_token(s: str) -> tuple[str, str]:
     last = ""
-    if not _end_with_blank(s):
-        while not _end_with_blank(s):
+    if not _end_with_blank_or_comma(s):
+        while not _end_with_blank_or_comma(s):
             last = s[-1] + last
             s = s[:-1]
     return last, s
 
 
+@typechecked
 def _do_complete_timestamp(ts_prefix: str) -> str:
     valid_ts_formats = [
         "%Y",

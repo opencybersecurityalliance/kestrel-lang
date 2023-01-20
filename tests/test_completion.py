@@ -69,6 +69,12 @@ def test_do_complete_variable_as_first_token(a_session, code, expected):
     "code, expected",
     [
         ("disp ", {"conns", "_"} | TRANSFORMS),
+        ("disp c", {"onns"}),
+        ("disp conns", []),
+        ("disp conns ", {"LIMIT", "ATTR", "SORT", "WHERE", "OFFSET"}),
+        ("disp conns LIMIT 5 ", {"ATTR", "SORT", "WHERE", "OFFSET"}),
+        ("disp conns ATTR name ", {"LIMIT", "SORT", "WHERE", "OFFSET"}),
+        ("disp conns WHERE name = 'abc' ", {"LIMIT", "SORT", "ATTR", "OFFSET"}),
     ],
 )
 def test_do_complete_disp(a_session, code, expected):
@@ -89,6 +95,8 @@ def test_do_complete_disp(a_session, code, expected):
             ["_", "conns", "file://", "http://", "https://", "stixshifter://"],
         ),
         ("urls = get url where ", {"% TODO: ATTRIBUTE COMPLETION %"}),
+        ("urls = get url where name = 'a' ", {"START"}),
+        ("urls = get url where name = 'a' START 2022-01-01T00:00:00Z ", {"STOP"}),
     ],
 )
 def test_do_complete_cmd_get(a_session, code, expected):
@@ -106,12 +114,12 @@ def test_do_complete_cmd_get(a_session, code, expected):
         ("procs = FIND ", KNOWN_ETYPES),
         ("procs = FIND p", ["rocess"]),
         ("procs = FIND process", []),
-        # ("procs = FIND process ", {"created", "loaded", "linked"}),
         ("procs = FIND process ", all_relations),
         ("procs = FIND process l", {"oaded", "inked"}),
         ("procs = FIND process c", {"reated", "ontained"}),
         ("procs = FIND process created ", {"conns", "_", "BY"}),
         ("procs = FIND process created BY ", {"conns", "_"}),
+        ("procs = FIND process created BY conns ", {"WHERE", "START"}),
     ],
 )
 def test_do_complete_cmd_find(a_session, code, expected):
@@ -123,6 +131,28 @@ def test_do_complete_cmd_find(a_session, code, expected):
     "code, expected",
     [
         ("procs2 = SORT procs ", {"BY"}),
+        ("procs2 = SORT procs BY ", {"% TODO: ATTRIBUTE COMPLETION %"}),
+    ],
+)
+def test_do_complete_cmd_sort(a_session, code, expected):
+    result = a_session.do_complete(code, len(code))
+    assert set(result) == set(expected)
+
+
+@pytest.mark.parametrize(
+    "code, expected",
+    [
+        ("APPLY abc ON ", {"_", "conns"}),
+        ("APPLY abc ON c ", {"WITH"}),
+    ],
+)
+def test_do_complete_cmd_apply(a_session, code, expected):
+    result = a_session.do_complete(code, len(code))
+    assert set(result) == set(expected)
+
+@pytest.mark.parametrize(
+    "code, expected",
+    [
         ("grps = GR", {"OUP"}),
         ("grps = GROUP ", {"conns", "_"}),
         ("grps = GROUP conns ", {"BY"}),
@@ -137,10 +167,16 @@ def test_do_complete_cmd_group(a_session, code, expected):
 @pytest.mark.parametrize(
     "code, expected",
     [
-        ("procs2 = SORT procs ", {"BY"}),
+        ("procs2 = JOIN x, ", {"_", "conns"}),
+        ("procs2 = JOIN x, y ", {"BY"}),
+        ("procs2 = JOIN x, y BY ", {"% TODO: ATTRIBUTE COMPLETION %"}),
+        ("procs2 = JOIN x, y BY a", []),
+        ("procs2 = JOIN x, y BY a ", {","}),
+        ("procs2 = JOIN x, y BY a,", {"% TODO: ATTRIBUTE COMPLETION %"}),
+        ("procs2 = JOIN x, y BY a, ", {"% TODO: ATTRIBUTE COMPLETION %"}),
     ],
 )
-def test_do_complete_cmd_sort(a_session, code, expected):
+def test_do_complete_cmd_join(a_session, code, expected):
     result = a_session.do_complete(code, len(code))
     assert set(result) == set(expected)
 
