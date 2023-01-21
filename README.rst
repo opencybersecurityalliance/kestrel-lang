@@ -126,7 +126,7 @@ Kestrel Hunting Blogs
 Talks And Demos
 ===============
 
-Visit `Kestrel documentation on talks`_ to learn more about the talks:
+Talk summary (visit `Kestrel documentation on talks`_ to learn details):
 
 - 2022/12 `Infosec Jupyterthon 2022`_ [`IJ'22 live hunt recording`_]
 - 2022/08 `Black Hat USA 2022`_ [`BH'22 recording`_ | `BH'22 hunting lab`_]

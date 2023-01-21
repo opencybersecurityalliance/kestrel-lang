@@ -2,21 +2,20 @@
 Theory Behind Kestrel
 =====================
 
-We define a *hunt* in :doc:`language` as a procedure to find a set of entities
-in the monitored environment that associates with a cyber threat. We will
-discuss a more comprehensive definition here as well as the relation between
-the definitions.
+We define a :ref:`hunt<language/tac:hunt>` as a procedure to find a set of
+entities in the monitored environment that associates with a cyber threat. We
+will discuss a more comprehensive definition here as well as the relation
+between the definitions.
 
 Threat Intelligence Computing
 =============================
 
 In an ideal world where we can monitor all activities of computations, we can
 model computations as labeled temporal graphs. Each node in the graph is an
-entity defined in the basic terminology in :doc:`language`, and each edge in
-the graph is an event that happens at a specific time and connects two
-entities. We call such graph *computation graph*, and computation graph
-instances at different monitoring levels, e.g., host-level, network-level, are
-illustrated below:
+:ref:`entity<language/tac:entity>`, and each edge in the graph is an event that
+happens at a specific time and connects two entities. We call such graph
+*computation graph*, and computation graph instances at different monitoring
+levels, e.g., host-level, network-level, are illustrated below:
 
 .. image:: images/cg1.png
    :width: 50%
@@ -57,10 +56,11 @@ big data security towards complete computation graph, we design Kestrel to use
 data that exists today even with disconnected entities. We relax the
 assumptions and derive threat hunting from a subgraph identification problem
 into a subset identification problem regarding the possible disconnectivity in
-real-world data. In the meanwhile, we have ``FIND`` command in Kestrel to move
-from one node to another in a real-world incomplete computation graph if the
-connection exists. And STIX pattern used in ``GET`` command provides some
-capability to express simple graph patterns.
+real-world data. In the meanwhile, we have :ref:`language/commands:find`
+command in Kestrel to move from one node to another in a real-world incomplete
+computation graph if the connection exists. And STIX pattern used in
+:ref:`language/commands:get` command provides some capability to express simple
+graph patterns.
 
 The open source of Kestrel is not an end. It is the beginning to evolve with
 the entire community including threat hunters, security developers, security
@@ -73,10 +73,11 @@ Acknowledgment
 
 This open source project is built upon research sponsored by the Air Force
 Research Laboratory (AFRL) and the Defense Advanced Research Agency (DARPA).
-The fundamental research is part of the `DARPA Transparent Computing`_ program.
-The views, opinions, and/or findings contained in our papers and talks are
-those of the authors and should not be interpreted as representing the official
-views or policies of the Department of Defense or the U.S. Government.
+The fundamental research is part of the DARPA `Transparent Computing (TC)`_ and
+DARPA `Cyber-Hunting at Scale (CHASE)`_ program. The views, opinions, and/or
+findings contained in our papers and talks are those of the authors and should
+not be interpreted as representing the official views or policies of the
+Department of Defense or the U.S. Government.
 
 References
 ==========
@@ -92,4 +93,5 @@ References
    Security Applications Conference (ACSAC) '20.
    https://www.youtube.com/watch?v=9IlUoGpXvYo
 
-.. _DARPA Transparent Computing: https://www.darpa.mil/program/transparent-computing
+.. _Transparent Computing (TC): https://www.darpa.mil/program/transparent-computing
+.. _Cyber-Hunting at Scale (CHASE): https://www.darpa.mil/program/cyber-hunting-at-scale

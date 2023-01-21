@@ -2,9 +2,9 @@ Connect to Data Sources
 -----------------------
 
 Data sources, e.g., an EDR, a SIEM, a firewall, provide raw or processed data
-for hunting. Kestrel hunt steps such as :ref:`language:GET` and
-:ref:`language:FIND` generate code or queries to retrieve data, e.g., system
-logs or alerts, from data sources.
+for hunting. Kestrel hunt steps such as :ref:`language/commands:GET` and
+:ref:`language/commands:FIND` generate code or queries to retrieve data, e.g.,
+system logs or alerts, from data sources.
 
 Kestrel Data Source Abstraction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -14,8 +14,7 @@ registers at a :doc:`../source/kestrel.datasource.interface`, which defines the
 way how a set of data sources are queried and ingested into Kestrel. In other
 words, Kestrel manages multiple data source interfaces at runtime, each of
 which manages a set of data sources with the same query method and ingestion
-procedure.  Learn more about the abstraction in :ref:`language:Data Source And
-Analytics Interfaces`.
+procedure.  Learn more about the abstraction in :doc:`../language/interface`.
 
 Kestrel by default ships with the two most common data source interfaces:
 

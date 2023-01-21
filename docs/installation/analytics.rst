@@ -1,9 +1,9 @@
 Setup Kestrel Analytics
 -----------------------
 
-Kestrel analytics are one type of hunt steps (:ref:`language:APPLY`) that
-provide foreign language interfaces to non-Kestrel hunting modules. You can
-apply any external logic as a Kestrel analytics to
+Kestrel analytics are one type of hunt steps (:ref:`language/commands:APPLY`)
+that provide foreign language interfaces to non-Kestrel hunting modules. You
+can apply any external logic as a Kestrel analytics to
 
 - compute new attributes to one or more Kestrel variables
 - perform visualizations
@@ -20,7 +20,7 @@ a :doc:`../source/kestrel.analytics.interface`, which defines the way how a set
 of analytics are executed and talk to Kestrel. In other words, Kestrel manages
 multiple analytics interfaces at runtime, each of which manages a set of
 analytics with the same execution model and input/output formats. Learn more
-about the abstraction in :ref:`language:Data Source And Analytics Interfaces`.
+about the abstraction in :doc:`../language/interface`.
 
 Kestrel by default ships with the two most common analytics interfaces:
 
@@ -88,7 +88,7 @@ What's to Do Next
 ~~~~~~~~~~~~~~~~~
 
 - :ref:`tutorial:Run an Analytics`
-- :ref:`language:APPLY`
+- :ref:`language/commands:APPLY`
 
 .. _kestrel-analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
 .. _Kestrel analytics example profile: https://github.com/opencybersecurityalliance/kestrel-analytics/blob/release/pythonanalytics_sample.yaml

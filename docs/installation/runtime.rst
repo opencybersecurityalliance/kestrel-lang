@@ -63,7 +63,7 @@ a Python virtual environment named ``huntingspace``:
 
     $ python -m venv huntingspace
     $ . huntingspace/bin/activate
-    $ pip install --upgrade pip setuptools
+    $ pip install --upgrade pip setuptools wheel
 
 Stable Release
 --------------
@@ -119,7 +119,7 @@ interactively (``huntingspace`` activated):
 
 .. code-block:: console
 
-    $ jupyter notebook
+    $ jupyter nbclassic
 
 What's to Do Next
 =================
@@ -128,7 +128,7 @@ What's to Do Next
 - :doc:`datasource`
 - :doc:`analytics`
 - `Explore Kestrel huntbooks`_
-- :doc:`../language`
+- :doc:`../language/index`
 
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
