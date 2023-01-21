@@ -1,5 +1,6 @@
 import os
 import pytest
+import pathlib
 from kestrel.codegen.relations import all_relations
 from kestrel.session import Session
 from kestrel.syntax.utils import (
@@ -34,7 +35,85 @@ KNOWN_ETYPES = {
 
 
 @pytest.fixture
-def a_session():
+def datasource_env_setup(tmp_path):
+
+    profiles = f"""profiles:
+    thost101:
+        connector: elastic_ecs
+        connection:
+            host: elastic.securitylog.company.com
+            port: 9200
+            selfSignedCert: false # this means do NOT check cert
+            indices: asdfqwer
+        config:
+            auth:
+                id: VuaCfGcBCdbkQm-e5aOx
+                api_key: ui2lp2axTNmsyakw9tvNnw
+    thost102:
+        connector: qradar
+        connection:
+            host: qradar.securitylog.company.com
+            port: 443
+        config:
+            auth:
+                SEC: 123e4567-e89b-12d3-a456-426614174000
+    thost103:
+        connector: cbcloud
+        connection:
+            host: cbcloud.securitylog.company.com
+            port: 443
+        config:
+            auth:
+                org-key: D5DQRHQP
+                token: HT8EMI32DSIMAQ7DJM
+    """
+
+    profile_file = tmp_path / "stixshifter.yaml"
+    with open(profile_file, "w") as pf:
+        pf.write(profiles)
+
+    ss_envs = [k for k in list(os.environ.keys()) if k.startswith("STIXSHIFTER_")]
+    for ss_env in ss_envs:
+        del os.environ[ss_env]
+
+    os.environ["KESTREL_STIXSHIFTER_CONFIG"] = str(
+        profile_file.expanduser().resolve()
+    )
+
+
+@pytest.fixture
+def analytics_env_setup(tmp_path):
+
+    analytics_module_path = str(
+        pathlib.Path(__file__).resolve().parent / "python_analytics_mockup.py"
+    )
+
+    profiles = f"""profiles:
+    enrich_one_variable:
+        module: {analytics_module_path}
+        func: enrich_one_variable
+    html_visualization:
+        module: {analytics_module_path}
+        func: html_visualization
+    enrich_multiple_variables:
+        module: {analytics_module_path}
+        func: enrich_multiple_variables
+    enrich_variable_with_arguments:
+        module: {analytics_module_path}
+        func: enrich_variable_with_arguments
+    """
+
+    profile_file = tmp_path / "pythonanalytics.yaml"
+    with open(profile_file, "w") as pf:
+        pf.write(profiles)
+
+    os.environ["KESTREL_PYTHON_ANALYTICS_CONFIG"] = str(
+        profile_file.expanduser().resolve()
+    )
+
+
+@pytest.fixture
+def a_session(datasource_env_setup, analytics_env_setup):
     cwd = os.path.dirname(os.path.abspath(__file__))
     bundle = os.path.join(cwd, "test_bundle.json")
     session = Session(debug_mode=True)
@@ -91,15 +170,18 @@ def test_do_complete_disp(a_session, code, expected):
         ("urls = get ", KNOWN_ETYPES),
         ("urls = get url ", ["FROM", "WHERE"]),
         (
-            "urls = get url from ",
+            "urls = GET url FROM ",
             ["_", "conns", "file://", "http://", "https://", "stixshifter://"],
         ),
+        ( "urls = GET url FROM stixshi", {"fter://"}),
+        ( "urls = GET url FROM stixshifter://", {"thost101", "thost102", "thost103"}),
+        ( "urls = GET url FROM stixshifter://thost", {"101", "102", "103"}),
         ("urls = get url where ", {"% TODO: ATTRIBUTE COMPLETION %"}),
         ("urls = get url where name = 'a' ", {"START"}),
         ("urls = get url where name = 'a' START 2022-01-01T00:00:00Z ", {"STOP"}),
     ],
 )
-def test_do_complete_cmd_get(a_session, code, expected):
+def test_do_complete_cmd_get(datasource_env_setup, a_session, code, expected):
     result = a_session.do_complete(code, len(code))
     assert set(result) == set(expected)
 
@@ -142,6 +224,10 @@ def test_do_complete_cmd_sort(a_session, code, expected):
 @pytest.mark.parametrize(
     "code, expected",
     [
+        ("APPLY ", {"python://", "docker://"}),
+        ("APPLY pyth", {"on://"}),
+        ("APPLY python://", {"enrich_one_variable", "html_visualization", "enrich_multiple_variables", "enrich_variable_with_arguments"}),
+        ("APPLY python://enrich", {"_one_variable", "_multiple_variables", "_variable_with_arguments"}),
         ("APPLY abc ON ", {"_", "conns"}),
         ("APPLY abc ON c ", {"WITH"}),
     ],
@@ -149,6 +235,7 @@ def test_do_complete_cmd_sort(a_session, code, expected):
 def test_do_complete_cmd_apply(a_session, code, expected):
     result = a_session.do_complete(code, len(code))
     assert set(result) == set(expected)
+
 
 @pytest.mark.parametrize(
     "code, expected",
