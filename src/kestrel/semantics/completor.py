@@ -214,7 +214,7 @@ def _end_with_blank_or_comma(s: str) -> bool:
 
 
 @typechecked
-def _split_last_token(s: str) -> tuple[str, str]:
+def _split_last_token(s: str) -> typing.Tuple[str, str]:
     last = ""
     if not _end_with_blank_or_comma(s):
         while not _end_with_blank_or_comma(s):
