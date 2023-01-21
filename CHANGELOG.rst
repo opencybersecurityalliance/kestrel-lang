@@ -9,6 +9,24 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.5 (2023-01-21)
+==================
+
+Added
+-----
+
+- Kestrel doc for v1.5 syntax, mostly the language specification chapter
+    - New section on the Kestrel patterning: Extended Centered Graph Pattern (ECGP)
+    - New section on entity, attribute, and related mechanisms
+    - Commands section updated with v1.5 syntax
+    - Interface section rewritten with much more details
+    - Concepts/terminology section updated
+
+Changed
+-------
+
+- ``ASSIGN`` and ``MERGE`` commands now require a return variable
+
 1.5.4 (2023-01-11)
 ==================
 

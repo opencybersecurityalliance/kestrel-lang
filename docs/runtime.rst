@@ -3,10 +3,9 @@ Runtime API
 ===========
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    source/kestrel.session
-   source/kestrel.exceptions
    source/kestrel.datasource.interface
    source/kestrel.datasource.retstruct
    source/kestrel_datasource_stixshifter.interface

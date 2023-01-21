@@ -12,16 +12,18 @@ statement: assignment
          | command_no_result
          
 // If no VARIABLE is given, default to _ in post-parsing
-assignment: (VARIABLE "=")? command_with_result
+// For assign or merge, the result variable is required
+// This eliminates meaningless huntflows like `var1 var2 var3`
+assignment: VARIABLE "=" expression
+          | VARIABLE "=" VARIABLE ("+" VARIABLE)+
+          | (VARIABLE "=")? command_with_result
 
 // "?" at the beginning will inline command
-?command_with_result: assign
-                    | find
+?command_with_result: find
                     | get
                     | group
                     | join
                     | load
-                    | merge
                     | new
                     | sort
 
@@ -29,8 +31,6 @@ assignment: (VARIABLE "=")? command_with_result
                   | disp
                   | info
                   | save
-
-assign: expression
 
 //
 // All commands
@@ -45,8 +45,6 @@ group: "GROUP"i VARIABLE BY grp_spec ("WITH"i agg_list)?
 join: "JOIN"i VARIABLE "," VARIABLE (BY ATTRIBUTE "," ATTRIBUTE)?
 
 load: "LOAD"i stdpath ("AS"i ENTITY_TYPE)?
-
-merge: VARIABLE ("+" VARIABLE)+
 
 new: "NEW"i ENTITY_TYPE? VAR_DATA
 
