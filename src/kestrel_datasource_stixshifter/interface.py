@@ -27,7 +27,7 @@ will load profiles from 3 places (the later will override the former):
                     selfSignedCert: false # this means do NOT check cert
                     indices: host101
                     options:  # options section only needed when using a dialect
-                        dialects: # for more info about dialects, see https://github.com/opensecurityalliance/stix-shifter/blob/develop/OVERVIEW.md
+                        dialects: # for more info about dialects, see https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md
                           - beats
                 config:
                     auth:
