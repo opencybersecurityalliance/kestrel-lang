@@ -7,6 +7,7 @@ from kestrel.syntax.utils import (
     LITERALS,
     AGG_FUNCS,
     TRANSFORMS,
+    EXPRESSION_OPTIONS,
 )
 
 
@@ -150,10 +151,10 @@ def test_do_complete_variable_as_first_token(a_session, code, expected):
         ("disp ", {"conns", "_"} | TRANSFORMS),
         ("disp c", {"onns"}),
         ("disp conns", []),
-        ("disp conns ", {"LIMIT", "ATTR", "SORT", "WHERE", "OFFSET"}),
-        ("disp conns LIMIT 5 ", {"ATTR", "SORT", "WHERE", "OFFSET"}),
-        ("disp conns ATTR name ", {"LIMIT", "SORT", "WHERE", "OFFSET"}),
-        ("disp conns WHERE name = 'abc' ", {"LIMIT", "SORT", "ATTR", "OFFSET"}),
+        ("disp conns ", EXPRESSION_OPTIONS),
+        ("disp conns LIMIT 5 ", EXPRESSION_OPTIONS - {"LIMIT"}),
+        ("disp conns ATTR name ", EXPRESSION_OPTIONS - {"ATTR"}),
+        ("disp conns WHERE name = 'abc' ", EXPRESSION_OPTIONS - {"WHERE"}),
     ],
 )
 def test_do_complete_disp(a_session, code, expected):
@@ -176,7 +177,7 @@ def test_do_complete_disp(a_session, code, expected):
         ( "urls = GET url FROM stixshi", {"fter://"}),
         ( "urls = GET url FROM stixshifter://", {"thost101", "thost102", "thost103"}),
         ( "urls = GET url FROM stixshifter://thost", {"101", "102", "103"}),
-        ("urls = get url where ", {"% TODO: ATTRIBUTE COMPLETION %"}),
+        ("urls = get url where ", []), # TODO: attribute completion
         ("urls = get url where name = 'a' ", {"START"}),
         ("urls = get url where name = 'a' START 2022-01-01T00:00:00Z ", {"STOP"}),
     ],
@@ -213,7 +214,7 @@ def test_do_complete_cmd_find(a_session, code, expected):
     "code, expected",
     [
         ("procs2 = SORT procs ", {"BY"}),
-        ("procs2 = SORT procs BY ", {"% TODO: ATTRIBUTE COMPLETION %"}),
+        ("procs2 = SORT procs BY ", []), # TODO: attribute completion
     ],
 )
 def test_do_complete_cmd_sort(a_session, code, expected):
@@ -243,7 +244,7 @@ def test_do_complete_cmd_apply(a_session, code, expected):
         ("grps = GR", {"OUP"}),
         ("grps = GROUP ", {"conns", "_"}),
         ("grps = GROUP conns ", {"BY"}),
-        ("grps = GROUP conns by ", {"% TODO: ATTRIBUTE COMPLETION %", "BIN"}),
+        ("grps = GROUP conns by ", {"BIN"}), # TODO: attribute completion
     ],
 )
 def test_do_complete_cmd_group(a_session, code, expected):
@@ -256,11 +257,11 @@ def test_do_complete_cmd_group(a_session, code, expected):
     [
         ("procs2 = JOIN x, ", {"_", "conns"}),
         ("procs2 = JOIN x, y ", {"BY"}),
-        ("procs2 = JOIN x, y BY ", {"% TODO: ATTRIBUTE COMPLETION %"}),
+        ("procs2 = JOIN x, y BY ", []), # TODO: attribute completion
         ("procs2 = JOIN x, y BY a", []),
         ("procs2 = JOIN x, y BY a ", {","}),
-        ("procs2 = JOIN x, y BY a,", {"% TODO: ATTRIBUTE COMPLETION %"}),
-        ("procs2 = JOIN x, y BY a, ", {"% TODO: ATTRIBUTE COMPLETION %"}),
+        ("procs2 = JOIN x, y BY a,", []), # TODO: attribute completion
+        ("procs2 = JOIN x, y BY a, ", []), # TODO: attribute completion
     ],
 )
 def test_do_complete_cmd_join(a_session, code, expected):

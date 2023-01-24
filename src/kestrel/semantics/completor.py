@@ -141,11 +141,11 @@ def do_complete(
             elif token == "ATTRIBUTE":
                 # TODO: attribute completion
                 # https://github.com/opencybersecurityalliance/kestrel-lang/issues/79
-                expected_values.append("% TODO: ATTRIBUTE COMPLETION %")
+                _logger.debug(f"TODO: ATTRIBUTE COMPLETION")
             elif token == "ENTITY_ATTRIBUTE_PATH":
                 # TODO: attribute completion
                 # https://github.com/opencybersecurityalliance/kestrel-lang/issues/79
-                expected_values.append("% TODO: ATTRIBUTE COMPLETION %")
+                _logger.debug(f"TODO: ATTRIBUTE COMPLETION")
             elif token == "COMMA":
                 expected_values.append(",")
             elif token in keywords:
