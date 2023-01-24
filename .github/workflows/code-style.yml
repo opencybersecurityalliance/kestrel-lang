@@ -12,9 +12,7 @@ on:
       - edited
       - reopened
       - synchronize
-      - ready_for_review
       - unlocked
-      - review_requested
 
 jobs:
   codestyle:
