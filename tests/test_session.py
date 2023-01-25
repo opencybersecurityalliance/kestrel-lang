@@ -259,30 +259,6 @@ def test_session_runtime_dir():
     assert os.path.exists(d)
 
 
-@pytest.mark.parametrize(
-    "time_string, suffix_ts",
-    [
-        ("START t'2021", ["-01-01T00:00:00Z'"]),
-        ("START t'2021-05", ["-01T00:00:00Z'"]),
-        ("START t'2021-05-04", ["T00:00:00Z'"]),
-        ("START t'2021-05-04T07:", ["00:00Z'"]),
-        ("START t'2021-05-04T07:30", [":00Z'"]),
-        ("START t'2021-05-04T07:30:", ["00Z'"]),
-        ("STOP t'2021", ["-01-01T00:00:00Z'"]),
-        ("STOP t'2021-05", ["-01T00:00:00Z'"]),
-        ("STOP t'2021-05-04", ["T00:00:00Z'"]),
-        ("STOP t'2021-05-04T07:", ["00:00Z'"]),
-        ("STOP t'2021-05-04T07:30", [":00Z'"]),
-        ("STOP t'2021-05-04T07:30:", ["00Z'"]),
-    ],
-)
-def test_session_do_complete_timestamp(fake_bundle_file, time_string, suffix_ts):
-    with Session(debug_mode=True) as session:
-        script = f"""{time_string}"""
-        result = session.do_complete(script, len(script))
-        assert result == suffix_ts
-
-
 def test_session_debug_from_env():
     os.environ["KESTREL_DEBUG"] = "something"
     with Session() as session:

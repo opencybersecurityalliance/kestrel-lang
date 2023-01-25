@@ -16,6 +16,7 @@ from kestrel.codegen.relations import (
 LITERALS = {"CNAME", "LETTER", "DIGIT", "WS", "INT", "WORD", "ESCAPED_STRING", "NUMBER"}
 AGG_FUNCS = {"MIN", "MAX", "AVG", "SUM", "COUNT", "NUNIQUE"}
 TRANSFORMS = {"TIMESTAMPED"}
+EXPRESSION_OPTIONS = {"WHERE", "ATTR", "SORT", "LIMIT", "OFFSET"}
 
 
 def get_keywords():
