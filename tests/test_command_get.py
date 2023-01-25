@@ -87,6 +87,7 @@ def test_get_single_stixshifter_stix_bundle(set_stixshifter_stix_bundles):
                var = GET process
                      FROM HOST2
                      WHERE [ipv4-addr:value = '127.0.0.1']
+                     START 2019-01-01T00:00:00Z STOP 2023-01-01T00:00:00Z
                """
 
         s.execute(stmt)
@@ -104,6 +105,7 @@ def test_get_multiple_stixshifter_stix_bundles(set_stixshifter_stix_bundles):
                var = GET process
                      FROM HOST1,HOST2
                      WHERE ipv4-addr:value = '127.0.0.1'
+                     START 2019-01-01T00:00:00Z STOP 2023-01-01T00:00:00Z
                """
 
         s.execute(stmt)
