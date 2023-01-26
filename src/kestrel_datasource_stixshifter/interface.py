@@ -26,6 +26,9 @@ will load profiles from 3 places (the later will override the former):
                     port: 9200
                     selfSignedCert: false # this means do NOT check cert
                     indices: host101
+                    options:  # options section only needed when using a dialect
+                        dialects: # for more info about dialects, see https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md
+                          - beats # need it if the index is created by Filebeat/Winlogbeat/*beat
                 config:
                     auth:
                         id: VuaCfGcBCdbkQm-e5aOx

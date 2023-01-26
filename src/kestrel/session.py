@@ -52,12 +52,10 @@ import pathlib
 import shutil
 import uuid
 import logging
-import re
 import time
 import math
 import lark
 import atexit
-from datetime import datetime
 from contextlib import AbstractContextManager
 
 from kestrel.exceptions import (
@@ -66,25 +64,18 @@ from kestrel.exceptions import (
     DebugCacheLinkOccupied,
 )
 from kestrel.syntax.parser import parse_kestrel
-from kestrel.syntax.utils import (
-    get_entity_types,
-    get_keywords,
-    all_relations,
-    LITERALS,
-    AGG_FUNCS,
-    TRANSFORMS,
-)
 from kestrel.semantics.processor import semantics_processing
+from kestrel.semantics.completor import do_complete
 from kestrel.codegen import commands
 from kestrel.codegen.display import DisplayBlockSummary
 from kestrel.codegen.summary import gen_variable_summary
 from kestrel.symboltable.symtable import SymbolTable
-from firepit import get_storage
-from firepit.exceptions import StixPatternError
 from kestrel.utils import set_current_working_directory, resolve_path_in_kestrel_env_var
 from kestrel.config import load_config
 from kestrel.datasource import DataSourceManager
 from kestrel.analytics import AnalyticsManager
+from firepit import get_storage
+from firepit.exceptions import StixPatternError
 
 _logger = logging.getLogger(__name__)
 
@@ -248,8 +239,6 @@ class Session(AbstractContextManager):
 
         self.data_source_manager = DataSourceManager(self.config)
         self.analytics_manager = AnalyticsManager(self.config)
-        iso_ts_regex = r"\d{4}(-\d{2}(-\d{2}(T\d{2}(:\d{2}(:\d{2}Z?)?)?)?)?)?"
-        self._iso_ts = re.compile(iso_ts_regex)
 
         atexit.register(self.close)
 
@@ -353,22 +342,6 @@ class Session(AbstractContextManager):
     def do_complete(self, code, cursor_pos):
         """Kestrel code auto-completion.
 
-        This function gives a list of suggestions on the inputted partial Kestrel
-        code to complete it. The current version sets the context for
-        completion on word level -- it will reason around the last word in the
-        input Kestrel code to provide suggestions. Data sources and analytics names
-        can also be completed since the entire URI are single words (no space
-        in data source or analytic name string). This feature can be used to
-        list all available data sources or analytics, e.g., giving the last
-        partial word ``stixshifter://``.
-
-        Currently this method computes code completion based on:
-
-        * Kestrel keywords
-        * Kestrel variables
-        * data source names
-        * analytics names
-
         Args:
             code (str): Kestrel code.
             cursor_pos (int): the position to start completion (index in ``code``).
@@ -376,115 +349,13 @@ class Session(AbstractContextManager):
         Returns:
             A list of suggested strings to complete the code.
         """
-        prefix = code[:cursor_pos]
-        words = prefix.split(" ")
-        last_word = words[-1]
-        last_char = prefix[-1]
-        _logger.debug('code="%s" prefix="%s" last_word="%s"', code, prefix, last_word)
-
-        if "START" in prefix or "STOP" in prefix:
-            return self._get_complete_timestamp(last_word)
-        elif "://" in last_word:
-            scheme, path = last_word.split("://")
-            if scheme in self.data_source_manager.schemes():
-                data_source_names = (
-                    self.data_source_manager.list_data_sources_from_scheme(scheme)
-                )
-                allnames = [scheme + "://" + name for name in data_source_names]
-                _logger.debug(
-                    f"auto-complete from data source interface {scheme}: {allnames}"
-                )
-            elif scheme in self.analytics_manager.schemes():
-                analytics_names = self.analytics_manager.list_analytics_from_scheme(
-                    scheme
-                )
-                allnames = [scheme + "://" + name for name in analytics_names]
-                _logger.debug(
-                    f"auto-complete from analytics interface {scheme}: {allnames}"
-                )
-            else:
-                allnames = []
-                _logger.debug("cannot find auto-complete interface")
-        else:
-            _logger.debug("standard auto-complete")
-
-            try:
-                stmt = self.parse(prefix)
-                _logger.debug("first parse: %s", stmt)
-                last_stmt = stmt[-1]
-                if last_stmt["command"] == "assign" and last_stmt["output"] == "_":
-                    # Special case for a varname alone on a line
-                    allnames = [
-                        v for v in self.get_variable_names() if v.startswith(prefix)
-                    ]
-                    if not allnames:
-                        return ["=", "+"] if prefix.endswith(" ") else []
-
-                # If it parses successfully, add something so it will fail
-                self.parse(prefix + " @autocompletions@")
-            except KestrelSyntaxError as e:
-                _logger.debug("exception: %s", e)
-                varnames = self.get_variable_names()
-                keywords = set(get_keywords())
-                _logger.debug("keywords: %s", keywords)
-                tmp = []
-                for token in e.expected:
-                    _logger.debug("token: %s", token)
-                    if token == "VARIABLE":
-                        tmp.extend(varnames)
-                    elif token == "DATASRC_SIMPLE":
-                        schemes = self.data_source_manager.schemes()
-                        tmp.extend([f"{scheme}://" for scheme in schemes])
-                    elif token == "DATASRC_ESCAPED":
-                        continue
-                    elif token == "ANALYTICS_SIMPLE":
-                        schemes = self.analytics_manager.schemes()
-                        tmp.extend([f"{scheme}://" for scheme in schemes])
-                    elif token == "ENTITY_TYPE":
-                        tmp.extend(get_entity_types())
-                    elif token.startswith("STIXPATTERNBODY"):
-                        # TODO: figure out how to complete STIX patterns
-                        continue
-                    elif token == "RELATION":
-                        if last_word:
-                            tmp.extend(get_entity_types())
-                        else:
-                            tmp.extend(all_relations)
-                    elif token == "BY":
-                        tmp.append("BY")
-                    elif token == "REVERSED":
-                        if last_char == " ":
-                            tmp.append("BY")
-                        else:
-                            # "procs = FIND process l" will expect ['REVERSED', 'VARIABLE']
-                            # override results from the case of VARIABLE
-                            tmp = all_relations
-                            break
-                    elif token == "FUNCNAME":
-                        tmp.extend(AGG_FUNCS)
-                    elif token == "TRANSFORM":
-                        tmp.extend(TRANSFORMS)
-                    elif token in LITERALS:
-                        continue
-                    elif token.startswith("__ANON"):
-                        continue
-                    elif token == "EQUAL":
-                        if last_word:
-                            tmp.extend(varnames)
-                        else:
-                            tmp.append("=")
-                    elif token in keywords and last_word.islower():
-                        # keywords has both upper and lower case
-                        tmp.append(token.lower())
-                    else:
-                        tmp.append(token)
-                allnames = sorted(tmp)
-
-        suggestions = [
-            name[len(last_word) :] for name in allnames if name.startswith(last_word)
-        ]
-        _logger.debug("%s -> %s", allnames, suggestions)
-        return suggestions
+        return do_complete(
+            code,
+            cursor_pos,
+            self.data_source_manager,
+            self.analytics_manager,
+            self.symtable,
+        )
 
     def close(self):
         """Explicitly close the session.
@@ -595,29 +466,6 @@ class Session(AbstractContextManager):
         exited_sessions.sort(key=lambda x: x[1])
         for x, _ in exited_sessions[: -self.config["debug"]["maximum_exited_session"]]:
             shutil.rmtree(x)
-
-    def _get_complete_timestamp(self, ts_str):
-        valid_ts_formats = [
-            "%Y",
-            "%Y-%m",
-            "%Y-%m-%d",
-            "%Y-%m-%dT%H",
-            "%Y-%m-%dT%H:%M",
-            "%Y-%m-%dT%H:%M:%S",
-        ]
-        complete_ts = []
-        for vts in valid_ts_formats:
-            ts = ts_str.split("'")[-1]
-            matched = self._iso_ts.match(ts)
-            if matched:
-                try:
-                    ts_iso = datetime.strptime(matched.group(), vts).isoformat()
-                    complete_ts.append(ts_iso[len(ts) :] + "Z'")
-                    if complete_ts:
-                        return complete_ts
-                except:
-                    _logger.debug(f"Try to match timestamp {ts} by format {vts}")
-                    pass
 
     def _get_runtime_directory_master(self):
         sys_tmp_dir = pathlib.Path(tempfile.gettempdir())
