@@ -9,6 +9,21 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.6 (2023-01-26)
+==================
+
+Added
+-----
+
+- Dialect configuration to stix-shifter interface doc #270
+- Dozens of unit tests for the auto-complete function
+
+Fixed
+-----
+
+- Stix-shifter 4.6.0 stix-bundle connector time range requirement
+- Reimplement the Kestrel auto-complete function to fix broken logic #264
+
 1.5.5 (2023-01-21)
 ==================
 

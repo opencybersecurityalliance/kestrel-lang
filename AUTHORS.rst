@@ -16,6 +16,7 @@ Contributors
 - `Sulakshan Vajipayajula`_
 - `Chew Kin Zhong`_
 - `Ian Molloy`_
+- `Constantin Adam`_
 
 .. _Xiaokui Shu: https://github.com/subbyte
 .. _Paul Coccoli: https://github.com/pcoccoli
@@ -24,3 +25,4 @@ Contributors
 .. _Sulakshan Vajipayajula: https://github.com/svajipay
 .. _Chew Kin Zhong: https://github.com/kinzhong
 .. _Ian Molloy: https://github.com/imolloy
+.. _Constantin Adam: https://github.com/cmadam
