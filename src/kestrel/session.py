@@ -365,7 +365,6 @@ class Session(AbstractContextManager):
         # this subroutine could be invoked twice by a context manager and program exit.
         # only execute it once (when self.store not deleted).
         if hasattr(self, "store"):
-
             # release resources
             self.store.close()
             del self.store
@@ -387,7 +386,6 @@ class Session(AbstractContextManager):
 
         start_exec_ts = time.time()
         for stmt in ast:
-
             try:
                 # semantic checking and unfolding
                 semantics_processing(

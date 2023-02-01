@@ -47,6 +47,15 @@ def set_stixshifter_stix_bundles():
     os.environ["STIXSHIFTER_HOST2_CONNECTOR"] = connector
     os.environ["STIXSHIFTER_HOST2_CONFIG"] = cfg
 
+    # use `yield` to pause here before a test finished
+    # https://docs.pytest.org/en/latest/how-to/fixtures.html#teardown-cleanup-aka-fixture-finalization
+    yield None
+
+    # this clean up will be executed when the test (that uses the fixture) exits
+    ss_envs = [k for k in list(os.environ.keys()) if k.startswith("STIXSHIFTER_")]
+    for ss_env in ss_envs:
+        del os.environ[ss_env]
+
 
 def test_get_single_file(file_stix_bundles):
     with Session() as s:
@@ -304,3 +313,15 @@ def test_get_referred_variable(nt_stix_bundles):
         # reset the offsets to nearly 0 (need to tolerate clock sync diff)
         # now it should go back to 4
         assert len(nt112z) == 4
+
+
+def test_regex_escaping_in_stix_bundle(nt_stix_bundles):
+    with Session() as s:
+        stmt1 = f"""
+                 d = GET directory
+                     FROM file://{nt_stix_bundles[0]}
+                     WHERE path MATCHES 
+                 """ + r"'C:\\\\Windows.*'" # FIXME: r"'C:\\Windows.*' is expected
+        s.execute(stmt1)
+        d = s.get_variable("d")
+        assert len(d) == 1
