@@ -313,3 +313,15 @@ def test_get_referred_variable(nt_stix_bundles):
         # reset the offsets to nearly 0 (need to tolerate clock sync diff)
         # now it should go back to 4
         assert len(nt112z) == 4
+
+
+def test_regex_escaping_in_stix_bundle(nt_stix_bundles):
+    with Session() as s:
+        stmt1 = f"""
+                 d = GET directory
+                     FROM file://{nt_stix_bundles[0]}
+                     WHERE path MATCHES 
+                 """ + r"'C:\\\\Windows.*'" # FIXME: r"'C:\\Windows.*' is expected
+        s.execute(stmt1)
+        d = s.get_variable("d")
+        assert len(d) == 1

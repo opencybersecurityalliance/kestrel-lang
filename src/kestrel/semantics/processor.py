@@ -48,7 +48,6 @@ def semantics_processing(
     get_timerange_func = make_var_timerange_func(store, symtable)
 
     if "where" in stmt:
-
         # 1. deref()
         stmt["where"].deref(deref_func, get_timerange_func)
 
@@ -104,7 +103,6 @@ def _normalize_attrs(stmt, v):
 
 
 def _process_datasource_in_get(stmt, symtable, data_source_manager):
-
     if stmt["command"] != "get":
         return
 
@@ -126,7 +124,6 @@ def _process_datasource_in_get(stmt, symtable, data_source_manager):
 
 
 def _check_semantics_on_find(stmt, input_type):
-
     if stmt["command"] != "find":
         return
 
