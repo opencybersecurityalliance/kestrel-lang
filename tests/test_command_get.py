@@ -47,6 +47,15 @@ def set_stixshifter_stix_bundles():
     os.environ["STIXSHIFTER_HOST2_CONNECTOR"] = connector
     os.environ["STIXSHIFTER_HOST2_CONFIG"] = cfg
 
+    # use `yield` to pause here before a test finished
+    # https://docs.pytest.org/en/latest/how-to/fixtures.html#teardown-cleanup-aka-fixture-finalization
+    yield None
+
+    # this clean up will be executed when the test (that uses the fixture) exits
+    ss_envs = [k for k in list(os.environ.keys()) if k.startswith("STIXSHIFTER_")]
+    for ss_env in ss_envs:
+        del os.environ[ss_env]
+
 
 def test_get_single_file(file_stix_bundles):
     with Session() as s:
