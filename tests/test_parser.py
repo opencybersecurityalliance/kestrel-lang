@@ -117,6 +117,11 @@ def test_quoted_datasource():
             r"process",
             r"[process:name MATCHES 'power\\(hi\\)\\w+(real)\\.exe']",
         ),
+        (
+            r"name MATCHES 'C:\\Windows\\system32\\svchost\\.exe'",
+            r"process",
+            r"[process:name MATCHES 'C:\\Windows\\system32\\svchost\\.exe']",
+        ),
     ],
 )
 def test_ecgp(ecgp, center_entity, stix):

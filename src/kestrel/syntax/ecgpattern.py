@@ -122,9 +122,7 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
             self.timerange = self.graph.deref(deref_func, get_timerange_func)
 
     def extend(self, junction_type: str, other_ecgp: Optional[ExtCenteredGraphPattern]):
-
         if other_ecgp is not None and other_ecgp.graph is not None:
-
             if self.center_entity_type is None:
                 self.center_entity_type = other_ecgp.center_entity_type
             elif other_ecgp.center_entity_type is None:

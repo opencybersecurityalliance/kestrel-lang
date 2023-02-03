@@ -39,7 +39,6 @@ def logging_setup(session, verbose_mode, debug_mode):
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description="Kestrel Interpreter")
     parser.add_argument("huntflow", help="huntflow in .hf file")
     parser.add_argument(
