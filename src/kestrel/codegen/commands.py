@@ -604,7 +604,6 @@ def _prefetch(
     )
 
     if pattern_raw:
-
         pattern_ast = parse_ecgpattern(pattern_raw)
         deref_func = make_deref_func(store, symtable)
         get_timerange_func = make_var_timerange_func(store, symtable)
@@ -636,7 +635,6 @@ def _prefetch(
 def _filter_prefetched_process(
     return_var_name, session, local_var, prefetched_entity_table, return_type
 ):
-
     _logger.debug(f"filter prefetched {return_type} for {prefetched_entity_table}.")
 
     prefetch_filtered_var_name = return_var_name + "_prefetch_filtered"

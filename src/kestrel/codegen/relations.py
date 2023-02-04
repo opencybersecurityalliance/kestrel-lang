@@ -192,7 +192,7 @@ def compile_x_ibm_event_search_flow_out_pattern(return_type, input_event_var_nam
 def _enumerate_relations_between_entities(return_type, input_type):
     # return: [(relation, is_reversed)]
     relations = []
-    for (x, r, y) in stix_2_0_ref_mapping.keys():
+    for x, r, y in stix_2_0_ref_mapping.keys():
         if x == return_type and y == input_type:
             relations.append((r, False))
         if y == return_type and x == input_type:
@@ -351,7 +351,7 @@ def _search_for_potential_identical_process(ref_pid2procs, fil_pid2procs, config
 
     res_pid2procs = defaultdict(list)
 
-    for (pid, fil_procs) in fil_pid2procs.items():
+    for pid, fil_procs in fil_pid2procs.items():
         for rid, fil_row in fil_procs:
             for _, ref_row in ref_pid2procs[pid]:
                 if _identical_process_check(fil_row, ref_row, config):

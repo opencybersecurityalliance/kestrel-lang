@@ -48,7 +48,6 @@ def make_deref_func(store: SqlStorage, symtable: SymbolTable):
 @typechecked
 def make_var_timerange_func(store: SqlStorage, symtable: SymbolTable):
     def get_timerange(reference: Reference):
-
         entity_table = symtable[reference.variable].entity_table
 
         summary = store.summary(entity_table)
