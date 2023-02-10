@@ -218,12 +218,12 @@ class StixShifterInterface(AbstractDataSourceInterface):
                             if new_entries:
                                 connector_results += new_entries
                                 result_retrieval_offset += retrieval_batch_size
-                                if len(new_entries) < retrieval_batch_size:
-                                    has_remaining_results = False
                             else:
                                 has_remaining_results = False
                             if result_batch['lastsort']:
                                 lastsortvalue = result_batch['lastsort']
+                        elif ("error" in result_batch and "list index out of range" in result_batch["error"]):
+                                has_remaining_results = False
                         else:
                             stix_shifter_error_msg = (
                                 result_batch["error"]
