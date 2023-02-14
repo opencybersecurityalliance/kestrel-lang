@@ -310,3 +310,40 @@ language:
     full_path = os.path.join(os.getcwd(), config_name)
     assert os.environ[kestrel.config.CONFIG_PATH_ENV_VAR] == full_path 
     assert os.environ[kestrel_datasource_stixshifter.config.PROFILE_PATH_ENV_VAR] == full_path
+
+
+def test_where_deref_network_traffic(fake_bundle_file):
+    '''#290: expression does not work on attribute with reference'''
+    with Session(debug_mode=True) as session:
+        execute(
+            session,
+            f"""conns = get network-traffic
+            from file://{fake_bundle_file}
+            where [network-traffic:dst_port < 10000]""",
+        )
+        conns = get_df(session, "conns")
+        assert len(conns.index) == 100
+        execute(session, "c2 = conns where src_ref.value = '192.168.212.97'")
+        c2 = session.get_variable("c2")
+        assert len(c2) == 1
+        assert c2[0]["dst_port"] == 22
+
+        execute(session, "c2 = conns where src_ref.value = '192.168.121.121' and dst_ref.value = '10.0.0.134'")
+        c2 = session.get_variable("c2")
+        assert len(c2) == 1
+        assert c2[0]["dst_port"] == 3128
+
+
+def test_where_deref_process(cbcloud_powershell_bundle):
+    '''#290: expression does not work on attribute with reference'''
+    with Session() as session:
+        script = (
+            "x = get process"
+            f" from file://{cbcloud_powershell_bundle}"
+            " where [process:name = 'powershell.exe']"
+        )
+        execute(session, script)
+        execute(session, "y = x where parent_ref.pid = 1544")
+        y = session.get_variable("y")
+        assert len(y) == 1
+        assert y[0]["parent_ref.x_unique_id"] == "MYORGIDX-02629f16-00000608-00000000-1d71d10a09cc7c4"
