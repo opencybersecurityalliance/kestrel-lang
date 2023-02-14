@@ -206,18 +206,16 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
                     result_retrieval_offset = 0
                     has_remaining_results = True
-                    pagesize = transmission.get_pagesize()
-                    retrieval_batch_size = pagesize if pagesize else RETRIEVAL_BATCH_SIZE
                     lastsortvalue = None
                     while has_remaining_results:
                         result_batch = transmission.results(
-                            search_id, result_retrieval_offset, retrieval_batch_size, lastsortvalue
+                            search_id, result_retrieval_offset, RETRIEVAL_BATCH_SIZE, lastsortvalue
                         )
                         if result_batch["success"]:
                             new_entries = result_batch["data"]
                             if new_entries:
                                 connector_results += new_entries
-                                result_retrieval_offset += retrieval_batch_size
+                                result_retrieval_offset += RETRIEVAL_BATCH_SIZE
                             else:
                                 has_remaining_results = False
                             if result_batch['lastsort']:
