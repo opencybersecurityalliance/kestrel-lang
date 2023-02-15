@@ -57,38 +57,66 @@ def verify_package_origin(connector_name):
     _logger.info(f'"{package_name}" verified as a STIX-shifter package.')
 
 
-def check_module_availability(connector_name):
+def install_package(connector_name):
+    package_name = get_package_name(connector_name)
+    _logger.debug(f"guess the connector package name: {package_name}")
+
+    verify_package_origin(connector_name)
+
+    stixshifter_version = pkg_resources.get_distribution("stix_shifter").version
+
+    package_w_ver = package_name + "==" + stixshifter_version
+
+    _logger.info(f'install Python package "{package_w_ver}".')
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package_w_ver])
+    except:
+        _logger.info("package installation with 'pip' failed.")
+
     try:
         importlib.import_module(
             "stix_shifter_modules." + connector_name + ".entry_point"
         )
     except:
+        raise DataSourceError(
+            f'STIX-shifter connector for "{connector_name}" is not installed '
+            f'and Kestrel failed to install the possible Python package "{package_name}"',
+            "please manually install the corresponding STIX-shifter connector Python package.",
+        )
+
+
+def ensure_version_consistency(connector_name):
+    """Check if the installed connector package has the same version as
+    stix-shifter If the version is different, uninstall connector
+    package and the install the same version as stix-shifter
+
+    """
+    stixshifter_version = pkg_resources.get_distribution("stix_shifter").version
+    package_name = get_package_name(connector_name)
+    package_version = pkg_resources.get_distribution(package_name).version
+    if package_version == stixshifter_version:
+        return
+    package_w_ver = package_name + "==" + package_version
+    _logger.info(
+        f"{package_name} version {package_version} is different "
+        f"from stix-shifter version {stixshifter_version}."
+    )
+    _logger.info(f'uninstalling Python package "{package_w_ver}".')
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "uninstall", package_w_ver])
+    except:
+        _logger.info(f"failed to uninstall package {package_w_ver}")
+    install_package(connector_name)
+
+
+def check_module_availability(connector_name):
+    try:
+        importlib.import_module(
+            "stix_shifter_modules." + connector_name + ".entry_point"
+        )
+
+        ensure_version_consistency(connector_name)
+
+    except:
         _logger.info(f'miss STIX-shifter connector "{connector_name}"')
-
-        package_name = get_package_name(connector_name)
-        _logger.debug(f"guess the connector package name: {package_name}")
-
-        verify_package_origin(connector_name)
-
-        stixshifter_version = pkg_resources.get_distribution("stix_shifter").version
-
-        package_w_ver = package_name + "==" + stixshifter_version
-
-        _logger.info(f'install Python package "{package_w_ver}".')
-        try:
-            subprocess.check_call(
-                [sys.executable, "-m", "pip", "install", package_w_ver]
-            )
-        except:
-            _logger.info("package installation with 'pip' failed.")
-
-        try:
-            importlib.import_module(
-                "stix_shifter_modules." + connector_name + ".entry_point"
-            )
-        except:
-            raise DataSourceError(
-                f'STIX-shifter connector for "{connector_name}" is not installed '
-                f'and Kestrel failed to install the possible Python package "{package_name}"',
-                "please manually install the corresponding STIX-shifter connector Python package.",
-            )
+        install_package(connector_name)

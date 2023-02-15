@@ -148,7 +148,11 @@ class StixShifterInterface(AbstractDataSourceInterface):
             # STIX-shifter will alter the config objects, thus making them not reusable.
             # So only give STIX-shifter a copy of the configs.
             # Check `modernize` functions in the `stix_shifter_utils` for details.
-            (connector_name, connection_dict, configuration_dict,) = map(
+            (
+                connector_name,
+                connection_dict,
+                configuration_dict,
+            ) = map(
                 copy.deepcopy, get_datasource_from_profiles(profile, config["profiles"])
             )
 

@@ -10,7 +10,7 @@ To compile a local or offline copy:
 
 .. code-block:: console
 
-    $ pip install sphinx sphinx-rtd-theme
+    $ pip install -r requirements.txt
     $ make html
 
 ``autosectionlabel`` is enabled and refernces can be used:

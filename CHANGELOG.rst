@@ -9,6 +9,27 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.7 (2023-02-02)
+==================
+
+Added
+-----
+
+- new escaping (regex) test case for parser
+- new escaping (regex) test case via stix-bundle interface
+
+Fixed
+-----
+
+- readthedocs bullet rendering error #278
+
+Changed
+-------
+
+- fixture teardown improvement in tests
+- stix-shifter version specification relax
+- up-to-date black styling (standard changes)
+
 1.5.6 (2023-01-26)
 ==================
 
