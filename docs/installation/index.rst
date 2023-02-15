@@ -34,9 +34,10 @@ Accordingly, to install and setup Kestrel:
     under any of the interfaces, e.g., adding configuration to the
     :doc:`../source/kestrel_analytics_python.interface`.
 
+Detailed subsections:
+
 .. toctree::
    :maxdepth: 2
-   :hidden:
 
    runtime
    datasource
