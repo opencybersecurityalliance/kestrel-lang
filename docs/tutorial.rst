@@ -77,7 +77,7 @@ Creating A Hunt Book
 
 .. code-block:: console
 
-    $ jupyter notebook
+    $ jupyter nbclassic
 
 2. Start a hunt book by clicking the ``New`` button on the top left and choose
    ``Kestrel`` kernel:
@@ -236,7 +236,7 @@ Now restart Jupyter Notebook from the terminal:
 
 .. code-block:: console
 
-    $ jupyter notebook
+    $ jupyter nbclassic
 
 Write the first ``GET`` command to use STIX-shifter data source
 interface. After typing the ``stixshifter://`` URI prefix, press ``TAB`` to
