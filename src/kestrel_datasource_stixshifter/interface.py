@@ -9,7 +9,7 @@ will load profiles from 3 places (the later will override the former):
 
 #. STIX-shifter interface config file (only when a Kestrel session starts):
 
-    Put your profiles in the STIX-shifter interface config file (YAML):
+    Create the STIX-shifter interface config file (YAML):
 
     - Default path: ``~/.config/kestrel/stixshifter.yaml``.
     - A customized path specified in the environment variable ``KESTREL_STIXSHIFTER_CONFIG``.
@@ -210,19 +210,23 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
                     result_retrieval_offset = 0
                     has_remaining_results = True
+                    lastsortvalue = None
                     while has_remaining_results:
                         result_batch = transmission.results(
-                            search_id, result_retrieval_offset, RETRIEVAL_BATCH_SIZE
+                            search_id,
+                            result_retrieval_offset,
+                            RETRIEVAL_BATCH_SIZE,
+                            lastsortvalue,
                         )
                         if result_batch["success"]:
                             new_entries = result_batch["data"]
                             if new_entries:
                                 connector_results += new_entries
                                 result_retrieval_offset += RETRIEVAL_BATCH_SIZE
-                                if len(new_entries) < RETRIEVAL_BATCH_SIZE:
-                                    has_remaining_results = False
                             else:
                                 has_remaining_results = False
+                            if "lastsort" in result_batch:
+                                lastsortvalue = result_batch["lastsort"]
                         else:
                             stix_shifter_error_msg = (
                                 result_batch["error"]
