@@ -9,26 +9,43 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.8 (2023-02-16)
+==================
+
+Added
+-----
+
+- Uninstall the incorrect version of stix-shifter connector if exist #288
+- Reference in attribute support for expression #290
+- Overview page for installation/setup doc
+
+Changed
+-------
+
+- Default ``RETRIEVAL_BATCH_SIZE`` in stix-shifter interface increased from 512 to 10000
+- Retrieval (tranmission) stopping criteria upgrade to support multi-page query in the next stix-shifter release (targeting v4.6.1)
+- Runtime installation doc structure/layout upgrade
+
 1.5.7 (2023-02-02)
 ==================
 
 Added
 -----
 
-- new escaping (regex) test case for parser
-- new escaping (regex) test case via stix-bundle interface
+- New escaping (regex) test case for parser
+- New escaping (regex) test case via stix-bundle interface
 
 Fixed
 -----
 
-- readthedocs bullet rendering error #278
+- Readthedocs bullet rendering error #278
 
 Changed
 -------
 
-- fixture teardown improvement in tests
-- stix-shifter version specification relax
-- up-to-date black styling (standard changes)
+- Fixture teardown improvement in tests
+- Stix-shifter version specification relax
+- Up-to-date black styling (standard changes)
 
 1.5.6 (2023-01-26)
 ==================

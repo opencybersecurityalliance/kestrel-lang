@@ -9,7 +9,7 @@ will load profiles from 3 places (the later will override the former):
 
 #. STIX-shifter interface config file (only when a Kestrel session starts):
 
-    Put your profiles in the STIX-shifter interface config file (YAML):
+    Create the STIX-shifter interface config file (YAML):
 
     - Default path: ``~/.config/kestrel/stixshifter.yaml``.
     - A customized path specified in the environment variable ``KESTREL_STIXSHIFTER_CONFIG``.
