@@ -9,6 +9,14 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.9 (2023-02-17)
+==================
+
+Fixed
+-----
+
+- stix-shifter elastic_ecs connector (without pagination support yet) incompatibility
+
 1.5.8 (2023-02-16)
 ==================
 
