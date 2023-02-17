@@ -13,7 +13,7 @@ PROFILE_PATH_DEFAULT = CONFIG_DIR_DEFAULT / "stixshifter.yaml"
 PROFILE_PATH_ENV_VAR = "KESTREL_STIXSHIFTER_CONFIG"
 STIXSHIFTER_DEBUG_ENV_VAR = "KESTREL_STIXSHIFTER_DEBUG"  # debug mode for stix-shifter if the environment variable exists
 ENV_VAR_PREFIX = "STIXSHIFTER_"
-RETRIEVAL_BATCH_SIZE = 10000
+RETRIEVAL_BATCH_SIZE = 512
 
 _logger = logging.getLogger(__name__)
 
