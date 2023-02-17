@@ -222,7 +222,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                             new_entries = result_batch["data"]
                             if new_entries:
                                 connector_results += new_entries
-                                result_retrieval_offset += RETRIEVAL_BATCH_SIZE
+                                result_retrieval_offset += len(new_entries)
                             else:
                                 has_remaining_results = False
                             if "lastsort" in result_batch:
