@@ -27,9 +27,9 @@ class DataSourceManager(InterfaceManager):
         i, c = self._get_interface_with_config(scheme)
         return i.list_data_sources(c)
 
-    def query(self, uri, pattern, session_id):
+    def query(self, uri, pattern, session_id, store):
         scheme, uri = self._parse_and_complete_uri(uri)
         i, c = self._get_interface_with_config(scheme)
-        rs = i.query(uri, pattern, session_id, c)
+        rs = i.query(uri, pattern, session_id, c, store)
         self.queried_data_sources.append(uri)
         return rs

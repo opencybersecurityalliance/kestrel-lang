@@ -82,6 +82,7 @@ environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
 
 """
 
+import asyncio
 import json
 import time
 import copy
@@ -89,15 +90,21 @@ import logging
 
 from stix_shifter.stix_translation import stix_translation
 from stix_shifter.stix_transmission import stix_transmission
+from stix_shifter_utils.stix_translation.src.utils.transformer_utils import (
+    get_module_transformers,
+)
+
+from firepit import asyncingest, asyncstorage
 
 from kestrel.utils import mkdtemp
 from kestrel.datasource import AbstractDataSourceInterface
-from kestrel.datasource import ReturnFromFile
+from kestrel.datasource import ReturnFromFile, ReturnFromStore
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
 from kestrel_datasource_stixshifter.connector import check_module_availability
 from kestrel_datasource_stixshifter.config import (
     RETRIEVAL_BATCH_SIZE,
     get_datasource_from_profiles,
+    load_options,
     load_profiles,
     set_stixshifter_logging_level,
 )
@@ -124,7 +131,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
         return data_sources
 
     @staticmethod
-    def query(uri, pattern, session_id, config):
+    def query(uri, pattern, session_id, config, store=None):
         """Query a stixshifter data source."""
 
         # CONFIG command is not supported
@@ -161,9 +168,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
             data_path_striped = "".join(filter(str.isalnum, profile))
             ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
-            query_metadata = json.dumps(
-                {"id": "identity--" + query_id, "name": connector_name}
-            )
+            identity = {"id": "identity--" + query_id, "name": connector_name}
+            query_metadata = json.dumps(identity)
 
             translation = stix_translation.StixTranslation()
             transmission = stix_transmission.StixTransmission(
@@ -222,7 +228,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                             new_entries = result_batch["data"]
                             if new_entries:
                                 connector_results += new_entries
-                                result_retrieval_offset += RETRIEVAL_BATCH_SIZE
+                                result_retrieval_offset += len(new_entries)
                             else:
                                 has_remaining_results = False
                             if "lastsort" in result_batch:
@@ -249,22 +255,60 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
             _logger.debug("transmission succeeded, start translate back to STIX")
 
-            stixbundle = translation.translate(
-                connector_name,
-                "results",
-                query_metadata,
-                json.dumps(connector_results),
-                translation_options,
-            )
-
-            if "error" in stixbundle:
-                raise DataSourceError(
-                    f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
+            options = load_options()
+            if connector_name in options["fast_translate"]:
+                # Use the alternate, faster DataFrame-based translation (in firepit)
+                _logger.debug("Using fast translation for connector %s", connector_name)
+                transformers = get_module_transformers(connector_name)
+                mapping = translation.translate(
+                    connector_name,
+                    stix_translation.MAPPING,
+                    None,
+                    None,
+                    translation_options,
                 )
 
-            _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
-            with ingestfile.open("w") as ingest:
-                json.dump(stixbundle, ingest, indent=4)
-            bundles.append(str(ingestfile.expanduser().resolve()))
+                if "error" in mapping:
+                    raise DataSourceError(
+                        f"STIX-shifter mapping failed with message: {mapping['error']}"
+                    )
+
+                to_stix_map = mapping["to_stix_map"]
+                df = asyncingest.translate(
+                    to_stix_map, transformers, connector_results, identity
+                )
+
+                _logger.debug("%s", df.head())
+                loop = asyncio.get_event_loop()
+                ds_ident = {
+                    "identity_class": "system",
+                    "created": None,
+                    "modified": None,
+                }  # TODO: why do we need these?
+                ds_ident.update(identity)
+                loop.run_until_complete(
+                    asyncingest.ingest(
+                        asyncstorage.SyncWrapper(store=store), ds_ident, df, query_id
+                    )
+                )
+                return ReturnFromStore(query_id)
+            else:
+                stixbundle = translation.translate(
+                    connector_name,
+                    "results",
+                    query_metadata,
+                    json.dumps(connector_results),
+                    translation_options,
+                )
+
+                if "error" in stixbundle:
+                    raise DataSourceError(
+                        f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
+                    )
+
+                _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
+                with ingestfile.open("w") as ingest:
+                    json.dump(stixbundle, ingest, indent=4)
+                bundles.append(str(ingestfile.expanduser().resolve()))
 
         return ReturnFromFile(query_id, bundles)

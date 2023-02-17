@@ -266,7 +266,7 @@ def get(stmt, session):
     elif "datasource" in stmt:
         # rs: RetStruct
         rs = session.data_source_manager.query(
-            stmt["datasource"], pattern, session.session_id
+            stmt["datasource"], pattern, session.session_id, session.store
         )
         query_id = rs.load_to_store(session.store)
         session.store.extract(local_var_table, return_type, query_id, pattern)
@@ -619,7 +619,7 @@ def _prefetch(
 
         if stix_pattern:
             data_source = symtable[input_var_name].data_source
-            resp = ds_manager.query(data_source, stix_pattern, session_id)
+            resp = ds_manager.query(data_source, stix_pattern, session_id, store)
             query_id = resp.load_to_store(store)
 
             # build the return_var_name view in store
