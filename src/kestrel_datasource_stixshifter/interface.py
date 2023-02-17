@@ -98,7 +98,7 @@ from firepit import asyncingest, asyncstorage
 
 from kestrel.utils import mkdtemp
 from kestrel.datasource import AbstractDataSourceInterface
-from kestrel.datasource import ReturnFromFile, ReturnFromStore
+from kestrel.datasource import ReturnFromFile
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
 from kestrel_datasource_stixshifter.connector import check_module_availability
 from kestrel_datasource_stixshifter.config import (
@@ -137,6 +137,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
         # CONFIG command is not supported
         # profiles will be updated according to YAML file and env var
         config["profiles"] = load_profiles()
+        options = load_options()
+        _logger.debug("fast_translate enabled for: %s", options["fast_translate"])
 
         scheme, _, profile = uri.rpartition("://")
         profiles = profile.split(",")
@@ -169,6 +171,12 @@ class StixShifterInterface(AbstractDataSourceInterface):
             ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
             identity = {"id": "identity--" + query_id, "name": connector_name}
+            identity_obj = {
+                "identity_class": "system",
+                "created": None,
+                "modified": None,
+            }  # These are required by STIX but not needed here
+            identity_obj.update(identity)
             query_metadata = json.dumps(identity)
 
             translation = stix_translation.StixTranslation()
@@ -255,7 +263,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
             _logger.debug("transmission succeeded, start translate back to STIX")
 
-            options = load_options()
             if connector_name in options["fast_translate"]:
                 # Use the alternate, faster DataFrame-based translation (in firepit)
                 _logger.debug("Using fast translation for connector %s", connector_name)
@@ -273,25 +280,19 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         f"STIX-shifter mapping failed with message: {mapping['error']}"
                     )
 
-                to_stix_map = mapping["to_stix_map"]
                 df = asyncingest.translate(
-                    to_stix_map, transformers, connector_results, identity
+                    mapping["to_stix_map"], transformers, connector_results, identity
                 )
 
-                _logger.debug("%s", df.head())
                 loop = asyncio.get_event_loop()
-                ds_ident = {
-                    "identity_class": "system",
-                    "created": None,
-                    "modified": None,
-                }  # TODO: why do we need these?
-                ds_ident.update(identity)
                 loop.run_until_complete(
                     asyncingest.ingest(
-                        asyncstorage.SyncWrapper(store=store), ds_ident, df, query_id
+                        asyncstorage.SyncWrapper(store=store),
+                        identity_obj,
+                        df,
+                        query_id,
                     )
                 )
-                return ReturnFromStore(query_id)
             else:
                 stixbundle = translation.translate(
                     connector_name,
