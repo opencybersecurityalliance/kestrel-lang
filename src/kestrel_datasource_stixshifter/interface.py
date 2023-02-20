@@ -94,8 +94,8 @@ from stix_shifter_utils.stix_translation.src.utils.transformer_utils import (
     get_module_transformers,
 )
 
-from firepit import asyncingest, asyncstorage
-
+from firepit.aio import asyncwrapper
+from firepit.aio.ingest import ingest, translate
 from kestrel.utils import mkdtemp
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
@@ -280,14 +280,14 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         f"STIX-shifter mapping failed with message: {mapping['error']}"
                     )
 
-                df = asyncingest.translate(
+                df = translate(
                     mapping["to_stix_map"], transformers, connector_results, identity
                 )
 
                 loop = asyncio.get_event_loop()
                 loop.run_until_complete(
-                    asyncingest.ingest(
-                        asyncstorage.SyncWrapper(store=store),
+                    ingest(
+                        asyncwrapper.SyncWrapper(store=store),
                         identity_obj,
                         df,
                         query_id,
@@ -308,8 +308,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
                     )
 
                 _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
-                with ingestfile.open("w") as ingest:
-                    json.dump(stixbundle, ingest, indent=4)
+                with ingestfile.open("w") as ingest_fp:
+                    json.dump(stixbundle, ingest_fp, indent=4)
                 bundles.append(str(ingestfile.expanduser().resolve()))
 
         return ReturnFromFile(query_id, bundles)
