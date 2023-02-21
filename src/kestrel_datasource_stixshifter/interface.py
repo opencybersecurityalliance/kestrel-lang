@@ -171,12 +171,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
             ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
             identity = {"id": "identity--" + query_id, "name": connector_name}
-            identity_obj = {
-                "identity_class": "system",
-                "created": None,
-                "modified": None,
-            }  # These are required by STIX but not needed here
-            identity_obj.update(identity)
             query_metadata = json.dumps(identity)
 
             translation = stix_translation.StixTranslation()
@@ -264,34 +258,14 @@ class StixShifterInterface(AbstractDataSourceInterface):
             _logger.debug("transmission succeeded, start translate back to STIX")
 
             if connector_name in options["fast_translate"]:
-                # Use the alternate, faster DataFrame-based translation (in firepit)
-                _logger.debug("Using fast translation for connector %s", connector_name)
-                transformers = get_module_transformers(connector_name)
-                mapping = translation.translate(
+                fast_translate(
                     connector_name,
-                    stix_translation.MAPPING,
-                    None,
-                    None,
+                    connector_results,
+                    translation,
                     translation_options,
-                )
-
-                if "error" in mapping:
-                    raise DataSourceError(
-                        f"STIX-shifter mapping failed with message: {mapping['error']}"
-                    )
-
-                df = translate(
-                    mapping["to_stix_map"], transformers, connector_results, identity
-                )
-
-                loop = asyncio.get_event_loop()
-                loop.run_until_complete(
-                    ingest(
-                        asyncwrapper.SyncWrapper(store=store),
-                        identity_obj,
-                        df,
-                        query_id,
-                    )
+                    identity,
+                    query_id,
+                    store,
                 )
             else:
                 stixbundle = translation.translate(
@@ -313,3 +287,48 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 bundles.append(str(ingestfile.expanduser().resolve()))
 
         return ReturnFromFile(query_id, bundles)
+
+
+def fast_translate(
+    connector_name,
+    connector_results,
+    translation,
+    translation_options,
+    identity,
+    query_id,
+    store,
+):
+    # Use the alternate, faster DataFrame-based translation (in firepit)
+    _logger.debug("Using fast translation for connector %s", connector_name)
+    transformers = get_module_transformers(connector_name)
+    mapping = translation.translate(
+        connector_name,
+        stix_translation.MAPPING,
+        None,
+        None,
+        translation_options,
+    )
+
+    if "error" in mapping:
+        raise DataSourceError(
+            f"STIX-shifter mapping failed with message: {mapping['error']}"
+        )
+
+    df = translate(mapping["to_stix_map"], transformers, connector_results, identity)
+
+    identity_obj = {
+        "identity_class": "system",
+        "created": None,
+        "modified": None,
+    }  # These are required by STIX but not needed here
+    identity_obj.update(identity)
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(
+        ingest(
+            asyncwrapper.SyncWrapper(store=store),
+            identity_obj,
+            df,
+            query_id,
+        )
+    )
