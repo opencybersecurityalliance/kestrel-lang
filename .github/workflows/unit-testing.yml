@@ -33,5 +33,5 @@ jobs:
           python -m pip install .
       - name: Unit testing
         run: |
-          python -m pip install pytest stix-shifter-modules-elastic-ecs>=4.6.0,<5.0.0
+          python -m pip install pytest "stix-shifter-modules-elastic-ecs>=4.6.0,<5.0.0"
           python -m pytest -vv
