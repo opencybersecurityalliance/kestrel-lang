@@ -1,9 +1,7 @@
 from stix_shifter.stix_translation import stix_translation
-from stix_shifter_utils.stix_translation.src.utils.transformer_utils import (
-    get_module_transformers,
-)
 
 from kestrel.session import Session
+from kestrel_datasource_stixshifter.connector import check_module_availability
 from kestrel_datasource_stixshifter.interface import fast_translate
 
 
@@ -87,6 +85,7 @@ SAMPLE_RESULT = {
 
 def test_fast_translate():
     connector_name = "elastic_ecs"
+    check_module_availability(connector_name)
     connector_results = SAMPLE_RESULT["data"]
     translation = stix_translation.StixTranslation()
     translation_options = {}
@@ -96,4 +95,3 @@ def test_fast_translate():
         fast_translate(connector_name, connector_results,
                        translation, translation_options,
                        identity, query_id, s.store)
-

@@ -50,6 +50,10 @@ will load profiles from 3 places (the later will override the former):
                     auth:
                         org-key: D5DQRHQP
                         token: HT8EMI32DSIMAQ7DJM
+        options:
+            fast_translate:
+                - qradar
+                - elastic_ecs
 
 #. environment variables (only when a Kestrel session starts):
 
