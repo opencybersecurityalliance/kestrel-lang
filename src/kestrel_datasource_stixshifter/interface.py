@@ -14,7 +14,8 @@ will load profiles from 3 places (the later will override the former):
     - Default path: ``~/.config/kestrel/stixshifter.yaml``.
     - A customized path specified in the environment variable ``KESTREL_STIXSHIFTER_CONFIG``.
 
-    Example of STIX-shifter interface config file containing profiles:
+    Example of STIX-shifter interface config file containing profiles
+    (note that the ``options`` section is not required):
 
     .. code-block:: yaml
 
@@ -50,8 +51,8 @@ will load profiles from 3 places (the later will override the former):
                     auth:
                         org-key: D5DQRHQP
                         token: HT8EMI32DSIMAQ7DJM
-        options:
-            fast_translate:
+        options:  # this section is not required
+            fast_translate:  # use "faster" translation method for the following connectors only
                 - qradar
                 - elastic_ecs
 
