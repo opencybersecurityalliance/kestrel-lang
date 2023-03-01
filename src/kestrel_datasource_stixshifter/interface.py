@@ -210,13 +210,13 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
                     result_retrieval_offset = 0
                     has_remaining_results = True
-                    lastsortvalue = None
+                    metadata = None
                     while has_remaining_results:
                         result_batch = transmission.results(
                             search_id,
                             result_retrieval_offset,
                             RETRIEVAL_BATCH_SIZE,
-                            lastsortvalue,
+                            metadata,
                         )
                         if result_batch["success"]:
                             new_entries = result_batch["data"]
@@ -225,8 +225,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
                                 result_retrieval_offset += len(new_entries)
                             else:
                                 has_remaining_results = False
-                            if "lastsort" in result_batch:
-                                lastsortvalue = result_batch["lastsort"]
+                            if "metadata" in result_batch:
+                                metadata = result_batch["metadata"]
                         else:
                             stix_shifter_error_msg = (
                                 result_batch["error"]
