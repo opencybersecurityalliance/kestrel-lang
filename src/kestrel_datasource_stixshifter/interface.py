@@ -151,7 +151,9 @@ class StixShifterInterface(AbstractDataSourceInterface):
         config["profiles"] = load_profiles()
 
         config["options"] = load_options()
-        _logger.debug("fast_translate enabled for: %s", config["options"]["fast_translate"])
+        _logger.debug(
+            "fast_translate enabled for: %s", config["options"]["fast_translate"]
+        )
 
         scheme, _, profile = uri.rpartition("://")
         profiles = profile.split(",")
