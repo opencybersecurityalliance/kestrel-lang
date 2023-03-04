@@ -1,5 +1,5 @@
 Cyberthreat hunting is the planning and developing of threat discovery
-procedures on against new and customized advanced persistent threats (APT).
+procedures against new and customized advanced persistent threats (APT).
 Cyberthreat hunting is comprised of several activities such as:
 
 #. Understanding the security measurements in the target environment.

@@ -115,7 +115,6 @@ from kestrel.datasource import ReturnFromFile
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
 from kestrel_datasource_stixshifter.connector import check_module_availability
 from kestrel_datasource_stixshifter.config import (
-    RETRIEVAL_BATCH_SIZE,
     get_datasource_from_profiles,
     load_options,
     load_profiles,
@@ -150,6 +149,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
         # CONFIG command is not supported
         # profiles will be updated according to YAML file and env var
         config["profiles"] = load_profiles()
+
         config["options"] = load_options()
         _logger.debug("fast_translate enabled for: %s", config["options"]["fast_translate"])
 
@@ -174,6 +174,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 connector_name,
                 connection_dict,
                 configuration_dict,
+                retrieval_batch_size,
             ) = map(
                 copy.deepcopy, get_datasource_from_profiles(profile, config["profiles"])
             )
@@ -231,10 +232,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
                     result_retrieval_offset = 0
                     has_remaining_results = True
-                    try:
-                        retrieval_batch_size = connection_dict["options"]["retrieval_batch_size"]
-                    except KeyError:
-                        retrieval_batch_size = RETRIEVAL_BATCH_SIZE
                     metadata = None
                     while has_remaining_results:
                         result_batch = transmission.results(
