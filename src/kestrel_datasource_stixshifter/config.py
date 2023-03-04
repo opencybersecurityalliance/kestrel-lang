@@ -133,12 +133,14 @@ def get_datasource_from_profiles(profile_name, profiles):
                 "stixshifter",
                 f'invalid {profile_name} configuration section: no "auth" field',
             )
-        if "options" in connection:
+
+        retrieval_batch_size = RETRIEVAL_BATCH_SIZE
+        if "options" in connection and "retrieval_batch_size" in connection["options"]:
             # need to remove the non-stix-shifter field "retrieval_batch_size" to avoid stix-shifter error
-            retrieval_batch_size = connection["options"].pop(
-                "retrieval_batch_size", RETRIEVAL_BATCH_SIZE
+            retrieval_batch_size = connection["options"].pop("retrieval_batch_size")
+            _logger.debug(
+                f"profile-loaded retrieval_batch_size: {retrieval_batch_size}"
             )
-            _logger.debug(f"retrieval_batch_size set to: {retrieval_batch_size}")
     return connector_name, connection, configuration, retrieval_batch_size
 
 
