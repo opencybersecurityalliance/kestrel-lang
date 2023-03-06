@@ -27,9 +27,11 @@ will load profiles from 3 places (the later will override the former):
                     port: 9200
                     selfSignedCert: false # this means do NOT check cert
                     indices: host101
-                    options:  # options section only needed when using a dialect
-                        dialects: # for more info about dialects, see https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md
-                          - beats # need it if the index is created by Filebeat/Winlogbeat/*beat
+                    options:  # use any of this section when needed
+                        result_limit: 500000  # stix-shifter default: 10000
+                        retrieval_batch_size: 10000  # safe to set to 10000 to match default Elasticsearch page size; Kestrel default: 2000
+                        dialects:  # for more info about dialects, see https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md
+                          - beats  # need it if the index is created by Filebeat/Winlogbeat/*beat
                 config:
                     auth:
                         id: VuaCfGcBCdbkQm-e5aOx
@@ -52,9 +54,13 @@ will load profiles from 3 places (the later will override the former):
                         org-key: D5DQRHQP
                         token: HT8EMI32DSIMAQ7DJM
         options:  # this section is not required
-            fast_translate:  # use "faster" translation method for the following connectors only
+            fast_translate:  # use firepit-native translation (Dataframe as vessel) instead of stix-shifter result translation (JSON as vessel) for the following connectors
                 - qradar
                 - elastic_ecs
+
+    Full specifications for data source profile sections/fields:
+    - Connector-specific fields: in `stix-shifter`_, go to ``stix_shifter_modules/connector_name/configuration`` like `elastic_ecs config`_.
+    - General fields shared across connectors: in `stix-shifter`_, go to `stix_shifter_modules/lang_en.json`_.
 
 #. environment variables (only when a Kestrel session starts):
 
@@ -84,6 +90,8 @@ enabled by default. To record debug level logs of STIX-shifter, create
 environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
 
 .. _STIX-shifter: https://github.com/opencybersecurityalliance/stix-shifter
+.. _elastic_ecs config: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/stix_shifter_modules/elastic_ecs/configuration/lang_en.json
+.. _stix_shifter_modules/lang_en.json: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/stix_shifter_modules/lang_en.json
 
 """
 
@@ -107,7 +115,6 @@ from kestrel.datasource import ReturnFromFile
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
 from kestrel_datasource_stixshifter.connector import check_module_availability
 from kestrel_datasource_stixshifter.config import (
-    RETRIEVAL_BATCH_SIZE,
     get_datasource_from_profiles,
     load_options,
     load_profiles,
@@ -142,8 +149,11 @@ class StixShifterInterface(AbstractDataSourceInterface):
         # CONFIG command is not supported
         # profiles will be updated according to YAML file and env var
         config["profiles"] = load_profiles()
-        options = load_options()
-        _logger.debug("fast_translate enabled for: %s", options["fast_translate"])
+
+        config["options"] = load_options()
+        _logger.debug(
+            "fast_translate enabled for: %s", config["options"]["fast_translate"]
+        )
 
         scheme, _, profile = uri.rpartition("://")
         profiles = profile.split(",")
@@ -166,6 +176,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 connector_name,
                 connection_dict,
                 configuration_dict,
+                retrieval_batch_size,
             ) = map(
                 copy.deepcopy, get_datasource_from_profiles(profile, config["profiles"])
             )
@@ -228,7 +239,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         result_batch = transmission.results(
                             search_id,
                             result_retrieval_offset,
-                            RETRIEVAL_BATCH_SIZE,
+                            retrieval_batch_size,
                             metadata,
                         )
                         if result_batch["success"]:
@@ -262,7 +273,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
             _logger.debug("transmission succeeded, start translate back to STIX")
 
-            if connector_name in options["fast_translate"]:
+            if connector_name in config["options"]["fast_translate"]:
                 fast_translate(
                     connector_name,
                     connector_results,
