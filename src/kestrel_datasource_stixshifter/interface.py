@@ -104,6 +104,7 @@ import logging
 # TODO: better solution to avoid using nest_asyncio for run_until_complete()
 #       maybe putting entire Kestrel in async mode
 import nest_asyncio
+
 nest_asyncio.apply()
 
 from stix_shifter.stix_translation import stix_translation
@@ -343,7 +344,6 @@ def fast_translate(
         "modified": None,
     }  # These are required by STIX but not needed here
     identity_obj.update(identity)
-
 
     try:
         loop = asyncio.get_running_loop()
