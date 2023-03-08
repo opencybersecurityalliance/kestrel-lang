@@ -9,6 +9,31 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.10 (2023-03-07)
+===================
+
+Added
+-----
+
+- Fast translation as an option for stix-shifter datasource interface
+- Configurable ``RETRIEVAL_BATCH_SIZE`` in stix-shifter interface
+- Doc on configurable ``RETRIEVAL_BATCH_SIZE``
+- Tests on stix-shifter interface functions
+
+Fixed
+-----
+
+- Fast translation integration bug with asyncio
+
+Changed
+-------
+
+- Default ``RETRIEVAL_BATCH_SIZE`` in stix-shifter interface set to 2000
+- stix-shifter API argument name change to be consistent across connectors
+- stix-shifter minimal version for elastic_ecs connector pagination support
+- stix-shifter minimal version for elastic_ecs connector mapping update
+
+
 1.5.9 (2023-02-17)
 ==================
 
