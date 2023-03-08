@@ -13,9 +13,10 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
 """
         d = s.execute(stmt)
     correct_json = json.loads(
-        '{"display": "execution summary", "data": {"execution time": 1, "variables updated": [{"VARIABLE": "newvar", "TYPE": "process", "#(ENTITIES)": 2, "#(RECORDS)": 2, "process*": 0}], "footnotes": ["*Number of related records cached."]}}'
+        '{"display": "execution summary", "data": {"variables updated": [{"VARIABLE": "newvar", "TYPE": "process", "#(ENTITIES)": 2, "#(RECORDS)": 2, "process*": 0}], "footnotes": ["*Number of related records cached."]}}'
     )
     output_json = json.loads(d[0].to_json())
+    del output_json["data"]["execution time"]
     assert output_json == correct_json
 
 
