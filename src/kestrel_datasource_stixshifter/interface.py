@@ -12,6 +12,7 @@ will load profiles from 3 places (the later will override the former):
     Create the STIX-shifter interface config file (YAML):
 
     - Default path: ``~/.config/kestrel/stixshifter.yaml``.
+
     - A customized path specified in the environment variable ``KESTREL_STIXSHIFTER_CONFIG``.
 
     Example of STIX-shifter interface config file containing profiles
@@ -59,7 +60,9 @@ will load profiles from 3 places (the later will override the former):
                 - elastic_ecs
 
     Full specifications for data source profile sections/fields:
+
     - Connector-specific fields: in `stix-shifter`_, go to ``stix_shifter_modules/connector_name/configuration`` like `elastic_ecs config`_.
+
     - General fields shared across connectors: in `stix-shifter`_, go to `stix_shifter_modules/lang_en.json`_.
 
 #. environment variables (only when a Kestrel session starts):
@@ -68,9 +71,11 @@ will load profiles from 3 places (the later will override the former):
 
     - ``STIXSHIFTER_PROFILENAME_CONNECTOR``: the STIX-shifter connector name,
       e.g., ``elastic_ecs``.
+
     - ``STIXSHIFTER_PROFILENAME_CONNECTION``: the STIX-shifter `connection
       <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#connection>`_
       object in JSON string.
+
     - ``STIXSHIFTER_PROFILENAME_CONFIG``: the STIX-shifter `configuration
       <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#configuration>`_
       object in JSON string.
