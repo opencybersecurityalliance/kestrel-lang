@@ -82,7 +82,7 @@ def install_package(connector_name):
         raise DataSourceError(
             f'STIX-shifter connector for "{connector_name}" is not installed '
             f'and Kestrel failed to install the possible Python package "{package_name}"',
-            "please manually install the corresponding STIX-shifter connector Python package using ",
+            "please manually install the corresponding STIX-shifter connector Python package using "
             f"`pip install {connector_name}=={stixshifter_version}`",
         )
 
