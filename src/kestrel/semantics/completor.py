@@ -62,7 +62,6 @@ def do_complete(
     analytics_manager: AnalyticsManager,
     symtable: SymbolTable,
 ) -> typing.Iterable[str]:
-
     _logger.debug("auto_complete function starts...")
 
     # do not care code after cursor position in the current version
@@ -262,7 +261,6 @@ def _do_complete_interface(
     schemes: typing.Iterable[str],
     list_names_from_scheme: typing.Callable,
 ) -> typing.Iterable[str]:
-
     if last_word_prefix and "://" in last_word_prefix:
         scheme, _ = last_word_prefix.split("://")
         if scheme in schemes:

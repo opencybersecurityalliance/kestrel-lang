@@ -7,7 +7,8 @@ from typeguard import typechecked
 from typing import Tuple, Optional
 import datetime
 from abc import ABC, abstractmethod
-from firepit.query import Filter, Predicate
+from firepit.query import Column, Filter, Predicate, Query
+from firepit.sqlstorage import get_path_joins
 from firepit.timestamp import timefmt
 from kestrel.syntax.utils import merge_timeranges
 from kestrel.syntax.reference import (
@@ -20,6 +21,15 @@ from kestrel.exceptions import (
     InvalidECGPattern,
     KestrelInternalError,
 )
+
+
+def _merge_queries(lhs: Query, op: str, rhs: Query):
+    result = Query(lhs.table)
+    result.joins = lhs.joins + rhs.joins
+    lpred = lhs.where[0].preds[0]
+    rpred = rhs.where[0].preds[0]
+    result.where.append(Filter([Predicate(lpred, op, rpred)]))
+    return result
 
 
 class ExtCenteredGraphConstruct(ABC):
@@ -115,16 +125,14 @@ class ExtCenteredGraphPattern(ExtCenteredGraphConstruct):
         if self.graph is None:
             return None
         else:
-            return Filter([self.graph.to_firepit(self.center_entity_type)])
+            return self.graph.to_firepit(self.center_entity_type)
 
     def deref(self, deref_func, get_timerange_func):
         if self.graph is not None:
             self.timerange = self.graph.deref(deref_func, get_timerange_func)
 
     def extend(self, junction_type: str, other_ecgp: Optional[ExtCenteredGraphPattern]):
-
         if other_ecgp is not None and other_ecgp.graph is not None:
-
             if self.center_entity_type is None:
                 self.center_entity_type = other_ecgp.center_entity_type
             elif other_ecgp.center_entity_type is None:
@@ -195,7 +203,7 @@ class ECGPJunction(ExtCenteredGraphConstruct):
         )
 
     def to_firepit(self, center_entity_type: str):
-        return Predicate(
+        return _merge_queries(
             self.lhs.to_firepit(center_entity_type),
             self.relation,
             self.rhs.to_firepit(center_entity_type),
@@ -242,7 +250,17 @@ class ECGPComparison(ExtCenteredGraphConstruct):
     def to_firepit(self, center_entity_type: str):
         if self.etype and self.etype != center_entity_type:
             raise KestrelNotImplemented("firepit filtering on linked entities")
-        return Predicate(self.attribute, self.op, self.value)
+        joins, target_type, target_attr = get_path_joins(
+            None, self.etype, self.attribute
+        )
+        if target_type:
+            attribute = Column(target_attr, table=target_type)
+        else:
+            attribute = self.attribute
+        qry = Query()
+        qry.joins = joins
+        qry.where = [Filter([Predicate(attribute, self.op, self.value)])]
+        return qry
 
     def deref(self, deref_func, get_timerange_func):
         xs, tr = deref_and_flatten_value_to_list(

@@ -9,6 +9,77 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.10 (2023-03-07)
+===================
+
+Added
+-----
+
+- Fast translation as an option for stix-shifter datasource interface
+- Configurable ``RETRIEVAL_BATCH_SIZE`` in stix-shifter interface
+- Doc on configurable ``RETRIEVAL_BATCH_SIZE``
+- Tests on stix-shifter interface functions
+
+Fixed
+-----
+
+- Fast translation integration bug with asyncio
+
+Changed
+-------
+
+- Default ``RETRIEVAL_BATCH_SIZE`` in stix-shifter interface set to 2000
+- stix-shifter API argument name change to be consistent across connectors
+- stix-shifter minimal version for elastic_ecs connector pagination support
+- stix-shifter minimal version for elastic_ecs connector mapping update
+
+
+1.5.9 (2023-02-17)
+==================
+
+Fixed
+-----
+
+- stix-shifter elastic_ecs connector (without pagination support yet) incompatibility
+
+1.5.8 (2023-02-16)
+==================
+
+Added
+-----
+
+- Uninstall the incorrect version of stix-shifter connector if exist #288
+- Reference in attribute support for expression #290
+- Overview page for installation/setup doc
+
+Changed
+-------
+
+- Default ``RETRIEVAL_BATCH_SIZE`` in stix-shifter interface increased from 512 to 10000
+- Retrieval (tranmission) stopping criteria upgrade to support multi-page query in the next stix-shifter release (targeting v4.6.1)
+- Runtime installation doc structure/layout upgrade
+
+1.5.7 (2023-02-02)
+==================
+
+Added
+-----
+
+- New escaping (regex) test case for parser
+- New escaping (regex) test case via stix-bundle interface
+
+Fixed
+-----
+
+- Readthedocs bullet rendering error #278
+
+Changed
+-------
+
+- Fixture teardown improvement in tests
+- Stix-shifter version specification relax
+- Up-to-date black styling (standard changes)
+
 1.5.6 (2023-01-26)
 ==================
 

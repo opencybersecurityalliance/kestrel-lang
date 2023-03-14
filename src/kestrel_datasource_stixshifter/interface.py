@@ -9,12 +9,14 @@ will load profiles from 3 places (the later will override the former):
 
 #. STIX-shifter interface config file (only when a Kestrel session starts):
 
-    Put your profiles in the STIX-shifter interface config file (YAML):
+    Create the STIX-shifter interface config file (YAML):
 
     - Default path: ``~/.config/kestrel/stixshifter.yaml``.
+
     - A customized path specified in the environment variable ``KESTREL_STIXSHIFTER_CONFIG``.
 
-    Example of STIX-shifter interface config file containing profiles:
+    Example of STIX-shifter interface config file containing profiles
+    (note that the ``options`` section is not required):
 
     .. code-block:: yaml
 
@@ -26,9 +28,11 @@ will load profiles from 3 places (the later will override the former):
                     port: 9200
                     selfSignedCert: false # this means do NOT check cert
                     indices: host101
-                    options:  # options section only needed when using a dialect
-                        dialects: # for more info about dialects, see https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md
-                          - beats # need it if the index is created by Filebeat/Winlogbeat/*beat
+                    options:  # use any of this section when needed
+                        result_limit: 500000  # stix-shifter default: 10000
+                        retrieval_batch_size: 10000  # safe to set to 10000 to match default Elasticsearch page size; Kestrel default: 2000
+                        dialects:  # for more info about dialects, see https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/OVERVIEW.md
+                          - beats  # need it if the index is created by Filebeat/Winlogbeat/*beat
                 config:
                     auth:
                         id: VuaCfGcBCdbkQm-e5aOx
@@ -50,6 +54,16 @@ will load profiles from 3 places (the later will override the former):
                     auth:
                         org-key: D5DQRHQP
                         token: HT8EMI32DSIMAQ7DJM
+        options:  # this section is not required
+            fast_translate:  # use firepit-native translation (Dataframe as vessel) instead of stix-shifter result translation (JSON as vessel) for the following connectors
+                - qradar
+                - elastic_ecs
+
+    Full specifications for data source profile sections/fields:
+
+    - Connector-specific fields: in `stix-shifter`_, go to ``stix_shifter_modules/connector_name/configuration`` like `elastic_ecs config`_.
+
+    - General fields shared across connectors: in `stix-shifter`_, go to `stix_shifter_modules/lang_en.json`_.
 
 #. environment variables (only when a Kestrel session starts):
 
@@ -57,9 +71,11 @@ will load profiles from 3 places (the later will override the former):
 
     - ``STIXSHIFTER_PROFILENAME_CONNECTOR``: the STIX-shifter connector name,
       e.g., ``elastic_ecs``.
+
     - ``STIXSHIFTER_PROFILENAME_CONNECTION``: the STIX-shifter `connection
       <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#connection>`_
       object in JSON string.
+
     - ``STIXSHIFTER_PROFILENAME_CONFIG``: the STIX-shifter `configuration
       <https://github.com/opencybersecurityalliance/stix-shifter/blob/master/OVERVIEW.md#configuration>`_
       object in JSON string.
@@ -79,25 +95,39 @@ enabled by default. To record debug level logs of STIX-shifter, create
 environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
 
 .. _STIX-shifter: https://github.com/opencybersecurityalliance/stix-shifter
+.. _elastic_ecs config: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/stix_shifter_modules/elastic_ecs/configuration/lang_en.json
+.. _stix_shifter_modules/lang_en.json: https://github.com/opencybersecurityalliance/stix-shifter/blob/develop/stix_shifter_modules/lang_en.json
 
 """
 
+import asyncio
 import json
 import time
 import copy
 import logging
 
+# TODO: better solution to avoid using nest_asyncio for run_until_complete()
+#       maybe putting entire Kestrel in async mode
+import nest_asyncio
+
+nest_asyncio.apply()
+
 from stix_shifter.stix_translation import stix_translation
 from stix_shifter.stix_transmission import stix_transmission
+from stix_shifter_utils.stix_translation.src.utils.transformer_utils import (
+    get_module_transformers,
+)
 
+from firepit.aio import asyncwrapper
+from firepit.aio.ingest import ingest, translate
 from kestrel.utils import mkdtemp
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
 from kestrel_datasource_stixshifter.connector import check_module_availability
 from kestrel_datasource_stixshifter.config import (
-    RETRIEVAL_BATCH_SIZE,
     get_datasource_from_profiles,
+    load_options,
     load_profiles,
     set_stixshifter_logging_level,
 )
@@ -124,12 +154,17 @@ class StixShifterInterface(AbstractDataSourceInterface):
         return data_sources
 
     @staticmethod
-    def query(uri, pattern, session_id, config):
+    def query(uri, pattern, session_id, config, store=None):
         """Query a stixshifter data source."""
 
         # CONFIG command is not supported
         # profiles will be updated according to YAML file and env var
         config["profiles"] = load_profiles()
+
+        config["options"] = load_options()
+        _logger.debug(
+            "fast_translate enabled for: %s", config["options"]["fast_translate"]
+        )
 
         scheme, _, profile = uri.rpartition("://")
         profiles = profile.split(",")
@@ -148,7 +183,12 @@ class StixShifterInterface(AbstractDataSourceInterface):
             # STIX-shifter will alter the config objects, thus making them not reusable.
             # So only give STIX-shifter a copy of the configs.
             # Check `modernize` functions in the `stix_shifter_utils` for details.
-            (connector_name, connection_dict, configuration_dict,) = map(
+            (
+                connector_name,
+                connection_dict,
+                configuration_dict,
+                retrieval_batch_size,
+            ) = map(
                 copy.deepcopy, get_datasource_from_profiles(profile, config["profiles"])
             )
 
@@ -204,19 +244,23 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
                     result_retrieval_offset = 0
                     has_remaining_results = True
+                    metadata = None
                     while has_remaining_results:
                         result_batch = transmission.results(
-                            search_id, result_retrieval_offset, RETRIEVAL_BATCH_SIZE
+                            search_id,
+                            result_retrieval_offset,
+                            retrieval_batch_size,
+                            metadata,
                         )
                         if result_batch["success"]:
                             new_entries = result_batch["data"]
                             if new_entries:
                                 connector_results += new_entries
-                                result_retrieval_offset += RETRIEVAL_BATCH_SIZE
-                                if len(new_entries) < RETRIEVAL_BATCH_SIZE:
-                                    has_remaining_results = False
+                                result_retrieval_offset += len(new_entries)
                             else:
                                 has_remaining_results = False
+                            if "metadata" in result_batch:
+                                metadata = result_batch["metadata"]
                         else:
                             stix_shifter_error_msg = (
                                 result_batch["error"]
@@ -239,22 +283,82 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
             _logger.debug("transmission succeeded, start translate back to STIX")
 
-            stixbundle = translation.translate(
-                connector_name,
-                "results",
-                query_metadata,
-                connector_results,
-                translation_options,
-            )
-
-            if "error" in stixbundle:
-                raise DataSourceError(
-                    f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
+            if connector_name in config["options"]["fast_translate"]:
+                fast_translate(
+                    connector_name,
+                    connector_results,
+                    translation,
+                    translation_options,
+                    identity,
+                    query_id,
+                    store,
+                )
+            else:
+                stixbundle = translation.translate(
+                    connector_name,
+                    "results",
+                    query_metadata,
+                    connector_results,
+                    translation_options,
                 )
 
-            _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
-            with ingestfile.open("w") as ingest:
-                json.dump(stixbundle, ingest, indent=4)
-            bundles.append(str(ingestfile.expanduser().resolve()))
+                if "error" in stixbundle:
+                    raise DataSourceError(
+                        f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
+                    )
+
+                _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
+                with ingestfile.open("w") as ingest_fp:
+                    json.dump(stixbundle, ingest_fp, indent=4)
+                bundles.append(str(ingestfile.expanduser().resolve()))
 
         return ReturnFromFile(query_id, bundles)
+
+
+def fast_translate(
+    connector_name,
+    connector_results,
+    translation,
+    translation_options,
+    identity,
+    query_id,
+    store,
+):
+    # Use the alternate, faster DataFrame-based translation (in firepit)
+    _logger.debug("Using fast translation for connector %s", connector_name)
+    transformers = get_module_transformers(connector_name)
+    mapping = translation.translate(
+        connector_name,
+        stix_translation.MAPPING,
+        None,
+        None,
+        translation_options,
+    )
+
+    if "error" in mapping:
+        raise DataSourceError(
+            f"STIX-shifter mapping failed with message: {mapping['error']}"
+        )
+
+    df = translate(mapping["to_stix_map"], transformers, connector_results, identity)
+
+    identity_obj = {
+        "identity_class": "system",
+        "created": None,
+        "modified": None,
+    }  # These are required by STIX but not needed here
+    identity_obj.update(identity)
+
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.get_event_loop()
+
+    loop.run_until_complete(
+        ingest(
+            asyncwrapper.SyncWrapper(store=store),
+            identity_obj,
+            df,
+            query_id,
+        )
+    )

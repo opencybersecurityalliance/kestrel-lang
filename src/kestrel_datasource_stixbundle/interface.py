@@ -66,7 +66,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
         return []
 
     @staticmethod
-    def query(uri, pattern, session_id=None, config=None):
+    def query(uri, pattern, session_id=None, config=None, store=None):
         """Query a STIX bundle locally or remotely."""
 
         _logger.debug(f"query URI received at interface_stixbundle: {uri}")

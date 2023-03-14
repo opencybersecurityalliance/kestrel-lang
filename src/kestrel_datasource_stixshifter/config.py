@@ -13,7 +13,9 @@ PROFILE_PATH_DEFAULT = CONFIG_DIR_DEFAULT / "stixshifter.yaml"
 PROFILE_PATH_ENV_VAR = "KESTREL_STIXSHIFTER_CONFIG"
 STIXSHIFTER_DEBUG_ENV_VAR = "KESTREL_STIXSHIFTER_DEBUG"  # debug mode for stix-shifter if the environment variable exists
 ENV_VAR_PREFIX = "STIXSHIFTER_"
-RETRIEVAL_BATCH_SIZE = 512
+RETRIEVAL_BATCH_SIZE = 2000
+FAST_TRANSLATE_CONNECTORS = []  # Suggested: ["qradar", "elastic_ecs"]
+
 
 _logger = logging.getLogger(__name__)
 
@@ -131,7 +133,15 @@ def get_datasource_from_profiles(profile_name, profiles):
                 "stixshifter",
                 f'invalid {profile_name} configuration section: no "auth" field',
             )
-    return connector_name, connection, configuration
+
+        retrieval_batch_size = RETRIEVAL_BATCH_SIZE
+        if "options" in connection and "retrieval_batch_size" in connection["options"]:
+            # need to remove the non-stix-shifter field "retrieval_batch_size" to avoid stix-shifter error
+            retrieval_batch_size = connection["options"].pop("retrieval_batch_size")
+            _logger.debug(
+                f"profile-loaded retrieval_batch_size: {retrieval_batch_size}"
+            )
+    return connector_name, connection, configuration, retrieval_batch_size
 
 
 def load_profiles():
@@ -148,3 +158,17 @@ def load_profiles():
     profiles = update_nested_dict(profiles_from_file, profiles_from_env_var)
     _logger.debug(f"profiles loaded: {profiles}")
     return profiles
+
+
+def load_options():
+    config = load_user_config(PROFILE_PATH_ENV_VAR, PROFILE_PATH_DEFAULT)
+    if config and "options" in config:
+        _logger.debug(f"stix-shifter options found in config file")
+    else:
+        _logger.debug(
+            "either config file does not exist or no stix-shifter options found in config file. This may indicate a config syntax error if config file exists."
+        )
+        config = {"options": {}}
+    if "fast_translate" not in config["options"]:
+        config["options"]["fast_translate"] = FAST_TRANSLATE_CONNECTORS
+    return config["options"]

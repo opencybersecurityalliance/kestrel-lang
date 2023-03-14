@@ -8,11 +8,13 @@ from kestrel_datasource_stixshifter.connector import (
     check_module_availability,
 )
 
+from kestrel_datasource_stixshifter.config import get_datasource_from_profiles
+
 
 def test_verify_package_origin():
     connectors = ["stix_bundle", "qradar", "elastic_ecs", "splunk"]
     for connector_name in connectors:
-        verify_package_origin(connector_name)
+        verify_package_origin(connector_name, "test_version")
 
 
 def test_check_module_availability():
@@ -45,6 +47,10 @@ profiles:
             host: elastic.securitylog.company.com
             port: 9200
             indices: host101
+            options:
+                retrieval_batch_size: 10000
+                dialects:
+                    - beats
         config:
             auth:
                 id: profileB
@@ -71,9 +77,11 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
 
         ss_config = s.config["datasources"]["kestrel_datasource_stixshifter"]
         ss_profiles = ss_config["profiles"]
-        ss_host101_auth = ss_profiles["host101"]["config"]["auth"]
-        assert ss_host101_auth["id"] == "profileA"
-        assert ss_host101_auth["api_key"] == "qwer"
+        connector_name, connection, configuration, retrieval_batch_size = get_datasource_from_profiles("host101", ss_profiles)
+        assert connector_name == "elastic_ecs"
+        assert configuration["auth"]["id"] == "profileA"
+        assert configuration["auth"]["api_key"] == "qwer"
+        assert retrieval_batch_size == 2000
 
         with open(profile_file, "w") as pf:
             pf.write(profileB)
@@ -82,6 +90,8 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
 
         # need to refresh the pointers since the dict is updated
         ss_profiles = ss_config["profiles"]
-        ss_host101_auth = ss_profiles["host101"]["config"]["auth"]
-        assert ss_host101_auth["id"] == "profileB"
-        assert ss_host101_auth["api_key"] == "asdf"
+        connector_name, connection, configuration, retrieval_batch_size = get_datasource_from_profiles("host101", ss_profiles)
+        assert connector_name == "elastic_ecs"
+        assert configuration["auth"]["id"] == "profileB"
+        assert configuration["auth"]["api_key"] == "asdf"
+        assert retrieval_batch_size == 10000

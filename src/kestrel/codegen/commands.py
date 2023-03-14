@@ -26,7 +26,7 @@ from copy import deepcopy
 
 from firepit.deref import auto_deref
 from firepit.exceptions import InvalidAttr
-from firepit.query import Limit, Offset, Order, Projection, Query
+from firepit.query import Limit, Offset, Order, Predicate, Projection, Query
 from firepit.stix20 import summarize_pattern
 
 from kestrel.semantics.reference import make_deref_func, make_var_timerange_func
@@ -266,7 +266,7 @@ def get(stmt, session):
     elif "datasource" in stmt:
         # rs: RetStruct
         rs = session.data_source_manager.query(
-            stmt["datasource"], pattern, session.session_id
+            stmt["datasource"], pattern, session.session_id, session.store
         )
         query_id = rs.load_to_store(session.store)
         session.store.extract(local_var_table, return_type, query_id, pattern)
@@ -604,7 +604,6 @@ def _prefetch(
     )
 
     if pattern_raw:
-
         pattern_ast = parse_ecgpattern(pattern_raw)
         deref_func = make_deref_func(store, symtable)
         get_timerange_func = make_var_timerange_func(store, symtable)
@@ -620,7 +619,7 @@ def _prefetch(
 
         if stix_pattern:
             data_source = symtable[input_var_name].data_source
-            resp = ds_manager.query(data_source, stix_pattern, session_id)
+            resp = ds_manager.query(data_source, stix_pattern, session_id, store)
             query_id = resp.load_to_store(store)
 
             # build the return_var_name view in store
@@ -636,7 +635,6 @@ def _prefetch(
 def _filter_prefetched_process(
     return_var_name, session, local_var, prefetched_entity_table, return_type
 ):
-
     _logger.debug(f"filter prefetched {return_type} for {prefetched_entity_table}.")
 
     prefetch_filtered_var_name = return_var_name + "_prefetch_filtered"
@@ -659,6 +657,8 @@ def _filter_prefetched_process(
 def _set_projection(store, entity_table, query, paths):
     joins, proj = auto_deref(store, entity_table, paths=paths)
     query.joins.extend(joins)
+    joined = [j.name for j in query.joins]
+    _logger.debug("%s: joining %s", query.table.name, joined)
     if query.proj:
         # Need to merge projections?  More-specific overrides less-specific ("*")
         new_cols = []
@@ -676,11 +676,38 @@ def _set_projection(store, entity_table, query, paths):
         query.proj = proj
 
 
+def _get_pred_columns(preds: list):
+    for pred in preds:
+        if isinstance(pred.lhs, Predicate):
+            yield from _get_pred_columns([pred.lhs])
+            if isinstance(pred.rhs, Predicate):
+                yield from _get_pred_columns([pred.rhs])
+        else:
+            yield pred.lhs
+
+
+def _get_filt_columns(filts: list):
+    for filt in filts:
+        yield from _get_pred_columns(filt.preds)
+
+
 def _build_query(store, entity_table, qry, stmt):
     where = stmt.get("where")
     if where:
-        where.set_table(entity_table)
-        qry.append(where)
+        if isinstance(where, Query):
+            for j in where.joins:
+                _logger.debug("Anchoring JOIN to %s", qry.table.name)
+                j.prev_name = qry.table.name
+            qry.joins.extend(where.joins)
+            for col in _get_filt_columns(where.where):
+                if col.table is None:
+                    # Need to disambiguate any Predicate columns
+                    _logger.debug("Disambiguating predicate for %s", qry.table.name)
+                    col.table = qry.table.name
+            qry.where.extend(where.where)
+        else:
+            where.set_table(entity_table)
+            qry.append(where)
     attrs = stmt.get("attrs", "*")
     cols = attrs.split(",")
     _set_projection(store, entity_table, qry, cols)

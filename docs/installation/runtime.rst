@@ -2,132 +2,200 @@
 Install Runtime
 ===============
 
-Install the Kestrel runtime and the Jupyter front-end.
+Kestrel runs in a Python environment on Linux, macOS, or Windows. On Windows,
+please use Python inside Windows Subsystem for Linux (WSL).
 
-Requirements
-============
-
-Operating Systems
------------------
-
-Supported OSes: Linux and macOS.
-
-Python
-------
+General Requirements
+====================
 
 Python 3 is required. Refer to the `Python installation guide`_ if you do not have Python 3.
 
-SQLite
-------
+OS-specific Requirements
+========================
 
-If you are using following Linux distributions or newer, the SQLite requirement is
-already met:
+.. tab-set::
 
-- Archlinux
-- Debian 10
-- Fedora 33
-- Gentoo
-- openSUSE Leap 15.2
-- RedHat 8
-- Ubuntu 20.04 LTS
+    .. tab-item:: Linux
 
-Otherwise, check the SQLite version in a terminal and upgrade ``sqlite3 >=
-3.24`` as needed, which is required by `firepit`_, a Kestrel dependency, in its
-default configuration:
+        If you are using following Linux distributions or newer, the requirement is
+        already met:
 
-.. code-block:: console
+        .. grid:: 4
+            :margin: 0
 
-    $ sqlite3 --version
+            .. grid-item::
 
-macOS Specific Requirement
---------------------------
+                - Alpine 3.6
 
-Full installation of `Xcode`_ is required, especially for arm64 architecture
-(2021-). ``xcode-select --install`` may not install Python header files, or set
-incorrect architecture argument for dependent package compilation.
+            .. grid-item::
 
-Runtime Installation
-====================
+                - Archlinux
 
-You can install Kestrel runtime from `stable release`_ or `nightly built
-version (source code)`_. Either way installs all packages in the
-`kestrel-lang`_ repository, and dependenies like `firepit`_ and
-`STIX-shifter`_.
+            .. grid-item::
 
-It is a good practice to install Kestrel in a `Python virtual environment`_ so
-there will be no dependency conflict with Python packages in the system, plus
-all dependencies will be the latest. You can easily setup, activate, and update
-a Python virtual environment named ``huntingspace``:
+                - Debian 10
 
-.. code-block:: console
+            .. grid-item::
+            
+                - Fedora 33
 
-    $ python -m venv huntingspace
-    $ . huntingspace/bin/activate
-    $ pip install --upgrade pip setuptools wheel
+            .. grid-item::
+            
+                - Gentoo
 
-Stable Release
---------------
+            .. grid-item::
+            
+                - openSUSE 15.2
 
-Run this command in your terminal (``huntingspace`` activated):
+            .. grid-item::
+            
+                - Ubuntu 20.04
 
-.. code-block:: console
+            .. grid-item::
 
-    $ pip install kestrel-lang
+                - RedHat 8
 
-Nightly Built Version (Source Code)
------------------------------------
+        Otherwise, check the SQLite version in a terminal with command
+        ``sqlite3 --version`` and upgrade ``sqlite3
+        >= 3.24`` as needed, which is required by `firepit`_, a Kestrel
+        dependency, with default config.
 
-Run this command in your terminal (``huntingspace`` activated):
+    .. tab-item:: macOS
 
-.. code-block:: console
+        Full installation of `Xcode`_ is required, especially for Mac with
+        Apple silicon (M1/M2/...).
 
-    $ git clone git://github.com/opencybersecurityalliance/kestrel-lang
-    $ cd kestrel-lang && pip install .
+        The basic ``xcode-select --install`` may not install Python header
+        files, or set incorrect architecture argument for dependent package
+        compilation, so the full installation of `Xcode`_ is required.
 
-Front-Ends Installation
+    .. tab-item:: Windows (WSL)
+
+        Nothing needed.
+
+Choose Where to Install
+=======================
+
+.. tab-set::
+
+    .. tab-item:: In a Python Virtual Environment [Recommended]
+
+        It is a good practice to install Kestrel in a `Python virtual
+        environment`_ so there will be no dependency conflict with Python
+        packages in the system, plus all dependencies will be the latest.
+
+        To setup and activate a Python virtual environment named
+        ``huntingspace``:
+
+        .. code-block:: console
+
+            $ python3 -m venv huntingspace
+            $ . huntingspace/bin/activate
+            $ pip install --upgrade pip setuptools wheel
+
+    .. tab-item:: User-wide
+
+        If you don't like `Python virtual environment`_ or think it is too
+        complicated, you can directly install Kestrel under a user.
+
+        There is nothing you need to do in this step besides opening a terminal
+        under that user, or login to the remote host under that user.
+
+        The downside is all Python packages under that user are in the same
+        namespace. If Kestrel requires a specific version of a library package,
+        and another application requires a different version of the same
+        library package, that will cause a conflict (``pip`` in the next step
+        will give a warning if happens).
+
+    .. tab-item:: OS-wide
+
+        It is not recommended to install Kestrel as system packages since the
+        configurations of Kestrel is under the user who runs it. However, it is
+        possible to install Kestrel as system package, just open a terminal and
+        swtich to ``root`` as follows:
+
+        .. code-block:: console
+
+            $ sudo -i
+
+Kestrel Runtime Installation
+============================
+
+Execute the command in the terminal you opened in the last step. If you use
+`Python virtual environment`_, the virtual environment should be activated for
+any newly opened terminal.
+
+.. tab-set::
+
+    .. tab-item:: Stable Version
+
+        .. code-block:: console
+
+            $ pip install kestrel-lang
+
+    .. tab-item:: Nightly Built
+
+        .. code-block:: console
+
+            $ git clone git://github.com/opencybersecurityalliance/kestrel-lang
+            $ cd kestrel-lang && pip install .
+
+Kestrel Front-End Setup
 =======================
 
 Kestrel runtime currently supports three front-ends
-(:ref:`overview/index:Kestrel in a Nutshell`):
+(:ref:`overview/index:Kestrel in a Nutshell`).
 
-1. Command-line execution utility ``kestrel`` (installed in the
-   package ``kestrel-lang``):
+Choose one and execute the command to install/use them in the terminal you
+opened in the last step. If you use `Python virtual environment`_, the virtual
+environment should be activated for any newly opened terminal.
 
-.. code-block:: console
+.. tab-set::
 
-    $ kestrel [-h] [-v] [--debug] hunt101.hf
+    .. tab-item:: Jupyter Notebook
+        
+        This is the most popular front-end for Kestrel and it provides an
+        interactive way to develop :ref:`language/tac:Hunt Flow` and
+        :ref:`language/tac:Huntbook`. You can install the Jupyter front-end by:
 
-2. Kestrel Jupyter Notebook kernel (if you plan to hunt in Jupyter with Kestrel):
+        .. code-block:: console
 
-.. code-block:: console
+            $ pip install kestrel-jupyter
+            $ python -m kestrel_jupyter_kernel.setup
 
-    $ pip install kestrel-jupyter
-    $ python -m kestrel_jupyter_kernel.setup
+        Then, you can start the Jupyter Notebook and dive into
+        :ref:`tutorial:Kestrel + Jupyter`:
 
-3. Python API:
+        .. code-block:: console
 
-- Start a Kestrel session in Python directly. See more at :doc:`../source/kestrel.session`.
+            $ jupyter nbclassic
 
-- Use `magic command`_ in iPython environment. Check `kestrel-jupyter`_ package for usage.
+    .. tab-item:: Command-line Utility
+        
+        The ``kestrel`` command is installed along with the Kestrel runtime
+        installation in the last step. This is designed for batch execution and
+        hunting automation. You can use it right away like:
 
-Start Your Hunt
-===============
+        .. code-block:: console
 
-Now the Kestrel runtime is set up and you can run a Kestrel huntflow with the
-command-line utility or launch a Jupyter service for developing a huntbook
-interactively (``huntingspace`` activated):
+            $ kestrel myfirsthuntflow.hf
 
-.. code-block:: console
+        Check out the :ref:`tutorial:Hello World Hunt` for more information.
 
-    $ jupyter nbclassic
+    .. tab-item:: Python API
+
+        You can use/call Kestrel from any Python program.
+
+        - Start a Kestrel session in Python directly. See more at :doc:`../source/kestrel.session`.
+
+        - Use `magic command`_ in iPython environment. Check `kestrel-jupyter`_ package for usage.
 
 What's to Do Next
 =================
 
-- :ref:`tutorial:Hello World Hunt`
 - :doc:`datasource`
 - :doc:`analytics`
-- `Explore Kestrel huntbooks`_
+- `Kestrel Language Tutorial`_
 - :doc:`../language/index`
 
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
@@ -139,4 +207,4 @@ What's to Do Next
 .. _Jupyter Notebook: https://jupyter.org/
 .. _magic command: https://ipython.readthedocs.io/en/stable/interactive/magics.html
 .. _STIX-shifter: https://github.com/opencybersecurityalliance/stix-shifter
-.. _Explore Kestrel huntbooks: http://github.com/opencybersecurityalliance/kestrel-huntbook
+.. _Kestrel Language Tutorial: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial

@@ -73,10 +73,6 @@ def datasource_env_setup(tmp_path):
     with open(profile_file, "w") as pf:
         pf.write(profiles)
 
-    ss_envs = [k for k in list(os.environ.keys()) if k.startswith("STIXSHIFTER_")]
-    for ss_env in ss_envs:
-        del os.environ[ss_env]
-
     os.environ["KESTREL_STIXSHIFTER_CONFIG"] = str(
         profile_file.expanduser().resolve()
     )
