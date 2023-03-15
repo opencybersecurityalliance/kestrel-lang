@@ -4,9 +4,15 @@ on:
   push:
     branches:
       - develop
+      - develop_*
+    paths:
+      - 'src/**'
   pull_request:
     branches:
       - develop
+      - develop_*
+    paths:
+      - 'src/**'
     types:
       - opened
       - edited

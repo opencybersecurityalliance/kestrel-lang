@@ -9,6 +9,22 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.11 (2023-03-15)
+===================
+
+Added
+-----
+
+- Alpine Linux install requirement
+- Actionable suggestion in stix-shifter connector error msg
+- Relation between config files in documentation
+
+Fixed
+-----
+
+- stix-shifter 4.6.2 fixing elastic_ecs connector get_pagesize error
+- firepit 2.3.14 improving fast translation
+
 1.5.10 (2023-03-07)
 ===================
 

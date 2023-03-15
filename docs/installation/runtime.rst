@@ -25,6 +25,10 @@ OS-specific Requirements
 
             .. grid-item::
 
+                - Alpine 3.6
+
+            .. grid-item::
+
                 - Archlinux
 
             .. grid-item::
