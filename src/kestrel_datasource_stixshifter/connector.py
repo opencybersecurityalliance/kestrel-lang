@@ -117,7 +117,7 @@ def check_module_availability(connector_name):
             "stix_shifter_modules." + connector_name + ".entry_point"
         )
 
-        # ensure_version_consistency(connector_name)
+        ensure_version_consistency(connector_name)
 
     except:
         _logger.info(f'miss STIX-shifter connector "{connector_name}"')
