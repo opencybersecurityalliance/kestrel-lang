@@ -1,7 +1,7 @@
 """The STIX-shifter data source package provides access to data sources via
 `stix-shifter`_.
 
-The STIX-shifter interface can reach multiple data sources. The user needs to
+The STIX-shifter interface connects to multiple data sources. Users need to
 provide one *profile* per data source. The profile name (case insensitive) will
 be used in the ``FROM`` clause of the Kestrel ``GET`` command, e.g., ``newvar =
 GET entity-type FROM stixshifter://profilename WHERE ...``. Kestrel runtime
