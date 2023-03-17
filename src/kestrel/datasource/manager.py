@@ -5,7 +5,7 @@ from kestrel.exceptions import (
     InvalidDataSourceInterfaceImplementation,
     ConflictingDataSourceInterfaceScheme,
 )
-
+import asyncio
 
 class DataSourceManager(InterfaceManager):
     def __init__(self, config):
@@ -30,6 +30,6 @@ class DataSourceManager(InterfaceManager):
     def query(self, uri, pattern, session_id, store):
         scheme, uri = self._parse_and_complete_uri(uri)
         i, c = self._get_interface_with_config(scheme)
-        rs = i.query(uri, pattern, session_id, c, store)
+        rs = asyncio.run(i.query(uri, pattern, session_id, c, store))
         self.queried_data_sources.append(uri)
         return rs
