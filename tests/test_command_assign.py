@@ -81,7 +81,11 @@ def test_assign_with_reference(proc_bundle_file):
 def test_assign_with_reference_and_in(proc_bundle_file):
     with Session() as s:
         s.execute(f"p = GET process FROM file://{proc_bundle_file} WHERE [process:pid > 0]")
+        p = s.get_variable("p", False)
+        assert 'binary_ref' in p[0]
         s.execute(REF_PROCS)
         s.execute("q = p WHERE pid IN (ref.pid, 9240, 10020)")
-        q = s.get_variable("q")
+        q = s.get_variable("q", False)
         assert len(q) == (106 + 149 + 1 + 1) * 2
+        print(q[0])
+        assert 'binary_ref' in q[0]

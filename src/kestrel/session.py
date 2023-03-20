@@ -309,10 +309,10 @@ class Session(AbstractContextManager):
         """Get the list of Kestrel variable names created in this session."""
         return list(self.symtable.keys())
 
-    def get_variable(self, var_name):
+    def get_variable(self, var_name, deref=True):
         """Get the data of Kestrel variable ``var_name``, which is list of homogeneous entities (STIX SCOs)."""
         # In the future, consider returning a generator here?
-        return self.symtable[var_name].get_entities()
+        return self.symtable[var_name].get_entities(deref)
 
     def create_variable(self, var_name, objects, object_type=None):
         """Create a new Kestrel variable ``var_name`` with data in ``objects``.
