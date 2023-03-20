@@ -14,7 +14,7 @@ from kestrel_datasource_stixshifter.config import get_datasource_from_profiles
 def test_verify_package_origin():
     connectors = ["stix_bundle", "qradar", "elastic_ecs", "splunk"]
     for connector_name in connectors:
-        verify_package_origin(connector_name)
+        verify_package_origin(connector_name, "test_version")
 
 
 def test_check_module_availability():
