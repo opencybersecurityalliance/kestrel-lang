@@ -7,6 +7,7 @@ from kestrel.exceptions import (
 )
 import asyncio
 
+
 class DataSourceManager(InterfaceManager):
     def __init__(self, config):
         super().__init__(
@@ -30,7 +31,7 @@ class DataSourceManager(InterfaceManager):
     def query(self, uri, pattern, session_id, store):
         scheme, uri = self._parse_and_complete_uri(uri)
         i, c = self._get_interface_with_config(scheme)
-        if scheme == 'stixshifter':
+        if scheme == "stixshifter":
             rs = asyncio.run(i.query(uri, pattern, session_id, c, store))
         else:
             rs = i.query(uri, pattern, session_id, c, store)

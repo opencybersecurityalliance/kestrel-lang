@@ -59,6 +59,7 @@ def mkdtemp():
     p.mkdir(parents=True, exist_ok=True)
     return p
 
+
 def replace_path_substring(path, oldstring, newstring):
     p = pathlib.Path(str(path).replace(oldstring, newstring))
     return p
