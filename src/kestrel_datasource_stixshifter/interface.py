@@ -121,6 +121,7 @@ from stix_shifter_utils.stix_translation.src.utils.transformer_utils import (
 from firepit.aio import asyncwrapper
 from firepit.aio.ingest import ingest, translate
 from kestrel.utils import mkdtemp
+from kestrel.utils import replace_path_substring
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
@@ -154,7 +155,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
         return data_sources
 
     @staticmethod
-    def query(uri, pattern, session_id, config, store=None):
+    async def query(uri, pattern, session_id, config, store=None):
         """Query a stixshifter data source."""
 
         # CONFIG command is not supported
@@ -195,7 +196,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
             check_module_availability(connector_name)
 
             data_path_striped = "".join(filter(str.isalnum, profile))
-            ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
+            ingestfile = ingestdir / f"{i}_batch_index_{data_path_striped}.json"
 
             identity = {"id": "identity--" + query_id, "name": connector_name}
             query_metadata = json.dumps(identity)
@@ -220,6 +221,25 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
             # query results should be put together; when translated to STIX, the relation between them will remain
             connector_results = []
+            queue = asyncio.Queue()
+
+            if not connector_name in config["options"]["fast_translate"]:
+                # schedule consumers
+                consumers = []
+                for _ in range(1):
+                    consumer = asyncio.create_task(
+                        translation_consume(
+                            queue,
+                            translation,
+                            connector_name,
+                            query_metadata,
+                            translation_options,
+                            ingestfile,
+                        )
+                    )
+                    consumers.append(consumer)
+
+            batch_index = 0
             for query in dsl["queries"]:
                 search_meta_result = transmission.query(query)
                 if search_meta_result["success"]:
@@ -243,34 +263,14 @@ class StixShifterInterface(AbstractDataSourceInterface):
                                 f"STIX-shifter transmission.status() failed with message: {stix_shifter_error_msg}"
                             )
 
-                    result_retrieval_offset = 0
-                    has_remaining_results = True
-                    metadata = None
-                    while has_remaining_results:
-                        result_batch = transmission.results(
-                            search_id,
-                            result_retrieval_offset,
-                            retrieval_batch_size,
-                            metadata,
-                        )
-                        if result_batch["success"]:
-                            new_entries = result_batch["data"]
-                            if new_entries:
-                                connector_results += new_entries
-                                result_retrieval_offset += len(new_entries)
-                            else:
-                                has_remaining_results = False
-                            if "metadata" in result_batch:
-                                metadata = result_batch["metadata"]
-                        else:
-                            stix_shifter_error_msg = (
-                                result_batch["error"]
-                                if "error" in result_batch
-                                else "details not avaliable"
-                            )
-                            raise DataSourceError(
-                                f"STIX-shifter transmission.results() failed with message: {stix_shifter_error_msg}"
-                            )
+                    # run the producer and wait for completion
+                    batch_index = await transmission_produce(
+                        queue,
+                        transmission,
+                        search_id,
+                        retrieval_batch_size,
+                        batch_index,
+                    )
 
                 else:
                     stix_shifter_error_msg = (
@@ -282,7 +282,22 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         f"STIX-shifter transmission.query() failed with message: {stix_shifter_error_msg}"
                     )
 
-            _logger.debug("transmission succeeded, start translate back to STIX")
+            # _logger.debug("transmission succeeded, start translate back to STIX")
+
+            # wait until the consumer has processed all items
+            await queue.join()
+
+            # the consumers are still awaiting for an item, cancel them
+            for consumer in consumers:
+                consumer.cancel()
+
+            # wait until all worker tasks are cancelled
+            await asyncio.gather(*consumers, return_exceptions=True)
+            for index in range(batch_index):
+                ingestbatchfile = replace_path_substring(
+                    ingestfile, "batch_index", str(index)
+                )
+                bundles.append(str(ingestbatchfile.expanduser().resolve()))
 
             if connector_name in config["options"]["fast_translate"]:
                 fast_translate(
@@ -294,26 +309,74 @@ class StixShifterInterface(AbstractDataSourceInterface):
                     query_id,
                     store,
                 )
-            else:
-                stixbundle = translation.translate(
-                    connector_name,
-                    "results",
-                    query_metadata,
-                    json.dumps(connector_results),
-                    translation_options,
-                )
-
-                if "error" in stixbundle:
-                    raise DataSourceError(
-                        f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
-                    )
-
-                _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
-                with ingestfile.open("w") as ingest_fp:
-                    json.dump(stixbundle, ingest_fp, indent=4)
-                bundles.append(str(ingestfile.expanduser().resolve()))
 
         return ReturnFromFile(query_id, bundles)
+
+
+async def transmission_produce(
+    queue, transmission, search_id, retrieval_batch_size, batch_index
+):
+    result_retrieval_offset = 0
+    has_remaining_results = True
+    metadata = None
+    while has_remaining_results:
+        result_batch = transmission.results(
+            search_id, result_retrieval_offset, retrieval_batch_size, metadata
+        )
+        if result_batch["success"]:
+            new_entries = result_batch["data"]
+            if new_entries:
+                result_batch["batch_index"] = batch_index
+                await queue.put(result_batch)
+                # connector_results += new_entries
+                result_retrieval_offset += len(new_entries)
+                batch_index += 1
+            else:
+                has_remaining_results = False
+            if "metadata" in result_batch:
+                metadata = result_batch["metadata"]
+        else:
+            stix_shifter_error_msg = (
+                result_batch["error"]
+                if "error" in result_batch
+                else "details not avaliable"
+            )
+            raise DataSourceError(
+                f"STIX-shifter transmission.results() failed with message: {stix_shifter_error_msg}"
+            )
+    return batch_index
+
+
+async def translation_consume(
+    queue, translation, connector_name, query_metadata, translation_options, ingestfile
+):
+    while True:
+        # wait for an item from the producer
+        result_batch = await queue.get()
+
+        stixbundle = translation.translate(
+            connector_name,
+            "results",
+            query_metadata,
+            json.dumps(result_batch["data"]),
+            translation_options,
+        )
+
+        if "error" in stixbundle:
+            raise DataSourceError(
+                f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
+            )
+
+        ingestbatchfile = replace_path_substring(
+            ingestfile, "batch_index", str(result_batch["batch_index"])
+        )
+        _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
+
+        with ingestbatchfile.open("w") as ingest_fp:
+            json.dump(stixbundle, ingest_fp, indent=4)
+
+        # Notify the queue that the item has been processed
+        queue.task_done()
 
 
 def fast_translate(
