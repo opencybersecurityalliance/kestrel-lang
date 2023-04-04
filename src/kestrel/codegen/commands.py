@@ -121,7 +121,7 @@ def assign(stmt, session):
     else:
         qry = Query(entity_table)
 
-    qry = _build_query(session.store, entity_table, qry, stmt)
+    qry = _build_query(session.store, entity_table, qry, stmt, [])
 
     try:
         session.store.assign_query(stmt["output"], qry)
@@ -691,7 +691,7 @@ def _get_filt_columns(filts: list):
         yield from _get_pred_columns(filt.preds)
 
 
-def _build_query(store, entity_table, qry, stmt):
+def _build_query(store, entity_table, qry, stmt, paths=None):
     where = stmt.get("where")
     if where:
         if isinstance(where, Query):
@@ -709,7 +709,14 @@ def _build_query(store, entity_table, qry, stmt):
             where.set_table(entity_table)
             qry.append(where)
     attrs = stmt.get("attrs", "*")
-    cols = attrs.split(",")
+    if attrs == "*" and not qry.joins:
+        # If user didn't ask for any paths and the where clause didn't
+        # result in any joins, fallback to the calling function's list
+        # of paths.
+        # https://github.com/opencybersecurityalliance/kestrel-lang/issues/312
+        cols = paths
+    else:
+        cols = attrs.split(",")
     _set_projection(store, entity_table, qry, cols)
     sort_by = stmt.get("attribute")
     if sort_by:

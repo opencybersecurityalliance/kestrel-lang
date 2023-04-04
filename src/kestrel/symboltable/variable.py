@@ -1,3 +1,5 @@
+from firepit.query import Query
+
 from kestrel.codegen.data import dump_data_to_file
 from kestrel.codegen.summary import get_variable_entity_count
 from kestrel.syntax.utils import get_all_input_var_names
@@ -53,8 +55,12 @@ class VarStruct:
 
         self.data_source = data_source
 
-    def get_entities(self):
-        return self.store.lookup(self.entity_table) if self.entity_table else []
+    def get_entities(self, deref=True):
+        if not self.entity_table:
+            return []
+        if deref:
+            return self.store.lookup(self.entity_table)
+        return self.store.run_query(Query(self.entity_table)).fetchall()
 
     def dump_to_file(self, file_path):
         dump_data_to_file(self.store, self.entity_table, file_path)
