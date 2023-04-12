@@ -317,7 +317,10 @@ def get(stmt, session):
                 session.config["stixquery"]["support_id"],
             )
 
-            if return_type == "process" and get_entity_id_attribute(_output) != "id":
+            if return_type == "process" and get_entity_id_attribute(_output) not in (
+                "id",
+                "x_unique_id",
+            ):
                 prefetch_ret_entity_table = _filter_prefetched_process(
                     return_var_table,
                     session,
@@ -438,10 +441,9 @@ def find(stmt, session):
                 # special handling for process to filter out impossible relational processes
                 # this is needed since STIX 2.0 does not have mandatory fields for
                 # process and field like `pid` is not unique
-                if (
-                    return_type == "process"
-                    and get_entity_id_attribute(_output) != "id"
-                ):
+                if return_type == "process" and get_entity_id_attribute(
+                    _output
+                ) not in ("id", "x_unique_id"):
                     prefetch_ret_entity_table = _filter_prefetched_process(
                         return_var_table,
                         session,
