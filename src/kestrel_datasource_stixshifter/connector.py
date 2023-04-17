@@ -3,7 +3,7 @@ import sys
 import importlib
 import subprocess
 import requests
-import pkg_resources
+from importlib.metadata import version
 from lxml import html
 
 from kestrel.exceptions import DataSourceError
@@ -62,7 +62,7 @@ def install_package(connector_name):
     package_name = get_package_name(connector_name)
     _logger.debug(f"guess the connector package name: {package_name}")
 
-    stixshifter_version = pkg_resources.get_distribution("stix_shifter").version
+    stixshifter_version = version("stix_shifter")
 
     verify_package_origin(connector_name, stixshifter_version)
 
@@ -93,9 +93,9 @@ def ensure_version_consistency(connector_name):
     package and the install the same version as stix-shifter
 
     """
-    stixshifter_version = pkg_resources.get_distribution("stix_shifter").version
+    stixshifter_version = version("stix_shifter")
     package_name = get_package_name(connector_name)
-    package_version = pkg_resources.get_distribution(package_name).version
+    package_version = version(package_name)
     if package_version == stixshifter_version:
         return
     package_w_ver = package_name + "==" + package_version
