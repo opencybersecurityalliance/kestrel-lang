@@ -156,8 +156,8 @@ def test_last_datasource(proc_bundle_file):
         output = s.execute(stmt)
         a = s.get_variable("a")
         b = s.get_variable("b")
-        assert len(a) == 14
-        assert len(b) == 704
+        assert len(a) == 14 * 2  # prefetch will get the same process twice
+        assert len(b) == 704 * 2  # prefetch will get the same process twice
 
 
 def test_relative_file_path(tmp_path):
@@ -180,8 +180,8 @@ def test_relative_file_path(tmp_path):
         output = s.execute(stmt)
         a = s.get_variable("a")
         b = s.get_variable("b")
-        assert len(a) == 14
-        assert len(b) == 704
+        assert len(a) == 14 * 2  # prefetch will get the same process twice
+        assert len(b) == 704 * 2  # prefetch will get the same process twice
 
 
 def test_get_wrong_type(file_stix_bundles):

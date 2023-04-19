@@ -82,7 +82,7 @@ stix_2_0_identical_mapping = {
     # `pid` is optional in STIX standard
     # `first_observed` cannot be used since it may be wrong (derived from observation)
     # `command_line` or `name` may not be in data and cannot be used
-    "process": ("x_unique_id", "pid", "name"),
+    "process": ("x_unique_id", "pid",),
     "software": ("name",),
     "url": ("value",),
     "user-account": ("user_id",),  # optional in STIX standard

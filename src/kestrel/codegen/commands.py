@@ -275,17 +275,14 @@ def get(stmt, session):
             f"native GET pattern executed and DB view {local_var_table} extracted."
         )
 
+        # TODO: add a ECGP method to do this directly
         pat_summary = summarize_pattern(pattern)
-        pat_types = list(pat_summary.keys())
-        if return_type in stix_2_0_identical_mapping:
-            id_attrs = set(stix_2_0_identical_mapping[return_type])
-        else:
-            id_attrs = pat_summary[return_type]  # Hack
 
         if (
             pat_summary
-            and return_type in pat_summary
-            and pat_summary[return_type].issubset(id_attrs)
+            and return_type in pat_summary  # allow extended subgraph
+            and len(pat_summary[return_type]) == 1  # only one attr for center node
+            and pat_summary[return_type].pop() == get_entity_id_attribute(_output)
         ):
             _logger.debug("To skip prefetch for direct query")
             is_direct_query = True
