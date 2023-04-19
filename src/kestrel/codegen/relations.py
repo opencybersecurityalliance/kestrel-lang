@@ -87,6 +87,7 @@ stix_2_0_identical_mapping = {
     "url": ("value",),
     "user-account": ("user_id",),  # optional in STIX standard
     "windows-registry-key": ("key",),  # optional in STIX standard
+    "x-oca-asset": ("device_id",),  # oca/stix-extension repo
 }
 
 stix_x_ibm_event_mapping = {

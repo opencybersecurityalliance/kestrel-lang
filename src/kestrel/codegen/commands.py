@@ -281,12 +281,12 @@ def get(stmt, session):
             id_attrs = set(stix_2_0_identical_mapping[return_type])
         else:
             id_attrs = pat_summary[return_type]  # Hack
+
         if (
-            len(pat_types) == 1
-            and pat_types[0] == return_type
-            and pat_summary[return_type] == id_attrs
+            pat_summary
+            and return_type in pat_summary
+            and pat_summary[return_type].issubset(id_attrs)
         ):
-            # Prefetch won't return anything new here, so skip it
             _logger.debug("To skip prefetch for direct query")
             is_direct_query = True
         else:
