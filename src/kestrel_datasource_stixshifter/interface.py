@@ -31,6 +31,7 @@ will load profiles from 3 places (the later will override the former):
                     options:  # use any of this section when needed
                         result_limit: 500000  # stix-shifter default: 10000
                         retrieval_batch_size: 10000  # safe to set to 10000 to match default Elasticsearch page size; Kestrel default: 2000
+                        timeout: 300  # allow a query to run for 5 minutes (300 seconds) before timing out; stix-shifter default: 30
                         dialects:  # more info: https://github.com/opencybersecurityalliance/stix-shifter/tree/develop/stix_shifter_modules/elastic_ecs#dialects
                           - beats  # need it if the index is created by Filebeat/Winlogbeat/*beat
                 config:
