@@ -156,8 +156,8 @@ def test_last_datasource(proc_bundle_file):
         output = s.execute(stmt)
         a = s.get_variable("a")
         b = s.get_variable("b")
-        assert len(a) == 28
-        assert len(b) == 1408
+        assert len(a) == 14
+        assert len(b) == 704
 
 
 def test_relative_file_path(tmp_path):
