@@ -47,12 +47,12 @@ def test_assign_after_new(stmt, expected):
 @pytest.mark.parametrize(
     "stmt, expected",
     [
-        ("x = p", 1000 * 2),
-        ("x = p WHERE pid = 1380", 106 * 2),
-        ("x = p WHERE command_line IS NULL", 948 * 2),
-        ("x = p WHERE command_line IS NOT NULL", 52 * 2),
-        ("x = p WHERE command_line LIKE '%/node%'", 1 * 2),
-        ("x = p WHERE pid = 5960 OR name = 'taskeng.exe'", 2 * 2),
+        ("x = p", 1000),
+        ("x = p WHERE pid = 1380", 106),
+        ("x = p WHERE command_line IS NULL", 948),
+        ("x = p WHERE command_line IS NOT NULL", 52),
+        ("x = p WHERE command_line LIKE '%/node%'", 1),
+        ("x = p WHERE pid = 5960 OR name = 'taskeng.exe'", 2),
         ("x = p WHERE (pid = 5960 OR name = 'taskeng.exe') AND command_line IS NULL", 0),
     ],
 )
@@ -75,7 +75,7 @@ def test_assign_with_reference(proc_bundle_file):
         s.execute(REF_PROCS)
         s.execute("q = p WHERE pid = ref.pid")
         q = s.get_variable("q")
-        assert len(q) == (106 + 149) * 2
+        assert len(q) == 106 + 149
 
 
 def test_assign_with_reference_and_in(proc_bundle_file):
@@ -86,6 +86,6 @@ def test_assign_with_reference_and_in(proc_bundle_file):
         s.execute(REF_PROCS)
         s.execute("q = p WHERE pid IN (ref.pid, 9240, 10020)")
         q = s.get_variable("q", False)
-        assert len(q) == (106 + 149 + 1 + 1) * 2
+        assert len(q) == 106 + 149 + 1 + 1
         print(q[0])
         assert 'binary_ref' in q[0]

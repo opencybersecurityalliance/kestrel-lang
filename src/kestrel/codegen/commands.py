@@ -51,7 +51,6 @@ from kestrel.codegen.relations import (
     compile_identical_entity_search_pattern,
     fine_grained_relational_process_filtering,
     get_entity_id_attribute,
-    stix_2_0_identical_mapping,
     build_pattern_from_ids,
 )
 
@@ -275,18 +274,15 @@ def get(stmt, session):
             f"native GET pattern executed and DB view {local_var_table} extracted."
         )
 
+        # TODO: add a ECGP method to do this directly
         pat_summary = summarize_pattern(pattern)
-        pat_types = list(pat_summary.keys())
-        if return_type in stix_2_0_identical_mapping:
-            id_attrs = set(stix_2_0_identical_mapping[return_type])
-        else:
-            id_attrs = pat_summary[return_type]  # Hack
+
         if (
-            len(pat_types) == 1
-            and pat_types[0] == return_type
-            and pat_summary[return_type] == id_attrs
+            pat_summary
+            and return_type in pat_summary  # allow extended subgraph
+            and len(pat_summary[return_type]) == 1  # only one attr for center node
+            and pat_summary[return_type].pop() == get_entity_id_attribute(_output)
         ):
-            # Prefetch won't return anything new here, so skip it
             _logger.debug("To skip prefetch for direct query")
             is_direct_query = True
         else:
