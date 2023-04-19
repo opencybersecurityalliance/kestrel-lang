@@ -9,15 +9,35 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.13 (2023-04-19)
+===================
+
+Added
+-----
+
+- Using process UUID for process identification #252 #93
+- Connector timeout config in stix-shifter data source interface doc
+
+Fixed
+-----
+
+- Library deprecation: pkg_resources
+- Invalid STIX bundle (missing identity SCO type) yielded by stix-shifter data source interface
+
+Removed
+-------
+
+- Python 3.7 support
+
 1.5.12 (2023-03-21)
 ===================
 
 Fixed
 -----
 
-- typo in pip install suggestion for stix-shifter modules
-- updated github workflows
-- vars created via assign should not lose reference attributes #312
+- Typo in pip install suggestion for stix-shifter modules
+- Updated github workflows
+- Vars created via assign should not lose reference attributes #312
 
 1.5.11 (2023-03-15)
 ===================
