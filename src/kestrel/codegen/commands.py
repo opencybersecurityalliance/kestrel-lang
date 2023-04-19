@@ -51,7 +51,6 @@ from kestrel.codegen.relations import (
     compile_identical_entity_search_pattern,
     fine_grained_relational_process_filtering,
     get_entity_id_attribute,
-    stix_2_0_identical_mapping,
     build_pattern_from_ids,
 )
 
