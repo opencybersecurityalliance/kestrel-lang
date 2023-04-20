@@ -9,6 +9,16 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.5.14 (2023-04-19)
+===================
+
+Fixed
+-----
+
+- A bug in firepit v2.3.16 when fast translation is in use; fixed in firepit v2.3.17
+- Improved logic on prefetch skipping; fix #322
+- Fixing several unit tests with the improved prefetch skipping logic
+
 1.5.13 (2023-04-19)
 ===================
 
