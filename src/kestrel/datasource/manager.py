@@ -7,6 +7,11 @@ from kestrel.exceptions import (
 )
 import asyncio
 
+# TODO: better solution to avoid using nest_asyncio for run_until_complete()
+#       maybe putting entire Kestrel in async mode
+import nest_asyncio
+nest_asyncio.apply()
+
 
 class DataSourceManager(InterfaceManager):
     def __init__(self, config):

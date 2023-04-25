@@ -106,11 +106,6 @@ import time
 import copy
 import logging
 
-# TODO: better solution to avoid using nest_asyncio for run_until_complete()
-#       maybe putting entire Kestrel in async mode
-import nest_asyncio
-
-nest_asyncio.apply()
 
 from stix_shifter.stix_translation import stix_translation
 from stix_shifter.stix_transmission import stix_transmission
