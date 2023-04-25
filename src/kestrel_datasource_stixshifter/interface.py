@@ -117,6 +117,7 @@ from firepit.aio import asyncwrapper
 from firepit.aio.ingest import ingest, translate
 from kestrel.utils import mkdtemp
 from kestrel.utils import replace_path_substring
+from kestrel.utils import make_ingest_stixbundle_filepath
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
@@ -193,6 +194,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
             data_path_striped = "".join(filter(str.isalnum, profile))
             ingestfile = ingestdir / f"{i}_batch_index_{data_path_striped}.json"
 
+            ingest_stixbundle_filepath = make_ingest_stixbundle_filepath(ingestfile)
+
             identity = {"id": "identity--" + query_id, "name": connector_name}
             query_metadata = json.dumps(identity)
 
@@ -229,7 +232,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                             connector_name,
                             query_metadata,
                             translation_options,
-                            ingestfile,
+                            ingest_stixbundle_filepath,
                         )
                     )
                     consumers.append(consumer)
@@ -343,7 +346,7 @@ async def transmission_produce(
 
 
 async def translation_consume(
-    queue, translation, connector_name, query_metadata, translation_options, ingestfile
+    queue, translation, connector_name, query_metadata, translation_options, ingest_stixbundle_filepath
 ):
     while True:
         # wait for an item from the producer
@@ -362,10 +365,12 @@ async def translation_consume(
                 f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
             )
 
-        ingestbatchfile = replace_path_substring(
-            ingestfile, "batch_index", str(result_batch["batch_index"])
-        )
-        _logger.debug(f"dumping STIX bundles into file: {ingestfile}")
+        # ingestbatchfile = replace_path_substring(
+        #     ingestfile, "batch_index", str(result_batch["batch_index"])
+        # )
+        ingestbatchfile = ingest_stixbundle_filepath(str(result_batch["batch_index"]))
+
+        _logger.debug(f"dumping STIX bundles into file: {ingestbatchfile}")
 
         with ingestbatchfile.open("w") as ingest_fp:
             json.dump(stixbundle, ingest_fp, indent=4)
