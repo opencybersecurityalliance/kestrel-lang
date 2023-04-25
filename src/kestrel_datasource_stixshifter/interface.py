@@ -224,7 +224,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
             if not connector_name in config["options"]["fast_translate"]:
                 # schedule consumers
                 consumers = []
-                for _ in range(1):
+                for _ in range(config["options"]["translation_consumes"]):
                     consumer = asyncio.create_task(
                         translation_consume(
                             queue,
