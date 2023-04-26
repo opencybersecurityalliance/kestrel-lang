@@ -116,7 +116,6 @@ from stix_shifter_utils.stix_translation.src.utils.transformer_utils import (
 from firepit.aio import asyncwrapper
 from firepit.aio.ingest import ingest, translate
 from kestrel.utils import mkdtemp
-from kestrel.utils import replace_path_substring
 from kestrel.utils import make_ingest_stixbundle_filepath
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromFile
@@ -289,16 +288,14 @@ class StixShifterInterface(AbstractDataSourceInterface):
             # wait until the consumer has processed all items
             await transmission_queue.join()
 
-            # the consumers are still awaiting for an item, cancel them
+            # the consumers are still waiting for an item, cancel them
             for consumer in consumers:
                 consumer.cancel()
 
             # wait until all worker tasks are cancelled
             await asyncio.gather(*consumers, return_exceptions=True)
             for index in range(batch_index):
-                ingestbatchfile = replace_path_substring(
-                    ingestfile, "batch_index", str(index)
-                )
+                ingestbatchfile = ingest_stixbundle_filepath(str(index))
                 bundles.append(str(ingestbatchfile.expanduser().resolve()))
 
             # transfer from async queue() to dict()
@@ -377,9 +374,6 @@ async def translation_consume(
                 f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
             )
 
-        # ingestbatchfile = replace_path_substring(
-        #     ingestfile, "batch_index", str(result_batch["batch_index"])
-        # )
         ingestbatchfile = ingest_stixbundle_filepath(str(result_batch["batch_index"]))
 
         _logger.debug(f"dumping STIX bundles into file: {ingestbatchfile}")
