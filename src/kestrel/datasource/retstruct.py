@@ -49,8 +49,12 @@ class ReturnFromStore(AbstractReturnStruct):
 
     """
 
-    def __init__(self, query_id):
+    def __init__(self, query_id, bundles):
         self.query_id = query_id
+        self.bundles = bundles
 
     def load_to_store(self, store):
+        store.cache(self.query_id, self.bundles)
         return self.query_id
+
+
