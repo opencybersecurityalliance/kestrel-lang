@@ -8,7 +8,7 @@ please use Python inside Windows Subsystem for Linux (WSL).
 General Requirements
 ====================
 
-Python 3 is required. Refer to the `Python installation guide`_ if you do not have Python 3.
+Python 3.8 is required. Refer to the `Python installation guide`_ if you need to install or upgrade Python.
 
 OS-specific Requirements
 ========================

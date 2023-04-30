@@ -51,7 +51,6 @@ from kestrel.codegen.relations import (
     compile_identical_entity_search_pattern,
     fine_grained_relational_process_filtering,
     get_entity_id_attribute,
-    stix_2_0_identical_mapping,
     build_pattern_from_ids,
 )
 
@@ -121,7 +120,7 @@ def assign(stmt, session):
     else:
         qry = Query(entity_table)
 
-    qry = _build_query(session.store, entity_table, qry, stmt)
+    qry = _build_query(session.store, entity_table, qry, stmt, [])
 
     try:
         session.store.assign_query(stmt["output"], qry)
@@ -275,18 +274,15 @@ def get(stmt, session):
             f"native GET pattern executed and DB view {local_var_table} extracted."
         )
 
+        # TODO: add a ECGP method to do this directly
         pat_summary = summarize_pattern(pattern)
-        pat_types = list(pat_summary.keys())
-        if return_type in stix_2_0_identical_mapping:
-            id_attrs = set(stix_2_0_identical_mapping[return_type])
-        else:
-            id_attrs = pat_summary[return_type]  # Hack
+
         if (
-            len(pat_types) == 1
-            and pat_types[0] == return_type
-            and pat_summary[return_type] == id_attrs
+            pat_summary
+            and return_type in pat_summary  # allow extended subgraph
+            and len(pat_summary[return_type]) == 1  # only one attr for center node
+            and pat_summary[return_type].pop() == get_entity_id_attribute(_output)
         ):
-            # Prefetch won't return anything new here, so skip it
             _logger.debug("To skip prefetch for direct query")
             is_direct_query = True
         else:
@@ -317,7 +313,10 @@ def get(stmt, session):
                 session.config["stixquery"]["support_id"],
             )
 
-            if return_type == "process" and get_entity_id_attribute(_output) != "id":
+            if return_type == "process" and get_entity_id_attribute(_output) not in (
+                "id",
+                "x_unique_id",
+            ):
                 prefetch_ret_entity_table = _filter_prefetched_process(
                     return_var_table,
                     session,
@@ -438,10 +437,9 @@ def find(stmt, session):
                 # special handling for process to filter out impossible relational processes
                 # this is needed since STIX 2.0 does not have mandatory fields for
                 # process and field like `pid` is not unique
-                if (
-                    return_type == "process"
-                    and get_entity_id_attribute(_output) != "id"
-                ):
+                if return_type == "process" and get_entity_id_attribute(
+                    _output
+                ) not in ("id", "x_unique_id"):
                     prefetch_ret_entity_table = _filter_prefetched_process(
                         return_var_table,
                         session,
@@ -691,7 +689,7 @@ def _get_filt_columns(filts: list):
         yield from _get_pred_columns(filt.preds)
 
 
-def _build_query(store, entity_table, qry, stmt):
+def _build_query(store, entity_table, qry, stmt, paths=None):
     where = stmt.get("where")
     if where:
         if isinstance(where, Query):
@@ -709,7 +707,14 @@ def _build_query(store, entity_table, qry, stmt):
             where.set_table(entity_table)
             qry.append(where)
     attrs = stmt.get("attrs", "*")
-    cols = attrs.split(",")
+    if attrs == "*" and not qry.joins:
+        # If user didn't ask for any paths and the where clause didn't
+        # result in any joins, fallback to the calling function's list
+        # of paths.
+        # https://github.com/opencybersecurityalliance/kestrel-lang/issues/312
+        cols = paths
+    else:
+        cols = attrs.split(",")
     _set_projection(store, entity_table, qry, cols)
     sort_by = stmt.get("attribute")
     if sort_by:
