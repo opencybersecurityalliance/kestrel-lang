@@ -28,6 +28,9 @@ def set_stixshifter_logging_level():
     logging.getLogger("stix_shifter").setLevel(logging_level)
     logging.getLogger("stix_shifter_utils").setLevel(logging_level)
     logging.getLogger("stix_shifter_modules").setLevel(logging_level)
+    logging.getLogger("kestrel_datasource_stixshifter.interface").setLevel(
+        logging_level
+    )
 
 
 def load_profiles_from_env_var():

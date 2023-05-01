@@ -174,7 +174,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
         ingestdir = mkdtemp()
         query_id = ingestdir.name
-        bundles = []
+        # bundles = []
         dict_bundles = []
         _logger.debug(f"prepare query with ID: {query_id}")
         for i, profile in enumerate(profiles):
@@ -294,9 +294,9 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
             # wait until all worker tasks are cancelled
             await asyncio.gather(*consumers, return_exceptions=True)
-            for index in range(batch_index):
-                ingestbatchfile = ingest_stixbundle_filepath(str(index))
-                bundles.append(str(ingestbatchfile.expanduser().resolve()))
+            # for index in range(batch_index):
+            #     ingestbatchfile = ingest_stixbundle_filepath(str(index))
+            #     bundles.append(str(ingestbatchfile.expanduser().resolve()))
 
             # transfer from async queue() to dict()
             while True:
@@ -355,7 +355,13 @@ async def transmission_produce(
 
 
 async def translation_consume(
-    transmission_queue, translation_queue, translation, connector_name, query_metadata, translation_options, ingest_stixbundle_filepath
+    transmission_queue,
+    translation_queue,
+    translation,
+    connector_name,
+    query_metadata,
+    translation_options,
+    ingest_stixbundle_filepath,
 ):
     while True:
         # wait for an item from the producer
@@ -374,14 +380,15 @@ async def translation_consume(
                 f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
             )
 
-        ingestbatchfile = ingest_stixbundle_filepath(str(result_batch["batch_index"]))
-
-        _logger.debug(f"dumping STIX bundles into file: {ingestbatchfile}")
-
         await translation_queue.put(stixbundle)
 
-        with ingestbatchfile.open("w") as ingest_fp:
-            json.dump(stixbundle, ingest_fp, indent=4)
+        if _logger.isEnabledFor(logging.DEBUG):
+            ingestbatchfile = ingest_stixbundle_filepath(
+                str(result_batch["batch_index"])
+            )
+            _logger.debug(f"dumping STIX bundles into file: {ingestbatchfile}")
+            with ingestbatchfile.open("w") as ingest_fp:
+                json.dump(stixbundle, ingest_fp, indent=4)
 
         # Notify the queue that the item has been processed
         transmission_queue.task_done()

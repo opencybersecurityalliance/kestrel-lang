@@ -56,5 +56,3 @@ class ReturnFromStore(AbstractReturnStruct):
     def load_to_store(self, store):
         store.cache(self.query_id, self.bundles)
         return self.query_id
-
-
