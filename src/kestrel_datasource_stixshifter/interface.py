@@ -118,7 +118,6 @@ from firepit.aio.ingest import ingest, translate
 from kestrel.utils import mkdtemp
 from kestrel.utils import make_ingest_stixbundle_filepath
 from kestrel.datasource import AbstractDataSourceInterface
-from kestrel.datasource import ReturnFromFile
 from kestrel.datasource import ReturnFromStore
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
 from kestrel_datasource_stixshifter.connector import check_module_availability
