@@ -6,6 +6,7 @@ from kestrel.exceptions import (
     ConflictingDataSourceInterfaceScheme,
 )
 import asyncio
+import inspect
 
 # TODO: better solution to avoid using nest_asyncio for run_until_complete()
 #       maybe putting entire Kestrel in async mode
@@ -37,7 +38,7 @@ class DataSourceManager(InterfaceManager):
     def query(self, uri, pattern, session_id, store):
         scheme, uri = self._parse_and_complete_uri(uri)
         i, c = self._get_interface_with_config(scheme)
-        if scheme == "stixshifter":
+        if inspect.iscoroutinefunction(i.query):
             rs = asyncio.run(i.query(uri, pattern, session_id, c, store))
         else:
             rs = i.query(uri, pattern, session_id, c, store)
