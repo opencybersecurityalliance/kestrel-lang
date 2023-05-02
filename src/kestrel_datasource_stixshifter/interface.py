@@ -220,7 +220,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
             # query results should be put together; when translated to STIX, the relation between them will remain
             connector_results = []
             transmission_queue = asyncio.Queue()
-            translation_queue = asyncio.Queue()
 
             # schedule consumers
             consumers = []
@@ -244,7 +243,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
                     consumer = asyncio.create_task(
                         translation_consume(
                             transmission_queue,
-                            translation_queue,
                             translation,
                             connector_name,
                             query_metadata,
@@ -255,7 +253,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         )
                     )
                     consumers.append(consumer)
-
 
             batch_index = 0
             for query in dsl["queries"]:
@@ -315,13 +312,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
             #     ingestbatchfile = ingest_stixbundle_filepath(str(index))
             #     bundles.append(str(ingestbatchfile.expanduser().resolve()))
 
-            # transfer from async queue() to dict()
-            # while True:
-            #     try:
-            #         translation_bundle = translation_queue.get_nowait()
-            #         dict_bundles.append(translation_bundle)
-            #     except asyncio.QueueEmpty:
-            #         break
 
             # if connector_name in config["options"]["fast_translate"]:
             #     fast_translate(
@@ -373,7 +363,6 @@ async def transmission_produce(
 
 async def translation_consume(
     transmission_queue,
-    translation_queue,
     translation,
     connector_name,
     query_metadata,
@@ -401,8 +390,6 @@ async def translation_consume(
 
         await asyncwrapper.SyncWrapper(store=store).cache(query_id, stixbundle)
 
-        # await translation_queue.put(stixbundle)
-
         if _logger.isEnabledFor(logging.DEBUG):
             ingestbatchfile = ingest_stixbundle_filepath(
                 str(result_batch["batch_index"])
@@ -415,7 +402,15 @@ async def translation_consume(
         transmission_queue.task_done()
 
 
-async def fast_translate_consume(transmission_queue, connector_name, translation, translation_options, identity, query_id, store):
+async def fast_translate_consume(
+    transmission_queue,
+    connector_name,
+    translation,
+    translation_options,
+    identity,
+    query_id,
+    store,
+):
     while True:
         # wait for an item from the producer
         connector_results = await transmission_queue.get()
