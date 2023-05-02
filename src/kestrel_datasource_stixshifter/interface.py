@@ -308,21 +308,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
             # wait until all worker tasks are cancelled
             await asyncio.gather(*consumers, return_exceptions=True)
-            # for index in range(batch_index):
-            #     ingestbatchfile = ingest_stixbundle_filepath(str(index))
-            #     bundles.append(str(ingestbatchfile.expanduser().resolve()))
 
 
-            # if connector_name in config["options"]["fast_translate"]:
-            #     fast_translate(
-            #         connector_name,
-            #         connector_results,
-            #         translation,
-            #         translation_options,
-            #         identity,
-            #         query_id,
-            #         store,
-            #     )
         return ReturnFromStore(query_id)
         # return ReturnFromFile(query_id, bundles)
 
@@ -413,10 +400,10 @@ async def fast_translate_consume(
 ):
     while True:
         # wait for an item from the producer
-        connector_results = await transmission_queue.get()
+        result_batch = await transmission_queue.get()
         await fast_translate(
             connector_name,
-            connector_results,
+            result_batch["data"],
             translation,
             translation_options,
             identity,
@@ -461,23 +448,9 @@ async def fast_translate(
     }  # These are required by STIX but not needed here
     identity_obj.update(identity)
 
-    ingest(
+    await ingest(
         asyncwrapper.SyncWrapper(store=store),
         identity_obj,
         df,
         query_id,
     )
-
-    # try:
-    #     loop = asyncio.get_running_loop()
-    # except RuntimeError:
-    #     loop = asyncio.get_event_loop()
-    #
-    # loop.run_until_complete(
-    #     ingest(
-    #         asyncwrapper.SyncWrapper(store=store),
-    #         identity_obj,
-    #         df,
-    #         query_id,
-    #     )
-    # )

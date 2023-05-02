@@ -176,5 +176,7 @@ def load_options():
     if "fast_translate" not in config["options"]:
         config["options"]["fast_translate"] = FAST_TRANSLATE_CONNECTORS
     if "async_translation_workers_count" not in config["options"]:
-        config["options"]["async_translation_workers_count"] = ASYNC_TRANSLATION_WORKERS_CNT
+        config["options"][
+            "async_translation_workers_count"
+        ] = ASYNC_TRANSLATION_WORKERS_CNT
     return config["options"]
