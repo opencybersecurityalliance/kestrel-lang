@@ -222,10 +222,25 @@ class StixShifterInterface(AbstractDataSourceInterface):
             transmission_queue = asyncio.Queue()
             translation_queue = asyncio.Queue()
 
-            if not connector_name in config["options"]["fast_translate"]:
-                # schedule consumers
-                consumers = []
-                for _ in range(config["options"]["translation_consumes"]):
+            # schedule consumers
+            consumers = []
+            consumer_count = config["options"]["async_translation_workers_count"]
+            if connector_name in config["options"]["fast_translate"]:
+                for _ in range(consumer_count):
+                    consumer = asyncio.create_task(
+                        fast_translate_consume(
+                            transmission_queue,
+                            connector_name,
+                            translation,
+                            translation_options,
+                            identity,
+                            query_id,
+                            store,
+                        )
+                    )
+                    consumers.append(consumer)
+            else:
+                for _ in range(consumer_count):
                     consumer = asyncio.create_task(
                         translation_consume(
                             transmission_queue,
@@ -238,6 +253,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                         )
                     )
                     consumers.append(consumer)
+
 
             batch_index = 0
             for query in dsl["queries"]:
@@ -305,16 +321,16 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 except asyncio.QueueEmpty:
                     break
 
-            if connector_name in config["options"]["fast_translate"]:
-                fast_translate(
-                    connector_name,
-                    connector_results,
-                    translation,
-                    translation_options,
-                    identity,
-                    query_id,
-                    store,
-                )
+            # if connector_name in config["options"]["fast_translate"]:
+            #     fast_translate(
+            #         connector_name,
+            #         connector_results,
+            #         translation,
+            #         translation_options,
+            #         identity,
+            #         query_id,
+            #         store,
+            #     )
         return ReturnFromStore(query_id, dict_bundles)
         # return ReturnFromFile(query_id, bundles)
 
@@ -393,7 +409,24 @@ async def translation_consume(
         transmission_queue.task_done()
 
 
-def fast_translate(
+async def fast_translate_consume(transmission_queue, connector_name, translation, translation_options, identity, query_id, store):
+    while True:
+        # wait for an item from the producer
+        connector_results = await transmission_queue.get()
+        await fast_translate(
+            connector_name,
+            connector_results,
+            translation,
+            translation_options,
+            identity,
+            query_id,
+            store,
+        )
+        # Notify the queue that the item has been processed
+        transmission_queue.task_done()
+
+
+async def fast_translate(
     connector_name,
     connector_results,
     translation,
@@ -427,16 +460,23 @@ def fast_translate(
     }  # These are required by STIX but not needed here
     identity_obj.update(identity)
 
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.get_event_loop()
-
-    loop.run_until_complete(
-        ingest(
-            asyncwrapper.SyncWrapper(store=store),
-            identity_obj,
-            df,
-            query_id,
-        )
+    ingest(
+        asyncwrapper.SyncWrapper(store=store),
+        identity_obj,
+        df,
+        query_id,
     )
+
+    # try:
+    #     loop = asyncio.get_running_loop()
+    # except RuntimeError:
+    #     loop = asyncio.get_event_loop()
+    #
+    # loop.run_until_complete(
+    #     ingest(
+    #         asyncwrapper.SyncWrapper(store=store),
+    #         identity_obj,
+    #         df,
+    #         query_id,
+    #     )
+    # )
