@@ -198,7 +198,11 @@ class StixShifterInterface(AbstractDataSourceInterface):
             data_path_striped = "".join(filter(str.isalnum, profile))
             ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
-            query_metadata = {"id": "identity--" + query_id, "name": connector_name}
+            query_metadata = {
+                "id": "identity--" + query_id,
+                "name": connector_name,
+                "type": "identity"
+            }
 
             translation = stix_translation.StixTranslation()
             transmission = stix_transmission.StixTransmission(
