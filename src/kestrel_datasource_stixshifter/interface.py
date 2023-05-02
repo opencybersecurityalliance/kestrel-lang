@@ -250,6 +250,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
                             query_metadata,
                             translation_options,
                             ingest_stixbundle_filepath,
+                            query_id,
+                            store,
                         )
                     )
                     consumers.append(consumer)
@@ -314,12 +316,12 @@ class StixShifterInterface(AbstractDataSourceInterface):
             #     bundles.append(str(ingestbatchfile.expanduser().resolve()))
 
             # transfer from async queue() to dict()
-            while True:
-                try:
-                    translation_bundle = translation_queue.get_nowait()
-                    dict_bundles.append(translation_bundle)
-                except asyncio.QueueEmpty:
-                    break
+            # while True:
+            #     try:
+            #         translation_bundle = translation_queue.get_nowait()
+            #         dict_bundles.append(translation_bundle)
+            #     except asyncio.QueueEmpty:
+            #         break
 
             # if connector_name in config["options"]["fast_translate"]:
             #     fast_translate(
@@ -331,7 +333,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
             #         query_id,
             #         store,
             #     )
-        return ReturnFromStore(query_id, dict_bundles)
+        return ReturnFromStore(query_id)
         # return ReturnFromFile(query_id, bundles)
 
 
@@ -377,6 +379,8 @@ async def translation_consume(
     query_metadata,
     translation_options,
     ingest_stixbundle_filepath,
+    query_id,
+    store,
 ):
     while True:
         # wait for an item from the producer
@@ -395,7 +399,9 @@ async def translation_consume(
                 f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
             )
 
-        await translation_queue.put(stixbundle)
+        await asyncwrapper.SyncWrapper(store=store).cache(query_id, stixbundle)
+
+        # await translation_queue.put(stixbundle)
 
         if _logger.isEnabledFor(logging.DEBUG):
             ingestbatchfile = ingest_stixbundle_filepath(
