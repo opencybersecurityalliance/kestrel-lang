@@ -217,7 +217,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
             _logger.debug(f"translate results: {dsl}")
 
             # query results should be put together; when translated to STIX, the relation between them will remain
-            connector_results = []
             transmission_queue = asyncio.Queue()
 
             # schedule consumers
@@ -336,7 +335,6 @@ async def transmission_produce(
             if new_entries:
                 result_batch["batch_index"] = batch_index
                 await transmission_queue.put(result_batch)
-                # connector_results += new_entries
                 result_retrieval_offset += len(new_entries)
                 batch_index += 1
             else:
