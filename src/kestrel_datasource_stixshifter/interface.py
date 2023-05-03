@@ -105,7 +105,6 @@ import json
 import time
 import copy
 import logging
-import pathlib
 
 
 from stix_shifter.stix_translation import stix_translation
