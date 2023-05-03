@@ -60,11 +60,6 @@ def mkdtemp():
     return p
 
 
-def replace_path_substring(path, oldstring, newstring):
-    p = pathlib.Path(str(path).replace(oldstring, newstring))
-    return p
-
-
 def make_ingest_stixbundle_filepath(ingestfile):
     def ingest_stixbundle_filepath(batch_index):
         ingestbatchfile = pathlib.Path(
