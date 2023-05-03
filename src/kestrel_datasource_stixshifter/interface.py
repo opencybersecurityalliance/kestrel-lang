@@ -193,7 +193,9 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
             data_path_striped = "".join(filter(str.isalnum, profile))
 
-            ingest_stixbundle_filepath = make_ingest_stixbundle_filepath(ingestdir, data_path_striped, i)
+            ingest_stixbundle_filepath = make_ingest_stixbundle_filepath(
+                ingestdir, data_path_striped, i
+            )
 
             identity = {"id": "identity--" + query_id, "name": connector_name}
             query_metadata = json.dumps(identity)
@@ -307,17 +309,18 @@ class StixShifterInterface(AbstractDataSourceInterface):
             # wait until all worker tasks are cancelled
             await asyncio.gather(*consumers, return_exceptions=True)
 
-
         return ReturnFromStore(query_id)
         # return ReturnFromFile(query_id, bundles)
 
 
 def make_ingest_stixbundle_filepath(ingestdir, data_path_striped, profile_index):
     def ingest_stixbundle_filepath(batch_index):
-        ingestbatchfile = ingestdir / f"{profile_index}_{batch_index}_{data_path_striped}.json"
+        ingestbatchfile = (
+            ingestdir / f"{profile_index}_{batch_index}_{data_path_striped}.json"
+        )
         return ingestbatchfile
-    return ingest_stixbundle_filepath
 
+    return ingest_stixbundle_filepath
 
 
 async def transmission_produce(
