@@ -60,16 +60,6 @@ def mkdtemp():
     return p
 
 
-def make_ingest_stixbundle_filepath(ingestfile):
-    def ingest_stixbundle_filepath(batch_index):
-        ingestbatchfile = pathlib.Path(
-            str(ingestfile).replace("batch_index", str(batch_index))
-        )
-        return ingestbatchfile
-
-    return ingest_stixbundle_filepath
-
-
 def resolve_path_in_kestrel_env_var():
     for key in os.environ:
         if key.startswith("KESTREL") or key.startswith("kestrel"):

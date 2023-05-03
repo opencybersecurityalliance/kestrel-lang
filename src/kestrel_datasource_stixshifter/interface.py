@@ -105,6 +105,7 @@ import json
 import time
 import copy
 import logging
+import pathlib
 
 
 from stix_shifter.stix_translation import stix_translation
@@ -116,7 +117,6 @@ from stix_shifter_utils.stix_translation.src.utils.transformer_utils import (
 from firepit.aio import asyncwrapper
 from firepit.aio.ingest import ingest, translate
 from kestrel.utils import mkdtemp
-from kestrel.utils import make_ingest_stixbundle_filepath
 from kestrel.datasource import AbstractDataSourceInterface
 from kestrel.datasource import ReturnFromStore
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
@@ -192,9 +192,8 @@ class StixShifterInterface(AbstractDataSourceInterface):
             check_module_availability(connector_name)
 
             data_path_striped = "".join(filter(str.isalnum, profile))
-            ingestfile = ingestdir / f"{i}_batch_index_{data_path_striped}.json"
 
-            ingest_stixbundle_filepath = make_ingest_stixbundle_filepath(ingestfile)
+            ingest_stixbundle_filepath = make_ingest_stixbundle_filepath(ingestdir, data_path_striped, i)
 
             identity = {"id": "identity--" + query_id, "name": connector_name}
             query_metadata = json.dumps(identity)
@@ -312,6 +311,14 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
         return ReturnFromStore(query_id)
         # return ReturnFromFile(query_id, bundles)
+
+
+def make_ingest_stixbundle_filepath(ingestdir, data_path_striped, profile_index):
+    def ingest_stixbundle_filepath(batch_index):
+        ingestbatchfile = ingestdir / f"{profile_index}_{batch_index}_{data_path_striped}.json"
+        return ingestbatchfile
+    return ingest_stixbundle_filepath
+
 
 
 async def transmission_produce(
