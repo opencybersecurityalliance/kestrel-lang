@@ -5,7 +5,10 @@ import collections.abc
 
 
 def unescape_quoted_string(s):
-    return s[1:-1].encode("utf-8").decode("unicode_escape")
+    if s.startswith("r"):
+        return s[2:-1]
+    else:
+        return s[1:-1].encode("utf-8").decode("unicode_escape")
 
 
 def lowered_str_list(xs):
