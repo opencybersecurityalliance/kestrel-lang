@@ -115,6 +115,8 @@ def assign(stmt, session):
     if transform:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
+        elif transform.lower() == "observed":
+            qry = session.store.getAllNestedObjectsWithAnAttributeOfSCO(entity_table, run=False)
         else:
             qry = Query(entity_table)
     else:
@@ -218,6 +220,8 @@ def disp(stmt, session):
     if transform and entity_table:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
+        elif transform.lower() == "observed":
+            qry = session.store.getAllNestedObjectsWithAnAttributeOfSCO(entity_table, run=False)
         else:
             qry = Query(entity_table)
     else:
