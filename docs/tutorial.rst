@@ -66,7 +66,7 @@ Kestrel + Jupyter
 =================
 
 To develop a hunt flow using Jupyter Notebook, you need to first follow the
-instructions in :ref:`installation/runtime:Front-Ends Installation` to install
+instructions in :ref:`installation/runtime:Kestrel Front-End Setup` to install
 the Kestrel Jupyter Notebook kernel if you haven't done so.
 
 Creating A Hunt Book
