@@ -1,7 +1,7 @@
 """The STIX-shifter data source package provides access to data sources via
 `stix-shifter`_.
 
-The STIX-shifter interface can reach multiple data sources. The user needs to
+The STIX-shifter interface connects to multiple data sources. Users need to
 provide one *profile* per data source. The profile name (case insensitive) will
 be used in the ``FROM`` clause of the Kestrel ``GET`` command, e.g., ``newvar =
 GET entity-type FROM stixshifter://profilename WHERE ...``. Kestrel runtime
@@ -198,12 +198,11 @@ class StixShifterInterface(AbstractDataSourceInterface):
             data_path_striped = "".join(filter(str.isalnum, profile))
             ingestfile = ingestdir / f"{i}_{data_path_striped}.json"
 
-            identity = {
+            query_metadata = {
                 "id": "identity--" + query_id,
                 "name": connector_name,
                 "type": "identity",
             }
-            query_metadata = json.dumps(identity)
 
             translation = stix_translation.StixTranslation()
             transmission = stix_transmission.StixTransmission(
@@ -304,7 +303,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                     connector_name,
                     "results",
                     query_metadata,
-                    json.dumps(connector_results),
+                    connector_results,
                     translation_options,
                 )
 
