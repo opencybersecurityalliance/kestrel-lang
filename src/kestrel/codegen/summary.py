@@ -44,7 +44,9 @@ def gen_variable_summary(var_name, var_struct):
         is_from_direct_datasource = True
 
     for entity_type in var_struct.store.types():
+
         if entity_type not in ("identity", "observed-data"):
+
             count = 0
 
             if query_ids and is_from_direct_datasource:

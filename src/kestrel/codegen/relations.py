@@ -68,6 +68,7 @@ stix_2_0_ref_mapping = {
     ("windows-service-ext", "loaded", "user-account"): (["creator_user_ref"], []),
 }
 
+# FIXME: is this no longer needed?
 # the first available attribute will be used to uniquely identify the entity
 stix_2_0_identical_mapping = {
     # entity-type: id attributes candidates
@@ -82,15 +83,11 @@ stix_2_0_identical_mapping = {
     # `pid` is optional in STIX standard
     # `first_observed` cannot be used since it may be wrong (derived from observation)
     # `command_line` or `name` may not be in data and cannot be used
-    "process": (
-        "x_unique_id",
-        "pid",
-    ),
+    "process": ("pid", "name"),
     "software": ("name",),
     "url": ("value",),
     "user-account": ("user_id",),  # optional in STIX standard
     "windows-registry-key": ("key",),  # optional in STIX standard
-    "x-oca-asset": ("device_id",),  # oca/stix-extension repo
 }
 
 stix_x_ibm_event_mapping = {
@@ -195,7 +192,7 @@ def compile_x_ibm_event_search_flow_out_pattern(return_type, input_event_var_nam
 def _enumerate_relations_between_entities(return_type, input_type):
     # return: [(relation, is_reversed)]
     relations = []
-    for x, r, y in stix_2_0_ref_mapping.keys():
+    for (x, r, y) in stix_2_0_ref_mapping.keys():
         if x == return_type and y == input_type:
             relations.append((r, False))
         if y == return_type and x == input_type:
@@ -354,7 +351,7 @@ def _search_for_potential_identical_process(ref_pid2procs, fil_pid2procs, config
 
     res_pid2procs = defaultdict(list)
 
-    for pid, fil_procs in fil_pid2procs.items():
+    for (pid, fil_procs) in fil_pid2procs.items():
         for rid, fil_row in fil_procs:
             for _, ref_row in ref_pid2procs[pid]:
                 if _identical_process_check(fil_row, ref_row, config):

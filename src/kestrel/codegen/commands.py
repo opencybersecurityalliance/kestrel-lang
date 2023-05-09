@@ -26,7 +26,7 @@ from copy import deepcopy
 
 from firepit.deref import auto_deref
 from firepit.exceptions import InvalidAttr
-from firepit.query import Limit, Offset, Order, Predicate, Projection, Query
+from firepit.query import Limit, Offset, Order, Projection, Query
 from firepit.stix20 import summarize_pattern
 
 from kestrel.semantics.reference import make_deref_func, make_var_timerange_func
@@ -51,6 +51,7 @@ from kestrel.codegen.relations import (
     compile_identical_entity_search_pattern,
     fine_grained_relational_process_filtering,
     get_entity_id_attribute,
+    stix_2_0_identical_mapping,
     build_pattern_from_ids,
 )
 
@@ -111,18 +112,18 @@ def _debug_logger(func):
 @_default_output
 def assign(stmt, session):
     entity_table = session.symtable[stmt["input"]].entity_table
-    transform = stmt.get("transform")
+    transform = stmt.get("transform") or stmt.get("transform2")
     if transform:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
-        elif transform.lower() == "observed":
-            qry = session.store.getAllNestedObjectsWithAnAttributeOfSCO(entity_table, run=False)
+        elif transform.lower() == "observed":    
+            qry = session.store.get_all_nested_objects_including_an_attribute_of_SCO(entity_table,name_of_attribute='id', run=False)
         else:
             qry = Query(entity_table)
     else:
         qry = Query(entity_table)
 
-    qry = _build_query(session.store, entity_table, qry, stmt, [])
+    qry = _build_query(session.store, entity_table, qry, stmt)
 
     try:
         session.store.assign_query(stmt["output"], qry)
@@ -216,12 +217,12 @@ def info(stmt, session):
 @_debug_logger
 def disp(stmt, session):
     entity_table = session.symtable[stmt["input"]].entity_table
-    transform = stmt.get("transform")
+    transform = stmt.get("transform") or stmt.get("transform2")
     if transform and entity_table:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
         elif transform.lower() == "observed":
-            qry = session.store.getAllNestedObjectsWithAnAttributeOfSCO(entity_table, run=False)
+            qry = session.store.get_all_nested_objects_including_an_attribute_of_SCO(entity_table, name_of_attribute='id', run=False)
         else:
             qry = Query(entity_table)
     else:
@@ -269,7 +270,7 @@ def get(stmt, session):
     elif "datasource" in stmt:
         # rs: RetStruct
         rs = session.data_source_manager.query(
-            stmt["datasource"], pattern, session.session_id, session.store
+            stmt["datasource"], pattern, session.session_id
         )
         query_id = rs.load_to_store(session.store)
         session.store.extract(local_var_table, return_type, query_id, pattern)
@@ -278,15 +279,18 @@ def get(stmt, session):
             f"native GET pattern executed and DB view {local_var_table} extracted."
         )
 
-        # TODO: add a ECGP method to do this directly
         pat_summary = summarize_pattern(pattern)
-
+        pat_types = list(pat_summary.keys())
+        if return_type in stix_2_0_identical_mapping:
+            id_attrs = set(stix_2_0_identical_mapping[return_type])
+        else:
+            id_attrs = pat_summary[return_type]  # Hack
         if (
-            pat_summary
-            and return_type in pat_summary  # allow extended subgraph
-            and len(pat_summary[return_type]) == 1  # only one attr for center node
-            and pat_summary[return_type].pop() == get_entity_id_attribute(_output)
+            len(pat_types) == 1
+            and pat_types[0] == return_type
+            and pat_summary[return_type] == id_attrs
         ):
+            # Prefetch won't return anything new here, so skip it
             _logger.debug("To skip prefetch for direct query")
             is_direct_query = True
         else:
@@ -317,10 +321,7 @@ def get(stmt, session):
                 session.config["stixquery"]["support_id"],
             )
 
-            if return_type == "process" and get_entity_id_attribute(_output) not in (
-                "id",
-                "x_unique_id",
-            ):
+            if return_type == "process" and get_entity_id_attribute(_output) != "id":
                 prefetch_ret_entity_table = _filter_prefetched_process(
                     return_var_table,
                     session,
@@ -441,9 +442,10 @@ def find(stmt, session):
                 # special handling for process to filter out impossible relational processes
                 # this is needed since STIX 2.0 does not have mandatory fields for
                 # process and field like `pid` is not unique
-                if return_type == "process" and get_entity_id_attribute(
-                    _output
-                ) not in ("id", "x_unique_id"):
+                if (
+                    return_type == "process"
+                    and get_entity_id_attribute(_output) != "id"
+                ):
                     prefetch_ret_entity_table = _filter_prefetched_process(
                         return_var_table,
                         session,
@@ -606,6 +608,7 @@ def _prefetch(
     )
 
     if pattern_raw:
+
         pattern_ast = parse_ecgpattern(pattern_raw)
         deref_func = make_deref_func(store, symtable)
         get_timerange_func = make_var_timerange_func(store, symtable)
@@ -621,7 +624,7 @@ def _prefetch(
 
         if stix_pattern:
             data_source = symtable[input_var_name].data_source
-            resp = ds_manager.query(data_source, stix_pattern, session_id, store)
+            resp = ds_manager.query(data_source, stix_pattern, session_id)
             query_id = resp.load_to_store(store)
 
             # build the return_var_name view in store
@@ -637,6 +640,7 @@ def _prefetch(
 def _filter_prefetched_process(
     return_var_name, session, local_var, prefetched_entity_table, return_type
 ):
+
     _logger.debug(f"filter prefetched {return_type} for {prefetched_entity_table}.")
 
     prefetch_filtered_var_name = return_var_name + "_prefetch_filtered"
@@ -659,8 +663,6 @@ def _filter_prefetched_process(
 def _set_projection(store, entity_table, query, paths):
     joins, proj = auto_deref(store, entity_table, paths=paths)
     query.joins.extend(joins)
-    joined = [j.name for j in query.joins]
-    _logger.debug("%s: joining %s", query.table.name, joined)
     if query.proj:
         # Need to merge projections?  More-specific overrides less-specific ("*")
         new_cols = []
@@ -678,47 +680,13 @@ def _set_projection(store, entity_table, query, paths):
         query.proj = proj
 
 
-def _get_pred_columns(preds: list):
-    for pred in preds:
-        if isinstance(pred.lhs, Predicate):
-            yield from _get_pred_columns([pred.lhs])
-            if isinstance(pred.rhs, Predicate):
-                yield from _get_pred_columns([pred.rhs])
-        else:
-            yield pred.lhs
-
-
-def _get_filt_columns(filts: list):
-    for filt in filts:
-        yield from _get_pred_columns(filt.preds)
-
-
-def _build_query(store, entity_table, qry, stmt, paths=None):
+def _build_query(store, entity_table, qry, stmt):
     where = stmt.get("where")
     if where:
-        if isinstance(where, Query):
-            for j in where.joins:
-                _logger.debug("Anchoring JOIN to %s", qry.table.name)
-                j.prev_name = qry.table.name
-            qry.joins.extend(where.joins)
-            for col in _get_filt_columns(where.where):
-                if col.table is None:
-                    # Need to disambiguate any Predicate columns
-                    _logger.debug("Disambiguating predicate for %s", qry.table.name)
-                    col.table = qry.table.name
-            qry.where.extend(where.where)
-        else:
-            where.set_table(entity_table)
-            qry.append(where)
+        where.set_table(entity_table)
+        qry.append(where)
     attrs = stmt.get("attrs", "*")
-    if attrs == "*" and not qry.joins:
-        # If user didn't ask for any paths and the where clause didn't
-        # result in any joins, fallback to the calling function's list
-        # of paths.
-        # https://github.com/opencybersecurityalliance/kestrel-lang/issues/312
-        cols = paths
-    else:
-        cols = attrs.split(",")
+    cols = attrs.split(",")
     _set_projection(store, entity_table, qry, cols)
     sort_by = stmt.get("attribute")
     if sort_by:
