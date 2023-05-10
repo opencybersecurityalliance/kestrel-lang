@@ -76,10 +76,15 @@ expression: vtrans where_clause? attr_clause? sort_clause? limit_clause? offset_
 // the function in transformer will mal-function in `merge_transformers()`
 vtrans: TRANSFORM "(" VARIABLE ")"
       | VARIABLE
+      | TRANSFORM2 "(" VARIABLE ")"
 
 TRANSFORM: (TIMESTAMPED)
 
 TIMESTAMPED: "TIMESTAMPED"i
+
+TRANSFORM2: (OBSERVED)
+
+OBSERVED: "OBSERVED"i
 
 where_clause: "WHERE"i ecg_pattern
 attr_clause: "ATTR"i ATTRIBUTES

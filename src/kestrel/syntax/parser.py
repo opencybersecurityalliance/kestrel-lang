@@ -211,6 +211,7 @@ class _KestrelT(Transformer):
         return {
             "input": self._extract_var(args),
             "transform": self._assert_and_extract_single("TRANSFORM", args),
+            "transform2": self._assert_and_extract_single("TRANSFORM2", args),
         }
 
     def where_clause(self, args):

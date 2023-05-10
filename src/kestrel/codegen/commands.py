@@ -111,10 +111,12 @@ def _debug_logger(func):
 @_default_output
 def assign(stmt, session):
     entity_table = session.symtable[stmt["input"]].entity_table
-    transform = stmt.get("transform")
+    transform = stmt.get("transform") or stmt.get("transform2")
     if transform:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
+        elif transform.lower() == "observed":
+            qry = session.store.get_all_nested_objects_including_an_attribute_of_SCO(entity_table,name_of_attribute='id', run=False)
         else:
             qry = Query(entity_table)
     else:
@@ -218,6 +220,8 @@ def disp(stmt, session):
     if transform and entity_table:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
+        elif transform.lower() == "observed":
+            qry = session.store.get_all_nested_objects_including_an_attribute_of_SCO(entity_table,name_of_attribute='id', run=False)
         else:
             qry = Query(entity_table)
     else:
