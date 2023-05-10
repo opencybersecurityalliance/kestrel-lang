@@ -46,6 +46,22 @@ def parse_ecgpattern(pattern_str) -> ExtCenteredGraphPattern:
     ).parse(pattern_str)
 
 
+def parse_reference(value_str) -> Reference:
+    grammar = get_data(__name__, "reference.lark").decode("utf-8")
+    paths = importlib.util.find_spec("kestrel.syntax").submodule_search_locations
+    parser = Lark(grammar, parser="lalr", import_paths=paths)
+
+    try:
+        ast = parser.parse(value_str)
+    except:
+        return None
+
+    variable = ast.children[0].value
+    attribute = ast.children[1].value
+
+    return Reference(variable, attribute)
+
+
 class _ECGPatternT(Transformer):
     def start(self, args):
         return ExtCenteredGraphPattern(args[0])
@@ -211,6 +227,7 @@ class _KestrelT(Transformer):
         return {
             "input": self._extract_var(args),
             "transform": self._assert_and_extract_single("TRANSFORM", args),
+            "transform2": self._assert_and_extract_single("TRANSFORM2", args),
         }
 
     def where_clause(self, args):
@@ -252,31 +269,19 @@ class _KestrelT(Transformer):
             return args
 
     def literal(self, args):
-        return args[0]
-
-    def reference_or_simple_string(self, args):
-        if len(args) > 1:
-            variable = _first(args)
-            attribute = _second(args)
-            v = Reference(variable, attribute)
+        if args[0].type == self.token_prefix + "NUMBER":
+            try:
+                v = int(args[0].value)
+            except:
+                v = float(args[0].value)
+        elif args[0].type == self.token_prefix + "ESCAPED_STRING":
+            v = unescape_quoted_string(args[0].value)
         else:
-            v = _first(args)
+            v = args[0].value
+            ref = parse_reference(v)
+            if ref:
+                v = ref
         return v
-
-    def string(self, args):
-        raw = _first(args)
-        if args[0].type == self.token_prefix + "SIMPLE_STRING":
-            value = raw
-        elif args[0].type == self.token_prefix + "ADVANCED_STRING":
-            value = unescape_quoted_string(raw)
-        return value
-
-    def number(self, args):
-        v = _first(args)
-        try:
-            return int(v)
-        except:
-            return float(v)
 
     def attr_clause(self, args):
         paths = self._assert_and_extract_single("ATTRIBUTES", args)
