@@ -1,0 +1,12 @@
+//
+// Kestrel Reference Grammar
+//
+// Due to lookahead limit of LALR, the main Kestrel parser cannot differentiate
+// reference from other simple strings (once a terminal is met, no go back).
+//
+// We implement this parser as a secondary parser to further parse reference.
+//
+
+start: VARIABLE "." ATTRIBUTE
+
+%import .kestrel (VARIABLE, ATTRIBUTE)
