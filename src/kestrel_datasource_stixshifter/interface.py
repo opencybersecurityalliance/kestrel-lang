@@ -200,6 +200,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
             query_metadata = {
                 "id": "identity--" + query_id,
                 "name": connector_name,
+                "type": "identity",
             }
 
             translation = stix_translation.StixTranslation()
