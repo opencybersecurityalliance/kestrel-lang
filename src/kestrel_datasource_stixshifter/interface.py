@@ -200,7 +200,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
             query_metadata = {
                 "id": "identity--" + query_id,
                 "name": connector_name,
-                "type": "identity",
             }
 
             translation = stix_translation.StixTranslation()
@@ -235,7 +234,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
                             connector_name,
                             translation,
                             translation_options,
-                            identity,
+                            query_metadata,
                             query_id,
                             store,
                         )
@@ -377,7 +376,7 @@ async def translation_consume(
             connector_name,
             "results",
             query_metadata,
-            json.dumps(result_batch["data"]),
+            result_batch["data"],
             translation_options,
         )
 
