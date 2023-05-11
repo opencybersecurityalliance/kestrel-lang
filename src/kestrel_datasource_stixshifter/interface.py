@@ -1,7 +1,7 @@
 """The STIX-shifter data source package provides access to data sources via
 `stix-shifter`_.
 
-The STIX-shifter interface can reach multiple data sources. The user needs to
+The STIX-shifter interface connects to multiple data sources. Users need to
 provide one *profile* per data source. The profile name (case insensitive) will
 be used in the ``FROM`` clause of the Kestrel ``GET`` command, e.g., ``newvar =
 GET entity-type FROM stixshifter://profilename WHERE ...``. Kestrel runtime
@@ -31,6 +31,7 @@ will load profiles from 3 places (the later will override the former):
                     options:  # use any of this section when needed
                         result_limit: 500000  # stix-shifter default: 10000
                         retrieval_batch_size: 10000  # safe to set to 10000 to match default Elasticsearch page size; Kestrel default: 2000
+                        timeout: 300  # allow a query to run for 5 minutes (300 seconds) before timing out; stix-shifter default: 30
                         dialects:  # more info: https://github.com/opencybersecurityalliance/stix-shifter/tree/develop/stix_shifter_modules/elastic_ecs#dialects
                           - beats  # need it if the index is created by Filebeat/Winlogbeat/*beat
                 config:
@@ -196,8 +197,11 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 ingestdir, data_path_striped, i
             )
 
-            identity = {"id": "identity--" + query_id, "name": connector_name}
-            query_metadata = json.dumps(identity)
+            query_metadata = {
+                "id": "identity--" + query_id,
+                "name": connector_name,
+                "type": "identity",
+            }
 
             translation = stix_translation.StixTranslation()
             transmission = stix_transmission.StixTransmission(

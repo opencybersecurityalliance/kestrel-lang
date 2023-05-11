@@ -477,30 +477,17 @@ Two examples of variable references in an ECGP:
         # enrich the IPs in network-traffic with x-force threat intelligence
         APPLY python://xfeipenrich ON nt_outter
 
-Escaped String
-==============
+String and Raw String
+=====================
 
 Kestrel string literals in comparison expressions are like standard Python
-strings (not Python raw string). It supports escaping for special characters,
-e.g., ``\n`` means new line.
+strings. It supports escaping for special characters, e.g., ``\n`` means new
+line.
 
-Some basic rules:
-
-#. If double quotes are used to mark a string literal, any double quote
-   character inside the string needs to be escaped. Otherwise, escaping for it
-   is not necessary.
-
-#. If single quotes are used to mark a string literal, any single quote
-   character inside the string needs to be escaped. Otherwise, escaping for it
-   is not necessary.
-
-#. Backslash character ``\`` always needs to be escaped in a string literal,
-   i.e., write ``\\`` to mean a single character ``\`` such as
-   ``'C:\\Windows\\System32\\cmd.exe'``.
-
-The 3rd rule means when writing regular expressions, one can first write a
-regular expression in raw string, then replace each ``\`` with ``\\`` before
-putting it into Kestrel.
+String literals can be enclosed in matching single quotes (``'``) or double
+quotes (``"``). The backslash (``\\``) character is used to escape characters
+that otherwise have a special meaning, such as newline, backslash itself, or
+the quote character.
 
 Examples:
 
@@ -534,6 +521,36 @@ Examples:
     # another regex escaping example that uses `\w` and `\.`
     ps5 = GET process FROM stixshifter://edp1
           WHERE name MATCHES '\\w+\\.exe'
+
+The escaped strings are not friendly to the use of regular expression,
+resulting one to write four backslashes ``\\\\`` to mean a single exact
+backslash char, e.g., STIX pattern requires ``"[artifact:payload_bin MATCHES
+'C:\\\\Windows\\\\system32\\\\svchost\\.exe']"`` to mean raw path
+``C:\Windows\system32\svchost.exe``. This is explained in `Python re library`_.
+
+To overcome the inconvenience, Kestrel provides *raw string* like Python does,
+meaning there is no escaping character in a Kestrel raw string (raw string is
+interpreted without escaping evaluation).
+
+.. code-block:: coffeescript
+
+    # f1 and f2 describes the same pattern:
+    # using regex to match an exact string 'C:\Windows\System32\cmd.exe'
+
+    f1 = GET file FROM stixshifter://edp1
+         WHERE name MATCHES 'C:\\\\Windows\\\\System32\\\\cmd\\.exe'
+
+    f2 = GET file FROM stixshifter://edp1
+         WHERE name MATCHES r'C:\\Windows\\System32\\cmd\.exe'
+
+    # raw string can be used not only in regex (keyword MATCHES), but any comparison expression
+    # f3/f4 will get the same results as f1/f2, yet they use exact match instead of regex
+
+    f3 = GET file FROM stixshifter://edp1
+         WHERE name = 'C:\\Windows\\System32\\cmd.exe'
+
+    f4 = GET file FROM stixshifter://edp1
+         WHERE name = r'C:\Windows\System32\cmd.exe'
 
 Time Range
 ==========
@@ -597,3 +614,4 @@ range specified.
 .. _STIX Cyber Observable Objects: http://docs.oasis-open.org/cti/stix/v2.0/stix-v2.0-part4-cyber-observable-objects.html
 .. _OCA/stix-extension: https://github.com/opencybersecurityalliance/stix-extensions
 .. _STIX Observation Expression: http://docs.oasis-open.org/cti/stix/v2.0/cs01/part5-stix-patterning/stix-v2.0-cs01-part5-stix-patterning.html#_Toc496717745
+.. _Python re library: https://docs.python.org/3/library/re.html

@@ -68,7 +68,6 @@ stix_2_0_ref_mapping = {
     ("windows-service-ext", "loaded", "user-account"): (["creator_user_ref"], []),
 }
 
-# FIXME: is this no longer needed?
 # the first available attribute will be used to uniquely identify the entity
 stix_2_0_identical_mapping = {
     # entity-type: id attributes candidates
@@ -83,11 +82,15 @@ stix_2_0_identical_mapping = {
     # `pid` is optional in STIX standard
     # `first_observed` cannot be used since it may be wrong (derived from observation)
     # `command_line` or `name` may not be in data and cannot be used
-    "process": ("pid", "name"),
+    "process": (
+        "x_unique_id",
+        "pid",
+    ),
     "software": ("name",),
     "url": ("value",),
     "user-account": ("user_id",),  # optional in STIX standard
     "windows-registry-key": ("key",),  # optional in STIX standard
+    "x-oca-asset": ("device_id",),  # oca/stix-extension repo
 }
 
 stix_x_ibm_event_mapping = {

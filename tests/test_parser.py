@@ -103,6 +103,16 @@ def test_quoted_datasource():
             r"[process:command_line = 'C:\\abc\\xyz.exe /c asdf']",
         ),
         (
+            r"command_line = r'C:\abc\xyz.exe /c asdf'",
+            r"process",
+            r"[process:command_line = 'C:\\abc\\xyz.exe /c asdf']",
+        ),
+        (
+            r'command_line = r"C:\wbc\nyz.exe /c asdf"',
+            r"process",
+            r"[process:command_line = 'C:\\wbc\\nyz.exe /c asdf']",
+        ),
+        (
             "name LIKE 'power%.exe'",
             "process",
             "[process:name LIKE 'power%.exe']",
@@ -118,9 +128,14 @@ def test_quoted_datasource():
             r"[process:name MATCHES 'power\\(hi\\)\\w+(real)\\.exe']",
         ),
         (
-            r"name MATCHES 'C:\\Windows\\system32\\svchost\\.exe'",
+            r"name MATCHES 'C:\\\\Windows\\\\system32\\\\svchost\\.exe'",
             r"process",
-            r"[process:name MATCHES 'C:\\Windows\\system32\\svchost\\.exe']",
+            r"[process:name MATCHES 'C:\\\\Windows\\\\system32\\\\svchost\\.exe']",
+        ),
+        (
+            r"name MATCHES r'C:\\Windows\\system32\\svchost\.exe'",
+            r"process",
+            r"[process:name MATCHES 'C:\\\\Windows\\\\system32\\\\svchost\\.exe']",
         ),
     ],
 )
