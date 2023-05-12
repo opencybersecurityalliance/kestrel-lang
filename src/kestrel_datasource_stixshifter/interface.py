@@ -230,7 +230,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
             if connector_name in config["options"]["fast_translate"]:
                 for _ in range(consumer_count):
                     consumer = asyncio.create_task(
-                        fast_translate_consume(
+                        fast_translate_ingest_consume(
                             transmission_queue,
                             connector_name,
                             translation,
@@ -244,7 +244,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
             else:
                 for _ in range(consumer_count):
                     consumer = asyncio.create_task(
-                        translation_consume(
+                        translation_ingest_consume(
                             transmission_queue,
                             translation,
                             connector_name,
@@ -310,7 +310,11 @@ class StixShifterInterface(AbstractDataSourceInterface):
                 consumer.cancel()
 
             # wait until all worker tasks are cancelled
-            await asyncio.gather(*consumers, return_exceptions=True)
+            responses = await asyncio.gather(*consumers, return_exceptions=True)
+            for response in responses:
+                if not isinstance(response, asyncio.CancelledError):
+                    raise response
+            print(responses)
 
         return ReturnFromStore(query_id)
         # return ReturnFromFile(query_id, bundles)
@@ -359,7 +363,7 @@ async def transmission_produce(
     return batch_index
 
 
-async def translation_consume(
+async def translation_ingest_consume(
     transmission_queue,
     translation,
     connector_name,
@@ -382,6 +386,7 @@ async def translation_consume(
         )
 
         if "error" in stixbundle:
+            transmission_queue.task_done()
             raise DataSourceError(
                 f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
             )
@@ -400,7 +405,7 @@ async def translation_consume(
         transmission_queue.task_done()
 
 
-async def fast_translate_consume(
+async def fast_translate_ingest_consume(
     transmission_queue,
     connector_name,
     translation,
@@ -412,17 +417,19 @@ async def fast_translate_consume(
     while True:
         # wait for an item from the producer
         result_batch = await transmission_queue.get()
-        await fast_translate(
-            connector_name,
-            result_batch["data"],
-            translation,
-            translation_options,
-            identity,
-            query_id,
-            store,
-        )
-        # Notify the queue that the item has been processed
-        transmission_queue.task_done()
+        try:
+            await fast_translate(
+                connector_name,
+                result_batch["data"],
+                translation,
+                translation_options,
+                identity,
+                query_id,
+                store,
+            )
+        finally:
+            # Notify the queue that the item has been processed
+            transmission_queue.task_done()
 
 
 async def fast_translate(
