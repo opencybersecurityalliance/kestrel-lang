@@ -314,7 +314,6 @@ class StixShifterInterface(AbstractDataSourceInterface):
             for response in responses:
                 if not isinstance(response, asyncio.CancelledError):
                     raise response
-            print(responses)
 
         return ReturnFromStore(query_id)
         # return ReturnFromFile(query_id, bundles)
