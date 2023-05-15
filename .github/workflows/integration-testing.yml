@@ -1,4 +1,4 @@
-name: Integration Testing Launcher to Integration Testing With stix-shifter and Live Data Sources Launcher
+name: Integration Testing With stix-shifter and Live Data Sources Launcher
 on:
   push:
     branches: [develop, release]
