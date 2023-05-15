@@ -1,11 +1,21 @@
-name: Integration Testing Launcher
+name: Integration Testing Launcher to Integration Testing With stix-shifter and Live Data Sources Launcher
 on:
   push:
     branches: [develop, release]
   pull_request:
     branches: [develop, release]
     types: [opened, synchronize, reopened]
-    
+  workflow_dispatch:
+    inputs:
+      organization:
+        description: 'Kestrel repo organization'
+        required: true
+        default: 'opencybersecurityalliance'
+      branch:
+        description: 'Kestrel repo branch'
+        required: true
+        default: 'develop'
+
 jobs:
   launch:
     name: Launch Integration Testing
