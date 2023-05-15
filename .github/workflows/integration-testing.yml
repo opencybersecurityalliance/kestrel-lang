@@ -1,0 +1,25 @@
+name: Integration Testing Launcher
+on:
+  push:
+    branches: [develop, release]
+  pull_request:
+    branches: [develop, release]
+    types: [opened, synchronize, reopened]
+    
+jobs:
+  launch:
+    name: Launch Integration Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Launch integration testing workflows
+        uses: convictional/trigger-workflow-and-wait@v1.6.5
+        with:
+          owner: opencybersecurityalliance
+          repo: hunting-stack-testing
+          github_token: ${{ secrets.KESTREL_STIXSHIFTER_INTEGRATION_TESTING_TOKEN }}
+          workflow_file_name: kestrel-integration-testing-flow.yml
+          ref: main
+          wait_interval: 10
+          propagate_failure: true
+          trigger_workflow: true
+          wait_workflow: true
