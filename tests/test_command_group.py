@@ -38,11 +38,7 @@ def test_group_src_dst(fake_bundle_file):
             where [network-traffic:dst_port > 0]""",
         )
 
-        session.execute(
-            (
-                "grps = group conns by src_ref.value, dst_ref.value"
-            )
-        )
+        session.execute(("grps = group conns by src_ref.value, dst_ref.value"))
         assert "grps" in session.get_variable_names()
         grps = session.get_variable("grps")
         assert grps is not None
@@ -66,10 +62,7 @@ def test_group_srcref_agg(fake_bundle_file, agg_func, attr, expected):
         )
 
         session.execute(
-            (
-                "src_grps = group conns by src_ref.value"
-                f" with {agg_func}({attr})"
-            )
+            ("src_grps = group conns by src_ref.value" f" with {agg_func}({attr})")
         )
         assert "src_grps" in session.get_variable_names()
         src_grps = session.get_variable("src_grps")
@@ -114,8 +107,12 @@ def test_group_nt_binned_timestamp(fake_bundle_file):
         )
 
         session.execute("ts_conns = TIMESTAMPED(conns)")
-        session.execute(("conns_per_min = group ts_conns by bin(first_observed, 1m)"
-                         " with count(dst_port) as count"))
+        session.execute(
+            (
+                "conns_per_min = group ts_conns by bin(first_observed, 1m)"
+                " with count(dst_port) as count"
+            )
+        )
         hist = session.get_variable("conns_per_min")
         assert len(hist) == 5
         assert hist[0]["first_observed_bin"] == "2020-06-30T19:25:00Z"
@@ -132,8 +129,12 @@ def test_group_nt_binned_port(fake_bundle_file):
             where [network-traffic:dst_port > 0]""",
         )
 
-        session.execute(("port_hist = group conns by bin(src_port, 10000)"
-                         " with count(src_port) as count"))
+        session.execute(
+            (
+                "port_hist = group conns by bin(src_port, 10000)"
+                " with count(src_port) as count"
+            )
+        )
         hist = session.get_variable("port_hist")
         print(json.dumps(hist, indent=4))
         assert len(hist) == 3

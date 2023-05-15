@@ -37,7 +37,6 @@ KNOWN_ETYPES = {
 
 @pytest.fixture
 def datasource_env_setup(tmp_path):
-
     profiles = f"""profiles:
     thost101:
         connector: elastic_ecs
@@ -73,14 +72,11 @@ def datasource_env_setup(tmp_path):
     with open(profile_file, "w") as pf:
         pf.write(profiles)
 
-    os.environ["KESTREL_STIXSHIFTER_CONFIG"] = str(
-        profile_file.expanduser().resolve()
-    )
+    os.environ["KESTREL_STIXSHIFTER_CONFIG"] = str(profile_file.expanduser().resolve())
 
 
 @pytest.fixture
 def analytics_env_setup(tmp_path):
-
     analytics_module_path = str(
         pathlib.Path(__file__).resolve().parent / "python_analytics_mockup.py"
     )
@@ -126,8 +122,11 @@ def a_session(datasource_env_setup, analytics_env_setup):
 @pytest.mark.parametrize(
     "code, expected",
     [
-        ("x", []), # No suggestion
-        ("c", []), # No suggestion on existing variable name if first token in statement
+        ("x", []),  # No suggestion
+        (
+            "c",
+            [],
+        ),  # No suggestion on existing variable name if first token in statement
         ("x ", {"="}),
         (
             "procs = ",
@@ -170,10 +169,10 @@ def test_do_complete_disp(a_session, code, expected):
             "urls = GET url FROM ",
             ["_", "conns", "file://", "http://", "https://", "stixshifter://"],
         ),
-        ( "urls = GET url FROM stixshi", {"fter://"}),
-        ( "urls = GET url FROM stixshifter://", {"thost101", "thost102", "thost103"}),
-        ( "urls = GET url FROM stixshifter://thost", {"101", "102", "103"}),
-        ("urls = get url where ", []), # TODO: attribute completion
+        ("urls = GET url FROM stixshi", {"fter://"}),
+        ("urls = GET url FROM stixshifter://", {"thost101", "thost102", "thost103"}),
+        ("urls = GET url FROM stixshifter://thost", {"101", "102", "103"}),
+        ("urls = get url where ", []),  # TODO: attribute completion
         ("urls = get url where name = 'a' ", {"START"}),
         ("urls = get url where name = 'a' START 2022-01-01T00:00:00Z ", {"STOP"}),
     ],
@@ -210,7 +209,7 @@ def test_do_complete_cmd_find(a_session, code, expected):
     "code, expected",
     [
         ("procs2 = SORT procs ", {"BY"}),
-        ("procs2 = SORT procs BY ", []), # TODO: attribute completion
+        ("procs2 = SORT procs BY ", []),  # TODO: attribute completion
     ],
 )
 def test_do_complete_cmd_sort(a_session, code, expected):
@@ -223,8 +222,19 @@ def test_do_complete_cmd_sort(a_session, code, expected):
     [
         ("APPLY ", {"python://", "docker://"}),
         ("APPLY pyth", {"on://"}),
-        ("APPLY python://", {"enrich_one_variable", "html_visualization", "enrich_multiple_variables", "enrich_variable_with_arguments"}),
-        ("APPLY python://enrich", {"_one_variable", "_multiple_variables", "_variable_with_arguments"}),
+        (
+            "APPLY python://",
+            {
+                "enrich_one_variable",
+                "html_visualization",
+                "enrich_multiple_variables",
+                "enrich_variable_with_arguments",
+            },
+        ),
+        (
+            "APPLY python://enrich",
+            {"_one_variable", "_multiple_variables", "_variable_with_arguments"},
+        ),
         ("APPLY abc ON ", {"_", "conns"}),
         ("APPLY abc ON c ", {"WITH"}),
     ],
@@ -240,7 +250,7 @@ def test_do_complete_cmd_apply(a_session, code, expected):
         ("grps = GR", {"OUP"}),
         ("grps = GROUP ", {"conns", "_"}),
         ("grps = GROUP conns ", {"BY"}),
-        ("grps = GROUP conns by ", {"BIN"}), # TODO: attribute completion
+        ("grps = GROUP conns by ", {"BIN"}),  # TODO: attribute completion
     ],
 )
 def test_do_complete_cmd_group(a_session, code, expected):
@@ -253,11 +263,11 @@ def test_do_complete_cmd_group(a_session, code, expected):
     [
         ("procs2 = JOIN x, ", {"_", "conns"}),
         ("procs2 = JOIN x, y ", {"BY"}),
-        ("procs2 = JOIN x, y BY ", []), # TODO: attribute completion
+        ("procs2 = JOIN x, y BY ", []),  # TODO: attribute completion
         ("procs2 = JOIN x, y BY a", []),
         ("procs2 = JOIN x, y BY a ", {","}),
-        ("procs2 = JOIN x, y BY a,", []), # TODO: attribute completion
-        ("procs2 = JOIN x, y BY a, ", []), # TODO: attribute completion
+        ("procs2 = JOIN x, y BY a,", []),  # TODO: attribute completion
+        ("procs2 = JOIN x, y BY a, ", []),  # TODO: attribute completion
     ],
 )
 def test_do_complete_cmd_join(a_session, code, expected):

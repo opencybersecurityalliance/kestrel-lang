@@ -165,7 +165,7 @@ def test_generated_pattern_match(fake_bundle_file, fake_bundle_3):
 
 
 def test_disp_column_order(fake_bundle_file, caplog):
-    #caplog.set_level(logging.DEBUG)
+    # caplog.set_level(logging.DEBUG)
     with Session(debug_mode=True) as session:
         execute(
             session,
@@ -179,6 +179,7 @@ def test_disp_column_order(fake_bundle_file, caplog):
         print(conns.head())
         cols = conns.columns.to_list()
         assert cols.index("src_port") < cols.index("dst_port")
+
 
 def test_get_set_variable(fake_bundle_file):
     with Session() as session:
@@ -300,20 +301,25 @@ def test_env_var_resolve(tmp_path):
     os.chdir(tmp_path)
     config_name = "abc.yaml"
     with open(config_name, "w") as config:
-        config.write(r"""
+        config.write(
+            r"""
 language:
   default_variable: "_"
-""")
+"""
+        )
     os.environ[kestrel.config.CONFIG_PATH_ENV_VAR] = config_name
     os.environ[kestrel_datasource_stixshifter.config.PROFILE_PATH_ENV_VAR] = config_name
     s = Session()
     full_path = os.path.join(os.getcwd(), config_name)
-    assert os.environ[kestrel.config.CONFIG_PATH_ENV_VAR] == full_path 
-    assert os.environ[kestrel_datasource_stixshifter.config.PROFILE_PATH_ENV_VAR] == full_path
+    assert os.environ[kestrel.config.CONFIG_PATH_ENV_VAR] == full_path
+    assert (
+        os.environ[kestrel_datasource_stixshifter.config.PROFILE_PATH_ENV_VAR]
+        == full_path
+    )
 
 
 def test_where_deref_network_traffic(fake_bundle_file):
-    '''#290: expression does not work on attribute with reference'''
+    """#290: expression does not work on attribute with reference"""
     with Session(debug_mode=True) as session:
         execute(
             session,
@@ -328,14 +334,17 @@ def test_where_deref_network_traffic(fake_bundle_file):
         assert len(c2) == 1
         assert c2[0]["dst_port"] == 22
 
-        execute(session, "c2 = conns where src_ref.value = '192.168.121.121' and dst_ref.value = '10.0.0.134'")
+        execute(
+            session,
+            "c2 = conns where src_ref.value = '192.168.121.121' and dst_ref.value = '10.0.0.134'",
+        )
         c2 = session.get_variable("c2")
         assert len(c2) == 1
         assert c2[0]["dst_port"] == 3128
 
 
 def test_where_deref_process(cbcloud_powershell_bundle):
-    '''#290: expression does not work on attribute with reference'''
+    """#290: expression does not work on attribute with reference"""
     with Session() as session:
         script = (
             "x = get process"
@@ -346,4 +355,7 @@ def test_where_deref_process(cbcloud_powershell_bundle):
         execute(session, "y = x where parent_ref.pid = 1544")
         y = session.get_variable("y")
         assert len(y) == 1
-        assert y[0]["parent_ref.x_unique_id"] == "MYORGIDX-02629f16-00000608-00000000-1d71d10a09cc7c4"
+        assert (
+            y[0]["parent_ref.x_unique_id"]
+            == "MYORGIDX-02629f16-00000608-00000000-1d71d10a09cc7c4"
+        )

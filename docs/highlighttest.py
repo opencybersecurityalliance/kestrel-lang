@@ -1,6 +1,30 @@
 #!/usr/bin/env python
 
-names = ["apl", "arduino", "basemake", "bash", "sh", "ksh", "zsh", "csh", "fish", "shell", "coffeescript", "cu", "ecl", "elixir", "fancy", "felix", "flo", "fortran", "freefem", "gsql", "icon", "idl", "pan"]
+names = [
+    "apl",
+    "arduino",
+    "basemake",
+    "bash",
+    "sh",
+    "ksh",
+    "zsh",
+    "csh",
+    "fish",
+    "shell",
+    "coffeescript",
+    "cu",
+    "ecl",
+    "elixir",
+    "fancy",
+    "felix",
+    "flo",
+    "fortran",
+    "freefem",
+    "gsql",
+    "icon",
+    "idl",
+    "pan",
+]
 
 HF = r"""
 
@@ -42,11 +66,13 @@ HF = r"""
 """
 
 with open("highlighttest.rst", "w") as ht:
-    ht.write("""==============
+    ht.write(
+        """==============
 Highlight Test
 ==============
 
-""")
+"""
+    )
     for name in names:
         header = f"{name}\n\n.. code-block:: {name}"
         ht.write(header)

@@ -162,9 +162,7 @@ def test_last_datasource(proc_bundle_file):
 
 def test_relative_file_path(tmp_path):
     data_file_path = "doctored-1k.json"
-    ori_path = os.path.join(
-        os.path.dirname(__file__), data_file_path
-    )
+    ori_path = os.path.join(os.path.dirname(__file__), data_file_path)
     shutil.copy2(ori_path, tmp_path)
     os.chdir(tmp_path)
 
@@ -317,11 +315,14 @@ def test_get_referred_variable(nt_stix_bundles):
 
 def test_regex_escaping_in_stix_bundle(nt_stix_bundles):
     with Session() as s:
-        stmt1 = f"""
+        stmt1 = (
+            f"""
                  d = GET directory
                      FROM file://{nt_stix_bundles[0]}
                      WHERE path MATCHES 
-                 """ + r"'C:\\\\Windows.*'" # FIXME: r"'C:\\Windows.*' is expected
+                 """
+            + r"'C:\\\\Windows.*'"
+        )  # FIXME: r"'C:\\Windows.*' is expected
         s.execute(stmt1)
         d = s.get_variable("d")
         assert len(d) == 1
