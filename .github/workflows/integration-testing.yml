@@ -1,4 +1,4 @@
-name: Integration Testing Dispatcher
+name: Integration Testing Launcher
 on:
   push:
     branches: [develop, release]
@@ -7,11 +7,11 @@ on:
     types: [opened, synchronize, reopened]
     
 jobs:
-  dispatch:
-    name: Dispatch Integration Testing
+  launch:
+    name: Launch Integration Testing
     runs-on: ubuntu-latest
     steps:
-      - name: Dispatch to workflows
+      - name: Launch integration testing workflows
         uses: convictional/trigger-workflow-and-wait@v1.6.5
         with:
           owner: opencybersecurityalliance
