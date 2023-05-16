@@ -138,7 +138,7 @@ def do_complete(
             elif token == "TRANSFORM":
                 expected_values.extend(TRANSFORMS)
             elif token == "TRANSFORM2":
-                expected_values.extend(TRANSFORMS)
+                expected_values.extend(TRANSFORMS)    
             elif token == "ATTRIBUTE":
                 # TODO: attribute completion
                 # https://github.com/opencybersecurityalliance/kestrel-lang/issues/79

@@ -35,6 +35,7 @@ def fake_bundle_4():
 
 @pytest.fixture(autouse=True)
 def env_setup(tmp_path):
+
     analytics_module_path = str(
         pathlib.Path(__file__).resolve().parent / "python_analytics_mockup.py"
     )
@@ -125,7 +126,7 @@ def test_enrich_variable_with_arguments():
         assert len(v) == 2
         assert v[0]["type"] == "process"
         assert v[0]["x_new_argx"] == "abc,888"
-        assert v[0]["x_new_argy"] == "123"
+        assert v[0]["x_new_argy"] == '123'
         assert v[0]["x_new_argz"] == r'as"is'
 
 
@@ -143,8 +144,9 @@ def test_enrich_variable_with_reference_in_arguments():
         assert len(v) == 2
         assert v[0]["type"] == "process"
         assert v[0]["x_new_argx"] in ("4,1380", "1380,4")
-        assert v[0]["x_new_argy"] == "123"
+        assert v[0]["x_new_argy"] == '123'
         assert v[0]["x_new_argz"] in ("4,1380,555", "1380,4,555")
+
 
 
 def test_enrich_after_get_url(fake_bundle_file):

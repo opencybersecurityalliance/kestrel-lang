@@ -24,6 +24,7 @@ def test_check_module_availability():
 
 
 def test_yaml_profiles_refresh(tmp_path):
+
     profileA = f"""profiles:
 profiles:
     host101:
@@ -61,6 +62,7 @@ profiles:
     os.environ["KESTREL_STIXSHIFTER_CONFIG"] = str(profile_file.expanduser().resolve())
 
     with Session() as s:
+
         with open(profile_file, "w") as pf:
             pf.write(profileA)
 
@@ -75,12 +77,7 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
 
         ss_config = s.config["datasources"]["kestrel_datasource_stixshifter"]
         ss_profiles = ss_config["profiles"]
-        (
-            connector_name,
-            connection,
-            configuration,
-            retrieval_batch_size,
-        ) = get_datasource_from_profiles("host101", ss_profiles)
+        connector_name, connection, configuration, retrieval_batch_size = get_datasource_from_profiles("host101", ss_profiles)
         assert connector_name == "elastic_ecs"
         assert configuration["auth"]["id"] == "profileA"
         assert configuration["auth"]["api_key"] == "qwer"
@@ -93,12 +90,7 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
 
         # need to refresh the pointers since the dict is updated
         ss_profiles = ss_config["profiles"]
-        (
-            connector_name,
-            connection,
-            configuration,
-            retrieval_batch_size,
-        ) = get_datasource_from_profiles("host101", ss_profiles)
+        connector_name, connection, configuration, retrieval_batch_size = get_datasource_from_profiles("host101", ss_profiles)
         assert connector_name == "elastic_ecs"
         assert configuration["auth"]["id"] == "profileB"
         assert configuration["auth"]["api_key"] == "asdf"

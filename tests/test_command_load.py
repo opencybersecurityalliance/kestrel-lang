@@ -21,7 +21,9 @@ def test_load_full_csv():
 
 def test_load_relative_path_csv(tmp_path):
     data_file_path = "test_input_data_procs.csv"
-    ori_path = os.path.join(os.path.dirname(__file__), data_file_path)
+    ori_path = os.path.join(
+        os.path.dirname(__file__), data_file_path
+    )
     shutil.copy2(ori_path, tmp_path)
     os.chdir(tmp_path)
     with Session() as s:
