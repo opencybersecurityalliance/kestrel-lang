@@ -15,6 +15,7 @@ STIXSHIFTER_DEBUG_ENV_VAR = "KESTREL_STIXSHIFTER_DEBUG"  # debug mode for stix-s
 ENV_VAR_PREFIX = "STIXSHIFTER_"
 RETRIEVAL_BATCH_SIZE = 2000
 FAST_TRANSLATE_CONNECTORS = []  # Suggested: ["qradar", "elastic_ecs"]
+ASYNC_TRANSLATION_WORKERS_CNT = 1
 
 
 _logger = logging.getLogger(__name__)
@@ -171,4 +172,8 @@ def load_options():
         config = {"options": {}}
     if "fast_translate" not in config["options"]:
         config["options"]["fast_translate"] = FAST_TRANSLATE_CONNECTORS
+    if "async_translation_workers_count" not in config["options"]:
+        config["options"][
+            "async_translation_workers_count"
+        ] = ASYNC_TRANSLATION_WORKERS_CNT
     return config["options"]
