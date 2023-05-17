@@ -22,10 +22,6 @@ class KestrelKernel(Kernel):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.kestrel_session = Session()
-        _set_logging(
-            self.kestrel_session.debug_mode,
-            os.path.join(self.kestrel_session.runtime_directory, LOG_FILE_NAME),
-        )
 
     def do_complete(self, code, cursor_pos):
         return {
@@ -76,12 +72,3 @@ class KestrelKernel(Kernel):
             "payload": [],
             "user_expressions": {},
         }
-
-
-def _set_logging(debug_flag, log_file_path):
-    logging.basicConfig(
-        format="%(asctime)s %(levelname)s %(name)s %(message)s",
-        datefmt="%H:%M:%S",
-        level=logging.DEBUG if debug_flag else logging.INFO,
-        handlers=[logging.FileHandler(log_file_path)],
-    )
