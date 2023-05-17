@@ -212,7 +212,7 @@ def test_get_set_variable(fake_bundle_file):
 
 def test_session_runtime_dir():
     # standard session
-    with Session() as session:
+    with Session(debug_mode=False) as session:
         runtime_directory = session.runtime_directory
         runtime_master_dirctory = session._get_runtime_directory_master()
 
