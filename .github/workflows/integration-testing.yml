@@ -1,10 +1,23 @@
-name: Integration Testing With stix-shifter and Live Data Sources Launcher
+name: Integration Testing With stix-shifter and Live Data Sources
 on:
   push:
-    branches: [develop, release]
+    branches:
+      - develop
+      - develop_*
+      - release
+    paths:
+      - 'src/**'
   pull_request:
-    branches: [develop, release]
-    types: [opened, synchronize, reopened]
+    branches:
+      - develop
+      - develop_*
+      - release
+    paths:
+      - 'src/**'
+    types:
+      - opened
+      - synchronize
+      - reopened
   workflow_dispatch:
     inputs:
       organization:
