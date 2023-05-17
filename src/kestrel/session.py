@@ -70,7 +70,11 @@ from kestrel.codegen import commands
 from kestrel.codegen.display import DisplayBlockSummary
 from kestrel.codegen.summary import gen_variable_summary
 from kestrel.symboltable.symtable import SymbolTable
-from kestrel.utils import set_current_working_directory, resolve_path_in_kestrel_env_var
+from kestrel.utils import (
+    set_current_working_directory,
+    resolve_path_in_kestrel_env_var,
+    add_logging_handler,
+)
 from kestrel.config import load_config
 from kestrel.datasource import DataSourceManager
 from kestrel.analytics import AnalyticsManager
@@ -221,6 +225,8 @@ class Session(AbstractContextManager):
         if self.debug_mode:
             self._setup_runtime_directory_master()
 
+        self._logging_setup()
+
         # local database of SQLite or PostgreSQL
         if not store_path:
             # use the default local database in config.py
@@ -362,14 +368,26 @@ class Session(AbstractContextManager):
 
         This may be executed by a context manager or when the program exits.
         """
-        # this subroutine could be invoked twice by a context manager and program exit.
-        # only execute it once (when self.store not deleted).
-        if hasattr(self, "store"):
+        # Note there are two conditions that trigger this function, so it is probably executed twice
+        # Be careful to write the logic in this function to avoid deleting nonexist files/dirs
+
+        # remove logging handler
+        if self.logging_handler:
+            logging.getLogger().removeHandler(self.logging_handler)
+            self.logging_handler.close()
+            # ensure this does not executed twice
+            self.logging_handler = None
+
+        # close store/database
+        if self.store:
             # release resources
             self.store.close()
-            del self.store
+            # ensure this does not executed twice
+            self.store = None
 
-            # manage temp folder for debug
+        # manage temp folder for debug
+        # ensure this does not execute if already executed
+        if os.path.exists(self.runtime_directory):
             if not self.runtime_directory_is_owned_by_upper_layer:
                 if self.debug_mode:
                     self._leave_exit_marker()
@@ -438,11 +456,9 @@ class Session(AbstractContextManager):
         self.symtable[self.config["language"]["default_variable"]] = output_var_struct
 
     def _leave_exit_marker(self):
-        exit_marker = os.path.join(
-            self.runtime_directory, self.config["debug"]["session_exit_marker"]
-        )
-        with open(exit_marker, "w"):
-            pass
+        runtime_dir = pathlib.Path(self.runtime_directory)
+        exit_marker = runtime_dir / self.config["debug"]["session_exit_marker"]
+        exit_marker.touch()
 
     def _remove_obsolete_debug_folders(self):
         # will only clean debug cache directories under system temp directory
@@ -495,3 +511,9 @@ class Session(AbstractContextManager):
             raise DebugCacheLinkOccupied(master_dir.resolve())
 
         master_dir.symlink_to(self.runtime_directory)
+
+    def _logging_setup(self):
+        log_file_name = self.config["session"]["log_path"]
+        log_file_path = os.path.join(self.runtime_directory, log_file_name)
+        handler = logging.FileHandler(log_file_path)
+        self.logging_handler = add_logging_handler(handler, self.debug_mode)
