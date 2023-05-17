@@ -39,7 +39,6 @@ def install_kernelspec():
 
 
 if __name__ == "__main__":
-
     print("Setup Kestrel Jupyter Kernel")
     print("  Install new Jupyter kernel ...", end=" ")
     install_kernelspec()

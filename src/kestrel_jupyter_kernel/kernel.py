@@ -33,7 +33,6 @@ class KestrelKernel(Kernel):
     def do_execute(
         self, code, silent, store_history=True, user_expressions=None, allow_stdin=False
     ):
-
         errmsg = None
 
         if not silent:
