@@ -9,6 +9,31 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.6.0 (2023-05-17)
+==================
+
+Changed
+-------
+
+- Upgrade stix-shifter from v4 to v5 in the stix-shifter datasource interface
+- Bump stix-shifter version to v5.3.0 to include latest Elastcisearch ECS mappings
+- Restrict scopes of Github workflows to eliminate unnecessary executions
+
+Added
+-----
+
+- stix-shifter datasource interface query procedure pipelining: a producer-consumer model for transmission and translation/ingestion
+- Integration testing with stix-shifter and the first live data source---Elasticsearch
+- Raw String implemented in Kestrel
+- Documentation on raw String
+
+Fixed
+-----
+
+- Logging module reimplemented to fix #334
+- asyncio bug in ``tests/test_fast_translate.py``
+
+
 1.5.14 (2023-04-19)
 ===================
 

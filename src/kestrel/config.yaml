@@ -9,6 +9,7 @@ language:
 session:
   cache_directory_prefix: "kestrel-session-" # under system temp directory
   local_database_path: "local.db"
+  log_path: "session.log"
   show_execution_summary: true
 
 # whether/how to prefetch all records/observations for entities

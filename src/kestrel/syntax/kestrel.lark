@@ -250,12 +250,18 @@ NULL_OP: IS (WS+ NOT)?
 value: literal_list
      | literal
 
-literal: SIMPLESTRING
-       | ESCAPED_STRING
-       | NUMBER
+literal: reference_or_simple_string
+       | string
+       | number
 
 literal_list: "(" literal ("," literal)* ")"
             | "[" literal ("," literal)* "]"
+
+reference_or_simple_string: ECNAME ("." ATTRIBUTE)?
+
+string: ADVANCED_STRING
+
+number: NUMBER
 
 ENTITY_ATTRIBUTE_PATH: (ENTITY_TYPE ":")? ATTRIBUTE
 
@@ -272,8 +278,6 @@ ATTRIBUTES: ATTRIBUTE (WS* "," WS* ATTRIBUTE)*
 ECNAME: (LETTER|"_") (LETTER|DIGIT|"_"|"-")*
 ECNAME_W_QUOTE: (LETTER|DIGIT|"_"|"-"|"'")+
 
-SIMPLESTRING: (LETTER|"_") (LETTER|DIGIT|"_"|"-"|"."|"'"|"[*]")*
-
 PATH_SIMPLE: (ECNAME "://")? (LETTER|DIGIT|"_"|"-"|"."|"/")+
 
 PATH_ESCAPED: "\"" (ECNAME "://")? _STRING_ESC_INNER "\""
@@ -283,6 +287,11 @@ ESCAPED_STRING: "\"" _STRING_ESC_INNER "\""
               | "'"  _STRING_ESC_INNER "'"
 ESCAPED_STRING_WS: WS* ESCAPED_STRING WS*
 
+SIMPLE_STRING: ECNAME
+
+// nearly Python string, but no [ubf]? as prefix options
+// check Lark example of Python parser for reference
+ADVANCED_STRING: /(r?)("(?!"").*?(?<!\\)(\\\\)*?"|'(?!'').*?(?<!\\)(\\\\)*?')/
 
 %import common (LETTER, DIGIT, WS, INT, WORD, NUMBER, _STRING_ESC_INNER)
 %import common.SH_COMMENT -> COMMENT

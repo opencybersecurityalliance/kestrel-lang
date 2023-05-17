@@ -17,10 +17,8 @@ on:
       - 'tests/**'
     types:
       - opened
-      - edited
       - reopened
       - synchronize
-      - unlocked
 
 jobs:
   unittest:
