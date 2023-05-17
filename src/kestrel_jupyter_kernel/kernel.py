@@ -1,10 +1,8 @@
 from ipykernel.kernelbase import Kernel
-import os
 import logging
 
 from kestrel.codegen.display import DisplayWarning
 from kestrel.session import Session
-from kestrel_jupyter_kernel.config import LOG_FILE_NAME
 
 
 _logger = logging.getLogger(__name__)
