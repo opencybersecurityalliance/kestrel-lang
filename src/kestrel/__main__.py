@@ -6,12 +6,9 @@
 
 import argparse
 import logging
-import os
 
 from kestrel.session import Session
 from kestrel.utils import add_logging_handler, clear_logging_handlers
-
-logfile = "session.log"
 
 _logger = logging.getLogger(__name__)
 
@@ -36,8 +33,6 @@ if __name__ == "__main__":
     logging_setup(args.verbose, args.debug)
 
     with Session(debug_mode=args.debug) as session:
-        if not args.verbose:
-            _logger.debug(f"redirect logging to {logfile} in `/tmp/kestrel")
         with open(args.huntflow, "r") as fp:
             huntflow = fp.read()
         outputs = session.execute(huntflow)
