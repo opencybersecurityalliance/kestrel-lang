@@ -2,6 +2,7 @@ import pathlib
 import os
 import uuid
 import collections.abc
+import logging
 
 
 def unescape_quoted_string(s):
@@ -61,6 +62,27 @@ def mkdtemp():
     p = pathlib.Path(ps)
     p.mkdir(parents=True, exist_ok=True)
     return p
+
+
+def add_logging_handler(handler, if_debug):
+    fmt = "%(asctime)s %(levelname)s %(name)s %(message)s"
+    datefmt = "%H:%M:%S"
+    formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
+
+    handler.setFormatter(formatter)
+
+    root_logger = logging.getLogger()
+    root_logger.addHandler(handler)
+    root_logger.setLevel(logging.DEBUG if if_debug else logging.INFO)
+
+    return handler
+
+
+def clear_logging_handlers():
+    root_logger = logging.getLogger()
+    for h in root_logger.handlers[:]:
+        root_logger.removeHandler(h)
+        h.close()
 
 
 def resolve_path_in_kestrel_env_var():
