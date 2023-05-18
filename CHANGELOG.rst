@@ -6,6 +6,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+1.0.8 (2023-05-17)
+==================
+
+Changed
+-------
+
+- logging API update for ``kestrel-lang==1.6.0``
+
+Removed
+-------
+
+- Python 3.7 support
+
 1.0.7 (2022-12-08)
 ==================
 
