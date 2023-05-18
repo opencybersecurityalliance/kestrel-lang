@@ -1,10 +1,8 @@
 from ipykernel.kernelbase import Kernel
-import os
 import logging
 
 from kestrel.codegen.display import DisplayWarning
 from kestrel.session import Session
-from kestrel_jupyter_kernel.config import LOG_FILE_NAME
 
 
 _logger = logging.getLogger(__name__)
@@ -22,10 +20,6 @@ class KestrelKernel(Kernel):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.kestrel_session = Session()
-        _set_logging(
-            self.kestrel_session.debug_mode,
-            os.path.join(self.kestrel_session.runtime_directory, LOG_FILE_NAME),
-        )
 
     def do_complete(self, code, cursor_pos):
         return {
@@ -39,7 +33,6 @@ class KestrelKernel(Kernel):
     def do_execute(
         self, code, silent, store_history=True, user_expressions=None, allow_stdin=False
     ):
-
         errmsg = None
 
         if not silent:
@@ -76,12 +69,3 @@ class KestrelKernel(Kernel):
             "payload": [],
             "user_expressions": {},
         }
-
-
-def _set_logging(debug_flag, log_file_path):
-    logging.basicConfig(
-        format="%(asctime)s %(levelname)s %(name)s %(message)s",
-        datefmt="%H:%M:%S",
-        level=logging.DEBUG if debug_flag else logging.INFO,
-        handlers=[logging.FileHandler(log_file_path)],
-    )

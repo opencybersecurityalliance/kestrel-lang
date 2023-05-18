@@ -7,7 +7,6 @@ import kestrel
 
 
 def update_codemirror_mode():
-
     for codemirror_file_path in _get_codemirror_file_paths():
         src_current = ""
         if os.path.isfile(codemirror_file_path):
