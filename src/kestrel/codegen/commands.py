@@ -114,10 +114,8 @@ def assign(stmt, session):
     transform = stmt.get("transform") or stmt.get("transform2")
     if transform:
         if transform.lower() == "timestamped":
-            qry = session.store.extract_observeddata_attribute(
-                entity_table, name_of_attribute="first_observed", run=False
-            )
-        elif transform.lower() == "observed":
+            qry = session.store.timestamped(entity_table, run=False)
+        elif transform.lower() == "addobsid":
             qry = session.store.extract_observeddata_attribute(
                 entity_table, name_of_attribute="id", run=False
             )
@@ -223,10 +221,8 @@ def disp(stmt, session):
     transform = stmt.get("transform") or stmt.get("transform2")
     if transform and entity_table:
         if transform.lower() == "timestamped":
-            qry = session.store.extract_observeddata_attribute(
-                entity_table, name_of_attribute="first_observed", run=False
-            )
-        elif transform.lower() == "observed":
+            qry = session.store.timestamped(entity_table, run=False)
+        elif transform.lower() == "addobsid":
             qry = session.store.extract_observeddata_attribute(
                 entity_table, name_of_attribute="id", run=False
             )
