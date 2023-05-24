@@ -102,7 +102,6 @@ environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
 
 import asyncio
 import json
-import time
 import copy
 import logging
 
