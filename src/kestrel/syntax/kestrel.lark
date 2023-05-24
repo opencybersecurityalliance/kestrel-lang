@@ -64,7 +64,7 @@ save: "SAVE"i VARIABLE "TO"i stdpath
 
 variables: VARIABLE ("," VARIABLE)*
 
-VARIABLE: ECNAME
+VARIABLE: CNAME
 
 //
 // Expression
@@ -293,7 +293,7 @@ SIMPLE_STRING: ECNAME
 // check Lark example of Python parser for reference
 ADVANCED_STRING: /(r?)("(?!"").*?(?<!\\)(\\\\)*?"|'(?!'').*?(?<!\\)(\\\\)*?')/
 
-%import common (LETTER, DIGIT, WS, INT, WORD, NUMBER, _STRING_ESC_INNER)
+%import common (LETTER, DIGIT, WS, INT, WORD, NUMBER, CNAME, _STRING_ESC_INNER)
 %import common.SH_COMMENT -> COMMENT
 
 %ignore WS
