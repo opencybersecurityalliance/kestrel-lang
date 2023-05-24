@@ -208,7 +208,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
             )
 
             translation_options = copy.deepcopy(connection_dict.get("options", {}))
-            dsl = translation.translate(
+            dsl = await translation.translate_async(
                 connector_name, "query", query_metadata, pattern, translation_options
             )
 
@@ -258,27 +258,11 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
             batch_index = 0
             for query in dsl["queries"]:
-                search_meta_result = transmission.query(query)
+                search_meta_result = await transmission.query_async(query)
                 if search_meta_result["success"]:
                     search_id = search_meta_result["search_id"]
-                    if transmission.is_async():
-                        time.sleep(1)
-                        status = transmission.status(search_id)
-                        if status["success"]:
-                            while (
-                                status["progress"] < 100
-                                and status["status"] == "RUNNING"
-                            ):
-                                status = transmission.status(search_id)
-                        else:
-                            stix_shifter_error_msg = (
-                                status["error"]
-                                if "error" in status
-                                else "details not avaliable"
-                            )
-                            raise DataSourceError(
-                                f"STIX-shifter transmission.status() failed with message: {stix_shifter_error_msg}"
-                            )
+
+                    await transmission_complete(transmission, search_id)
 
                     # run the producer and wait for completion
                     batch_index = await transmission_produce(
@@ -328,6 +312,21 @@ def make_ingest_stixbundle_filepath(ingestdir, data_path_striped, profile_index)
     return ingest_stixbundle_filepath
 
 
+async def transmission_complete(transmission, search_id):
+    status = await transmission.status_async(search_id)
+    if status["success"]:
+        while status["progress"] < 100 and status["status"] == "RUNNING":
+            await asyncio.sleep(1)
+            status = await transmission.status_async(search_id)
+    else:
+        stix_shifter_error_msg = (
+            status["error"] if "error" in status else "details not avaliable"
+        )
+        raise DataSourceError(
+            f"STIX-shifter transmission.status() failed with message: {stix_shifter_error_msg}"
+        )
+
+
 async def transmission_produce(
     transmission_queue, transmission, search_id, retrieval_batch_size, batch_index
 ):
@@ -335,7 +334,7 @@ async def transmission_produce(
     has_remaining_results = True
     metadata = None
     while has_remaining_results:
-        result_batch = transmission.results(
+        result_batch = await transmission.results_async(
             search_id, result_retrieval_offset, retrieval_batch_size, metadata
         )
         if result_batch["success"]:
@@ -375,7 +374,7 @@ async def translation_ingest_consume(
         # wait for an item from the producer
         result_batch = await transmission_queue.get()
 
-        stixbundle = translation.translate(
+        stixbundle = await translation.translate_async(
             connector_name,
             "results",
             query_metadata,
@@ -442,7 +441,7 @@ async def fast_translate(
     # Use the alternate, faster DataFrame-based translation (in firepit)
     _logger.debug("Using fast translation for connector %s", connector_name)
     transformers = get_module_transformers(connector_name)
-    mapping = translation.translate(
+    mapping = await translation.translate_async(
         connector_name,
         stix_translation.MAPPING,
         None,
