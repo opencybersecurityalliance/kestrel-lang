@@ -82,6 +82,8 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
         assert connector_name == "elastic_ecs"
         assert configuration["auth"]["id"] == "profileA"
         assert configuration["auth"]["api_key"] == "qwer"
+        assert connection["options"]["timeout"] == 60
+        assert connection["options"]["result_limit"] == 2000 * 2
         assert retrieval_batch_size == 2000
 
         with open(profile_file, "w") as pf:

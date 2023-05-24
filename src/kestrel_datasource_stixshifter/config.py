@@ -136,8 +136,11 @@ def get_datasource_from_profiles(profile_name, profiles):
                 f'invalid {profile_name} configuration section: no "auth" field',
             )
 
+        if "options" not in connection:
+            connection["options"] = {}
+
         retrieval_batch_size = RETRIEVAL_BATCH_SIZE
-        if "options" in connection and "retrieval_batch_size" in connection["options"]:
+        if "retrieval_batch_size" in connection["options"]:
             # remove the non-stix-shifter field "retrieval_batch_size" to avoid stix-shifter error
             try:
                 retrieval_batch_size = int(
@@ -150,13 +153,13 @@ def get_datasource_from_profiles(profile_name, profiles):
                     f"invalid {profile_name} connection section: options.retrieval_batch_size",
                 )
             # rename this field for stix-shifter use; x2 the size to ensure retrieval
-            connection["options"]["result_limit"] = retrieval_batch_size * 2
             _logger.debug(
                 f"profile-loaded retrieval_batch_size: {retrieval_batch_size}"
             )
+        connection["options"]["result_limit"] = retrieval_batch_size * 2
 
         single_batch_timeout = SINGLE_BATCH_TIMEOUT
-        if "options" in connection and "single_batch_timeout" in connection["options"]:
+        if "single_batch_timeout" in connection["options"]:
             # remove the non-stix-shifter field "single_batch_timeout" to avoid stix-shifter error
             try:
                 single_batch_timeout = int(
@@ -169,10 +172,10 @@ def get_datasource_from_profiles(profile_name, profiles):
                     f"invalid {profile_name} connection section: options.single_batch_timeout",
                 )
             # rename this field for stix-shifter use
-            connection["options"]["timeout"] = single_batch_timeout
             _logger.debug(
                 f"profile-loaded single_batch_timeout: {single_batch_timeout}"
             )
+        connection["options"]["timeout"] = single_batch_timeout
 
     return connector_name, connection, configuration, retrieval_batch_size
 
