@@ -312,18 +312,20 @@ def make_ingest_stixbundle_filepath(ingestdir, data_path_striped, profile_index)
 
 
 async def transmission_complete(transmission, search_id):
-    status = await transmission.status_async(search_id)
-    if status["success"]:
-        while status["progress"] < 100 and status["status"] == "RUNNING":
+    status = None
+    while True:
+        status = await transmission.status_async(search_id)
+        if not status["success"]:
+            stix_shifter_error_msg = (
+                status["error"] if "error" in status else "details not avaliable"
+            )
+            raise DataSourceError(
+                f"STIX-shifter transmission.status() failed with message: {stix_shifter_error_msg}"
+            )
+        elif status["progress"] < 100 and status["status"] == "RUNNING":
             await asyncio.sleep(1)
-            status = await transmission.status_async(search_id)
-    else:
-        stix_shifter_error_msg = (
-            status["error"] if "error" in status else "details not avaliable"
-        )
-        raise DataSourceError(
-            f"STIX-shifter transmission.status() failed with message: {stix_shifter_error_msg}"
-        )
+        else:
+            break
 
 
 async def transmission_produce(
