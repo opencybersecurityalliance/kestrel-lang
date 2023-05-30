@@ -413,60 +413,40 @@ async def fast_translate_ingest_consume(
     store,
 ):
     while True:
-        # wait for an item from the producer
         result_batch = await transmission_queue.get()
-        try:
-            await fast_translate(
-                connector_name,
-                result_batch["data"],
-                translation,
-                translation_options,
-                identity,
-                query_id,
-                store,
-            )
-        finally:
-            # Notify the queue that the item has been processed
-            transmission_queue.task_done()
 
-
-async def fast_translate(
-    connector_name,
-    connector_results,
-    translation,
-    translation_options,
-    identity,
-    query_id,
-    store,
-):
-    # Use the alternate, faster DataFrame-based translation (in firepit)
-    _logger.debug("Using fast translation for connector %s", connector_name)
-    transformers = get_module_transformers(connector_name)
-    mapping = await translation.translate_async(
-        connector_name,
-        stix_translation.MAPPING,
-        None,
-        None,
-        translation_options,
-    )
-
-    if "error" in mapping:
-        raise DataSourceError(
-            f"STIX-shifter mapping failed with message: {mapping['error']}"
+        # Use the alternate, faster DataFrame-based translation (in firepit)
+        _logger.debug("Using fast translation for connector %s", connector_name)
+        transformers = get_module_transformers(connector_name)
+        mapping = await translation.translate_async(
+            connector_name,
+            stix_translation.MAPPING,
+            None,
+            None,
+            translation_options,
         )
 
-    df = translate(mapping["to_stix_map"], transformers, connector_results, identity)
+        if "error" in mapping:
+            raise DataSourceError(
+                f"STIX-shifter mapping failed with message: {mapping['error']}"
+            )
 
-    identity_obj = {
-        "identity_class": "system",
-        "created": None,
-        "modified": None,
-    }  # These are required by STIX but not needed here
-    identity_obj.update(identity)
+        df = translate(
+            mapping["to_stix_map"], transformers, result_batch["data"], identity
+        )
 
-    await ingest(
-        asyncwrapper.SyncWrapper(store=store),
-        identity_obj,
-        df,
-        query_id,
-    )
+        identity_obj = {
+            "identity_class": "system",
+            "created": None,
+            "modified": None,
+        }  # These are required by STIX but not needed here
+        identity_obj.update(identity)
+
+        await ingest(
+            asyncwrapper.SyncWrapper(store=store),
+            identity_obj,
+            df,
+            query_id,
+        )
+
+        transmission_queue.task_done()
