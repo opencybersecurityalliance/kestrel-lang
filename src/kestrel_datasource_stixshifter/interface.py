@@ -355,9 +355,18 @@ async def transmission_produce(
                 if "error" in result_batch
                 else "details not avaliable"
             )
-            raise DataSourceError(
-                f"STIX-shifter transmission.results() failed with message: {stix_shifter_error_msg}"
-            )
+            if stix_shifter_error_msg.startswith(
+                "elastic_ecs connector error => server timeout_error"
+            ):
+                # mitigate https://github.com/opencybersecurityalliance/stix-shifter/issues/1493
+                # /stix_shifter_utils/stix_transmission/utils/RestApiClientAsync.py
+                _logger.info(
+                    f"busy CPU; hit stix-shifter transmission aiohttp connection timeout; retry"
+                )
+            else:
+                raise DataSourceError(
+                    f"STIX-shifter transmission.results() failed with message: {stix_shifter_error_msg}"
+                )
     return batch_index
 
 
@@ -413,40 +422,58 @@ async def fast_translate_ingest_consume(
     store,
 ):
     while True:
+        # wait for an item from the producer
         result_batch = await transmission_queue.get()
-
-        # Use the alternate, faster DataFrame-based translation (in firepit)
-        _logger.debug("Using fast translation for connector %s", connector_name)
-        transformers = get_module_transformers(connector_name)
-        mapping = await translation.translate_async(
+        await fast_translate(
             connector_name,
-            stix_translation.MAPPING,
-            None,
-            None,
+            result_batch["data"],
+            translation,
             translation_options,
-        )
-
-        if "error" in mapping:
-            raise DataSourceError(
-                f"STIX-shifter mapping failed with message: {mapping['error']}"
-            )
-
-        df = translate(
-            mapping["to_stix_map"], transformers, result_batch["data"], identity
-        )
-
-        identity_obj = {
-            "identity_class": "system",
-            "created": None,
-            "modified": None,
-        }  # These are required by STIX but not needed here
-        identity_obj.update(identity)
-
-        await ingest(
-            asyncwrapper.SyncWrapper(store=store),
-            identity_obj,
-            df,
+            identity,
             query_id,
+            store,
+        )
+        # Notify the queue that the item has been processed
+        transmission_queue.task_done()
+
+
+async def fast_translate(
+    connector_name,
+    connector_results,
+    translation,
+    translation_options,
+    identity,
+    query_id,
+    store,
+):
+    # Use the alternate, faster DataFrame-based translation (in firepit)
+    _logger.debug("Using fast translation for connector %s", connector_name)
+    transformers = get_module_transformers(connector_name)
+    mapping = await translation.translate_async(
+        connector_name,
+        stix_translation.MAPPING,
+        None,
+        None,
+        translation_options,
+    )
+
+    if "error" in mapping:
+        raise DataSourceError(
+            f"STIX-shifter mapping failed with message: {mapping['error']}"
         )
 
-        transmission_queue.task_done()
+    df = translate(mapping["to_stix_map"], transformers, connector_results, identity)
+
+    identity_obj = {
+        "identity_class": "system",
+        "created": None,
+        "modified": None,
+    }  # These are required by STIX but not needed here
+    identity_obj.update(identity)
+
+    await ingest(
+        asyncwrapper.SyncWrapper(store=store),
+        identity_obj,
+        df,
+        query_id,
+    )
