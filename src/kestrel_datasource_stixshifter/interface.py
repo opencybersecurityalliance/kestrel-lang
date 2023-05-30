@@ -265,6 +265,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
 
                     # run the producer and wait for completion
                     batch_index = await transmission_produce(
+                        connector_name,
                         transmission_queue,
                         transmission,
                         search_id,
@@ -329,7 +330,7 @@ async def transmission_complete(transmission, search_id):
 
 
 async def transmission_produce(
-    transmission_queue, transmission, search_id, retrieval_batch_size, batch_index
+    connector_name, transmission_queue, transmission, search_id, retrieval_batch_size, batch_index
 ):
     result_retrieval_offset = 0
     has_remaining_results = True
@@ -359,7 +360,7 @@ async def transmission_produce(
             )
             if (
                 stix_shifter_error_msg.startswith(
-                    "elastic_ecs connector error => server timeout_error"
+                    f"{connector_name} connector error => server timeout_error"
                 )
                 and not is_retry_cycle
             ):
