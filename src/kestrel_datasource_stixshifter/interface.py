@@ -330,7 +330,12 @@ async def transmission_complete(transmission, search_id):
 
 
 async def transmission_produce(
-    connector_name, transmission_queue, transmission, search_id, retrieval_batch_size, batch_index
+    connector_name,
+    transmission_queue,
+    transmission,
+    search_id,
+    retrieval_batch_size,
+    batch_index,
 ):
     result_retrieval_offset = 0
     has_remaining_results = True
