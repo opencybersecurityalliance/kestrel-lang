@@ -412,8 +412,7 @@ async def translation_ingest_consume(
                 f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
             )
 
-        await asyncwrapper.SyncWrapper(store=store).cache(query_id, stixbundle)
-
+        # cache() will remove most data in stixbundle; dump it first if needed
         if _logger.isEnabledFor(logging.DEBUG):
             ingestbatchfile = ingest_stixbundle_filepath(
                 str(result_batch["batch_index"])
@@ -421,6 +420,8 @@ async def translation_ingest_consume(
             _logger.debug(f"dumping STIX bundles into file: {ingestbatchfile}")
             with ingestbatchfile.open("w") as ingest_fp:
                 json.dump(stixbundle, ingest_fp, indent=4)
+
+        await asyncwrapper.SyncWrapper(store=store).cache(query_id, stixbundle)
 
         # Notify the queue that the item has been processed
         transmission_queue.task_done()
