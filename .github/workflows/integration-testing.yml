@@ -60,9 +60,9 @@ jobs:
         uses: convictional/trigger-workflow-and-wait@v1.6.5
         with:
           owner: opencybersecurityalliance
-          repo: hunting-stack-testing
+          repo: federated-search-end-to-end-testing
           github_token: ${{ secrets.KESTREL_STIXSHIFTER_INTEGRATION_TESTING_TOKEN }}
-          workflow_file_name: kestrel-integration-testing-flow.yml
+          workflow_file_name: kestrel-end-to-end-testing-flow.yml
           ref: main
           wait_interval: 10
           propagate_failure: true

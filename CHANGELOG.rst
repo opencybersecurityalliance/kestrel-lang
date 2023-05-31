@@ -9,6 +9,39 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.6.1 (2023-05-31)
+==================
+
+Changed
+-------
+
+- Kestrel variable definition syntax changed back to ``CNAME`` from ``ECNAME``
+- stix-shifter data source profile config changes
+
+    - Replace ``result_limit`` with ``retrieval_batch_size``
+    - Replace ``timeout`` with ``single_batch_timeout``
+    - Add default values for the configs
+    - Document updates
+    - The new fields will be processed by Kestrel before given to stix-shifter
+
+- Replace stix-shifter sync APIs with async APIs
+
+Added
+-----
+
+- Scalability end-to-end testing for large query with multiple pages
+- Test cases for new stix-shfiter data source configs
+
+Fixed
+-----
+
+- Temporary fix of stix-shifter/issues/1493
+
+    - Add retry-once logic if server timeout (busy CPU on the client side)
+    - Nullify the pipelining; need better long-term fix to enable it
+
+- Fixed bugs and reimplement ``transmission_complete()`` in stix-shifter data source interface
+
 1.6.0 (2023-05-17)
 ==================
 
@@ -183,6 +216,7 @@ Added
 -----
 
 - Kestrel doc for v1.5 syntax, mostly the language specification chapter
+
     - New section on the Kestrel patterning: Extended Centered Graph Pattern (ECGP)
     - New section on entity, attribute, and related mechanisms
     - Commands section updated with v1.5 syntax
