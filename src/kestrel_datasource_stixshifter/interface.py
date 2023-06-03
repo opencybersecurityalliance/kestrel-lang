@@ -342,9 +342,11 @@ async def transmission_produce(
     metadata = None
     is_retry_cycle = False
     while has_remaining_results:
+        _logger.debug('start transmission')
         result_batch = await transmission.results_async(
             search_id, result_retrieval_offset, retrieval_batch_size, metadata
         )
+        _logger.debug('end transmission')
         if result_batch["success"]:
             new_entries = result_batch["data"]
             if new_entries:
@@ -394,17 +396,22 @@ async def translation_ingest_consume(
     query_id,
     store,
 ):
+    loop = asyncio.get_event_loop()
     while True:
         # wait for an item from the producer
         result_batch = await transmission_queue.get()
 
-        stixbundle = await translation.translate_async(
+        _logger.debug('start translation')
+        stixbundle = await loop.run_in_executor(
+            None,
+            translation.translate,
             connector_name,
             "results",
             query_metadata,
             result_batch["data"],
             translation_options,
         )
+        _logger.debug('end translation')
 
         if "error" in stixbundle:
             transmission_queue.task_done()
@@ -412,8 +419,7 @@ async def translation_ingest_consume(
                 f"STIX-shifter translation results to STIX failed with message: {stixbundle['error']}"
             )
 
-        await asyncwrapper.SyncWrapper(store=store).cache(query_id, stixbundle)
-
+        # cache() will remove most data in stixbundle; dump it first if needed
         if _logger.isEnabledFor(logging.DEBUG):
             ingestbatchfile = ingest_stixbundle_filepath(
                 str(result_batch["batch_index"])
@@ -422,6 +428,14 @@ async def translation_ingest_consume(
             with ingestbatchfile.open("w") as ingest_fp:
                 json.dump(stixbundle, ingest_fp, indent=4)
 
+        _logger.debug('start ingest')
+        await loop.run_in_executor(
+            None,
+            store.cache,
+            query_id,
+            stixbundle
+        )
+        _logger.debug('end ingest')
         # Notify the queue that the item has been processed
         transmission_queue.task_done()
 

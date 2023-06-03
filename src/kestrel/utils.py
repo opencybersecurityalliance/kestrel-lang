@@ -65,7 +65,7 @@ def mkdtemp():
 
 
 def add_logging_handler(handler, if_debug):
-    fmt = "%(asctime)s %(levelname)s %(name)s %(message)s"
+    fmt = "%(asctime)s %(levelname)s %(name)s %(thread)d %(threadName)s %(message)s"
     datefmt = "%H:%M:%S"
     formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
 
