@@ -45,7 +45,6 @@ from kestrel.syntax.utils import (
     get_entity_types,
     get_keywords,
     all_relations,
-    TRANSFORMS,
 )
 from firepit.timestamp import timefmt
 
@@ -135,10 +134,6 @@ def do_complete(
                 expected_values.append("BY")
             elif token == "EQUAL":
                 expected_values.append("=")
-            elif token == "TRANSFORM":
-                expected_values.extend(TRANSFORMS)
-            elif token == "TRANSFORM2":
-                expected_values.extend(TRANSFORMS)
             elif token == "ATTRIBUTE":
                 # TODO: attribute completion
                 # https://github.com/opencybersecurityalliance/kestrel-lang/issues/79

@@ -111,7 +111,7 @@ def _debug_logger(func):
 @_default_output
 def assign(stmt, session):
     entity_table = session.symtable[stmt["input"]].entity_table
-    transform = stmt.get("transform") or stmt.get("transform2")
+    transform = stmt.get("transformer")
     if transform:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
@@ -218,7 +218,7 @@ def info(stmt, session):
 @_debug_logger
 def disp(stmt, session):
     entity_table = session.symtable[stmt["input"]].entity_table
-    transform = stmt.get("transform") or stmt.get("transform2")
+    transform = stmt.get("transformer")
     if transform and entity_table:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
