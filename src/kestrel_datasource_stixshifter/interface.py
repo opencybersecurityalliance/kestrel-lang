@@ -452,6 +452,7 @@ async def fast_translate_ingest_consume(
     while True:
         # wait for an item from the producer
         result_batch = await transmission_queue.get()
+        _logger.debug('start fast translation')
         await fast_translate(
             connector_name,
             result_batch["data"],
@@ -461,6 +462,7 @@ async def fast_translate_ingest_consume(
             query_id,
             store,
         )
+        _logger.debug('end fast translation')
         # Notify the queue that the item has been processed
         transmission_queue.task_done()
 
@@ -474,23 +476,38 @@ async def fast_translate(
     query_id,
     store,
 ):
+    loop = asyncio.get_event_loop()
     # Use the alternate, faster DataFrame-based translation (in firepit)
     _logger.debug("Using fast translation for connector %s", connector_name)
     transformers = get_module_transformers(connector_name)
-    mapping = await translation.translate_async(
+    _logger.debug('start translation')
+    mapping = await loop.run_in_executor(
+        None,
+        translation.translate,
         connector_name,
         stix_translation.MAPPING,
         None,
         None,
         translation_options,
     )
+    _logger.debug('end translation')
 
     if "error" in mapping:
         raise DataSourceError(
             f"STIX-shifter mapping failed with message: {mapping['error']}"
         )
 
-    df = translate(mapping["to_stix_map"], transformers, connector_results, identity)
+    # df = translate(mapping["to_stix_map"], transformers, connector_results, identity)
+    _logger.debug('start dataframe')
+    df = await loop.run_in_executor(
+        None,
+        translate,
+        mapping["to_stix_map"],
+        transformers,
+        connector_results,
+        identity
+    )
+    _logger.debug('end dataframe')
 
     identity_obj = {
         "identity_class": "system",
@@ -498,6 +515,7 @@ async def fast_translate(
         "modified": None,
     }  # These are required by STIX but not needed here
     identity_obj.update(identity)
+    _logger.debug('start ingest')
 
     await ingest(
         asyncwrapper.SyncWrapper(store=store),
@@ -505,3 +523,5 @@ async def fast_translate(
         df,
         query_id,
     )
+
+    _logger.debug('end ingest')
