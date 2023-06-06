@@ -209,17 +209,17 @@ class _KestrelT(Transformer):
 
     def vtrans(self, args):
         if len(args) == 1:
-        	return {
-            		"input": self._extract_var(args),
-        	}
+            return {
+                "input": self._extract_var(args),
+            }
         else:
-        	return {
-            		"input": self._extract_var(args),
-            		"transformer": args[0],
-        	}
-        	
+            return {
+                "input": self._extract_var(args),
+                "transformer": args[0],
+            }
+
     def transformer(self, args):
-    	return args[0]
+        return args[0]
 
     def where_clause(self, args):
         pattern = ExtCenteredGraphPattern(args[0])
