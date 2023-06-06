@@ -480,25 +480,22 @@ async def fast_translate(
     # Use the alternate, faster DataFrame-based translation (in firepit)
     _logger.debug("Using fast translation for connector %s", connector_name)
     transformers = get_module_transformers(connector_name)
-    _logger.debug('start translation')
-    mapping = await loop.run_in_executor(
-        None,
-        translation.translate,
+    _logger.debug('start get mapping')
+    mapping = await translation.translate_async(
         connector_name,
         stix_translation.MAPPING,
         None,
         None,
         translation_options,
     )
-    _logger.debug('end translation')
+    _logger.debug('end get mapping')
 
     if "error" in mapping:
         raise DataSourceError(
             f"STIX-shifter mapping failed with message: {mapping['error']}"
         )
 
-    # df = translate(mapping["to_stix_map"], transformers, connector_results, identity)
-    _logger.debug('start dataframe')
+    _logger.debug('start translation')
     df = await loop.run_in_executor(
         None,
         translate,
@@ -507,7 +504,7 @@ async def fast_translate(
         connector_results,
         identity
     )
-    _logger.debug('end dataframe')
+    _logger.debug('end translation')
 
     identity_obj = {
         "identity_class": "system",
