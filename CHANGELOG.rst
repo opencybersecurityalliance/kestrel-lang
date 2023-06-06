@@ -9,6 +9,64 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.6.1 (2023-05-31)
+==================
+
+Changed
+-------
+
+- Kestrel variable definition syntax changed back to ``CNAME`` from ``ECNAME``
+- stix-shifter data source profile config changes
+
+    - Replace ``result_limit`` with ``retrieval_batch_size``
+    - Replace ``timeout`` with ``single_batch_timeout``
+    - Add default values for the configs
+    - Document updates
+    - The new fields will be processed by Kestrel before given to stix-shifter
+
+- Replace stix-shifter sync APIs with async APIs
+
+Added
+-----
+
+- Scalability end-to-end testing for large query with multiple pages
+- Test cases for new stix-shfiter data source configs
+
+Fixed
+-----
+
+- Temporary fix of stix-shifter/issues/1493
+
+    - Add retry-once logic if server timeout (busy CPU on the client side)
+    - Nullify the pipelining; need better long-term fix to enable it
+
+- Fixed bugs and reimplement ``transmission_complete()`` in stix-shifter data source interface
+
+1.6.0 (2023-05-17)
+==================
+
+Changed
+-------
+
+- Upgrade stix-shifter from v4 to v5 in the stix-shifter datasource interface
+- Bump stix-shifter version to v5.3.0 to include latest Elastcisearch ECS mappings
+- Restrict scopes of Github workflows to eliminate unnecessary executions
+
+Added
+-----
+
+- stix-shifter datasource interface query procedure pipelining: a producer-consumer model for transmission and translation/ingestion
+- Integration testing with stix-shifter and the first live data source---Elasticsearch
+- Raw String implemented in Kestrel
+- Documentation on raw String
+
+Fixed
+-----
+
+- Logging module reimplemented to fix #334
+- asyncio bug in ``tests/test_fast_translate.py``
+
+
 1.5.14 (2023-04-19)
 ===================
 
@@ -158,6 +216,7 @@ Added
 -----
 
 - Kestrel doc for v1.5 syntax, mostly the language specification chapter
+
     - New section on the Kestrel patterning: Extended Centered Graph Pattern (ECGP)
     - New section on entity, attribute, and related mechanisms
     - Commands section updated with v1.5 syntax

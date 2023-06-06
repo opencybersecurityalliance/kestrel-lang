@@ -1,0 +1,71 @@
+name: Integration Testing With stix-shifter and Live Data Sources
+on:
+  push:
+    branches:
+      - develop
+      - develop_*
+      - release
+    paths:
+      - 'src/**'
+  pull_request:
+    branches:
+      - develop
+      - develop_*
+      - release
+    paths:
+      - 'src/**'
+    types:
+      - opened
+      - synchronize
+      - reopened
+  workflow_dispatch:
+    inputs:
+      organization:
+        description: 'Kestrel repo organization'
+        required: true
+        default: 'opencybersecurityalliance'
+      repository:
+        description: 'Kestrel repo name'
+        required: true
+        default: 'kestrel-lang'
+      branch:
+        description: 'Kestrel repo branch'
+        required: true
+        default: 'develop'
+
+jobs:
+  launch:
+    name: Launch Integration Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Initialize testing workflow parameters
+        run: |
+          if [[ ${{ github.event_name }} == "workflow_dispatch" ]]; then
+            echo "organization=${{ github.event.inputs.organization }}" >> $GITHUB_ENV
+            echo "repository=${{ github.event.inputs.repository }}" >> $GITHUB_ENV
+            echo "branch=${{ github.event.inputs.branch }}" >> $GITHUB_ENV
+          elif [[ ${{ github.event_name }} == "push" ]]; then
+            echo "got a push event. ${{ github.event }}"
+            echo "organization=${{ github.event.repository.owner.login }}" >> $GITHUB_ENV
+            echo "repository=${{ github.event.repository.name }}" >> $GITHUB_ENV
+            GITHUB_REF=${{ github.ref }}
+            echo "GITHUB_REF=$GITHUB_REF"
+            echo "branch=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+          elif [[ ${{ github.event_name }} == "pull_request" ]]; then
+            echo "organization=${{ github.event.pull_request.head.repo.owner.login }}" >> $GITHUB_ENV
+            echo "repository=${{ github.event.pull_request.head.repo.name }}" >> $GITHUB_ENV
+            echo "branch=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+          fi
+      - name: Launch integration testing workflows
+        uses: convictional/trigger-workflow-and-wait@v1.6.5
+        with:
+          owner: opencybersecurityalliance
+          repo: federated-search-end-to-end-testing
+          github_token: ${{ secrets.KESTREL_STIXSHIFTER_INTEGRATION_TESTING_TOKEN }}
+          workflow_file_name: kestrel-end-to-end-testing-flow.yml
+          ref: main
+          wait_interval: 10
+          propagate_failure: true
+          trigger_workflow: true
+          wait_workflow: true
+          client_payload: '{"organization": "${{ env.organization}}", "repository": "${{ env.repository }}", "branch": "${{ env.branch }}"}'

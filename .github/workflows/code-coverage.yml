@@ -15,10 +15,8 @@ on:
       - 'src/**'
     types:
       - opened
-      - edited
       - reopened
       - synchronize
-      - unlocked
 
 jobs:
   codecov:
