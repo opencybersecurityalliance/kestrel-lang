@@ -58,6 +58,7 @@ will load profiles from 3 places (the later will override the former):
             fast_translate:  # use firepit-native translation (Dataframe as vessel) instead of stix-shifter result translation (JSON as vessel) for the following connectors
                 - qradar
                 - elastic_ecs
+            translation_workers_count: 8  # will use cpu_count()-2 if not specified
 
     Full specifications for data source profile sections/fields:
 

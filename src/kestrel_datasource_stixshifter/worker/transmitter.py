@@ -121,6 +121,7 @@ class Transmitter(Process):
         result_retrieval_offset = 0
         has_remaining_results = True
         metadata = None
+        is_retry_cycle = False
 
         while has_remaining_results:
             _logger.debug("transmitter: a batch/page retrieveal starts")
@@ -150,13 +151,33 @@ class Transmitter(Process):
                 else:
                     has_remaining_results = False
 
+                is_retry_cycle = False
+
             else:
                 stix_shifter_error_msg = (
                     result_batch["error"]
                     if "error" in result_batch
                     else "details not avaliable"
                 )
-                raise DataSourceError(
-                    "STIX-shifter transmission.results() failed"
-                    f" with message: {stix_shifter_error_msg}"
-                )
+
+                if (
+                    stix_shifter_error_msg.startswith(
+                        f"{self.connector_name} connector error => server timeout_error"
+                    )
+                    and not is_retry_cycle
+                ):
+                    # mitigate https://github.com/opencybersecurityalliance/stix-shifter/issues/1493
+                    # only give it one retry to mitigate high CPU occupation
+                    # otherwise, it could be a real server connection issue
+                    # /stix_shifter_utils/stix_transmission/utils/RestApiClientAsync.py
+                    _logger.info(
+                        "Busy CPU; hit stix-shifter transmission aiohttp connection timeout; retry."
+                        " May need to reduce number of translators in config."
+                    )
+                    is_retry_cycle = True
+
+                else:
+                    raise DataSourceError(
+                        "STIX-shifter transmission.results() failed"
+                        f" with message: {stix_shifter_error_msg}"
+                    )
