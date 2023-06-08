@@ -22,7 +22,7 @@ class Translator(Process):
         connector_name,
         observation_metadata,
         translation_options,
-        gen_debug_stixbundle_filepath,
+        cache_bundle_path_prefix,
         is_fast_translation,
         input_queue,
         output_queue,
@@ -32,7 +32,7 @@ class Translator(Process):
         self.connector_name = connector_name
         self.observation_metadata = observation_metadata
         self.translation_options = translation_options
-        self.gen_debug_stixbundle_filepath = gen_debug_stixbundle_filepath
+        self.cache_bundle_path_prefix = cache_bundle_path_prefix
         self.is_fast_translation = is_fast_translation
         self.input_queue = input_queue
         self.output_queue = output_queue
@@ -88,7 +88,7 @@ class Translator(Process):
                     )
 
                 if _logger.isEnabledFor(logging.DEBUG):
-                    debug_stixbundle_filepath = self.gen_debug_stixbundle_filepath(
+                    debug_stixbundle_filepath = self.get_cache_bundle_path(
                         input_batch["offset"]
                     )
                     _logger.debug(
@@ -101,3 +101,7 @@ class Translator(Process):
                 _logger.debug("JSON translation done and results in queue")
 
         self.output_queue.put(STOP_SIGN)
+
+        def get_cache_bundle_path(self, offset):
+            offset = str(offset).zfill(32)
+            return f"{self.cache_bundle_path_prefix}_{offset}.json"

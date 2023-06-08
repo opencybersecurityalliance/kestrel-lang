@@ -78,10 +78,7 @@ def query_datasource(uri, pattern, session_id, config, store):
         check_module_availability(connector_name)
 
         data_path_striped = "".join(filter(str.isalnum, profile))
-
-        gen_debug_stixbundle_filepath = make_debug_stixbundle_filepath(
-            cache_dir, data_path_striped
-        )
+        cache_bundle_path_prefix = str(cache_dir / data_path_striped)
 
         observation_metadata = {
             "id": "identity--" + query_id,
@@ -122,7 +119,7 @@ def query_datasource(uri, pattern, session_id, config, store):
                 connector_name,
                 observation_metadata,
                 translation_options,
-                gen_debug_stixbundle_filepath,
+                cache_bundle_path_prefix,
                 is_fast_translation,
                 raw_records_queue,
                 translated_data_queue,
@@ -177,12 +174,3 @@ def query_datasource(uri, pattern, session_id, config, store):
                 )
 
     return ReturnFromStore(query_id)
-
-
-def make_debug_stixbundle_filepath(cache_dir, data_path_striped):
-    def debug_stixbundle_filepath(offset):
-        offset = str(offset).zfill(32)
-        bundle = cache_dir / f"{data_path_striped}_{offset}.json"
-        return bundle
-
-    return debug_stixbundle_filepath
