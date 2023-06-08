@@ -77,6 +77,10 @@ def datasource_env_setup(tmp_path):
         profile_file.expanduser().resolve()
     )
 
+    # https://docs.pytest.org/en/latest/how-to/fixtures.html#teardown-cleanup-aka-fixture-finalization
+    yield None
+    del os.environ["KESTREL_STIXSHIFTER_CONFIG"]
+
 
 @pytest.fixture
 def analytics_env_setup(tmp_path):
