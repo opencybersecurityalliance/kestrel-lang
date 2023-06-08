@@ -42,7 +42,6 @@ class Translator(Process):
         translation = stix_translation.StixTranslation()
 
         for input_batch in iter(self.input_queue.get, STOP_SIGN):
-
             if self.is_fast_translation:
                 _logger.debug("fast translation task assigned to translator worker")
                 transformers = get_module_transformers(self.connector_name)
