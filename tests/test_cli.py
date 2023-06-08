@@ -51,8 +51,8 @@ def test_cli(setup_huntflow):
                            )
 
     result_lines = result.stdout.splitlines()
-    assert result_lines[1] == expected_result_lines[0]
-    assert result_lines[2] == expected_result_lines[1]
+    assert result_lines[-3] == expected_result_lines[0]
+    assert result_lines[-2] == expected_result_lines[1]
 
 
 def test_python_module_call(setup_huntflow):
@@ -64,5 +64,5 @@ def test_python_module_call(setup_huntflow):
                            )
 
     result_lines = result.stdout.splitlines()
-    assert result_lines[1] == expected_result_lines[0]
-    assert result_lines[2] == expected_result_lines[1]
+    assert result_lines[-3] == expected_result_lines[0]
+    assert result_lines[-2] == expected_result_lines[1]
