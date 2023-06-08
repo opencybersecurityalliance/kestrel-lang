@@ -159,7 +159,7 @@ def query_datasource(uri, pattern, session_id, config, store):
                     store.cache(query_id, translated_data)
 
         # all transmitters should already finished
-        transmitter_pool.join(4)
+        transmitter_pool.join(2)
         if transmitter_pool.is_alive():
             raise DataSourceManagerInternalError(
                 f"transmitter pool process do not terminate in interface {__package__}"
