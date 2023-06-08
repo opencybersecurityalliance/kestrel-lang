@@ -1,0 +1,1 @@
+STOP_SIGN = "STOP"
