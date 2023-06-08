@@ -1,3 +1,4 @@
+import json
 import logging
 import asyncio
 from multiprocessing import Process
@@ -40,8 +41,7 @@ class Translator(Process):
         _logger.debug("translator worker starts")
         translation = stix_translation.StixTranslation()
 
-        for input_batch in iter(input_queue.get, STOP_SIGN):
-            input_batch = self.input_queue.get()
+        for input_batch in iter(self.input_queue.get, STOP_SIGN):
 
             if self.is_fast_translation:
                 _logger.debug("fast translation task assigned to translator worker")

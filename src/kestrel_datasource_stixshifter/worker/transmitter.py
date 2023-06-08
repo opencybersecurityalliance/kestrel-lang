@@ -88,13 +88,13 @@ class Transmitter(Process):
             )
 
     def wait_datasource_search(self):
-        # stix-shifter will not give "STARTING" status, but just "RUNNING"
-        status = {"progress": 0, "status": "STARTING"}
+        # stix-shifter will not give "KINIT" status, but just "RUNNING"
+        status = {"progress": 0, "status": "KINIT"}
 
-        while status["progress"] < 100 and status["status"] in ("STARTING", "RUNNING"):
+        while status["progress"] < 100 and status["status"] in ("KINIT", "RUNNING"):
             if status["status"] == "RUNNING":
                 time.sleep(1)
-            status = transmission.status(self.search_id)
+            status = self.transmission.status(self.search_id)
             if not status["success"]:
                 stix_shifter_error_msg = (
                     status["error"] if "error" in status else "details not avaliable"

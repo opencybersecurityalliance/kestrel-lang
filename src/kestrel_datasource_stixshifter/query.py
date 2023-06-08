@@ -162,13 +162,15 @@ def query_datasource(uri, pattern, session_id, config, store):
                     store.cache(query_id, translated_data)
 
         # all transmitters should already finished
+        transmitter_pool.join(4)
         if transmitter_pool.is_alive():
             raise DataSourceManagerInternalError(
-                f"one or more transmitters do not terminate in interface {__package__}"
+                f"transmitter pool process do not terminate in interface {__package__}"
             )
 
         # all translators should already finished
         for translator in translators:
+            translator.join(1)
             if translator.is_alive():
                 raise DataSourceManagerInternalError(
                     f"one or more translators do not terminate in interface {__package__}"

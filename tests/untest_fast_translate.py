@@ -4,7 +4,7 @@ from stix_shifter.stix_translation import stix_translation
 
 from kestrel.session import Session
 from kestrel_datasource_stixshifter.connector import check_module_availability
-from kestrel_datasource_stixshifter.interface import fast_translate
+from kestrel_datasource_stixshifter.worker.translator import Translator
 
 
 SAMPLE_RESULT = {
