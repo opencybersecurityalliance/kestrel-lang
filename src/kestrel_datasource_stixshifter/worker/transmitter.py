@@ -1,9 +1,13 @@
 import time
+import logging
 from multiprocessing import Process
 
 from kestrel.exceptions import DataSourceError
 from stix_shifter.stix_transmission import stix_transmission
 from kestrel_datasource_stixshifter.worker import STOP_SIGN
+
+
+_logger = logging.getLogger(__name__)
 
 
 class TransmitterPool(Process):
@@ -28,6 +32,11 @@ class TransmitterPool(Process):
         self.queue = output_queue
 
     def run(self):
+        _logger.debug(
+            "transmitter pool process starts,"
+            f" which will spawn {len(self.queries)} transmitters"
+        )
+
         transmitters = [
             Transmitter(
                 self.connector_name,
@@ -45,6 +54,8 @@ class TransmitterPool(Process):
             transmitter.join()
         for _ in range(self.number_of_translators):
             self.queue.put(STOP_SIGN)
+
+        _logger.debug("transmitter pool process ends")
 
 
 class Transmitter(Process):
@@ -67,6 +78,7 @@ class Transmitter(Process):
         self.queue = output_queue
 
     def run(self):
+        _logger.debug("transmitter worker process starts")
         self.transmission = stix_transmission.StixTransmission(
             self.connector_name,
             self.connection_dict,
@@ -86,6 +98,7 @@ class Transmitter(Process):
             raise DataSourceError(
                 f"STIX-shifter transmission.query() failed with message: {stix_shifter_error_msg}"
             )
+        _logger.debug("transmitter worker process ends")
 
     def wait_datasource_search(self):
         # stix-shifter will not give "KINIT" status, but just "RUNNING"
@@ -110,12 +123,14 @@ class Transmitter(Process):
         metadata = None
 
         while has_remaining_results:
+            _logger.debug("transmitter: a batch/page retrieveal starts")
             result_batch = self.transmission.results(
                 self.search_id,
                 result_retrieval_offset,
                 self.retrieval_batch_size,
                 metadata,
             )
+            _logger.debug("transmitter: a batch/page retrieveal ends")
 
             if result_batch["success"]:
                 new_entries = result_batch["data"]

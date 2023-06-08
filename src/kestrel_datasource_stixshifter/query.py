@@ -144,6 +144,7 @@ def query_datasource(uri, pattern, session_id, config, store):
 
         for _ in range(translators_count):
             for translated_data in iter(translated_data_queue.get, STOP_SIGN):
+                _logger.debug("ingestion of a batch/page starts")
                 if isinstance(translated_data, DataFrame):
                     # fast translation result
                     asyncio.run(
@@ -157,6 +158,7 @@ def query_datasource(uri, pattern, session_id, config, store):
                 else:
                     # STIX bundle (normal stix-shifter translation result)
                     store.cache(query_id, translated_data)
+                _logger.debug("ingestion of a batch/page ends")
 
         # all transmitters should already finished
         transmitter_pool.join(2)
