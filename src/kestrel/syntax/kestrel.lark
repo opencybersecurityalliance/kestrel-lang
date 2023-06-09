@@ -78,7 +78,7 @@ vtrans: transformer "(" VARIABLE ")"
       | VARIABLE
 
 transformer: TIMESTAMPED
-	  | ADDOBSID
+           | ADDOBSID
 
 TIMESTAMPED: "TIMESTAMPED"i
 
