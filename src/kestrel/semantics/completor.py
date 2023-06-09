@@ -45,7 +45,6 @@ from kestrel.syntax.utils import (
     get_entity_types,
     get_keywords,
     all_relations,
-    TRANSFORMS,
 )
 from firepit.timestamp import timefmt
 
@@ -133,8 +132,6 @@ def do_complete(
                 expected_values.extend(all_relations)
             elif token == "REVERSED":
                 expected_values.append("BY")
-            elif token in TRANSFORMS:
-                expected_values.append("(")
             elif token == "EQUAL":
                 expected_values.append("=")
             elif token == "ATTRIBUTE":
@@ -148,6 +145,10 @@ def do_complete(
             elif token == "COMMA":
                 expected_values.append(",")
             elif token in keywords:
+                if last_word_prefix and last_word_prefix.islower():
+                    token = token.lower()
+                expected_values.append(token)
+            elif token in TRANSFORMS:
                 if last_word_prefix and last_word_prefix.islower():
                     token = token.lower()
                 expected_values.append(token)
