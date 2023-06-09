@@ -148,10 +148,6 @@ def do_complete(
                 if last_word_prefix and last_word_prefix.islower():
                     token = token.lower()
                 expected_values.append(token)
-            elif token in TRANSFORMS:
-                if last_word_prefix and last_word_prefix.islower():
-                    token = token.lower()
-                expected_values.append(token)
             else:
                 # token not handled
                 continue
