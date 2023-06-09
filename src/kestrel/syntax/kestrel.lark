@@ -115,10 +115,10 @@ comparison_null: ENTITY_ATTRIBUTE_PATH NULL_OP NULL
          | MINUTE
          | SECOND
 
-DAY: "days"i | "d"i
-HOUR: "hours"i | "h"i
-MINUTE: "minutes"i | "m"i
-SECOND: "seconds"i | "s"i
+DAY: "days"i | "day"i | "d"i
+HOUR: "hours"i | "hour"i | "h"i
+MINUTE: "minutes"i | "minute"i | "m"i
+SECOND: "seconds"i | "second"i | "s"i
 
 timestamp:       ISOTIMESTAMP
          | "\""  ISOTIMESTAMP "\""
