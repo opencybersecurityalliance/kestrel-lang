@@ -208,7 +208,7 @@ def load_options():
     if "fast_translate" not in config["options"]:
         config["options"]["fast_translate"] = FAST_TRANSLATE_CONNECTORS
     if "translation_workers_count" not in config["options"]:
-        config["options"]["translation_workers_count"] = max(
-            1, multiprocessing.cpu_count() - 2
+        config["options"]["translation_workers_count"] = min(
+            2, max(1, multiprocessing.cpu_count() - 2)
         )
     return config["options"]
