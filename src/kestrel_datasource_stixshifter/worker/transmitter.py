@@ -1,6 +1,7 @@
 import time
 import logging
-from multiprocessing import Process
+from multiprocessing import Process, Queue
+from typeguard import typechecked
 
 from kestrel.exceptions import DataSourceError
 from stix_shifter.stix_transmission import stix_transmission
@@ -10,16 +11,17 @@ from kestrel_datasource_stixshifter.worker import STOP_SIGN
 _logger = logging.getLogger(__name__)
 
 
+@typechecked
 class TransmitterPool(Process):
     def __init__(
         self,
-        connector_name,
-        connection_dict,
-        configuration_dict,
-        retrieval_batch_size,
-        number_of_translators,
-        queries,
-        output_queue,
+        connector_name: str,
+        connection_dict: dict,
+        configuration_dict: dict,
+        retrieval_batch_size: int,
+        number_of_translators: int,
+        queries: list,
+        output_queue: Queue,
     ):
         super().__init__()
 

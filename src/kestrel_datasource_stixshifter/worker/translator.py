@@ -1,7 +1,7 @@
 import json
 import logging
-import asyncio
-from multiprocessing import Process
+from multiprocessing import Process, Queue
+from typeguard import typechecked
 
 from kestrel.exceptions import DataSourceError
 from stix_shifter.stix_translation import stix_translation
@@ -16,16 +16,17 @@ from kestrel_datasource_stixshifter.worker import STOP_SIGN
 _logger = logging.getLogger(__name__)
 
 
+@typechecked
 class Translator(Process):
     def __init__(
         self,
-        connector_name,
-        observation_metadata,
-        translation_options,
-        cache_bundle_path_prefix,
-        is_fast_translation,
-        input_queue,
-        output_queue,
+        connector_name: str,
+        observation_metadata: dict,
+        translation_options: dict,
+        cache_bundle_path_prefix: str,
+        is_fast_translation: bool,
+        input_queue: Queue,
+        output_queue: Queue,
     ):
         super().__init__()
 
@@ -59,16 +60,14 @@ class Translator(Process):
                         f"STIX-shifter mapping failed with message: {mapping['error']}"
                     )
 
-                dataframe = asyncio.run(
-                    translate(
-                        mapping["to_stix_map"],
-                        transformers,
-                        input_batch["data"],
-                        self.observation_metadata,
-                    )
+                dataframe = translate(
+                    mapping["to_stix_map"],
+                    transformers,
+                    input_batch["data"],
+                    self.observation_metadata,
                 )
 
-                self.output_queue.put(dataframe)
+                self.output_queue.put((dataframe,))
                 _logger.debug("fast translation done and results in queue")
 
             else:
@@ -97,7 +96,7 @@ class Translator(Process):
                     with debug_stixbundle_filepath.open("w") as ingest_fp:
                         json.dump(stixbundle, ingest_fp, indent=4)
 
-                self.output_queue.put(stixbundle)
+                self.output_queue.put((stixbundle,))
                 _logger.debug("JSON translation done and results in queue")
 
         self.output_queue.put(STOP_SIGN)

@@ -1,4 +1,5 @@
 import logging
+import asyncio
 import copy
 from pandas import DataFrame
 from multiprocessing import Queue
@@ -144,6 +145,11 @@ def query_datasource(uri, pattern, session_id, config, store):
 
         for _ in range(translators_count):
             for translated_data in iter(translated_data_queue.get, STOP_SIGN):
+                # to avoid "The truth value of a DataFrame is ambiguous" error
+                # each translator passes a single-item tuple as the result
+                # unwrap it here
+                translated_data = translated_data[0]
+
                 _logger.debug("ingestion of a batch/page starts")
                 if isinstance(translated_data, DataFrame):
                     # fast translation result
