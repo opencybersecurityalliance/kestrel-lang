@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, Union, List
 from dataclasses import dataclass
 from pandas import DataFrame
 
@@ -28,5 +28,5 @@ class TransmissionResult:
 class TranslationResult:
     worker: str
     success: bool
-    data: Optional[dict | DataFrame]
+    data: Union[None, dict, DataFrame]
     log: Optional[WorkerLog]
