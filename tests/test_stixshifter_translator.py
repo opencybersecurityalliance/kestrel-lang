@@ -1,13 +1,13 @@
-import asyncio
+from pandas import DataFrame
+from multiprocessing import Queue
 
-from stix_shifter.stix_translation import stix_translation
-
-from kestrel.session import Session
 from kestrel_datasource_stixshifter.connector import check_module_availability
 from kestrel_datasource_stixshifter.worker.translator import Translator
+from kestrel_datasource_stixshifter.worker import STOP_SIGN
 
 
 SAMPLE_RESULT = {
+    "connector": "elastic_ecs",
     "success": True,
     "data": [
         {
@@ -68,23 +68,69 @@ SAMPLE_RESULT = {
 }
 
 
-def test_fast_translate():
-    connector_name = "elastic_ecs"
-    check_module_availability(connector_name)
-    connector_results = SAMPLE_RESULT["data"]
-    translation = stix_translation.StixTranslation()
-    translation_options = {}
+def test_stixshifter_translate():
+    connector_name = SAMPLE_RESULT["connector"]
     query_id = "8df266aa-2901-4a94-ace9-a4403e310fa1"
-    identity = {"id": "identity--" + query_id, "name": connector_name}
-    with Session() as s:
-        asyncio.run(
-            fast_translate(
-                connector_name,
-                connector_results,
-                translation,
-                translation_options,
-                identity,
-                query_id,
-                s.store,
-            )
-        )
+    check_module_availability(connector_name)
+
+    input_queue = Queue()
+    output_queue = Queue()
+
+    translator = Translator(
+        connector_name,
+        {"id": "identity--" + query_id, "name": connector_name},
+        {},
+        "",
+        False,
+        input_queue,
+        output_queue,
+    )
+    translator.start()
+
+    input_queue.put(SAMPLE_RESULT)
+    input_queue.put(STOP_SIGN)
+
+    translator.join(5)
+    assert translator.is_alive() == False
+
+    result = output_queue.get()
+    id_object = result[0]["objects"][0]
+    assert id_object["id"] == "identity--" + query_id
+    assert id_object["name"] == connector_name
+
+    input_queue.close()
+    output_queue.close()
+
+
+def test_fast_translate():
+    connector_name = SAMPLE_RESULT["connector"]
+    query_id = "8df266aa-2901-4a94-ace9-a4403e310fa1"
+    check_module_availability(connector_name)
+
+    input_queue = Queue()
+    output_queue = Queue()
+
+    translator = Translator(
+        connector_name,
+        {"id": "identity--" + query_id, "name": connector_name},
+        {},
+        "",
+        True,
+        input_queue,
+        output_queue,
+    )
+    translator.start()
+
+    input_queue.put(SAMPLE_RESULT)
+    input_queue.put(STOP_SIGN)
+
+    translator.join(5)
+    assert translator.is_alive() == False
+
+    result = output_queue.get()
+    result = result[0]
+    assert isinstance(result, DataFrame)
+    assert result.empty == False
+
+    input_queue.close()
+    output_queue.close()
