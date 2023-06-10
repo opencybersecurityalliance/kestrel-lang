@@ -156,12 +156,7 @@ class Translator(Process):
                             self.output_queue.put(packet_extra)
 
             else:  # rely transmission error/info/debug message
-                packet = TranslationResult(
-                    input_batch.worker,
-                    input_batch.success,
-                    input_batch.data,
-                    input_batch.log,
-                )
+                packet = input_batch
 
             self.output_queue.put(packet)
 
