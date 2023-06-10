@@ -78,8 +78,11 @@ def query_datasource(uri, pattern, session_id, config, store):
 
         check_module_availability(connector_name)
 
-        data_path_striped = "".join(filter(str.isalnum, profile))
-        cache_bundle_path_prefix = str(cache_dir / data_path_striped)
+        if _logger.isEnabledFor(logging.DEBUG):
+            data_path_striped = "".join(filter(str.isalnum, profile))
+            cache_data_path_prefix = str(cache_dir / data_path_striped)
+        else:
+            cache_data_path_prefix = None
 
         observation_metadata = {
             "id": "identity--" + query_id,
@@ -120,7 +123,7 @@ def query_datasource(uri, pattern, session_id, config, store):
                 connector_name,
                 observation_metadata,
                 translation_options,
-                cache_bundle_path_prefix,
+                cache_data_path_prefix,
                 is_fast_translation,
                 raw_records_queue,
                 translated_data_queue,
@@ -144,27 +147,36 @@ def query_datasource(uri, pattern, session_id, config, store):
         transmitter_pool.start()
 
         for _ in range(translators_count):
-            for translated_data in iter(translated_data_queue.get, STOP_SIGN):
-                # to avoid "The truth value of a DataFrame is ambiguous" error
-                # each translator passes a single-item tuple as the result
-                # unwrap it here
-                translated_data = translated_data[0]
-
-                _logger.debug("ingestion of a batch/page starts")
-                if isinstance(translated_data, DataFrame):
-                    # fast translation result
-                    asyncio.run(
-                        ingest(
-                            asyncwrapper.SyncWrapper(store=store),
-                            observation_metadata,
-                            translated_data,
-                            query_id,
+            for result in iter(translated_data_queue.get, STOP_SIGN):
+                if result.success:
+                    _logger.debug("ingestion of a batch/page starts")
+                    if isinstance(result.data, DataFrame):
+                        # fast translation result in DataFrame
+                        asyncio.run(
+                            ingest(
+                                asyncwrapper.SyncWrapper(store=store),
+                                observation_metadata,
+                                result.data,
+                                query_id,
+                            )
                         )
-                    )
-                else:
-                    # STIX bundle (normal stix-shifter translation result)
-                    store.cache(query_id, translated_data)
-                _logger.debug("ingestion of a batch/page ends")
+                    else:
+                        # STIX bundle (normal stix-shifter translation result)
+                        store.cache(query_id, result.data)
+                    _logger.debug("ingestion of a batch/page ends")
+
+                else:  # this is a log packet
+                    log_msg = f"[worker: {result.worker}] {result.log.log}"
+                    if result.log.level == logging.ERROR:
+                        _logger.debug(log_msg)
+                        raise DataSourceError(log_msg)
+                    else:
+                        if result.log.level == logging.WARN:
+                            _logger.warn(log_msg)
+                        elif result.log.level == logging.INFO:
+                            _logger.info(log_msg)
+                        else:  #  all others as debug logs
+                            _logger.debug(log_msg)
 
         # all transmitters should already finished
         transmitter_pool.join(2)

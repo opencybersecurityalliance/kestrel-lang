@@ -1,9 +1,9 @@
 import json
 import logging
-from multiprocessing import Process, Queue
+from typing import Optional
+from multiprocessing import Process, Queue, current_process
 from typeguard import typechecked
 
-from kestrel.exceptions import DataSourceError
 from stix_shifter.stix_translation import stix_translation
 from stix_shifter_utils.stix_translation.src.utils.transformer_utils import (
     get_module_transformers,
@@ -11,9 +11,7 @@ from stix_shifter_utils.stix_translation.src.utils.transformer_utils import (
 from firepit.aio.ingest import translate
 
 from kestrel_datasource_stixshifter.worker import STOP_SIGN
-
-
-_logger = logging.getLogger(__name__)
+from kestrel_datasource_stixshifter.worker.utils import TranslationResult, WorkerLog
 
 
 @typechecked
@@ -23,7 +21,7 @@ class Translator(Process):
         connector_name: str,
         observation_metadata: dict,
         translation_options: dict,
-        cache_bundle_path_prefix: str,
+        cache_data_path_prefix: Optional[str],
         is_fast_translation: bool,
         input_queue: Queue,
         output_queue: Queue,
@@ -33,74 +31,142 @@ class Translator(Process):
         self.connector_name = connector_name
         self.observation_metadata = observation_metadata
         self.translation_options = translation_options
-        self.cache_bundle_path_prefix = cache_bundle_path_prefix
+        self.cache_data_path_prefix = cache_data_path_prefix
         self.is_fast_translation = is_fast_translation
         self.input_queue = input_queue
         self.output_queue = output_queue
 
     def run(self):
-        _logger.debug("translator worker starts")
+        worker_name = current_process().name
         translation = stix_translation.StixTranslation()
 
         for input_batch in iter(self.input_queue.get, STOP_SIGN):
-            if self.is_fast_translation:
-                _logger.debug("fast translation task assigned to translator worker")
-                transformers = get_module_transformers(self.connector_name)
+            if input_batch.success:
+                if self.is_fast_translation:
+                    transformers = get_module_transformers(self.connector_name)
 
-                mapping = translation.translate(
-                    self.connector_name,
-                    stix_translation.MAPPING,
-                    None,
-                    None,
-                    self.translation_options,
+                    mapping = translation.translate(
+                        self.connector_name,
+                        stix_translation.MAPPING,
+                        None,
+                        None,
+                        self.translation_options,
+                    )
+
+                    if "error" in mapping:
+                        packet = TranslationResult(
+                            worker_name,
+                            False,
+                            None,
+                            WorkerLog(
+                                logging.ERROR,
+                                f"STIX-shifter mapping failed: {mapping['error']}",
+                            ),
+                        )
+                    else:
+                        try:
+                            dataframe = translate(
+                                mapping["to_stix_map"],
+                                transformers,
+                                input_batch.data,
+                                self.observation_metadata,
+                            )
+                        except e:
+                            packet = TranslationResult(
+                                worker_name,
+                                False,
+                                None,
+                                WorkerLog(
+                                    logging.Error,
+                                    str(e),
+                                ),
+                            )
+                        else:
+                            packet = TranslationResult(
+                                worker_name,
+                                True,
+                                dataframe,
+                                None,
+                            )
+
+                    if self.cache_data_path_prefix:
+                        debug_df_filepath = self.get_cache_data_path(
+                            input_batch.offset,
+                            "parquet",
+                        )
+                        try:
+                            dataframe.to_parquet(debug_df_filepath)
+                        except:
+                            packet_extra = TranslationResult(
+                                worker_name,
+                                False,
+                                None,
+                                WorkerLog(
+                                    logging.ERROR,
+                                    f"STIX-shifter fast translation parquet write to disk failed",
+                                ),
+                            )
+                            self.output_queue.put(packet_extra)
+
+                else:
+                    stixbundle = translation.translate(
+                        self.connector_name,
+                        "results",
+                        self.observation_metadata,
+                        input_batch.data,
+                        self.translation_options,
+                    )
+
+                    if "error" in stixbundle:
+                        packet = TranslationResult(
+                            worker_name,
+                            False,
+                            None,
+                            WorkerLog(
+                                logging.ERROR,
+                                f"STIX-shifter translation to STIX failed: {stixbundle['error']}",
+                            ),
+                        )
+                    else:
+                        packet = TranslationResult(
+                            worker_name,
+                            True,
+                            stixbundle,
+                            None,
+                        )
+
+                    if self.cache_data_path_prefix:
+                        debug_stixbundle_filepath = self.get_cache_data_path(
+                            input_batch.offset,
+                            "json",
+                        )
+                        try:
+                            with open(debug_stixbundle_filepath, "w") as bundle_fp:
+                                json.dump(stixbundle, bundle_fp, indent=4)
+                        except:
+                            packet_extra = TranslationResult(
+                                worker_name,
+                                False,
+                                None,
+                                WorkerLog(
+                                    logging.ERROR,
+                                    f"STIX-shifter translation bundle write to disk failed",
+                                ),
+                            )
+                            self.output_queue.put(packet_extra)
+
+            else:  # rely transmission error/info/debug message
+                packet = TranslationResult(
+                    input_batch.worker,
+                    input_batch.success,
+                    input_batch.data,
+                    input_batch.log,
                 )
 
-                if "error" in mapping:
-                    raise DataSourceError(
-                        f"STIX-shifter mapping failed with message: {mapping['error']}"
-                    )
-
-                dataframe = translate(
-                    mapping["to_stix_map"],
-                    transformers,
-                    input_batch["data"],
-                    self.observation_metadata,
-                )
-
-                self.output_queue.put((dataframe,))
-                _logger.debug("fast translation done and results in queue")
-
-            else:
-                _logger.debug("JSON translation task assigned to translator worker")
-                stixbundle = translation.translate(
-                    self.connector_name,
-                    "results",
-                    self.observation_metadata,
-                    input_batch["data"],
-                    self.translation_options,
-                )
-
-                if "error" in stixbundle:
-                    raise DataSourceError(
-                        "STIX-shifter translation results to STIX failed"
-                        f" with message: {stixbundle['error']}"
-                    )
-
-                if _logger.isEnabledFor(logging.DEBUG):
-                    debug_stixbundle_filepath = self.get_cache_bundle_path(
-                        input_batch["offset"]
-                    )
-                    _logger.debug(
-                        f"dumping STIX bundles into file: {debug_stixbundle_filepath}"
-                    )
-                    with debug_stixbundle_filepath.open("w") as ingest_fp:
-                        json.dump(stixbundle, ingest_fp, indent=4)
-
-                self.output_queue.put((stixbundle,))
-                _logger.debug("JSON translation done and results in queue")
+            self.output_queue.put(packet)
 
         self.output_queue.put(STOP_SIGN)
 
-        def get_cache_bundle_path(self, offset):
-            offset = str(offset).zfill(32)
-            return f"{self.cache_bundle_path_prefix}_{offset}.json"
+    def get_cache_data_path(self, offset, suffix):
+        offset = str(offset).zfill(32)
+        return f"{self.cache_data_path_prefix}_{offset}.{suffix}"

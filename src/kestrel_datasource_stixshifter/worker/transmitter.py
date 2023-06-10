@@ -1,14 +1,11 @@
 import time
 import logging
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, current_process
 from typeguard import typechecked
 
-from kestrel.exceptions import DataSourceError
 from stix_shifter.stix_transmission import stix_transmission
 from kestrel_datasource_stixshifter.worker import STOP_SIGN
-
-
-_logger = logging.getLogger(__name__)
+from kestrel_datasource_stixshifter.worker.utils import TransmissionResult, WorkerLog
 
 
 @typechecked
@@ -34,11 +31,6 @@ class TransmitterPool(Process):
         self.queue = output_queue
 
     def run(self):
-        _logger.debug(
-            "transmitter pool process starts,"
-            f" which will spawn {len(self.queries)} transmitters"
-        )
-
         transmitters = [
             Transmitter(
                 self.connector_name,
@@ -57,18 +49,16 @@ class TransmitterPool(Process):
         for _ in range(self.number_of_translators):
             self.queue.put(STOP_SIGN)
 
-        _logger.debug("transmitter pool process ends")
-
 
 class Transmitter(Process):
     def __init__(
         self,
-        connector_name,
-        connection_dict,
-        configuration_dict,
-        retrieval_batch_size,
-        query,
-        output_queue,
+        connector_name: str,
+        connection_dict: dict,
+        configuration_dict: dict,
+        retrieval_batch_size: int,
+        query: str,
+        output_queue: Queue,
     ):
         super().__init__()
 
@@ -80,7 +70,7 @@ class Transmitter(Process):
         self.queue = output_queue
 
     def run(self):
-        _logger.debug("transmitter worker process starts")
+        self.worker_name = current_process().name
         self.transmission = stix_transmission.StixTransmission(
             self.connector_name,
             self.connection_dict,
@@ -89,35 +79,54 @@ class Transmitter(Process):
         search_meta_result = self.transmission.query(self.query)
         if search_meta_result["success"]:
             self.search_id = search_meta_result["search_id"]
-            self.wait_datasource_search()
-            self.retrieve_data()
+            if self.wait_datasource_search():
+                # no error so far
+                self.retrieve_data()
         else:
-            stix_shifter_error_msg = (
+            err_msg = (
                 search_meta_result["error"]
                 if "error" in search_meta_result
                 else "details not avaliable"
             )
-            raise DataSourceError(
-                f"STIX-shifter transmission.query() failed with message: {stix_shifter_error_msg}"
+            packet = TransmissionResult(
+                self.worker_name,
+                False,
+                None,
+                WorkerLog(
+                    logging.ERROR,
+                    f"STIX-shifter transmission.query() failed: {err_msg}",
+                ),
             )
-        _logger.debug("transmitter worker process ends")
+            self.queue.put(packet)
 
     def wait_datasource_search(self):
-        # stix-shifter will not give "KINIT" status, but just "RUNNING"
-        status = {"progress": 0, "status": "KINIT"}
+        # kestrel init status: "KINIT"
+        status = {"success": True, "progress": 0, "status": "KINIT"}
 
-        while status["progress"] < 100 and status["status"] in ("KINIT", "RUNNING"):
+        while (
+            status["success"]
+            and status["progress"] < 100
+            and status["status"] in ("KINIT", "RUNNING")
+        ):
             if status["status"] == "RUNNING":
                 time.sleep(1)
             status = self.transmission.status(self.search_id)
             if not status["success"]:
-                stix_shifter_error_msg = (
+                err_msg = (
                     status["error"] if "error" in status else "details not avaliable"
                 )
-                raise DataSourceError(
-                    "STIX-shifter transmission.status()"
-                    f" failed with message: {stix_shifter_error_msg}"
+                packet = TransmissionResult(
+                    self.worker_name,
+                    False,
+                    None,
+                    WorkerLog(
+                        logging.ERROR,
+                        f"STIX-shifter transmission.status() failed: {err_msg}",
+                    ),
                 )
+                self.queue.put(packet)
+                return False
+        return True
 
     def retrieve_data(self):
         result_retrieval_offset = 0
@@ -126,27 +135,27 @@ class Transmitter(Process):
         is_retry_cycle = False
 
         while has_remaining_results:
-            _logger.debug("transmitter: a batch/page retrieveal starts")
+            packet = None
+
             result_batch = self.transmission.results(
                 self.search_id,
                 result_retrieval_offset,
                 self.retrieval_batch_size,
                 metadata,
             )
-            _logger.debug("transmitter: a batch/page retrieveal ends")
 
             if result_batch["success"]:
-                new_entries = result_batch["data"]
-
-                if new_entries:
-                    # decorate result
-                    result_batch["offset"] = result_retrieval_offset
-
-                    # put results to output queue
-                    self.queue.put(result_batch)
+                if result_batch["data"]:
+                    packet = TransmissionResult(
+                        self.worker_name,
+                        True,
+                        result_batch["data"],
+                        result_retrieval_offset,
+                        None,
+                    )
 
                     # prepare for next round retrieval
-                    result_retrieval_offset += len(new_entries)
+                    result_retrieval_offset += len(result_batch["data"])
                     if "metadata" in result_batch:
                         metadata = result_batch["metadata"]
 
@@ -156,14 +165,14 @@ class Transmitter(Process):
                 is_retry_cycle = False
 
             else:
-                stix_shifter_error_msg = (
+                err_msg = (
                     result_batch["error"]
                     if "error" in result_batch
                     else "details not avaliable"
                 )
 
                 if (
-                    stix_shifter_error_msg.startswith(
+                    err_msg.startswith(
                         f"{self.connector_name} connector error => server timeout_error"
                     )
                     and not is_retry_cycle
@@ -172,14 +181,27 @@ class Transmitter(Process):
                     # only give it one retry to mitigate high CPU occupation
                     # otherwise, it could be a real server connection issue
                     # /stix_shifter_utils/stix_transmission/utils/RestApiClientAsync.py
-                    _logger.info(
-                        "Busy CPU; hit stix-shifter transmission aiohttp connection timeout; retry."
-                        " May need to reduce number of translators in config."
+                    packet = TransmissionResult(
+                        self.worker_name,
+                        False,
+                        None,
+                        WorkerLog(
+                            logging.INFO,
+                            "Busy CPU; hit stix-shifter aiohttp connection timeout; retry.",
+                        ),
                     )
                     is_retry_cycle = True
 
                 else:
-                    raise DataSourceError(
-                        "STIX-shifter transmission.results() failed"
-                        f" with message: {stix_shifter_error_msg}"
+                    packet = TransmissionResult(
+                        self.worker_name,
+                        False,
+                        None,
+                        WorkerLog(
+                            logging.ERROR,
+                            f"STIX-shifter transmission.result() failed: {err_msg}",
+                        ),
                     )
+
+            if packet:
+                self.queue.put(packet)

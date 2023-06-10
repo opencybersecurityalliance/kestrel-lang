@@ -1,15 +1,20 @@
-from pandas import DataFrame
+import logging
+import json
+import pandas
 from multiprocessing import Queue
 
 from kestrel_datasource_stixshifter.connector import check_module_availability
 from kestrel_datasource_stixshifter.worker.translator import Translator
+from kestrel_datasource_stixshifter.worker.utils import TransmissionResult
 from kestrel_datasource_stixshifter.worker import STOP_SIGN
 
 
-SAMPLE_RESULT = {
-    "connector": "elastic_ecs",
-    "success": True,
-    "data": [
+CONNECTOR_NAME = "elastic_ecs"
+
+SAMPLE_RESULT = TransmissionResult(
+    "fake transmission worker",
+    True,
+    [
         {
             "process": {
                 "name": "svchost.exe",
@@ -65,22 +70,23 @@ SAMPLE_RESULT = {
             "tags": ["beats_input_codec_plain_applied"],
         }
     ],
-}
+    100,
+    None,
+)
 
 
 def test_stixshifter_translate():
-    connector_name = SAMPLE_RESULT["connector"]
     query_id = "8df266aa-2901-4a94-ace9-a4403e310fa1"
-    check_module_availability(connector_name)
+    check_module_availability(CONNECTOR_NAME)
 
     input_queue = Queue()
     output_queue = Queue()
 
     translator = Translator(
-        connector_name,
-        {"id": "identity--" + query_id, "name": connector_name},
+        CONNECTOR_NAME,
+        {"id": "identity--" + query_id, "name": CONNECTOR_NAME},
         {},
-        "",
+        None,
         False,
         input_queue,
         output_queue,
@@ -90,31 +96,66 @@ def test_stixshifter_translate():
     input_queue.put(SAMPLE_RESULT)
     input_queue.put(STOP_SIGN)
 
+    result = output_queue.get()
+    id_object = result.data["objects"][0]
+    assert id_object["id"] == "identity--" + query_id
+    assert id_object["name"] == CONNECTOR_NAME
+
+    result = output_queue.get()
+    assert result == STOP_SIGN
+
     translator.join(5)
     assert translator.is_alive() == False
 
-    result = output_queue.get()
-    id_object = result[0]["objects"][0]
-    assert id_object["id"] == "identity--" + query_id
-    assert id_object["name"] == connector_name
 
-    input_queue.close()
-    output_queue.close()
-
-
-def test_fast_translate():
-    connector_name = SAMPLE_RESULT["connector"]
+def test_stixshifter_translate_with_bundle_writing_to_disk(tmpdir):
     query_id = "8df266aa-2901-4a94-ace9-a4403e310fa1"
-    check_module_availability(connector_name)
+    check_module_availability(CONNECTOR_NAME)
+    cache_bundle_path_prefix = str(tmpdir.join("test"))
+    offset_str = str(SAMPLE_RESULT.offset).zfill(32)
+    cache_bundle_path = cache_bundle_path_prefix + f"_{offset_str}.json"
 
     input_queue = Queue()
     output_queue = Queue()
 
     translator = Translator(
-        connector_name,
-        {"id": "identity--" + query_id, "name": connector_name},
+        CONNECTOR_NAME,
+        {"id": "identity--" + query_id, "name": CONNECTOR_NAME},
         {},
-        "",
+        cache_bundle_path_prefix,
+        False,
+        input_queue,
+        output_queue,
+    )
+    translator.start()
+
+    input_queue.put(SAMPLE_RESULT)
+    input_queue.put(STOP_SIGN)
+    result = output_queue.get()
+    result = output_queue.get()
+
+    with open(cache_bundle_path, "r") as bundle_fp:
+        bundle = json.load(bundle_fp)
+    id_object = bundle["objects"][0]
+    assert id_object["id"] == "identity--" + query_id
+    assert id_object["name"] == CONNECTOR_NAME
+
+    translator.join(5)
+    assert translator.is_alive() == False
+
+
+def test_fast_translate():
+    query_id = "8df266aa-2901-4a94-ace9-a4403e310fa1"
+    check_module_availability(CONNECTOR_NAME)
+
+    input_queue = Queue()
+    output_queue = Queue()
+
+    translator = Translator(
+        CONNECTOR_NAME,
+        {"id": "identity--" + query_id, "name": CONNECTOR_NAME},
+        {},
+        None,
         True,
         input_queue,
         output_queue,
@@ -124,13 +165,47 @@ def test_fast_translate():
     input_queue.put(SAMPLE_RESULT)
     input_queue.put(STOP_SIGN)
 
+    packet = output_queue.get()
+    result = packet.data
+    assert isinstance(result, pandas.DataFrame)
+    assert result.empty == False
+
+    result = output_queue.get()
+    assert result == STOP_SIGN
+
     translator.join(5)
     assert translator.is_alive() == False
 
-    result = output_queue.get()
-    result = result[0]
-    assert isinstance(result, DataFrame)
-    assert result.empty == False
 
-    input_queue.close()
-    output_queue.close()
+def test_stixshifter_fast_translate_with_parquet_writing_to_disk(tmpdir):
+    query_id = "8df266aa-2901-4a94-ace9-a4403e310fa1"
+    check_module_availability(CONNECTOR_NAME)
+    cache_parquet_path_prefix = str(tmpdir.join("test"))
+    offset_str = str(SAMPLE_RESULT.offset).zfill(32)
+    cache_parquet_path = cache_parquet_path_prefix + f"_{offset_str}.parquet"
+
+    input_queue = Queue()
+    output_queue = Queue()
+
+    translator = Translator(
+        CONNECTOR_NAME,
+        {"id": "identity--" + query_id, "name": CONNECTOR_NAME},
+        {},
+        cache_parquet_path_prefix,
+        True,
+        input_queue,
+        output_queue,
+    )
+    translator.start()
+
+    input_queue.put(SAMPLE_RESULT)
+    input_queue.put(STOP_SIGN)
+    result = output_queue.get()
+    result = output_queue.get()
+
+    df = pandas.read_parquet(cache_parquet_path)
+
+    translator.join(5)
+    assert translator.is_alive() == False
+
+

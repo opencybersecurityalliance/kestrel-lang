@@ -378,6 +378,9 @@ class Session(AbstractContextManager):
             # ensure this does not executed twice
             self.logging_handler = None
 
+        if self.original_logging_level:
+            logging.getLogger().setLevel(self.original_logging_level)
+
         # close store/database
         if self.store:
             # release resources
@@ -516,4 +519,6 @@ class Session(AbstractContextManager):
         log_file_name = self.config["session"]["log_path"]
         log_file_path = os.path.join(self.runtime_directory, log_file_name)
         handler = logging.FileHandler(log_file_path)
-        self.logging_handler = add_logging_handler(handler, self.debug_mode)
+        self.logging_handler, self.original_logging_level = add_logging_handler(
+            handler, self.debug_mode
+        )

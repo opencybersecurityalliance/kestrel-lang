@@ -72,10 +72,11 @@ def add_logging_handler(handler, if_debug):
     handler.setFormatter(formatter)
 
     root_logger = logging.getLogger()
+    current_logging_level = root_logger.getEffectiveLevel()
     root_logger.addHandler(handler)
     root_logger.setLevel(logging.DEBUG if if_debug else logging.INFO)
 
-    return handler
+    return handler, current_logging_level
 
 
 def clear_logging_handlers():
