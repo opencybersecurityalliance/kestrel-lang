@@ -28,5 +28,5 @@ class TransmissionResult:
 class TranslationResult:
     worker: str
     success: bool
-    data: Optional[dict|DataFrame]
+    data: Optional[dict | DataFrame]
     log: Optional[WorkerLog]
