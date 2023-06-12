@@ -4,7 +4,7 @@ import pandas
 from multiprocessing import Queue
 
 from kestrel_datasource_stixshifter.connector import check_module_availability
-from kestrel_datasource_stixshifter.worker.translator import Translator
+from kestrel_datasource_stixshifter import multiproc
 from kestrel_datasource_stixshifter.worker.utils import TransmissionResult
 from kestrel_datasource_stixshifter.worker import STOP_SIGN
 
@@ -82,7 +82,7 @@ def test_stixshifter_translate():
     input_queue = Queue()
     output_queue = Queue()
 
-    translator = Translator(
+    with multiproc.translate(
         CONNECTOR_NAME,
         {"id": "identity--" + query_id, "name": CONNECTOR_NAME},
         {},
@@ -90,22 +90,22 @@ def test_stixshifter_translate():
         False,
         input_queue,
         output_queue,
-    )
-    translator.start()
+        1,
+    ) as translators:
 
-    input_queue.put(SAMPLE_RESULT)
-    input_queue.put(STOP_SIGN)
+        input_queue.put(SAMPLE_RESULT)
+        input_queue.put(STOP_SIGN)
 
-    result = output_queue.get()
-    id_object = result.data["objects"][0]
-    assert id_object["id"] == "identity--" + query_id
-    assert id_object["name"] == CONNECTOR_NAME
+        result = output_queue.get()
+        id_object = result.data["objects"][0]
+        assert id_object["id"] == "identity--" + query_id
+        assert id_object["name"] == CONNECTOR_NAME
 
-    result = output_queue.get()
-    assert result == STOP_SIGN
+        result = output_queue.get()
+        assert result == STOP_SIGN
 
-    translator.join(5)
-    assert translator.is_alive() == False
+    for translator in translators:
+        assert translator.is_alive() == False
 
 
 def test_stixshifter_translate_with_bundle_writing_to_disk(tmpdir):
@@ -118,7 +118,7 @@ def test_stixshifter_translate_with_bundle_writing_to_disk(tmpdir):
     input_queue = Queue()
     output_queue = Queue()
 
-    translator = Translator(
+    with multiproc.translate(
         CONNECTOR_NAME,
         {"id": "identity--" + query_id, "name": CONNECTOR_NAME},
         {},
@@ -126,22 +126,22 @@ def test_stixshifter_translate_with_bundle_writing_to_disk(tmpdir):
         False,
         input_queue,
         output_queue,
-    )
-    translator.start()
+        1,
+    ) as translators:
 
-    input_queue.put(SAMPLE_RESULT)
-    input_queue.put(STOP_SIGN)
-    result = output_queue.get()
-    result = output_queue.get()
+        input_queue.put(SAMPLE_RESULT)
+        input_queue.put(STOP_SIGN)
+        result = output_queue.get()
+        result = output_queue.get()
 
-    with open(cache_bundle_path, "r") as bundle_fp:
-        bundle = json.load(bundle_fp)
-    id_object = bundle["objects"][0]
-    assert id_object["id"] == "identity--" + query_id
-    assert id_object["name"] == CONNECTOR_NAME
+        with open(cache_bundle_path, "r") as bundle_fp:
+            bundle = json.load(bundle_fp)
+        id_object = bundle["objects"][0]
+        assert id_object["id"] == "identity--" + query_id
+        assert id_object["name"] == CONNECTOR_NAME
 
-    translator.join(5)
-    assert translator.is_alive() == False
+    for translator in translators:
+        assert translator.is_alive() == False
 
 
 def test_fast_translate():
@@ -151,7 +151,7 @@ def test_fast_translate():
     input_queue = Queue()
     output_queue = Queue()
 
-    translator = Translator(
+    with multiproc.translate(
         CONNECTOR_NAME,
         {"id": "identity--" + query_id, "name": CONNECTOR_NAME},
         {},
@@ -159,22 +159,22 @@ def test_fast_translate():
         True,
         input_queue,
         output_queue,
-    )
-    translator.start()
+        1,
+    ) as translators:
 
-    input_queue.put(SAMPLE_RESULT)
-    input_queue.put(STOP_SIGN)
+        input_queue.put(SAMPLE_RESULT)
+        input_queue.put(STOP_SIGN)
 
-    packet = output_queue.get()
-    result = packet.data
-    assert isinstance(result, pandas.DataFrame)
-    assert result.empty == False
+        packet = output_queue.get()
+        result = packet.data
+        assert isinstance(result, pandas.DataFrame)
+        assert result.empty == False
 
-    result = output_queue.get()
-    assert result == STOP_SIGN
+        result = output_queue.get()
+        assert result == STOP_SIGN
 
-    translator.join(5)
-    assert translator.is_alive() == False
+    for translator in translators:
+        assert translator.is_alive() == False
 
 
 def test_stixshifter_fast_translate_with_parquet_writing_to_disk(tmpdir):
@@ -187,7 +187,7 @@ def test_stixshifter_fast_translate_with_parquet_writing_to_disk(tmpdir):
     input_queue = Queue()
     output_queue = Queue()
 
-    translator = Translator(
+    with multiproc.translate(
         CONNECTOR_NAME,
         {"id": "identity--" + query_id, "name": CONNECTOR_NAME},
         {},
@@ -195,17 +195,15 @@ def test_stixshifter_fast_translate_with_parquet_writing_to_disk(tmpdir):
         True,
         input_queue,
         output_queue,
-    )
-    translator.start()
+        1,
+    ) as translators:
 
-    input_queue.put(SAMPLE_RESULT)
-    input_queue.put(STOP_SIGN)
-    result = output_queue.get()
-    result = output_queue.get()
+        input_queue.put(SAMPLE_RESULT)
+        input_queue.put(STOP_SIGN)
+        result = output_queue.get()
+        result = output_queue.get()
 
-    df = pandas.read_parquet(cache_parquet_path)
+        df = pandas.read_parquet(cache_parquet_path)
 
-    translator.join(5)
-    assert translator.is_alive() == False
-
-
+    for translator in translators:
+        assert translator.is_alive() == False

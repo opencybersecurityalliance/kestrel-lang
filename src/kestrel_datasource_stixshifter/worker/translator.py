@@ -8,7 +8,7 @@ from stix_shifter.stix_translation import stix_translation
 from stix_shifter_utils.stix_translation.src.utils.transformer_utils import (
     get_module_transformers,
 )
-from firepit.aio.ingest import translate
+import firepit.aio.ingest
 
 from kestrel_datasource_stixshifter.worker import STOP_SIGN
 from kestrel_datasource_stixshifter.worker.utils import TranslationResult, WorkerLog
@@ -65,7 +65,7 @@ class Translator(Process):
                         )
                     else:
                         try:
-                            dataframe = translate(
+                            dataframe = firepit.aio.ingest.translate(
                                 mapping["to_stix_map"],
                                 transformers,
                                 input_batch.data,

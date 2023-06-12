@@ -1,6 +1,8 @@
 import logging
 import asyncio
 import copy
+from typing import Union
+from typeguard import typechecked
 from pandas import DataFrame
 from multiprocessing import Queue
 
@@ -9,8 +11,7 @@ from kestrel.utils import mkdtemp
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
 from kestrel_datasource_stixshifter.connector import check_module_availability
 from kestrel_datasource_stixshifter.worker import STOP_SIGN
-from kestrel_datasource_stixshifter.worker.transmitter import TransmitterPool
-from kestrel_datasource_stixshifter.worker.translator import Translator
+from kestrel_datasource_stixshifter import multiproc
 from kestrel_datasource_stixshifter.config import (
     get_datasource_from_profiles,
     load_options,
@@ -18,6 +19,7 @@ from kestrel_datasource_stixshifter.config import (
     set_stixshifter_logging_level,
 )
 
+from firepit.sqlstorage import SqlStorage
 from firepit.aio import asyncwrapper
 from firepit.aio.ingest import ingest
 
@@ -84,113 +86,114 @@ def query_datasource(uri, pattern, session_id, config, store):
         else:
             cache_data_path_prefix = None
 
-        observation_metadata = {
-            "id": "identity--" + query_id,
-            "name": connector_name,
-            "type": "identity",
-        }
+        observation_metadata = gen_observation_metadata(connector_name, query_id)
 
-        translation_options = copy.deepcopy(connection_dict.get("options", {}))
-
-        translation = stix_translation.StixTranslation()
-
-        _logger.debug(f"STIX pattern to query: {pattern}")
-
-        dsl = translation.translate(
-            connector_name, "query", observation_metadata, pattern, translation_options
+        dsl = translate_query(
+            connector_name, observation_metadata, pattern, connection_dict
         )
-
-        if "error" in dsl:
-            raise DataSourceError(
-                "STIX-shifter translation from STIX"
-                " to native query failed"
-                f" with message: {dsl['error']}"
-            )
-
-        _logger.debug(f"translate results: {dsl}")
 
         raw_records_queue = Queue()
         translated_data_queue = Queue()
 
-        translators_count = config["options"]["translation_workers_count"]
-        _logger.debug(f"{translators_count} translation workers to be started")
-
-        is_fast_translation = connector_name in config["options"]["fast_translate"]
-        _logger.debug(f"fast translation enabled: {is_fast_translation}")
-
-        translators = [
-            Translator(
-                connector_name,
-                observation_metadata,
-                translation_options,
-                cache_data_path_prefix,
-                is_fast_translation,
-                raw_records_queue,
-                translated_data_queue,
-            )
-            for _ in range(translators_count)
-        ]
-
-        for translator in translators:
-            translator.start()
-
-        transmitter_pool = TransmitterPool(
+        with multiproc.translate(
             connector_name,
-            connection_dict,
-            configuration_dict,
-            retrieval_batch_size,
-            translators_count,
-            dsl["queries"],
+            observation_metadata,
+            connection_dict.get("options", {}),
+            cache_data_path_prefix,
+            connector_name in config["options"]["fast_translate"],
             raw_records_queue,
-        )
-
-        transmitter_pool.start()
-
-        for _ in range(translators_count):
-            for result in iter(translated_data_queue.get, STOP_SIGN):
-                if result.success:
-                    _logger.debug("ingestion of a batch/page starts")
-                    if isinstance(result.data, DataFrame):
-                        # fast translation result in DataFrame
-                        asyncio.run(
-                            ingest(
-                                asyncwrapper.SyncWrapper(store=store),
-                                observation_metadata,
-                                result.data,
-                                query_id,
-                            )
-                        )
-                    else:
-                        # STIX bundle (normal stix-shifter translation result)
-                        store.cache(query_id, result.data)
-                    _logger.debug("ingestion of a batch/page ends")
-
-                else:  # this is a log packet
-                    log_msg = f"[worker: {result.worker}] {result.log.log}"
-                    if result.log.level == logging.ERROR:
-                        _logger.debug(log_msg)
-                        raise DataSourceError(log_msg)
-                    else:
-                        if result.log.level == logging.WARN:
-                            _logger.warn(log_msg)
-                        elif result.log.level == logging.INFO:
-                            _logger.info(log_msg)
-                        else:  #  all others as debug logs
-                            _logger.debug(log_msg)
-
-        # all transmitters should already finished
-        transmitter_pool.join(2)
-        if transmitter_pool.is_alive():
-            raise DataSourceManagerInternalError(
-                f"transmitter pool process do not terminate in interface {__package__}"
-            )
-
-        # all translators should already finished
-        for translator in translators:
-            translator.join(1)
-            if translator.is_alive():
-                raise DataSourceManagerInternalError(
-                    f"one or more translators do not terminate in interface {__package__}"
-                )
+            translated_data_queue,
+            config["options"]["translation_workers_count"],
+        ):
+            with multiproc.transmit(
+                connector_name,
+                connection_dict,
+                configuration_dict,
+                retrieval_batch_size,
+                config["options"]["translation_workers_count"],
+                dsl["queries"],
+                raw_records_queue,
+            ):
+                for _ in range(config["options"]["translation_workers_count"]):
+                    for packet in iter(translated_data_queue.get, STOP_SIGN):
+                        if packet.success:
+                            ingest(packet.data, observation_metadata, query_id, store)
+                        else:
+                            process_log_msg(packet)
 
     return ReturnFromStore(query_id)
+
+
+@typechecked
+def gen_observation_metadata(connector_name: str, query_id: str):
+    return {
+        "id": "identity--" + query_id,
+        "name": connector_name,
+        "type": "identity",
+    }
+
+
+@typechecked
+def translate_query(
+    connector_name: str,
+    observation_metadata: dict,
+    pattern: str,
+    connection_dict: dict,
+):
+    translation = stix_translation.StixTranslation()
+    translation_options = copy.deepcopy(connection_dict.get("options", {}))
+
+    _logger.debug(f"STIX pattern to query: {pattern}")
+
+    dsl = translation.translate(
+        connector_name, "query", observation_metadata, pattern, translation_options
+    )
+
+    _logger.debug(f"translate results: {dsl}")
+
+    if "error" in dsl:
+        raise DataSourceError(
+            "STIX-shifter translation from STIX"
+            " to native query failed"
+            f" with message: {dsl['error']}"
+        )
+
+    return dsl
+
+
+@typechecked
+def ingest(
+    result: Union[dict, DataFrame],
+    observation_metadata: dict,
+    query_id: str,
+    store: SqlStorage,
+):
+    _logger.debug("ingestion of a batch/page starts")
+    if isinstance(result, DataFrame):
+        # fast translation result in DataFrame
+        asyncio.run(
+            ingest(
+                asyncwrapper.SyncWrapper(store=store),
+                observation_metadata,
+                result,
+                query_id,
+            )
+        )
+    else:
+        # STIX bundle (normal stix-shifter translation result)
+        store.cache(query_id, result)
+    _logger.debug("ingestion of a batch/page ends")
+
+
+def process_log_msg(packet):
+    log_msg = f"[worker: {packet.worker}] {packet.log.log}"
+    if packet.log.level == logging.ERROR:
+        _logger.debug(log_msg)
+        raise DataSourceError(log_msg)
+    else:
+        if packet.log.level == logging.WARN:
+            _logger.warn(log_msg)
+        elif packet.log.level == logging.INFO:
+            _logger.info(log_msg)
+        else:  #  all others as debug logs
+            _logger.debug(log_msg)
