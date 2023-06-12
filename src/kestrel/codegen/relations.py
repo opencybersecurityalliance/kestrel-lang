@@ -137,35 +137,6 @@ def get_entity_id_attribute(variable):
     return id_attr
 
 
-def are_entities_associated_with_x_ibm_event(entity_types):
-    flags = [entity_type in stix_x_ibm_event_mapping for entity_type in entity_types]
-    return all(flags)
-
-
-def compile_generic_relation_to_pattern(return_type, input_type, input_var_name):
-    comp_exps = []
-    for relation, is_reversed in _enumerate_relations_between_entities(
-        return_type, input_type
-    ):
-        comp_exps += _generate_paramstix_comparison_expressions(
-            return_type, relation, input_type, is_reversed, input_var_name
-        )
-    pattern = "[" + " OR ".join(comp_exps) + "]"
-    _logger.debug(f"generic relation pattern compiled: {pattern}")
-    return pattern
-
-
-def compile_specific_relation_to_pattern(
-    return_type, relation, input_type, is_reversed, input_var_name
-):
-    comp_exps = _generate_paramstix_comparison_expressions(
-        return_type, relation, input_type, is_reversed, input_var_name
-    )
-    pattern = "[" + " OR ".join(comp_exps) + "]"
-    _logger.debug(f"specific relation pattern compiled: {pattern}")
-    return pattern
-
-
 def compile_identical_entity_search_pattern(var_name, var_struct, does_support_id):
     # "id" attribute may not be available for STIX 2.0 via STIX-shifter
     # so `does_support_id` is set to False in default kestrel config file
@@ -176,59 +147,6 @@ def compile_identical_entity_search_pattern(var_name, var_struct, does_support_i
         pattern_raw = f"[{var_struct.type}:{attribute} = {var_name}.{attribute}]"
     _logger.debug(f"identical entity search raw pattern generated: {pattern_raw}")
     return pattern_raw
-
-
-def compile_x_ibm_event_search_flow_in_pattern(input_type, input_var_name):
-    ref = stix_x_ibm_event_mapping[input_type]
-    pattern = f"[x-oca-event:{ref}.id = {input_var_name}.id]"
-    _logger.debug(f"x-oca-event flow in pattern compiled: {pattern}")
-    return pattern
-
-
-def compile_x_ibm_event_search_flow_out_pattern(return_type, input_event_var_name):
-    ref = stix_x_ibm_event_mapping[return_type]
-    pattern = f"[{return_type}:id = {input_event_var_name}.{ref}.id]"
-    _logger.debug(f"x-oca-event flow out pattern compiled: {pattern}")
-    return pattern
-
-
-def _enumerate_relations_between_entities(return_type, input_type):
-    # return: [(relation, is_reversed)]
-    relations = []
-    for x, r, y in stix_2_0_ref_mapping.keys():
-        if x == return_type and y == input_type:
-            relations.append((r, False))
-        if y == return_type and x == input_type:
-            relations.append((r, True))
-    _logger.debug(
-        f'enumerated relations between "{return_type}" and "{input_type}": {relations}'
-    )
-    return relations
-
-
-def _generate_paramstix_comparison_expressions(
-    return_type, relation, input_type, is_reversed, input_var_name
-):
-    (entity_x, entity_y) = (
-        (input_type, return_type) if is_reversed else (return_type, input_type)
-    )
-
-    stix_src_refs, stix_tgt_refs = stix_2_0_ref_mapping[(entity_x, relation, entity_y)]
-
-    comp_exps = []
-    for stix_ref in stix_src_refs:
-        if stix_ref.endswith("_refs"):
-            comp_exps.append(f"{return_type}:id = {input_var_name}.{stix_ref}[*].id")
-        else:
-            comp_exps.append(f"{return_type}:id = {input_var_name}.{stix_ref}.id")
-
-    for stix_ref in stix_tgt_refs:
-        if stix_ref.endswith("_refs"):
-            comp_exps.append(f"{return_type}:id = {input_var_name}.{stix_ref}[*].id")
-        else:
-            comp_exps.append(f"{return_type}:id = {input_var_name}.{stix_ref}.id")
-
-    return comp_exps
 
 
 def fine_grained_relational_process_filtering(
