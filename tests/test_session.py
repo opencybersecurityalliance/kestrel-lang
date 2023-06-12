@@ -52,7 +52,7 @@ def test_session_1(fake_bundle_file):
             session,
             f"""conns = get network-traffic
             from file://{fake_bundle_file}
-            where [network-traffic:dst_port < 10000]""",
+            where dst_port < 10000""",
         )
         conns = get_df(session, "conns")
         assert len(conns.index) == 100
