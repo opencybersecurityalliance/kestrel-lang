@@ -9,6 +9,45 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+Added
+-----
+
+- Multi-process support for stix-shifter data source interface
+    - Each native data source query is executed in a subprocess
+    - A pool of translators are created to pick up translation tasks for each transmitted page/batch
+    - Ingestion is serialized in main proccess to avoid multi-process execution for SQLite
+    - Two queues between transmitter/translator and translator/ingestor are used
+    - Both stix-shifter translation and firepit fast-translation are supported
+    - With debug flag, the translated results (JSON or DataFrame) will be dump to disk
+    - Unit tests for the translator subprocess in different modes
+
+- Additional syntax/keywords on singular timeunits
+
+- New variable transformer function ``ADDOBSID``
+    - Add new syntax and codegen
+    - Add additional documentatoin
+
+- Unit tests on CLI
+    - Invoking with ``kestrel x.hf``
+    - Invoking with ``python -m kestrel x.hf``
+
+Fixed
+-----
+
+- No dumped data in stix-shifter interface when debug is enabled
+- Multiprocessing conflict with ``runpy``
+
+Removed
+-------
+
+- Deprecated functions in ``kestrel/codegen/relations.py``
+
+Changed
+-------
+
+- Examples in Kestrel config YAML
+
+
 1.6.1 (2023-05-31)
 ==================
 
