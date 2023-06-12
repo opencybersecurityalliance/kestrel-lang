@@ -20,8 +20,8 @@ from kestrel_datasource_stixshifter.config import (
 )
 
 from firepit.sqlstorage import SqlStorage
-from firepit.aio import asyncwrapper
-from firepit.aio.ingest import ingest
+import firepit.aio.ingest
+import firepit.aio.asyncwrapper
 
 from stix_shifter.stix_translation import stix_translation
 
@@ -172,8 +172,8 @@ def ingest(
     if isinstance(result, DataFrame):
         # fast translation result in DataFrame
         asyncio.run(
-            ingest(
-                asyncwrapper.SyncWrapper(store=store),
+            firepit.aio.ingest.ingest(
+                firepit.aio.asyncwrapper.SyncWrapper(store=store),
                 observation_metadata,
                 result,
                 query_id,

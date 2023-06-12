@@ -185,6 +185,7 @@ class Transmitter(Process):
                         self.worker_name,
                         False,
                         None,
+                        None,
                         WorkerLog(
                             logging.INFO,
                             "Busy CPU; hit stix-shifter aiohttp connection timeout; retry.",
@@ -196,6 +197,7 @@ class Transmitter(Process):
                     packet = TransmissionResult(
                         self.worker_name,
                         False,
+                        None,
                         None,
                         WorkerLog(
                             logging.ERROR,
