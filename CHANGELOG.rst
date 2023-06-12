@@ -13,6 +13,7 @@ Added
 -----
 
 - Multi-process support for stix-shifter data source interface
+
     - Each native data source query is executed in a subprocess
     - A pool of translators are created to pick up translation tasks for each transmitted page/batch
     - Ingestion is serialized in main proccess to avoid multi-process execution for SQLite
@@ -24,10 +25,12 @@ Added
 - Additional syntax/keywords on singular timeunits
 
 - New variable transformer function ``ADDOBSID``
+
     - Add new syntax and codegen
     - Add additional documentatoin
 
 - Unit tests on CLI
+
     - Invoking with ``kestrel x.hf``
     - Invoking with ``python -m kestrel x.hf``
 
