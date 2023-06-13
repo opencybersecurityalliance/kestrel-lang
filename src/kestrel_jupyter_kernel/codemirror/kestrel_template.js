@@ -21,6 +21,7 @@
     var hexitRE = /[0-9A-Fa-f]/;
     var octitRE = /[0-7]/;
     var idRE = /[a-z_A-Z0-9\']/;
+    var typeRE = /[a-zA-Z0-9-]/;
     var symbolRE = /[-!#$%&*+.\/<=>?@\\^|~:]/;
     var specialRE = /[(),;[\]`{}]/;
     var whiteCharRE = /[ \t\v\f]/; // newlines are handled in tokenizer
@@ -34,6 +35,11 @@
 
         var ch = source.next();
 
+        if (ch == '#') {
+          source.skipToEnd();
+          return "comment";
+        }
+
         if (ch == '\'') {
           return switchState(source, setState, stringLiteral);
         }
@@ -45,6 +51,11 @@
               return "string-2";
             }
           }
+        }
+
+        if (typeRE.test(source)) {
+          source.eatWhile(typeRE);
+          return "type";
         }
 
         if (largeRE.test(ch)) {
@@ -116,6 +127,11 @@
 
       for (var i = keywords.length; i--;)
         wkw[keywords[i]] = "keyword";
+
+      var ops = ["IN", "NOT", "LIKE", "MATCHES", "ISSUBSET", "in", "not", "like", "matches", "isubset", "=", "!=", "<", ">", "<=", ">=",];
+
+      for (var i = ops.length; i--;)
+        wkw[ops[i]] = "operator";
 
       return wkw;
     })();
