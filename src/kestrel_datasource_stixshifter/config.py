@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import multiprocessing
 
 from kestrel.config import (
     CONFIG_DIR_DEFAULT,
@@ -16,7 +17,6 @@ ENV_VAR_PREFIX = "STIXSHIFTER_"
 RETRIEVAL_BATCH_SIZE = 2000
 SINGLE_BATCH_TIMEOUT = 60
 FAST_TRANSLATE_CONNECTORS = []  # Suggested: ["qradar", "elastic_ecs"]
-ASYNC_TRANSLATION_WORKERS_CNT = 1
 
 
 _logger = logging.getLogger(__name__)
@@ -207,8 +207,8 @@ def load_options():
         config = {"options": {}}
     if "fast_translate" not in config["options"]:
         config["options"]["fast_translate"] = FAST_TRANSLATE_CONNECTORS
-    if "async_translation_workers_count" not in config["options"]:
-        config["options"][
-            "async_translation_workers_count"
-        ] = ASYNC_TRANSLATION_WORKERS_CNT
+    if "translation_workers_count" not in config["options"]:
+        config["options"]["translation_workers_count"] = min(
+            2, max(1, multiprocessing.cpu_count() - 2)
+        )
     return config["options"]

@@ -25,7 +25,7 @@ def test_check_module_availability():
 
 def test_yaml_profiles_refresh(tmp_path):
 
-    profileA = f"""profiles:
+    profileA = f"""
 profiles:
     host101:
         connector: elastic_ecs
@@ -39,7 +39,7 @@ profiles:
                 api_key: qwer
 """
 
-    profileB = f"""profiles:
+    profileB = f"""
 profiles:
     host101:
         connector: elastic_ecs
@@ -100,3 +100,5 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
         assert connection["options"]["timeout"] == 120
         assert connection["options"]["result_limit"] == 10000 * 2
         assert retrieval_batch_size == 10000
+
+    del os.environ["KESTREL_STIXSHIFTER_CONFIG"]

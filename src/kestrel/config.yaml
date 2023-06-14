@@ -39,7 +39,8 @@ prefetch:
   excluded_entities:
     -
     # - file
-    # - process
+    # - user-account
+    # - x-oca-asset
 
   # Detailed logic to identify the same process from different records is more
   # complex than many data source query language can express, so Kestrel

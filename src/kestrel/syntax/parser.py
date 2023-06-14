@@ -208,10 +208,18 @@ class _KestrelT(Transformer):
         return packet
 
     def vtrans(self, args):
-        return {
-            "input": self._extract_var(args),
-            "transform": self._assert_and_extract_single("TRANSFORM", args),
-        }
+        if len(args) == 1:
+            return {
+                "input": self._extract_var(args),
+            }
+        else:
+            return {
+                "input": self._extract_var(args),
+                "transformer": args[0],
+            }
+
+    def transformer(self, args):
+        return args[0]
 
     def where_clause(self, args):
         pattern = ExtCenteredGraphPattern(args[0])

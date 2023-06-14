@@ -111,10 +111,14 @@ def _debug_logger(func):
 @_default_output
 def assign(stmt, session):
     entity_table = session.symtable[stmt["input"]].entity_table
-    transform = stmt.get("transform")
+    transform = stmt.get("transformer")
     if transform:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
+        elif transform.lower() == "addobsid":
+            qry = session.store.extract_observeddata_attribute(
+                entity_table, name_of_attribute="id", run=False
+            )
         else:
             qry = Query(entity_table)
     else:
@@ -214,10 +218,14 @@ def info(stmt, session):
 @_debug_logger
 def disp(stmt, session):
     entity_table = session.symtable[stmt["input"]].entity_table
-    transform = stmt.get("transform")
+    transform = stmt.get("transformer")
     if transform and entity_table:
         if transform.lower() == "timestamped":
             qry = session.store.timestamped(entity_table, run=False)
+        elif transform.lower() == "addobsid":
+            qry = session.store.extract_observeddata_attribute(
+                entity_table, name_of_attribute="id", run=False
+            )
         else:
             qry = Query(entity_table)
     else:

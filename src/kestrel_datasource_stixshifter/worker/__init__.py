@@ -1,0 +1,1 @@
+from kestrel_datasource_stixshifter.worker.utils import STOP_SIGN

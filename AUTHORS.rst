@@ -18,6 +18,7 @@ Contributors
 - `Ian Molloy`_
 - `Constantin Adam`_
 - `Ting Dai`_
+- `Leila Rashidi`_
 
 .. _Xiaokui Shu: https://github.com/subbyte
 .. _Paul Coccoli: https://github.com/pcoccoli
@@ -28,3 +29,4 @@ Contributors
 .. _Ian Molloy: https://github.com/imolloy
 .. _Constantin Adam: https://github.com/cmadam
 .. _Ting Dai: https://github.com/tingdai
+.. _Leila Rashidi: https://github.com/leila-rashidi

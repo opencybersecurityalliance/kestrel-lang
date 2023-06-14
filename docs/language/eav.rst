@@ -211,18 +211,23 @@ Variable Transforms
 When Kestrel extracts :ref:`entities<language/tac:Entity>` from
 :ref:`records<language/tac:Record>` to construct the data table for a variable,
 only information about each entity is extracted, such as attributes of that
-entity.  However, a record may have some additional information besides all
+entity. However, a record may have some additional information besides all
 entities in it, such as when the record is observed or when the event happened
 (if a record is defined as an individual event by a data source).
 
 Such information is not in a Kestrel variable, but they could be useful in a
 hunt. In Kestrel, there are *variable transforms* that transforms the data
 table of a variable into other formats such as a data table with additional
-columns of record/event/(STIX `Observed Data`_) timestamps.
+columns of record/event/(STIX `Observed Data`_) timestamps. Kestrel supports
+two transforms currently:
 
-One can use the ``TIMESTAMPED`` keyword as a function to conduct such
-transformation, which results in a new column ``first_observed`` in the
-transformed data table:
+- ``TIMESTAMPED()``: the function, when applied to a variable, results in a new
+  column ``first_observed`` in the transformed data table.
+
+- ``ADDOBSID()``: the function, when applied to a variable, results in a new
+  column ``observation_id`` in the transformed data table.
+
+Usage example:
 
 .. code-block:: coffeescript
 

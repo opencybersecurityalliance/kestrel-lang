@@ -1,4 +1,4 @@
-import re
+from datetime import datetime, timedelta, timezone
 
 from lark import UnexpectedToken
 import pytest
@@ -204,6 +204,55 @@ def test_get_timerange():
     stix = "[process:name = 'asdf'] START t'2022-10-18T01:02:03.000Z' STOP t'2022-10-19T04:05:06.000Z'"
     result["where"].add_center_entity(result["type"])
     assert result["where"].to_stix(result["timerange"], None) == stix
+
+
+@pytest.mark.parametrize(
+    "n, unit, delta",
+    [
+        (1, "d", timedelta(days=1)),
+        (1, "D", timedelta(days=1)),
+        (1, "day", timedelta(days=1)),
+        (1, "DAY", timedelta(days=1)),
+        (1, "days", timedelta(days=1)),
+        (1, "DAYS", timedelta(days=1)),
+        (3, "d", timedelta(days=3)),
+        (3, "D", timedelta(days=3)),
+        (3, "day", timedelta(days=3)),
+        (3, "DAY", timedelta(days=3)),
+        (3, "days", timedelta(days=3)),
+        (3, "DAYS", timedelta(days=3)),
+        (1, "h", timedelta(hours=1)),
+        (1, "H", timedelta(hours=1)),
+        (1, "hour", timedelta(hours=1)),
+        (1, "HOUR", timedelta(hours=1)),
+        (1, "hours", timedelta(hours=1)),
+        (1, "HOURS", timedelta(hours=1)),
+        (2, "H", timedelta(hours=2)),
+        (2, "HOUR", timedelta(hours=2)),
+        (2, "HOURS", timedelta(hours=2)),
+        (1, "m", timedelta(minutes=1)),
+        (1, "minute", timedelta(minutes=1)),
+        (1, "MINUTES", timedelta(minutes=1)),
+        (2, "m", timedelta(minutes=2)),
+        (2, "MINUTES", timedelta(minutes=2)),
+        (90, "s", timedelta(seconds=90)),
+        (90, "SECONDS", timedelta(seconds=90)),
+    ]
+)
+def test_get_timerange_relative(n, unit, delta):
+    now = datetime.now()  #timezone.utc)
+    results = parse_kestrel(f"""
+        x = GET process
+            FROM xxx
+            WHERE name = 'asdf'
+            LAST {n} {unit}
+        """)
+    result = results[0]
+    def close_enough(x, y):
+        print(x, y, y - x)
+        return y - x < timedelta(seconds=30)
+    assert close_enough(result["timerange"][0], now - delta)
+    assert close_enough(result["timerange"][1], now)
 
 
 def test_apply_params():

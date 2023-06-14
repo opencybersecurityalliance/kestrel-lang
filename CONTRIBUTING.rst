@@ -40,7 +40,7 @@ Checklist before submitting a pull request:
 4. Check unused imports with ``unimport --check --exclude __init__.py src/``.
 5. Black your code with ``black src/``.
 
-All contributions must be covered by a Contributor's License Agreement (CLA) and ECLA (if you are contributing on behalf of your employer). You will get a prompt to sign CLA when you submit your first PR.
+All contributions must be covered by a `Contributor's License Agreement`_ (CLA) and ECLA (if you are contributing on behalf of your employer). You will get a prompt to sign CLA when you submit your first PR.
 
 .. _GitHub Issues: https://github.com/opencybersecurityalliance/kestrel-lang/issues
 .. _Symbol Naming Convention: https://google.github.io/styleguide/pyguide.html#3164-guidelines-derived-from-guidos-recommendations
@@ -51,3 +51,4 @@ All contributions must be covered by a Contributor's License Agreement (CLA) and
 .. _README: README.rst
 .. _kestrel-analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
 .. _kestrel-huntbook repo: https://github.com/opencybersecurityalliance/kestrel-huntbook
+.. _Contributor's License Agreement: https://cla-assistant.io/opencybersecurityalliance/oasis-open-project

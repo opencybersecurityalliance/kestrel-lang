@@ -10,14 +10,6 @@ import logging
 from kestrel.session import Session
 from kestrel.utils import add_logging_handler, clear_logging_handlers
 
-_logger = logging.getLogger(__name__)
-
-
-def logging_setup(if_verbose_mode, if_debug_mode):
-    clear_logging_handlers()
-    if if_verbose_mode:
-        add_logging_handler(logging.StreamHandler(), if_debug_mode)
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Kestrel Interpreter")
@@ -30,7 +22,9 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    logging_setup(args.verbose, args.debug)
+    clear_logging_handlers()
+    if args.verbose:
+        add_logging_handler(logging.StreamHandler(), args.debug)
 
     with Session(debug_mode=args.debug) as session:
         with open(args.huntflow, "r") as fp:
