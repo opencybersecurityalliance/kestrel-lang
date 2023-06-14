@@ -222,10 +222,10 @@ columns of record/event/(STIX `Observed Data`_) timestamps. Kestrel supports
 two transforms currently:
 
 - ``TIMESTAMPED()``: the function, when applied to a variable, results in a new
-column ``first_observed`` in the transformed data table.
+  column ``first_observed`` in the transformed data table.
 
 - ``ADDOBSID()``: the function, when applied to a variable, results in a new
-column ``observation_id`` in the transformed data table.
+  column ``observation_id`` in the transformed data table.
 
 .. code-block:: coffeescript
 
