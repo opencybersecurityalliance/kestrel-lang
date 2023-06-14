@@ -74,12 +74,15 @@ expression: vtrans where_clause? attr_clause? sort_clause? limit_clause? offset_
 
 // not use rule name `transform` since it is a special function in Lark
 // the function in transformer will mal-function in `merge_transformers()`
-vtrans: TRANSFORM "(" VARIABLE ")"
+vtrans: transformer "(" VARIABLE ")"
       | VARIABLE
 
-TRANSFORM: (TIMESTAMPED)
+transformer: TIMESTAMPED
+           | ADDOBSID
 
 TIMESTAMPED: "TIMESTAMPED"i
+
+ADDOBSID: "ADDOBSID"i
 
 where_clause: "WHERE"i ecg_pattern
 attr_clause: "ATTR"i ATTRIBUTES
