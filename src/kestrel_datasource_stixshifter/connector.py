@@ -12,8 +12,8 @@ from kestrel.exceptions import DataSourceError
 _logger = logging.getLogger(__name__)
 
 
-XPATH_PYPI_PKG_HOME = "/html/body/main/div[5]/div/div/div[1]/div[2]/ul/li[1]/a/@href"
-XPATH_PYPI_PKG_SOURCE = "/html/body/main/div[5]/div/div/div[1]/div[2]/ul/li[2]/a/@href"
+XPATH_PYPI_PKG_HOME = "/html/body/main/div[4]/div/div/div[1]/div[2]/ul/li[1]/a/@href"
+XPATH_PYPI_PKG_SOURCE = "/html/body/main/div[4]/div/div/div[1]/div[2]/ul/li[2]/a/@href"
 STIX_SHIFTER_HOMEPAGE = "https://github.com/opencybersecurityalliance/stix-shifter"
 
 
