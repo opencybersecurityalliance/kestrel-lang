@@ -39,6 +39,7 @@ Fixed
 
 - No dumped data in stix-shifter interface when debug is enabled
 - Multiprocessing conflict with ``runpy``
+- STIX-shifter module verification failure due to pypi website update
 
 Removed
 -------
