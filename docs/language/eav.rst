@@ -227,6 +227,8 @@ two transforms currently:
 - ``ADDOBSID()``: the function, when applied to a variable, results in a new
   column ``observation_id`` in the transformed data table.
 
+Usage example:
+
 .. code-block:: coffeescript
 
    ts_procs = TIMESTAMPED(procs)
