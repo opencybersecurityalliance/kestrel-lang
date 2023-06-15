@@ -71,14 +71,14 @@ class Translator(Process):
                                 input_batch.data,
                                 self.observation_metadata,
                             )
-                        except e:
+                        except Exception as e:
                             packet = TranslationResult(
                                 worker_name,
                                 False,
                                 None,
                                 WorkerLog(
-                                    logging.Error,
-                                    str(e),
+                                    logging.ERROR,
+                                    f"firepit.aio.ingest.translate() failed with msg: {str(e)}",
                                 ),
                             )
                         else:
@@ -89,24 +89,24 @@ class Translator(Process):
                                 None,
                             )
 
-                    if self.cache_data_path_prefix:
-                        debug_df_filepath = self.get_cache_data_path(
-                            input_batch.offset,
-                            "parquet",
-                        )
-                        try:
-                            dataframe.to_parquet(debug_df_filepath)
-                        except:
-                            packet_extra = TranslationResult(
-                                worker_name,
-                                False,
-                                None,
-                                WorkerLog(
-                                    logging.ERROR,
-                                    f"STIX-shifter fast translation parquet write to disk failed",
-                                ),
-                            )
-                            self.output_queue.put(packet_extra)
+                            if self.cache_data_path_prefix:
+                                debug_df_filepath = self.get_cache_data_path(
+                                    input_batch.offset,
+                                    "parquet",
+                                )
+                                try:
+                                    dataframe.to_parquet(debug_df_filepath)
+                                except:
+                                    packet_extra = TranslationResult(
+                                        worker_name,
+                                        False,
+                                        None,
+                                        WorkerLog(
+                                            logging.ERROR,
+                                            f"STIX-shifter fast translation parquet write to disk failed",
+                                        ),
+                                    )
+                                    self.output_queue.put(packet_extra)
 
                 else:
                     stixbundle = translation.translate(
