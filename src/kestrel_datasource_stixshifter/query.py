@@ -35,7 +35,7 @@ nest_asyncio.apply()
 _logger = logging.getLogger(__name__)
 
 
-def query_datasource(uri, pattern, session_id, config, store):
+def query_datasource(uri, pattern, session_id, config, store, limit=-1):
     # CONFIG command is not supported
     # profiles will be updated according to YAML file and env var
     config["profiles"] = load_profiles()
@@ -113,6 +113,7 @@ def query_datasource(uri, pattern, session_id, config, store):
                 config["options"]["translation_workers_count"],
                 dsl["queries"],
                 raw_records_queue,
+                limit,
             ):
                 for _ in range(config["options"]["translation_workers_count"]):
                     for packet in iter(translated_data_queue.get, STOP_SIGN):

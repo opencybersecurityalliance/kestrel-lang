@@ -36,9 +36,9 @@ assignment: VARIABLE "=" expression
 // All commands
 //
 
-find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE where_clause? timespan?
+find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE where_clause? limit_clause timespan?
 
-get: "GET"i ENTITY_TYPE ("FROM"i datasource)? where_clause timespan?
+get: "GET"i ENTITY_TYPE ("FROM"i datasource)? where_clause limit_clause timespan?
 
 group: "GROUP"i VARIABLE BY grp_spec ("WITH"i agg_list)?
 
@@ -74,15 +74,12 @@ expression: vtrans where_clause? attr_clause? sort_clause? limit_clause? offset_
 
 // not use rule name `transform` since it is a special function in Lark
 // the function in transformer will mal-function in `merge_transformers()`
-vtrans: transformer "(" VARIABLE ")"
+vtrans: TRANSFORM "(" VARIABLE ")"
       | VARIABLE
 
-transformer: TIMESTAMPED
-           | ADDOBSID
+TRANSFORM: (TIMESTAMPED)
 
 TIMESTAMPED: "TIMESTAMPED"i
-
-ADDOBSID: "ADDOBSID"i
 
 where_clause: "WHERE"i ecg_pattern
 attr_clause: "ATTR"i ATTRIBUTES
@@ -118,10 +115,10 @@ comparison_null: ENTITY_ATTRIBUTE_PATH NULL_OP NULL
          | MINUTE
          | SECOND
 
-DAY: "days"i | "day"i | "d"i
-HOUR: "hours"i | "hour"i | "h"i
-MINUTE: "minutes"i | "minute"i | "m"i
-SECOND: "seconds"i | "second"i | "s"i
+DAY: "days"i | "d"i
+HOUR: "hours"i | "h"i
+MINUTE: "minutes"i | "m"i
+SECOND: "seconds"i | "s"i
 
 timestamp:       ISOTIMESTAMP
          | "\""  ISOTIMESTAMP "\""

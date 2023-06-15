@@ -19,6 +19,7 @@ class TransmitterPool(Process):
         number_of_translators: int,
         queries: list,
         output_queue: Queue,
+        limit: int,
     ):
         super().__init__()
 
@@ -29,6 +30,7 @@ class TransmitterPool(Process):
         self.number_of_translators = number_of_translators
         self.queries = queries
         self.queue = output_queue
+        self.limit = limit
 
     def run(self):
         transmitters = [
@@ -39,6 +41,7 @@ class TransmitterPool(Process):
                 self.retrieval_batch_size,
                 query,
                 self.queue,
+                self.limit,
             )
             for query in self.queries
         ]
@@ -59,6 +62,7 @@ class Transmitter(Process):
         retrieval_batch_size: int,
         query: str,
         output_queue: Queue,
+        limit: int,
     ):
         super().__init__()
 
@@ -68,6 +72,7 @@ class Transmitter(Process):
         self.retrieval_batch_size = retrieval_batch_size
         self.query = query
         self.queue = output_queue
+        self.limit = limit
 
     def run(self):
         self.worker_name = current_process().name
@@ -133,14 +138,16 @@ class Transmitter(Process):
         has_remaining_results = True
         metadata = None
         is_retry_cycle = False
+        batch_size = self.retrieval_batch_size
+        if self.limit != -1 and self.limit < self.retrieval_batch_size:
+            batch_size = self.limit
 
         while has_remaining_results:
             packet = None
-
             result_batch = self.transmission.results(
                 self.search_id,
                 result_retrieval_offset,
-                self.retrieval_batch_size,
+                batch_size,
                 metadata,
             )
 
@@ -158,7 +165,14 @@ class Transmitter(Process):
                     result_retrieval_offset += len(result_batch["data"])
                     if "metadata" in result_batch:
                         metadata = result_batch["metadata"]
-
+                    
+                    if self.limit != -1:
+                        if result_retrieval_offset >= self.limit:
+                            has_remaining_results = False
+                        else:
+                            batch_size = self.limit - result_retrieval_offset
+                            if batch_size > self.retrieval_batch_size:
+                                batch_size = self.retrieval_batch_size
                 else:
                     has_remaining_results = False
 

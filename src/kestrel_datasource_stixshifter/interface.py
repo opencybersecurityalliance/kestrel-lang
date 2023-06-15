@@ -125,7 +125,7 @@ class StixShifterInterface(AbstractDataSourceInterface):
         return data_sources
 
     @staticmethod
-    def query(uri, pattern, session_id, config, store):
+    def query(uri, pattern, session_id, config, store, limit=-1):
         """Query a stixshifter data source."""
 
-        return query_datasource(uri, pattern, session_id, config, store)
+        return query_datasource(uri, pattern, session_id, config, store, limit)
