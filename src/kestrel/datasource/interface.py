@@ -82,7 +82,7 @@ class AbstractDataSourceInterface(ABC):
 
     @staticmethod
     @abstractmethod
-    def query(uri, pattern, session_id, config, store=None):
+    def query(uri, pattern, session_id, config, store=None, limit=-1):
         """Sending a data query to a specific data source.
 
         If the store of the session is modified and directly gets the data
