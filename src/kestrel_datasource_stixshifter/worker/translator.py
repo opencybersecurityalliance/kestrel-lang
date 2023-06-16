@@ -96,14 +96,14 @@ class Translator(Process):
                                 )
                                 try:
                                     dataframe.to_parquet(debug_df_filepath)
-                                except:
+                                except Exception as e:
                                     packet_extra = TranslationResult(
                                         worker_name,
                                         False,
                                         None,
                                         WorkerLog(
                                             logging.ERROR,
-                                            f"STIX-shifter fast translation parquet write to disk failed",
+                                            f"STIX-shifter fast translation parquet write to disk failed: [{type(e).__name__}] {e}",
                                         ),
                                     )
                                     self.output_queue.put(packet_extra)
