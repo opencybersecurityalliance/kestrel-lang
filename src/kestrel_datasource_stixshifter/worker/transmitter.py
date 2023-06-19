@@ -180,6 +180,7 @@ class Transmitter(Process):
                 is_retry_cycle = False
 
             else:
+                has_remaining_results = False
                 err_msg = (
                     result_batch["error"]
                     if "error" in result_batch
