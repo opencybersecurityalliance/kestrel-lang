@@ -253,7 +253,7 @@ def get(stmt, session):
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     display = None
-    limit = stmt.get('limit', -1)
+    limit = stmt.get('limit')
 
     if "variablesource" in stmt:
         input_type = session.symtable[stmt["variablesource"]].type
@@ -385,7 +385,7 @@ def find(stmt, session):
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     rel_query = None
-    limit = stmt.get('limit', -1)
+    limit = stmt.get('limit')
 
     if return_type not in session.store.types():
         # return empty variable
@@ -567,7 +567,7 @@ def _prefetch(
     session_id,
     ds_manager,
     does_support_id,
-    limit=-1,
+    limit=None,
 ):
     """prefetch identical entities and associated entities.
 
@@ -604,7 +604,7 @@ def _prefetch(
 
         does_support_id (bool): whether "id" can be an attribute in data source query.
         
-        limit (int): limit on the number of records to prefetch
+        limit (Optional[int]): limit on the number of records to prefetch; None if no limit
 
     Returns:
         str: the entity table in store if the prefetch is performed else None.

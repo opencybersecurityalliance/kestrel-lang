@@ -1,6 +1,7 @@
 import time
 import logging
 from multiprocessing import Process, Queue, current_process
+from typing import Optional
 from typeguard import typechecked
 
 from stix_shifter.stix_transmission import stix_transmission
@@ -19,7 +20,7 @@ class TransmitterPool(Process):
         number_of_translators: int,
         queries: list,
         output_queue: Queue,
-        limit: int,
+        limit: Optional[int],
     ):
         super().__init__()
 
@@ -62,7 +63,7 @@ class Transmitter(Process):
         retrieval_batch_size: int,
         query: str,
         output_queue: Queue,
-        limit: int,
+        limit: Optional[int],
     ):
         super().__init__()
 
@@ -139,7 +140,7 @@ class Transmitter(Process):
         metadata = None
         is_retry_cycle = False
         batch_size = self.retrieval_batch_size
-        if self.limit != -1 and self.limit < self.retrieval_batch_size:
+        if self.limit and self.limit < self.retrieval_batch_size:
             batch_size = self.limit
 
         while has_remaining_results:
@@ -166,7 +167,7 @@ class Transmitter(Process):
                     if "metadata" in result_batch:
                         metadata = result_batch["metadata"]
                     
-                    if self.limit != -1:
+                    if self.limit:
                         if result_retrieval_offset >= self.limit:
                             has_remaining_results = False
                         else:

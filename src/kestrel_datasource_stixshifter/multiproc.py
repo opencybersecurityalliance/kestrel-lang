@@ -22,7 +22,7 @@ def transmit(
     translators_count: int,
     queries: list,
     raw_records_queue: Queue,
-    limit: int,
+    limit: Optional[int],
 ):
     _logger.debug(f"{translators_count} translation workers to be started")
     transmitter_pool = TransmitterPool(

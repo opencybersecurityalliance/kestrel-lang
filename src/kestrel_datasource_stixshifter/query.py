@@ -35,7 +35,7 @@ nest_asyncio.apply()
 _logger = logging.getLogger(__name__)
 
 
-def query_datasource(uri, pattern, session_id, config, store, limit=-1):
+def query_datasource(uri, pattern, session_id, config, store, limit=None):
     # CONFIG command is not supported
     # profiles will be updated according to YAML file and env var
     config["profiles"] = load_profiles()
