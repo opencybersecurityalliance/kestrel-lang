@@ -253,7 +253,7 @@ def get(stmt, session):
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     display = None
-    limit = stmt.get('limit')
+    limit = stmt.get("limit")
 
     if "variablesource" in stmt:
         input_type = session.symtable[stmt["variablesource"]].type
@@ -385,7 +385,7 @@ def find(stmt, session):
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     rel_query = None
-    limit = stmt.get('limit')
+    limit = stmt.get("limit")
 
     if return_type not in session.store.types():
         # return empty variable
@@ -603,7 +603,7 @@ def _prefetch(
         session_id (str): session ID.
 
         does_support_id (bool): whether "id" can be an attribute in data source query.
-        
+
         limit (Optional[int]): limit on the number of records to prefetch; None if no limit
 
     Returns:
