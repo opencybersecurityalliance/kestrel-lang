@@ -63,9 +63,17 @@ def query_datasource(uri, pattern, session_id, config, store, limit=None):
 
     _logger.debug(f"prepare query with ID: {query_id}")
 
-    for profile in profiles:
-        _logger.debug(f"entering stix-shifter data source: {profile}")
+    num_records = 0
+    profile_limit = limit
 
+    for profile in profiles:
+        if limit:
+            if num_records >= limit:
+                break
+            if num_records > 0:
+                profile_limit = limit - num_records
+        _logger.debug(f"entering stix-shifter data source: {profile}")
+        print(f'profile = {profile}, profile_limit = {profile_limit}')
         # STIX-shifter will alter the config objects, thus making them not reusable.
         # So only give STIX-shifter a copy of the configs.
         # Check `modernize` functions in the `stix_shifter_utils` for details.
@@ -113,11 +121,15 @@ def query_datasource(uri, pattern, session_id, config, store, limit=None):
                 config["options"]["translation_workers_count"],
                 dsl["queries"],
                 raw_records_queue,
-                limit,
+                profile_limit,
             ):
                 for _ in range(config["options"]["translation_workers_count"]):
                     for packet in iter(translated_data_queue.get, STOP_SIGN):
                         if packet.success:
+                            num_objects = len(packet.data.get("objects", []))
+                            if num_objects > 0:
+                                num_objects -= 1
+                            num_records += num_objects
                             ingest(packet.data, observation_metadata, query_id, store)
                         else:
                             process_log_msg(packet)
