@@ -248,7 +248,7 @@ def test_get_multiple_stixshifter_stix_bundles(set_stixshifter_stix_bundles):
 
 
 def test_get_multiple_stixshifter_stix_bundles_limit(set_stixshifter_stix_bundles):
-    with Session(debug_mode=True) as s:
+    with Session() as s:
         # default data source schema is stixshifter
         stmt = """
                var = GET process
@@ -285,7 +285,7 @@ def test_get_multiple_stixshifter_stix_bundles_limit(set_stixshifter_stix_bundle
 
 
 def test_get_multiple_stixshifter_stix_bundles_limit_1(set_stixshifter_stix_bundles):
-    with Session(debug_mode=True) as s:
+    with Session() as s:
         # default data source schema is stixshifter
         stmt = """
                var = GET process
@@ -322,7 +322,7 @@ def test_get_multiple_stixshifter_stix_bundles_limit_1(set_stixshifter_stix_bund
 
 
 def test_get_multiple_stixshifter_stix_bundles_limit_2 (set_stixshifter_stix_bundles):
-    with Session(debug_mode=True) as s:
+    with Session() as s:
         # default data source schema is stixshifter
         stmt = """
                var = GET process

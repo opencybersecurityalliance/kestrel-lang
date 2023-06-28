@@ -73,7 +73,7 @@ def query_datasource(uri, pattern, session_id, config, store, limit=None):
             if num_records > 0:
                 profile_limit = limit - num_records
         _logger.debug(f"entering stix-shifter data source: {profile}")
-        print(f'profile = {profile}, profile_limit = {profile_limit}')
+        _logger.debug(f"profile = {profile}, profile_limit = {profile_limit}")
         # STIX-shifter will alter the config objects, thus making them not reusable.
         # So only give STIX-shifter a copy of the configs.
         # Check `modernize` functions in the `stix_shifter_utils` for details.
