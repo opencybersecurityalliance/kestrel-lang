@@ -467,7 +467,7 @@ def find(stmt, session):
                     f"merge {local_var_table} and {prefetch_ret_entity_table} into {return_var_table}."
                 )
                 session.store.merge(
-                    return_var_table, [local_var_table, prefetch_ret_entity_table]
+                    return_var_table, [prefetch_ret_entity_table]
                 )
                 for v in list(
                     set(

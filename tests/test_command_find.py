@@ -70,6 +70,19 @@ def test_find_srcs(fake_bundle_file):
         assert len(srcs) == 24
 
 
+def test_find_srcs_limit(fake_bundle_file):
+    with Session(debug_mode=True) as s:
+        stmt = f"""
+                conns = get network-traffic
+                        from file://{fake_bundle_file}
+                        where dst_port = 22
+                srcs = FIND ipv4-addr CREATED conns LIMIT 1
+                """
+        s.execute(stmt)
+        srcs = s.get_variable("srcs")
+        assert len(srcs) == 1
+
+
 def test_find_file_linked_to_process(proc_bundle_file):
     with Session() as s:
         stmt = f"""
@@ -192,8 +205,8 @@ def test_find_with_where_ext_pattern(proc_bundle_file):
         assert len(proc1) == 203
         assert proc1.records_count == 203
 
-        assert len(proc2) == 674
-        assert proc2.records_count == 674
+        assert len(proc2) == 471
+        assert proc2.records_count == 471
 
 
 def test_find_with_where_centered_pattern(proc_bundle_file):
@@ -214,9 +227,5 @@ def test_find_with_where_centered_pattern(proc_bundle_file):
         assert len(conns) == 193
         assert conns.records_count == 203
 
-        # FIX ME: It should be 1, not 204
-        #         Currently, the prefetch part is good and returns 1,
-        #         But the relation resolution does not take WHERE into account
-        #         Need solution: store.extract() or store.assign_query()
-        assert len(procs) == 204
-        assert procs.records_count == 204
+        assert len(procs) == 1
+        assert procs.records_count == 1
