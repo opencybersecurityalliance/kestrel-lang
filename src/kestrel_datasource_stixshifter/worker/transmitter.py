@@ -136,8 +136,9 @@ class Transmitter(Process):
         has_remaining_results = True
         metadata = None
         is_retry_cycle = False
+        error_occured = False
 
-        while has_remaining_results:
+        while has_remaining_results and not error_occured:
             packet = None
 
             result_batch = self.transmission.results(
@@ -207,6 +208,7 @@ class Transmitter(Process):
                             f"STIX-shifter transmission.result() failed: {err_msg}",
                         ),
                     )
+                    error_occured = True
 
             if packet:
                 self.queue.put(packet)
