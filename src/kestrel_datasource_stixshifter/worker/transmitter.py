@@ -180,7 +180,6 @@ class Transmitter(Process):
                 is_retry_cycle = False
 
             else:
-                has_remaining_results = False
                 err_msg = (
                     result_batch["error"]
                     if "error" in result_batch
@@ -220,6 +219,7 @@ class Transmitter(Process):
                             f"STIX-shifter transmission.result() failed: {err_msg}",
                         ),
                     )
+                    has_remaining_results = False
 
             if packet:
                 self.queue.put(packet)
