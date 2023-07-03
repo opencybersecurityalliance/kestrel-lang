@@ -420,14 +420,16 @@ def find(stmt, session):
                 session.store, local_var_table, [], stmt, session.symtable
             )
 
-            # Second, prefetch all records of the entities and associated entities
-            if (
+            prefetch_enabled = (
                 _is_prefetch_allowed_in_config(
                     session.config["prefetch"], "find", return_type
                 )
                 and len(_output)
                 and _output.data_source
-            ):
+            )
+
+            # Second, prefetch all records of the entities and associated entities
+            if prefetch_enabled:
                 prefetch_ret_var_table = return_var_table + "_prefetch"
                 ext_graph_pattern = stmt["where"] if "where" in stmt else None
                 prefetch_ret_entity_table = _prefetch(
@@ -483,7 +485,10 @@ def find(stmt, session):
                 _logger.debug(
                     f'prefetch return None, just rename native GET pattern matching results into "{return_var_table}".'
                 )
-                session.store.rename_view(local_var_table, return_var_table)
+                if prefetch_enabled:
+                    return_var_table = None
+                else:
+                    session.store.rename_view(local_var_table, return_var_table)
 
         else:
             return_var_table = None
