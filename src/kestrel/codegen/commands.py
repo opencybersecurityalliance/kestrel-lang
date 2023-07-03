@@ -464,9 +464,9 @@ def find(stmt, session):
 
             if prefetch_ret_entity_table:
                 _logger.debug(
-                    f"merge {local_var_table} and {prefetch_ret_entity_table} into {return_var_table}."
+                    f"rename {prefetch_ret_entity_table} to {return_var_table}."
                 )
-                session.store.merge(return_var_table, [prefetch_ret_entity_table])
+                session.store.rename_view(prefetch_ret_entity_table, return_var_table)
                 for v in list(
                     set(
                         [
