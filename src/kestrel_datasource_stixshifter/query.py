@@ -126,10 +126,7 @@ def query_datasource(uri, pattern, session_id, config, store, limit=None):
                 for _ in range(config["options"]["translation_workers_count"]):
                     for packet in iter(translated_data_queue.get, STOP_SIGN):
                         if packet.success:
-                            num_objects = len(packet.data.get("objects", []))
-                            if num_objects > 0:
-                                num_objects -= 1
-                            num_records += num_objects
+                            num_records += get_num_objects(packet.data)
                             ingest(packet.data, observation_metadata, query_id, store)
                         else:
                             process_log_msg(packet)
@@ -196,6 +193,17 @@ def ingest(
         # STIX bundle (normal stix-shifter translation result)
         store.cache(query_id, result)
     _logger.debug("ingestion of a batch/page ends")
+
+
+@typechecked
+def get_num_objects(data: Union[dict, DataFrame]):
+    if isinstance(data, DataFrame):
+        num_objects = len(data)
+    else:
+        num_objects = len(data.get("objects", []))
+        if num_objects > 0:
+            num_objects -= 1
+    return num_objects
 
 
 def process_log_msg(packet):
