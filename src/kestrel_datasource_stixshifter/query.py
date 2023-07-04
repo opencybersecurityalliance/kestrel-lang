@@ -121,12 +121,7 @@ def query_datasource(uri, pattern, session_id, config, store):
                         if packet.success:
                             ingest(packet.data, observation_metadata, query_id, store)
                         else:
-                            e = process_log_msg(packet)
-                            if e:
-                                exceptions.append(e)
-
-        for e in exceptions:
-            raise e
+                            process_log_msg(packet)
 
     return ReturnFromStore(query_id)
 
@@ -196,7 +191,7 @@ def process_log_msg(packet):
     log_msg = f"[worker: {packet.worker}] {packet.log.log}"
     if packet.log.level == logging.ERROR:
         _logger.debug(log_msg)
-        return DataSourceError(log_msg)
+        raise DataSourceError(log_msg)
     else:
         if packet.log.level == logging.WARN:
             _logger.warn(log_msg)

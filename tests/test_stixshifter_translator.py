@@ -5,6 +5,7 @@ from multiprocessing import Queue
 
 from kestrel_datasource_stixshifter.connector import check_module_availability
 from kestrel_datasource_stixshifter import multiproc
+from kestrel_datasource_stixshifter.query import process_log_msg
 from kestrel_datasource_stixshifter.worker.utils import TransmissionResult
 from kestrel_datasource_stixshifter.worker import STOP_SIGN
 
@@ -96,13 +97,13 @@ def test_stixshifter_translate():
         input_queue.put(SAMPLE_RESULT)
         input_queue.put(STOP_SIGN)
 
-        result = output_queue.get()
-        id_object = result.data["objects"][0]
-        assert id_object["id"] == "identity--" + query_id
-        assert id_object["name"] == CONNECTOR_NAME
-
-        result = output_queue.get()
-        assert result == STOP_SIGN
+        for packet in iter(output_queue.get, STOP_SIGN):
+            if packet.success:
+                id_object = packet.data["objects"][0]
+                assert id_object["id"] == "identity--" + query_id
+                assert id_object["name"] == CONNECTOR_NAME
+            else:
+                process_log_msg(packet)
 
     for translator in translators:
         assert translator.is_alive() == False
@@ -131,8 +132,10 @@ def test_stixshifter_translate_with_bundle_writing_to_disk(tmpdir):
 
         input_queue.put(SAMPLE_RESULT)
         input_queue.put(STOP_SIGN)
-        result = output_queue.get()
-        result = output_queue.get()
+
+        for packet in iter(output_queue.get, STOP_SIGN):
+            if not packet.success:
+                process_log_msg(packet)
 
         with open(cache_bundle_path, "r") as bundle_fp:
             bundle = json.load(bundle_fp)
@@ -165,13 +168,13 @@ def test_fast_translate():
         input_queue.put(SAMPLE_RESULT)
         input_queue.put(STOP_SIGN)
 
-        packet = output_queue.get()
-        result = packet.data
-        assert isinstance(result, pandas.DataFrame)
-        assert result.empty == False
-
-        result = output_queue.get()
-        assert result == STOP_SIGN
+        for packet in iter(output_queue.get, STOP_SIGN):
+            if packet.success:
+                result = packet.data
+                assert isinstance(result, pandas.DataFrame)
+                assert result.empty == False
+            else:
+                process_log_msg(packet)
 
     for translator in translators:
         assert translator.is_alive() == False
@@ -200,8 +203,10 @@ def test_stixshifter_fast_translate_with_parquet_writing_to_disk(tmpdir):
 
         input_queue.put(SAMPLE_RESULT)
         input_queue.put(STOP_SIGN)
-        result = output_queue.get()
-        result = output_queue.get()
+
+        for packet in iter(output_queue.get, STOP_SIGN):
+            if not packet.success:
+                process_log_msg(packet)
 
         df = pandas.read_parquet(cache_parquet_path)
 
