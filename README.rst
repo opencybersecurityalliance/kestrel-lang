@@ -28,17 +28,20 @@
 
 |
 
-**[News]** Kestrel hunt at `Infosec Jupyterthon 2022`_ [`IJ'22 live hunt recording`_]
-
-**[News]** Kestrel session at `Black Hat USA 2022`_ [`BH'22 recording`_ | `BH'22 hunting lab`_]
+**[News]** Kestrel session at `Black Hat USA 2023`_
 
 --------
 
 Kestrel is a threat hunting language aiming to make cyber threat hunting *fast*
 by providing a layer of abstraction to build reusable, composable, and
-shareable hunt-flow.
+shareable hunt-flow. Starting with:
 
-`Try Kestrel in a cloud sandbox without install`_ (Blog: `Try Kestrel in a Cloud Sandbox`_).
+#. `Black Hat USA 2022 session recording`_
+#. `Black Hat USA 2022 Kestrel hunting lab`_
+#. `Kestrel live tutorial in a cloud sandbox`_
+
+The Goal
+========
 
 Software developers write Python or Swift than machine code to quickly turn
 business logic into applications. Threat hunters write Kestrel to quickly turn
@@ -48,10 +51,10 @@ hunt-flow is to hunts as control-flow is to ordinary programs.
 
 What does it mean by *hunt fast*?
 
-- Do not write the same TTP pattern in different data source queries.
-- Do not write one-time-use adapaters to connect hunt steps.
-- Do not waste your existing analytic scripts/programs in future hunts.
-- Do construct your hunt-flow from smaller reuseable hunt-flow.
+- Do NOT write the same TTP pattern in different data source queries.
+- Do NOT write one-time-use adapaters to connect hunt steps.
+- Do NOT waste your existing analytic scripts/programs in future hunts.
+- DD construct your hunt-flow from smaller reuseable hunt-flow.
 - Do share your huntbook with your future self and your colleagues.
 - Do get interactive feedback and revise hunt-flow on the fly.
 
@@ -128,6 +131,7 @@ Talks And Demos
 
 Talk summary (visit `Kestrel documentation on talks`_ to learn details):
 
+- 2023/08 `Black Hat USA 2023`_
 - 2022/12 `Infosec Jupyterthon 2022`_ [`IJ'22 live hunt recording`_]
 - 2022/08 `Black Hat USA 2022`_ [`BH'22 recording`_ | `BH'22 hunting lab`_]
 - 2022/06 `Cybersecurity Automation Workshop`_
@@ -164,7 +168,7 @@ Connecting With The Community
 
 
 
-.. _Try Kestrel in a cloud sandbox without install: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
+.. _Kestrel live tutorial in a cloud sandbox: https://mybinder.org/v2/gh/opencybersecurityalliance/kestrel-huntbook/HEAD?filepath=tutorial
 .. _Kestrel documentation: https://kestrel.readthedocs.io/
 
 .. _A comprehensive introduction to Kestrel: https://kestrel.readthedocs.io/en/stable/overview/
@@ -198,9 +202,12 @@ Connecting With The Community
 .. _IJ'22 live hunt recording: https://www.youtube.com/embed/8Mw1yyYkeqM?start=23586&end=26545
 .. _SC eSummit on Threat Hunting & Offense Security: https://www.scmagazine.com/esummit/automating-the-hunt-for-advanced-threats
 .. _Cybersecurity Automation Workshop: http://www.cybersecurityautomationworkshop.org/
+.. _Black Hat USA 2023: https://www.blackhat.com/us-23/arsenal/schedule/index.html#identity-threat-hunting-with-kestrel-33662
 .. _Black Hat USA 2022: https://www.blackhat.com/us-22/arsenal/schedule/index.html#streamlining-and-automating-threat-hunting-with-kestrel-28014
 .. _BH'22 recording: https://www.youtube.com/watch?v=tf1VLIpFefs
+.. _Black Hat USA 2022 session recording: https://www.youtube.com/watch?v=tf1VLIpFefs
 .. _BH'22 hunting lab: https://mybinder.org/v2/gh/opencybersecurityalliance/black-hat-us-2022/HEAD?filepath=demo
+.. _Black Hat USA 2022 Kestrel hunting lab: https://mybinder.org/v2/gh/opencybersecurityalliance/black-hat-us-2022/HEAD?filepath=demo
 
 .. _slack invitation: https://join.slack.com/t/open-cybersecurity/shared_invite/zt-19pliofsm-L7eSSB8yzABM2Pls1nS12w
 .. _Open Cybersecurity Alliance workspace: https://open-cybersecurity.slack.com/

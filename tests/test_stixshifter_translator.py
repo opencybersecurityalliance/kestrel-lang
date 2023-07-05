@@ -96,13 +96,10 @@ def test_stixshifter_translate():
         input_queue.put(SAMPLE_RESULT)
         input_queue.put(STOP_SIGN)
 
-        result = output_queue.get()
-        id_object = result.data["objects"][0]
-        assert id_object["id"] == "identity--" + query_id
-        assert id_object["name"] == CONNECTOR_NAME
-
-        result = output_queue.get()
-        assert result == STOP_SIGN
+        for result in multiproc.read_translated_results(output_queue, 1):
+            id_object = result["objects"][0]
+            assert id_object["id"] == "identity--" + query_id
+            assert id_object["name"] == CONNECTOR_NAME
 
     for translator in translators:
         assert translator.is_alive() == False
@@ -131,14 +128,15 @@ def test_stixshifter_translate_with_bundle_writing_to_disk(tmpdir):
 
         input_queue.put(SAMPLE_RESULT)
         input_queue.put(STOP_SIGN)
-        result = output_queue.get()
-        result = output_queue.get()
+
+        for result in multiproc.read_translated_results(output_queue, 1):
+            pass
 
         with open(cache_bundle_path, "r") as bundle_fp:
             bundle = json.load(bundle_fp)
-        id_object = bundle["objects"][0]
-        assert id_object["id"] == "identity--" + query_id
-        assert id_object["name"] == CONNECTOR_NAME
+            id_object = bundle["objects"][0]
+            assert id_object["id"] == "identity--" + query_id
+            assert id_object["name"] == CONNECTOR_NAME
 
     for translator in translators:
         assert translator.is_alive() == False
@@ -165,13 +163,9 @@ def test_fast_translate():
         input_queue.put(SAMPLE_RESULT)
         input_queue.put(STOP_SIGN)
 
-        packet = output_queue.get()
-        result = packet.data
-        assert isinstance(result, pandas.DataFrame)
-        assert result.empty == False
-
-        result = output_queue.get()
-        assert result == STOP_SIGN
+        for result in multiproc.read_translated_results(output_queue, 1):
+            assert isinstance(result, pandas.DataFrame)
+            assert result.empty == False
 
     for translator in translators:
         assert translator.is_alive() == False
@@ -200,8 +194,9 @@ def test_stixshifter_fast_translate_with_parquet_writing_to_disk(tmpdir):
 
         input_queue.put(SAMPLE_RESULT)
         input_queue.put(STOP_SIGN)
-        result = output_queue.get()
-        result = output_queue.get()
+
+        for result in multiproc.read_translated_results(output_queue, 1):
+            pass
 
         df = pandas.read_parquet(cache_parquet_path)
 

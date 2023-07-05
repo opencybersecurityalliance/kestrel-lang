@@ -83,6 +83,7 @@ class Transmitter(Process):
             self.configuration_dict,
         )
         search_meta_result = self.transmission.query(self.query)
+
         if search_meta_result["success"]:
             self.search_id = search_meta_result["search_id"]
             if self.wait_datasource_search():
@@ -97,6 +98,7 @@ class Transmitter(Process):
             packet = TransmissionResult(
                 self.worker_name,
                 False,
+                None,
                 None,
                 WorkerLog(
                     logging.ERROR,
@@ -124,6 +126,7 @@ class Transmitter(Process):
                 packet = TransmissionResult(
                     self.worker_name,
                     False,
+                    None,
                     None,
                     WorkerLog(
                         logging.ERROR,

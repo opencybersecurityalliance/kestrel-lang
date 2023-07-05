@@ -10,7 +10,6 @@ from kestrel.datasource import ReturnFromStore
 from kestrel.utils import mkdtemp
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
 from kestrel_datasource_stixshifter.connector import check_module_availability
-from kestrel_datasource_stixshifter.worker import STOP_SIGN
 from kestrel_datasource_stixshifter import multiproc
 from kestrel_datasource_stixshifter.config import (
     get_datasource_from_profiles,
@@ -103,6 +102,8 @@ def query_datasource(uri, pattern, session_id, config, store, limit=None):
         raw_records_queue = Queue()
         translated_data_queue = Queue()
 
+        exceptions = []
+
         with multiproc.translate(
             connector_name,
             observation_metadata,
@@ -123,13 +124,12 @@ def query_datasource(uri, pattern, session_id, config, store, limit=None):
                 raw_records_queue,
                 profile_limit,
             ):
-                for _ in range(config["options"]["translation_workers_count"]):
-                    for packet in iter(translated_data_queue.get, STOP_SIGN):
-                        if packet.success:
-                            num_records += get_num_objects(packet.data)
-                            ingest(packet.data, observation_metadata, query_id, store)
-                        else:
-                            process_log_msg(packet)
+                for result in multiproc.read_translated_results(
+                    translated_data_queue,
+                    config["options"]["translation_workers_count"],
+                ):
+                    num_records += get_num_objects(result)
+                    ingest(result, observation_metadata, query_id, store)
 
     return ReturnFromStore(query_id)
 
@@ -202,19 +202,5 @@ def get_num_objects(data: Union[dict, DataFrame]):
     else:
         num_objects = len(data.get("objects", []))
         if num_objects > 0:
-            num_objects -= 1
+            num_objects -= 1  # minus the identify object
     return num_objects
-
-
-def process_log_msg(packet):
-    log_msg = f"[worker: {packet.worker}] {packet.log.log}"
-    if packet.log.level == logging.ERROR:
-        _logger.debug(log_msg)
-        raise DataSourceError(log_msg)
-    else:
-        if packet.log.level == logging.WARN:
-            _logger.warn(log_msg)
-        elif packet.log.level == logging.INFO:
-            _logger.info(log_msg)
-        else:  #  all others as debug logs
-            _logger.debug(log_msg)

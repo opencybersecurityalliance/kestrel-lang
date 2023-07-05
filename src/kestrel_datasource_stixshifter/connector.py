@@ -105,7 +105,9 @@ def ensure_version_consistency(connector_name):
     )
     _logger.info(f'uninstalling Python package "{package_w_ver}".')
     try:
-        subprocess.check_call([sys.executable, "-m", "pip", "uninstall", package_w_ver])
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "uninstall", "--yes", package_w_ver]
+        )
     except:
         _logger.info(f"failed to uninstall package {package_w_ver}")
     install_package(connector_name)
