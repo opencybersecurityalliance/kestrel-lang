@@ -66,7 +66,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
         return []
 
     @staticmethod
-    def query(uri, pattern, session_id=None, config=None, store=None):
+    def query(uri, pattern, session_id=None, config=None, store=None, limit=None):
         """Query a STIX bundle locally or remotely."""
 
         _logger.debug(f"query URI received at interface_stixbundle: {uri}")
@@ -85,6 +85,7 @@ class StixBundleInterface(AbstractDataSourceInterface):
             data_paths = []
 
         bundles = []
+        num_records = 0
         for i, data_path in enumerate(data_paths):
             _logger.debug(f"requesting data from path: {data_path}")
 
@@ -163,8 +164,13 @@ class StixBundleInterface(AbstractDataSourceInterface):
                         if obj["type"] != "observed-data" or compiled_pattern.match(
                             [obj], False
                         ):
-                            bundle_out[prop].append(obj)
                             matched += 1
+                            if obj["type"] == "observed-data":
+                                num_records += 1
+                                if not limit or num_records <= limit:
+                                    bundle_out[prop].append(obj)
+                            else:
+                                bundle_out[prop].append(obj)
                 else:
                     bundle_out[prop] = val
             _logger.debug("Matched %d of %d observations: %s", matched, count, rawfile)

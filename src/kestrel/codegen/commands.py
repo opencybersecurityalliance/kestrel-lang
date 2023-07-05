@@ -253,6 +253,7 @@ def get(stmt, session):
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     display = None
+    limit = stmt.get("limit")
 
     if "variablesource" in stmt:
         input_type = session.symtable[stmt["variablesource"]].type
@@ -273,7 +274,7 @@ def get(stmt, session):
     elif "datasource" in stmt:
         # rs: RetStruct
         rs = session.data_source_manager.query(
-            stmt["datasource"], pattern, session.session_id, session.store
+            stmt["datasource"], pattern, session.session_id, session.store, limit
         )
         query_id = rs.load_to_store(session.store)
         session.store.extract(local_var_table, return_type, query_id, pattern)
@@ -319,6 +320,7 @@ def get(stmt, session):
                 session.session_id,
                 session.data_source_manager,
                 session.config["stixquery"]["support_id"],
+                limit,
             )
 
             if return_type == "process" and get_entity_id_attribute(_output) not in (
@@ -383,6 +385,7 @@ def find(stmt, session):
     start_offset = session.config["stixquery"]["timerange_start_offset"]
     end_offset = session.config["stixquery"]["timerange_stop_offset"]
     rel_query = None
+    limit = stmt.get("limit")
 
     if return_type not in session.store.types():
         # return empty variable
@@ -417,14 +420,16 @@ def find(stmt, session):
                 session.store, local_var_table, [], stmt, session.symtable
             )
 
-            # Second, prefetch all records of the entities and associated entities
-            if (
+            prefetch_enabled = (
                 _is_prefetch_allowed_in_config(
                     session.config["prefetch"], "find", return_type
                 )
                 and len(_output)
                 and _output.data_source
-            ):
+            )
+
+            # Second, prefetch all records of the entities and associated entities
+            if prefetch_enabled:
                 prefetch_ret_var_table = return_var_table + "_prefetch"
                 ext_graph_pattern = stmt["where"] if "where" in stmt else None
                 prefetch_ret_entity_table = _prefetch(
@@ -440,6 +445,7 @@ def find(stmt, session):
                     session.session_id,
                     session.data_source_manager,
                     session.config["stixquery"]["support_id"],
+                    limit,
                 )
 
                 # special handling for process to filter out impossible relational processes
@@ -460,11 +466,9 @@ def find(stmt, session):
 
             if prefetch_ret_entity_table:
                 _logger.debug(
-                    f"merge {local_var_table} and {prefetch_ret_entity_table} into {return_var_table}."
+                    f"rename {prefetch_ret_entity_table} to {return_var_table}."
                 )
-                session.store.merge(
-                    return_var_table, [local_var_table, prefetch_ret_entity_table]
-                )
+                session.store.rename_view(prefetch_ret_entity_table, return_var_table)
                 for v in list(
                     set(
                         [
@@ -481,7 +485,10 @@ def find(stmt, session):
                 _logger.debug(
                     f'prefetch return None, just rename native GET pattern matching results into "{return_var_table}".'
                 )
-                session.store.rename_view(local_var_table, return_var_table)
+                if prefetch_enabled:
+                    return_var_table = None
+                else:
+                    session.store.rename_view(local_var_table, return_var_table)
 
         else:
             return_var_table = None
@@ -563,6 +570,7 @@ def _prefetch(
     session_id,
     ds_manager,
     does_support_id,
+    limit=None,
 ):
     """prefetch identical entities and associated entities.
 
@@ -599,6 +607,8 @@ def _prefetch(
 
         does_support_id (bool): whether "id" can be an attribute in data source query.
 
+        limit (Optional[int]): limit on the number of records to prefetch; None if no limit
+
     Returns:
         str: the entity table in store if the prefetch is performed else None.
     """
@@ -625,7 +635,7 @@ def _prefetch(
 
         if stix_pattern:
             data_source = symtable[input_var_name].data_source
-            resp = ds_manager.query(data_source, stix_pattern, session_id, store)
+            resp = ds_manager.query(data_source, stix_pattern, session_id, store, limit)
             query_id = resp.load_to_store(store)
 
             # build the return_var_name view in store

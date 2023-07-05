@@ -34,7 +34,7 @@ nest_asyncio.apply()
 _logger = logging.getLogger(__name__)
 
 
-def query_datasource(uri, pattern, session_id, config, store):
+def query_datasource(uri, pattern, session_id, config, store, limit=None):
     # CONFIG command is not supported
     # profiles will be updated according to YAML file and env var
     config["profiles"] = load_profiles()
@@ -62,9 +62,17 @@ def query_datasource(uri, pattern, session_id, config, store):
 
     _logger.debug(f"prepare query with ID: {query_id}")
 
-    for profile in profiles:
-        _logger.debug(f"entering stix-shifter data source: {profile}")
+    num_records = 0
+    profile_limit = limit
 
+    for profile in profiles:
+        if limit:
+            if num_records >= limit:
+                break
+            if num_records > 0:
+                profile_limit = limit - num_records
+        _logger.debug(f"entering stix-shifter data source: {profile}")
+        _logger.debug(f"profile = {profile}, profile_limit = {profile_limit}")
         # STIX-shifter will alter the config objects, thus making them not reusable.
         # So only give STIX-shifter a copy of the configs.
         # Check `modernize` functions in the `stix_shifter_utils` for details.
@@ -114,11 +122,13 @@ def query_datasource(uri, pattern, session_id, config, store):
                 config["options"]["translation_workers_count"],
                 dsl["queries"],
                 raw_records_queue,
+                profile_limit,
             ):
                 for result in multiproc.read_translated_results(
                     translated_data_queue,
                     config["options"]["translation_workers_count"],
                 ):
+                    num_records += get_num_objects(result)
                     ingest(result, observation_metadata, query_id, store)
 
     return ReturnFromStore(query_id)
@@ -183,3 +193,14 @@ def ingest(
         # STIX bundle (normal stix-shifter translation result)
         store.cache(query_id, result)
     _logger.debug("ingestion of a batch/page ends")
+
+
+@typechecked
+def get_num_objects(data: Union[dict, DataFrame]):
+    if isinstance(data, DataFrame):
+        num_objects = len(data)
+    else:
+        num_objects = len(data.get("objects", []))
+        if num_objects > 0:
+            num_objects -= 1  # minus the identify object
+    return num_objects
