@@ -10,7 +10,6 @@ from kestrel.datasource import ReturnFromStore
 from kestrel.utils import mkdtemp
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
 from kestrel_datasource_stixshifter.connector import check_module_availability
-from kestrel_datasource_stixshifter.worker import STOP_SIGN
 from kestrel_datasource_stixshifter import multiproc
 from kestrel_datasource_stixshifter.config import (
     get_datasource_from_profiles,
@@ -116,12 +115,11 @@ def query_datasource(uri, pattern, session_id, config, store):
                 dsl["queries"],
                 raw_records_queue,
             ):
-                for _ in range(config["options"]["translation_workers_count"]):
-                    for packet in iter(translated_data_queue.get, STOP_SIGN):
-                        if packet.success:
-                            ingest(packet.data, observation_metadata, query_id, store)
-                        else:
-                            process_log_msg(packet)
+                for result in multiproc.read_translated_results(
+                    translated_data_queue,
+                    config["options"]["translation_workers_count"],
+                ):
+                    ingest(result, observation_metadata, query_id, store)
 
     return ReturnFromStore(query_id)
 
@@ -185,17 +183,3 @@ def ingest(
         # STIX bundle (normal stix-shifter translation result)
         store.cache(query_id, result)
     _logger.debug("ingestion of a batch/page ends")
-
-
-def process_log_msg(packet):
-    log_msg = f"[worker: {packet.worker}] {packet.log.log}"
-    if packet.log.level == logging.ERROR:
-        _logger.debug(log_msg)
-        raise DataSourceError(log_msg)
-    else:
-        if packet.log.level == logging.WARN:
-            _logger.warn(log_msg)
-        elif packet.log.level == logging.INFO:
-            _logger.info(log_msg)
-        else:  #  all others as debug logs
-            _logger.debug(log_msg)
