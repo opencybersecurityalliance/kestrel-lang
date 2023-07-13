@@ -106,14 +106,7 @@ def assign(stmt, session):
     entity_table = session.symtable[stmt["input"]].entity_table
     transform = stmt.get("transformer")
     if transform:
-        if transform.lower() == "timestamped":
-            qry = session.store.timestamped(entity_table, run=False)
-        elif transform.lower() == "addobsid":
-            qry = session.store.extract_observeddata_attribute(
-                entity_table, name_of_attribute="id", run=False
-            )
-        else:
-            qry = Query(entity_table)
+        qry = _transform_query(session.store, entity_table, transform)
     else:
         qry = Query(entity_table)
 
@@ -213,14 +206,7 @@ def disp(stmt, session):
     entity_table = session.symtable[stmt["input"]].entity_table
     transform = stmt.get("transformer")
     if transform and entity_table:
-        if transform.lower() == "timestamped":
-            qry = session.store.timestamped(entity_table, run=False)
-        elif transform.lower() == "addobsid":
-            qry = session.store.extract_observeddata_attribute(
-                entity_table, name_of_attribute="id", run=False
-            )
-        else:
-            qry = Query(entity_table)
+        qry = _transform_query(session.store, entity_table, transform)
     else:
         qry = Query(entity_table)
 
@@ -488,4 +474,27 @@ def _build_query(store, entity_table, qry, stmt, paths=None):
     offset = stmt.get("offset")
     if offset:
         qry.append(Offset(offset))
+    return qry
+
+
+def _transform_query(store, entity_table, transform):
+    if transform.lower() == "timestamped":
+        qry = store.timestamped(entity_table, run=False)
+    elif transform.lower() == "addobsid":
+        qry = store.extract_observeddata_attribute(
+            entity_table, name_of_attribute="id", run=False
+        )
+    elif transform.lower() == "records":
+        qry = store.extract_observeddata_attribute(
+            entity_table,
+            name_of_attribute=[
+                "number_observed",
+                "first_observed",
+                "last_observed",
+                "id",
+            ],
+            run=False,
+        )
+    else:
+        qry = Query(entity_table)
     return qry
