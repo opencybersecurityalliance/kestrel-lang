@@ -9,6 +9,37 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+- Issue #370 (the last unit test in test_stixshifter_translator.py disabled)
+
+1.7.1 (2023-07-13)
+==================
+
+Added
+-----
+
+- LIMIT keyword in GET/FIND
+- LIMIT support in stix-shifter interface and stix-bundle interface
+- Unit tests for LIMIT
+- Documentation for LIMIT
+- New transform function RECORD
+- Documentation for RECORD
+- Unit tests for RECORD
+
+Changed
+-------
+
+- Use prefetch results for GET/FIND if prefetched; instead of merging results with local/main query
+
+Fixed
+-----
+
+- stix-shifter interface translator error msg passing bugs
+- stix-shifter interface transmitter error msg passing bug
+- infinite loop in stix-shifter interface transmitter
+- stix-shifter connector pip uninstall hanging issue
+- prefetch logic error with empty return
+- dataframe index error in CSV export
+
 1.7.0 (2023-06-14)
 ==================
 
