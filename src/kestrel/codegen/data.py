@@ -1,3 +1,4 @@
+import csv
 import json
 import pathlib
 import uuid
@@ -55,7 +56,7 @@ def dump_data_to_file(store, input_entity_table, file_path):
     df = pd.DataFrame(input_data)
     dump_format = _get_dump_format(p)
     if dump_format == "csv":
-        df.to_csv(file_path)
+        df.to_csv(file_path, index=False, quoting=csv.QUOTE_NONNUMERIC)
     elif dump_format == "parquet":
         df.to_parquet(file_path)
     elif dump_format == "json":
