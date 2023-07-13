@@ -219,13 +219,16 @@ Such information is not in a Kestrel variable, but they could be useful in a
 hunt. In Kestrel, there are *variable transforms* that transforms the data
 table of a variable into other formats such as a data table with additional
 columns of record/event/(STIX `Observed Data`_) timestamps. Kestrel supports
-two transforms currently:
+three transforms currently:
 
 - ``TIMESTAMPED()``: the function, when applied to a variable, results in a new
   column ``first_observed`` in the transformed data table.
 
 - ``ADDOBSID()``: the function, when applied to a variable, results in a new
   column ``observation_id`` in the transformed data table.
+
+- ``RECORDS()``: the function, when applied to a variable, results new
+  columns ``observation_id``, ``first_observed``, ``last_observed``, and ``number_observed`` in the transformed data table.
 
 Usage example:
 

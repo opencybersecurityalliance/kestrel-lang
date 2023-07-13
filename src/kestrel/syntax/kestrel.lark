@@ -79,10 +79,11 @@ vtrans: transformer "(" VARIABLE ")"
 
 transformer: TIMESTAMPED
            | ADDOBSID
+           | RECORDS
 
 TIMESTAMPED: "TIMESTAMPED"i
-
 ADDOBSID: "ADDOBSID"i
+RECORDS: "RECORDS"i
 
 where_clause: "WHERE"i ecg_pattern
 attr_clause: "ATTR"i ATTRIBUTES
