@@ -7,6 +7,8 @@ import pytest
 from kestrel.codegen.display import DisplayWarning
 from kestrel.session import Session
 
+from .utils import set_empty_kestrel_config, set_no_prefetch_kestrel_config
+
 
 @pytest.fixture
 def proc_bundle_file():
@@ -174,7 +176,9 @@ def test_get_multiple_file_stix_bundles_limit_2(file_stix_bundles):
         assert v[0]["name"] == "compattelrunner.exe"
 
 
-def test_get_single_stixshifter_stix_bundle(set_stixshifter_stix_bundles):
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_single_stixshifter_stix_bundle(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
     with Session() as s:
         # default data source schema is stixshifter
         stmt = """
@@ -192,7 +196,9 @@ def test_get_single_stixshifter_stix_bundle(set_stixshifter_stix_bundles):
             assert v[i]["name"] == "powershell.exe"
 
 
-def test_get_single_stixshifter_stix_bundle_limit(set_stixshifter_stix_bundles):
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_single_stixshifter_stix_bundle_limit(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
     with Session() as s:
         # default data source schema is stixshifter
         stmt = """
@@ -211,7 +217,9 @@ def test_get_single_stixshifter_stix_bundle_limit(set_stixshifter_stix_bundles):
             assert v[i]["name"] == "powershell.exe"
 
 
-def test_get_multiple_stixshifter_stix_bundles(set_stixshifter_stix_bundles):
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_multiple_stixshifter_stix_bundles(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
     with Session() as s:
         # default data source schema is stixshifter
         stmt = """
@@ -247,7 +255,9 @@ def test_get_multiple_stixshifter_stix_bundles(set_stixshifter_stix_bundles):
             ]
 
 
-def test_get_multiple_stixshifter_stix_bundles_limit(set_stixshifter_stix_bundles):
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_multiple_stixshifter_stix_bundles_limit(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
     with Session() as s:
         # default data source schema is stixshifter
         stmt = """
@@ -284,7 +294,9 @@ def test_get_multiple_stixshifter_stix_bundles_limit(set_stixshifter_stix_bundle
             ]
 
 
-def test_get_multiple_stixshifter_stix_bundles_limit_1(set_stixshifter_stix_bundles):
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_multiple_stixshifter_stix_bundles_limit_1(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
     with Session() as s:
         # default data source schema is stixshifter
         stmt = """
@@ -321,7 +333,9 @@ def test_get_multiple_stixshifter_stix_bundles_limit_1(set_stixshifter_stix_bund
             ]
 
 
-def test_get_multiple_stixshifter_stix_bundles_limit_2 (set_stixshifter_stix_bundles):
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_multiple_stixshifter_stix_bundles_limit_2(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
     with Session() as s:
         # default data source schema is stixshifter
         stmt = """
@@ -371,8 +385,8 @@ def test_last_datasource(proc_bundle_file):
         output = s.execute(stmt)
         a = s.get_variable("a")
         b = s.get_variable("b")
-        assert len(a) == 14 * 2  # prefetch will get the same process twice
-        assert len(b) == 704 * 2  # prefetch will get the same process twice
+        assert len(a) == 14
+        assert len(b) == 704
 
 
 def test_relative_file_path(tmp_path):
@@ -395,8 +409,8 @@ def test_relative_file_path(tmp_path):
         output = s.execute(stmt)
         a = s.get_variable("a")
         b = s.get_variable("b")
-        assert len(a) == 14 * 2  # prefetch will get the same process twice
-        assert len(b) == 704 * 2  # prefetch will get the same process twice
+        assert len(a) == 14
+        assert len(b) == 704
 
 
 def test_get_wrong_type(file_stix_bundles):
