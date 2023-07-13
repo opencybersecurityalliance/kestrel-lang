@@ -17,11 +17,12 @@ def lowered_str_list(xs):
 
 
 def update_nested_dict(dict_old, dict_new):
-    for k, v in dict_new.items():
-        if isinstance(v, collections.abc.Mapping) and k in dict_old:
-            dict_old[k] = update_nested_dict(dict_old[k], v)
-        else:
-            dict_old[k] = v
+    if dict_new:
+        for k, v in dict_new.items():
+            if isinstance(v, collections.abc.Mapping) and k in dict_old:
+                dict_old[k] = update_nested_dict(dict_old[k], v)
+            else:
+                dict_old[k] = v
     return dict_old
 
 

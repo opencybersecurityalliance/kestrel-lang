@@ -36,9 +36,9 @@ assignment: VARIABLE "=" expression
 // All commands
 //
 
-find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE where_clause? timespan?
+find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE where_clause? limit_clause? timespan?
 
-get: "GET"i ENTITY_TYPE ("FROM"i datasource)? where_clause timespan?
+get: "GET"i ENTITY_TYPE ("FROM"i datasource)? where_clause limit_clause? timespan?
 
 group: "GROUP"i VARIABLE BY grp_spec ("WITH"i agg_list)?
 
@@ -79,10 +79,11 @@ vtrans: transformer "(" VARIABLE ")"
 
 transformer: TIMESTAMPED
            | ADDOBSID
+           | RECORDS
 
 TIMESTAMPED: "TIMESTAMPED"i
-
 ADDOBSID: "ADDOBSID"i
+RECORDS: "RECORDS"i
 
 where_clause: "WHERE"i ecg_pattern
 attr_clause: "ATTR"i ATTRIBUTES

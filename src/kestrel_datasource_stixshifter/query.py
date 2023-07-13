@@ -10,7 +10,6 @@ from kestrel.datasource import ReturnFromStore
 from kestrel.utils import mkdtemp
 from kestrel.exceptions import DataSourceError, DataSourceManagerInternalError
 from kestrel_datasource_stixshifter.connector import check_module_availability
-from kestrel_datasource_stixshifter.worker import STOP_SIGN
 from kestrel_datasource_stixshifter import multiproc
 from kestrel_datasource_stixshifter.config import (
     get_datasource_from_profiles,
@@ -35,7 +34,7 @@ nest_asyncio.apply()
 _logger = logging.getLogger(__name__)
 
 
-def query_datasource(uri, pattern, session_id, config, store):
+def query_datasource(uri, pattern, session_id, config, store, limit=None):
     # CONFIG command is not supported
     # profiles will be updated according to YAML file and env var
     config["profiles"] = load_profiles()
@@ -63,9 +62,17 @@ def query_datasource(uri, pattern, session_id, config, store):
 
     _logger.debug(f"prepare query with ID: {query_id}")
 
-    for profile in profiles:
-        _logger.debug(f"entering stix-shifter data source: {profile}")
+    num_records = 0
+    profile_limit = limit
 
+    for profile in profiles:
+        if limit:
+            if num_records >= limit:
+                break
+            if num_records > 0:
+                profile_limit = limit - num_records
+        _logger.debug(f"entering stix-shifter data source: {profile}")
+        _logger.debug(f"profile = {profile}, profile_limit = {profile_limit}")
         # STIX-shifter will alter the config objects, thus making them not reusable.
         # So only give STIX-shifter a copy of the configs.
         # Check `modernize` functions in the `stix_shifter_utils` for details.
@@ -95,6 +102,8 @@ def query_datasource(uri, pattern, session_id, config, store):
         raw_records_queue = Queue()
         translated_data_queue = Queue()
 
+        exceptions = []
+
         with multiproc.translate(
             connector_name,
             observation_metadata,
@@ -113,13 +122,14 @@ def query_datasource(uri, pattern, session_id, config, store):
                 config["options"]["translation_workers_count"],
                 dsl["queries"],
                 raw_records_queue,
+                profile_limit,
             ):
-                for _ in range(config["options"]["translation_workers_count"]):
-                    for packet in iter(translated_data_queue.get, STOP_SIGN):
-                        if packet.success:
-                            ingest(packet.data, observation_metadata, query_id, store)
-                        else:
-                            process_log_msg(packet)
+                for result in multiproc.read_translated_results(
+                    translated_data_queue,
+                    config["options"]["translation_workers_count"],
+                ):
+                    num_records += get_num_objects(result)
+                    ingest(result, observation_metadata, query_id, store)
 
     return ReturnFromStore(query_id)
 
@@ -185,15 +195,12 @@ def ingest(
     _logger.debug("ingestion of a batch/page ends")
 
 
-def process_log_msg(packet):
-    log_msg = f"[worker: {packet.worker}] {packet.log.log}"
-    if packet.log.level == logging.ERROR:
-        _logger.debug(log_msg)
-        raise DataSourceError(log_msg)
+@typechecked
+def get_num_objects(data: Union[dict, DataFrame]):
+    if isinstance(data, DataFrame):
+        num_objects = len(data)
     else:
-        if packet.log.level == logging.WARN:
-            _logger.warn(log_msg)
-        elif packet.log.level == logging.INFO:
-            _logger.info(log_msg)
-        else:  #  all others as debug logs
-            _logger.debug(log_msg)
+        num_objects = len(data.get("objects", []))
+        if num_objects > 0:
+            num_objects -= 1  # minus the identify object
+    return num_objects

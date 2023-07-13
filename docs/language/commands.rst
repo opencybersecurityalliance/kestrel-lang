@@ -75,7 +75,7 @@ Syntax
 
 ::
 
-    returned_variable = GET returned_entity_type [FROM entity_pool] WHERE ecgp [time_range]
+    returned_variable = GET returned_entity_type [FROM entity_pool] WHERE ecgp [time_range] [LIMIT limit]
 
 - The ``returned_entity_type`` is specified right after the keyword ``GET``.
 
@@ -125,6 +125,13 @@ Syntax
 
     #. No time range specified for the generated query to a data source.
 
+- The ``limit`` is an optional argument that specifies the number of records 
+  to be returned by the ``GET`` query. In the current implementation, Kestrel 
+  will return ``limit`` ``observed-data`` records. The number of 
+  ``returned_entity_type`` records returned could be different because it 
+  depends on how many ``returned_entity_type`` records are included in the 
+  ``observed-data`` dataset.
+
 Learn how to setup data sources via existing Kestrel data source interfaces
 such as :doc:`../source/kestrel_datasource_stixshifter.interface` at
 :doc:`../installation/datasource`. Read :doc:`interface` to understand more
@@ -169,7 +176,7 @@ Syntax
 ^^^^^^
 ::
 
-    returned_variable = FIND returned_entity_type RELATIONFROM input_variable [WHERE ecgp] [time_range]
+    returned_variable = FIND returned_entity_type RELATIONFROM input_variable [WHERE ecgp] [time_range] [LIMIT limit]
 
 Kestrel defines two categories of relations: 5 sepcific relations and 1 generic
 relation. Specifc relations are directed, and the generic relation is
@@ -328,6 +335,16 @@ parent process. Sketches of the huntbook:
     
     # now the parent process will be discovered
     pp2 = FIND process CREATED p2
+
+Limit in FIND
+^^^^^^^^^^^^^
+
+The ``limit`` is an optional argument that specifies the number of records 
+to be returned by the ``FIND`` query. In the current implementation, Kestrel 
+will return ``limit`` ``observed-data`` records. The number of 
+``returned_entity_type`` records returned could be different because it 
+depends on how many ``returned_entity_type`` records are included in the 
+``observed-data`` dataset.
 
 Relation With GET
 ^^^^^^^^^^^^^^^^^

@@ -7,6 +7,8 @@ import pytest
 from kestrel.codegen.display import DisplayWarning
 from kestrel.session import Session
 
+from .utils import set_empty_kestrel_config, set_no_prefetch_kestrel_config
+
 
 @pytest.fixture
 def proc_bundle_file():
@@ -73,6 +75,40 @@ def test_get_single_file(file_stix_bundles):
         assert v[0]["name"] == "compattelrunner.exe"
 
 
+def test_get_single_file_limit(file_stix_bundles):
+    with Session() as s:
+        stmt = f"""
+                var = GET process
+                      FROM file://{file_stix_bundles[0]}
+                      WHERE [process:name='compattelrunner.exe']
+                      LIMIT 1
+                """
+
+        s.execute(stmt)
+        v = s.get_variable("var")
+        print(json.dumps(v, indent=4))
+        assert len(v) == 1
+        assert v[0]["type"] == "process"
+        assert v[0]["name"] == "compattelrunner.exe"
+
+
+def test_get_single_file_limit_1(file_stix_bundles):
+    with Session() as s:
+        stmt = f"""
+                var = GET process
+                      FROM file://{file_stix_bundles[0]}
+                      WHERE [process:name='compattelrunner.exe']
+                      LIMIT 10
+                """
+
+        s.execute(stmt)
+        v = s.get_variable("var")
+        print(json.dumps(v, indent=4))
+        assert len(v) == 2
+        assert v[0]["type"] == "process"
+        assert v[0]["name"] == "compattelrunner.exe"
+
+
 def test_get_multiple_file_stix_bundles(file_stix_bundles):
     with Session() as s:
         file_bundles = ",".join(file_stix_bundles)
@@ -89,7 +125,60 @@ def test_get_multiple_file_stix_bundles(file_stix_bundles):
         assert v[0]["name"] == "compattelrunner.exe"
 
 
-def test_get_single_stixshifter_stix_bundle(set_stixshifter_stix_bundles):
+def test_get_multiple_file_stix_bundles_limit(file_stix_bundles):
+    with Session() as s:
+        file_bundles = ",".join(file_stix_bundles)
+        stmt = f"""
+                var = GET process
+                      FROM file://{file_bundles}
+                      WHERE name = 'compattelrunner.exe'
+                      LIMIT 3
+                """
+
+        s.execute(stmt)
+        v = s.get_variable("var")
+        assert len(v) == 3
+        assert v[0]["type"] == "process"
+        assert v[0]["name"] == "compattelrunner.exe"
+
+
+def test_get_multiple_file_stix_bundles_limit_1(file_stix_bundles):
+    with Session() as s:
+        file_bundles = ",".join(file_stix_bundles)
+        stmt = f"""
+                var = GET process
+                      FROM file://{file_bundles}
+                      WHERE name = 'compattelrunner.exe'
+                      LIMIT 4
+                """
+
+        s.execute(stmt)
+        v = s.get_variable("var")
+        assert len(v) == 4
+        assert v[0]["type"] == "process"
+        assert v[0]["name"] == "compattelrunner.exe"
+
+
+def test_get_multiple_file_stix_bundles_limit_2(file_stix_bundles):
+    with Session() as s:
+        file_bundles = ",".join(file_stix_bundles)
+        stmt = f"""
+                var = GET process
+                      FROM file://{file_bundles}
+                      WHERE name = 'compattelrunner.exe'
+                      LIMIT 8
+                """
+
+        s.execute(stmt)
+        v = s.get_variable("var")
+        assert len(v) == 5
+        assert v[0]["type"] == "process"
+        assert v[0]["name"] == "compattelrunner.exe"
+
+
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_single_stixshifter_stix_bundle(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
     with Session() as s:
         # default data source schema is stixshifter
         stmt = """
@@ -107,13 +196,153 @@ def test_get_single_stixshifter_stix_bundle(set_stixshifter_stix_bundles):
             assert v[i]["name"] == "powershell.exe"
 
 
-def test_get_multiple_stixshifter_stix_bundles(set_stixshifter_stix_bundles):
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_single_stixshifter_stix_bundle_limit(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
+    with Session() as s:
+        # default data source schema is stixshifter
+        stmt = """
+               var = GET process
+                     FROM HOST2
+                     WHERE [ipv4-addr:value = '127.0.0.1']
+                     LIMIT 4
+                     START 2019-01-01T00:00:00Z STOP 2023-01-01T00:00:00Z
+               """
+
+        s.execute(stmt)
+        v = s.get_variable("var")
+        assert len(v) == 4
+        for i in range(len(v)):
+            assert v[i]["type"] == "process"
+            assert v[i]["name"] == "powershell.exe"
+
+
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_multiple_stixshifter_stix_bundles(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
     with Session() as s:
         # default data source schema is stixshifter
         stmt = """
                var = GET process
                      FROM HOST1,HOST2
                      WHERE ipv4-addr:value = '127.0.0.1'
+                     START 2019-01-01T00:00:00Z STOP 2023-01-01T00:00:00Z
+               """
+
+        s.execute(stmt)
+        v = s.get_variable("var")
+
+        # The extended graph [ipv4-addr:value = '127.0.0.1'] is recognized and
+        # merged to prefetch query, resultsing in limited (32) processes. If
+        # not used by prefetch, the total number of process records prefetched
+        # is 240.
+        assert len(v) == 32
+        for i in range(len(v)):
+            assert v[i]["type"] == "process"
+            assert v[i]["name"] in [
+                "powershell.exe",
+                "(unknown)",
+                "explorer.exe",
+                "firefox.exe",
+                "ntoskrnl.exe",
+                "teamviewer_service.exe",
+                "teamviewer.exe",
+                "vmware.exe",
+                "dashost.exe",
+                "applemobiledeviceservice.exe",
+                "svctest.exe",
+                "vmware-hostd.exe",
+            ]
+
+
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_multiple_stixshifter_stix_bundles_limit(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
+    with Session() as s:
+        # default data source schema is stixshifter
+        stmt = """
+               var = GET process
+                     FROM HOST1,HOST2
+                     WHERE ipv4-addr:value = '127.0.0.1'
+                     LIMIT 10
+                     START 2019-01-01T00:00:00Z STOP 2023-01-01T00:00:00Z
+               """
+
+        s.execute(stmt)
+        v = s.get_variable("var")
+
+        # The extended graph [ipv4-addr:value = '127.0.0.1'] is recognized and
+        # merged to prefetch query, resultsing in limited (32) processes. If
+        # not used by prefetch, the total number of process records prefetched
+        # is 240.
+        assert len(v) == 20
+        for i in range(len(v)):
+            assert v[i]["type"] == "process"
+            assert v[i]["name"] in [
+                "powershell.exe",
+                "(unknown)",
+                "explorer.exe",
+                "firefox.exe",
+                "ntoskrnl.exe",
+                "teamviewer_service.exe",
+                "teamviewer.exe",
+                "vmware.exe",
+                "dashost.exe",
+                "applemobiledeviceservice.exe",
+                "svctest.exe",
+                "vmware-hostd.exe",
+            ]
+
+
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_multiple_stixshifter_stix_bundles_limit_1(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
+    with Session() as s:
+        # default data source schema is stixshifter
+        stmt = """
+               var = GET process
+                     FROM HOST1,HOST2
+                     WHERE ipv4-addr:value = '127.0.0.1'
+                     LIMIT 15
+                     START 2019-01-01T00:00:00Z STOP 2023-01-01T00:00:00Z
+               """
+
+        s.execute(stmt)
+        v = s.get_variable("var")
+
+        # The extended graph [ipv4-addr:value = '127.0.0.1'] is recognized and
+        # merged to prefetch query, resultsing in limited (32) processes. If
+        # not used by prefetch, the total number of process records prefetched
+        # is 240.
+        assert len(v) == 28
+        for i in range(len(v)):
+            assert v[i]["type"] == "process"
+            assert v[i]["name"] in [
+                "powershell.exe",
+                "(unknown)",
+                "explorer.exe",
+                "firefox.exe",
+                "ntoskrnl.exe",
+                "teamviewer_service.exe",
+                "teamviewer.exe",
+                "vmware.exe",
+                "dashost.exe",
+                "applemobiledeviceservice.exe",
+                "svctest.exe",
+                "vmware-hostd.exe",
+            ]
+
+
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_get_multiple_stixshifter_stix_bundles_limit_2(set_no_prefetch_kestrel_config, set_stixshifter_stix_bundles):
+    with Session() as s:
+        # default data source schema is stixshifter
+        stmt = """
+               var = GET process
+                     FROM HOST1,HOST2
+                     WHERE ipv4-addr:value = '127.0.0.1'
+                     LIMIT 50
                      START 2019-01-01T00:00:00Z STOP 2023-01-01T00:00:00Z
                """
 
@@ -156,8 +385,8 @@ def test_last_datasource(proc_bundle_file):
         output = s.execute(stmt)
         a = s.get_variable("a")
         b = s.get_variable("b")
-        assert len(a) == 14 * 2  # prefetch will get the same process twice
-        assert len(b) == 704 * 2  # prefetch will get the same process twice
+        assert len(a) == 14
+        assert len(b) == 704
 
 
 def test_relative_file_path(tmp_path):
@@ -180,8 +409,8 @@ def test_relative_file_path(tmp_path):
         output = s.execute(stmt)
         a = s.get_variable("a")
         b = s.get_variable("b")
-        assert len(a) == 14 * 2  # prefetch will get the same process twice
-        assert len(b) == 704 * 2  # prefetch will get the same process twice
+        assert len(a) == 14
+        assert len(b) == 704
 
 
 def test_get_wrong_type(file_stix_bundles):

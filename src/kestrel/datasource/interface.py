@@ -82,7 +82,7 @@ class AbstractDataSourceInterface(ABC):
 
     @staticmethod
     @abstractmethod
-    def query(uri, pattern, session_id, config, store=None):
+    def query(uri, pattern, session_id, config, store=None, limit=None):
         """Sending a data query to a specific data source.
 
         If the store of the session is modified and directly gets the data
@@ -105,6 +105,9 @@ class AbstractDataSourceInterface(ABC):
               interface and can be edited/updated by the interface.
 
             store (firepit.SqlStorage): The internal store used by the session
+
+            limit (Optional[int]): limit on the number of records to return;
+              None if there is no limit
 
         Returns:
             kestrel.datasource.retstruct.AbstractReturnStruct: returned data.
