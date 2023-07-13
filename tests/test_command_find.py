@@ -4,6 +4,8 @@ import pytest
 
 from kestrel.session import Session
 
+from .utils import set_empty_kestrel_config, set_no_prefetch_kestrel_config
+
 
 @pytest.fixture
 def fake_bundle_file():
@@ -94,10 +96,10 @@ def test_find_file_linked_to_process(proc_bundle_file):
         s.execute(stmt)
         procs = s.get_variable("procs")
         print(json.dumps(procs, indent=4))
-        assert len(procs) == 7 * 2
+        assert len(procs) == 7
         files = s.get_variable("files")
         print(json.dumps(files, indent=4))
-        assert len(files) == 2 * 2
+        assert len(files) == 4
 
 
 def test_find_file_linked_to_process_limit_1(proc_bundle_file):
@@ -111,7 +113,7 @@ def test_find_file_linked_to_process_limit_1(proc_bundle_file):
         s.execute(stmt)
         procs = s.get_variable("procs")
         print(json.dumps(procs, indent=4))
-        assert len(procs) == 7 * 2
+        assert len(procs) == 7
         files = s.get_variable("files")
         print(json.dumps(files, indent=4))
         assert len(files) == 1
@@ -128,7 +130,7 @@ def test_find_file_linked_to_process_limit_2(proc_bundle_file):
         s.execute(stmt)
         procs = s.get_variable("procs")
         print(json.dumps(procs, indent=4))
-        assert len(procs) == 7 * 2
+        assert len(procs) == 7
         files = s.get_variable("files")
         print(json.dumps(files, indent=4))
         assert len(files) == 4
@@ -177,7 +179,7 @@ def test_find_file_loaded_by_process(proc_bundle_file):
         s.execute(stmt)
         procs = s.get_variable("procs")
         print(json.dumps(procs, indent=4))
-        assert len(procs) == 7 * 2
+        assert len(procs) == 7
         files = s.get_variable("files")
         print(json.dumps(files, indent=4))
         assert len(files) == 1
@@ -236,7 +238,7 @@ def test_find_refs_resolution_reversed_src_ref(proc_bundle_file):
         s.execute(stmt)
         conns = s.get_variable("conns")
         assert (
-            len(conns) == 0
+            len(conns) == 853
         )  # FIXME: should be 948, I think (id collisions for network-traffic)
 
         # DISP with a ref (parent_ref) and ambiguous column (command_line)
@@ -256,7 +258,7 @@ def test_find_refs_resolution_reversed_src_ref_limit(proc_bundle_file):
         s.execute(stmt)
         conns = s.get_variable("conns")
         assert (
-            len(conns) == 0
+            len(conns) == 853
         )
 
         # DISP with a ref (parent_ref) and ambiguous column (command_line)
@@ -265,60 +267,70 @@ def test_find_refs_resolution_reversed_src_ref_limit(proc_bundle_file):
         print(json.dumps(data, indent=4))
 
 
-def test_find_with_where_ext_pattern(proc_bundle_file):
+def test_find_without_where_ext_pattern(proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 conns = get network-traffic
                         FROM file://{proc_bundle_file}
                         WHERE network-traffic:src_ref.value = '127.0.0.1'
 
-                proc1 = FIND process CREATED conns
+                procs = FIND process CREATED conns
+                """
+        s.execute(stmt)
+
+        conns = s.symtable["conns"]
+        procs = s.symtable["procs"]
+
+        assert len(conns) == 193
+        assert conns.records_count == 203
+
+        assert len(procs) == 471
+        assert procs.records_count == 471
+
+
+# stix_bundle connector does not support extended graph
+# disable prefetch to test
+def test_find_with_where_ext_pattern(set_no_prefetch_kestrel_config, proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+                conns = get network-traffic
+                        FROM file://{proc_bundle_file}
+                        WHERE network-traffic:src_ref.value = '127.0.0.1'
+
+                procs = FIND process CREATED conns
                         WHERE ipv4-addr:value = '192.168.1.1'
-
-                proc2 = FIND process CREATED conns
                 """
         s.execute(stmt)
 
         conns = s.symtable["conns"]
-        proc1 = s.symtable["proc1"]
-        proc2 = s.symtable["proc2"]
+        procs = s.symtable["procs"]
 
         assert len(conns) == 193
         assert conns.records_count == 203
 
-        assert len(proc1) == 0
-        assert proc1.records_count == 0
-
-        assert len(proc2) == 471
-        assert proc2.records_count == 471
+        assert len(procs) == 203
+        assert procs.records_count == 203
 
 
-def test_find_with_where_ext_pattern_limit(proc_bundle_file):
+def test_find_with_limit(proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 conns = get network-traffic
                         FROM file://{proc_bundle_file}
                         WHERE network-traffic:src_ref.value = '127.0.0.1'
 
-                proc1 = FIND process CREATED conns
-                        WHERE ipv4-addr:value = '192.168.1.1' LIMIT 100
-
-                proc2 = FIND process CREATED conns LIMIT 100
+                procs = FIND process CREATED conns LIMIT 100
                 """
         s.execute(stmt)
 
         conns = s.symtable["conns"]
-        proc1 = s.symtable["proc1"]
-        proc2 = s.symtable["proc2"]
+        procs = s.symtable["procs"]
 
         assert len(conns) == 193
         assert conns.records_count == 203
 
-        assert len(proc1) == 0
-        assert proc1.records_count == 0
-
-        assert len(proc2) == 100
-        assert proc2.records_count == 100
+        assert len(procs) == 100
+        assert procs.records_count == 100
 
 
 def test_find_with_where_centered_pattern(proc_bundle_file):
