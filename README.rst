@@ -125,6 +125,7 @@ Kestrel Hunting Blogs
 #. `Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow`_
 #. `Try Kestrel in a Cloud Sandbox`_
 #. `Fun with securitydatasets.com and the Kestrel PowerShell Deobfuscator`_
+#. `Kestrel Data Retrieval Explained`_
 
 Talks And Demos
 ===============
@@ -190,6 +191,7 @@ Connecting With The Community
 .. _Setting Up The Open Hunting Stack in Hybrid Cloud With Kestrel and SysFlow: https://opencybersecurityalliance.org/kestrel-sysflow-open-hunting-stack/
 .. _Try Kestrel in a Cloud Sandbox: https://opencybersecurityalliance.org/try-kestrel-in-a-cloud-sandbox/
 .. _Fun with securitydatasets.com and the Kestrel PowerShell Deobfuscator: https://opencybersecurityalliance.org/fun-with-securitydatasets-com-and-the-kestrel-powershell-deobfuscator/
+.. _Kestrel Data Retrieval Explained: https://opencybersecurityalliance.org/kestrel-data-retrieval-explained/
 
 .. _RSA Conference 2021: https://www.rsaconference.com/Library/presentation/USA/2021/The%20Game%20of%20Cyber%20Threat%20Hunting%20The%20Return%20of%20the%20Fun
 .. _RSA'21 session recording: https://www.youtube.com/watch?v=-Xb086R0JTk
