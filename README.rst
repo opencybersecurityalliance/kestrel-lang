@@ -54,7 +54,7 @@ What does it mean by *hunt fast*?
 - Do NOT write the same TTP pattern in different data source queries.
 - Do NOT write one-time-use adapaters to connect hunt steps.
 - Do NOT waste your existing analytic scripts/programs in future hunts.
-- DD construct your hunt-flow from smaller reuseable hunt-flow.
+- Do construct your hunt-flow from smaller reuseable hunt-flow.
 - Do share your huntbook with your future self and your colleagues.
 - Do get interactive feedback and revise hunt-flow on the fly.
 
