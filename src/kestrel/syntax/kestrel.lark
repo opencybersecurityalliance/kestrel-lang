@@ -10,7 +10,7 @@ start: statement*
 
 statement: assignment
          | command_no_result
-         
+
 // If no VARIABLE is given, default to _ in post-parsing
 // For assign or merge, the result variable is required
 // This eliminates meaningless huntflows like `var1 var2 var3`
@@ -46,7 +46,7 @@ join: "JOIN"i VARIABLE "," VARIABLE (BY ATTRIBUTE "," ATTRIBUTE)?
 
 load: "LOAD"i stdpath ("AS"i ENTITY_TYPE)?
 
-new: "NEW"i ENTITY_TYPE? VAR_DATA
+new: "NEW"i ENTITY_TYPE? var_data
 
 sort: "SORT"i VARIABLE BY ATTRIBUTE (ASC|DESC)?
 
@@ -104,8 +104,8 @@ offset_clause: "OFFSET"i INT
            | comparison_null
            | "(" disjunction ")"
 
-comparison_std:  ENTITY_ATTRIBUTE_PATH OP      value
-comparison_null: ENTITY_ATTRIBUTE_PATH NULL_OP NULL
+comparison_std:  ENTITY_ATTRIBUTE_PATH op      value
+comparison_null: ENTITY_ATTRIBUTE_PATH null_op NULL
 
 //
 // Timespan
@@ -114,15 +114,15 @@ comparison_null: ENTITY_ATTRIBUTE_PATH NULL_OP NULL
 ?timespan: "start"i timestamp "stop"i timestamp -> timespan_absolute
          | "last"i INT timeunit                 -> timespan_relative
 
-?timeunit: DAY
-         | HOUR
-         | MINUTE
-         | SECOND
+?timeunit: day
+         | hour
+         | minute
+         | second
 
-DAY: "days"i | "day"i | "d"i
-HOUR: "hours"i | "hour"i | "h"i
-MINUTE: "minutes"i | "minute"i | "m"i
-SECOND: "seconds"i | "second"i | "s"i
+day: "days"i | "day"i | "d"i
+hour: "hours"i | "hour"i | "h"i
+minute: "minutes"i | "minute"i | "m"i
+second: "seconds"i | "second"i | "s"i
 
 timestamp:       ISOTIMESTAMP
          | "\""  ISOTIMESTAMP "\""
@@ -189,17 +189,15 @@ ANALYTICS_ESCAPED: PATH_ESCAPED
 // Two-level JSON in command NEW
 //
 
-// use terminal to load the entire VAR_DATA without parsing into it
-// add `WS*` since `%ignore WS` doesn't apply to spaces inside terminals
-// https://github.com/lark-parser/lark/issues/99
-VAR_DATA: "[" (RAW_VALUES | JSON_OBJS) "]"
+// use terminal to load the entire var_data without parsing into it
+var_data: "[" (RAW_VALUES | json_objs) "]"
 
 RAW_VALUES: ESCAPED_STRING_WS ("," ESCAPED_STRING_WS)*
 
-JSON_OBJS: JSON_OBJ ("," JSON_OBJ)*
-JSON_OBJ: WS* "{" JSON_PAIR ("," JSON_PAIR)* "}" WS*
-JSON_PAIR: ESCAPED_STRING_WS ":" JSON_VALUE
-JSON_VALUE: WS* (NUMBER|ESCAPED_STRING|TRUE|FALSE|NULL) WS*
+json_objs: json_obj ("," json_obj)*
+json_obj: "{" json_pair ("," json_pair)* "}"
+json_pair: ESCAPED_STRING ":" json_value
+json_value: (NUMBER|ESCAPED_STRING|TRUE|FALSE|NULL)
 
 //
 // Arguments
@@ -228,24 +226,18 @@ NOT: "NOT"i
 ISSUBSET: "ISSUBSET"i
 ISSUPERSET: "ISSUPERSET"i
 
-OP: OP_SIGN
-  | (NOT WS+)? OP_KEYWORD
+op: OP_SIGN
+  | NOT? op_keyword
 
-OP_SIGN: "="
-       | "=="
-       | "!="
-       | ">"
-       | "<"
-       | ">="
-       | ">="
+OP_SIGN: /([!=]?=|[<>]=?)/
 
-OP_KEYWORD: IN
+op_keyword: IN
           | LIKE
           | MATCHES
           | ISSUBSET
           | ISSUPERSET
 
-NULL_OP: IS (WS+ NOT)?
+null_op: IS (NOT)?
 
 //
 // Common language constructs
@@ -263,7 +255,7 @@ literal_list: "(" literal ("," literal)* ")"
 
 reference_or_simple_string: ECNAME ("." ATTRIBUTE)?
 
-string: ADVANCED_STRING
+?string: advanced_string
 
 number: NUMBER
 
@@ -295,7 +287,7 @@ SIMPLE_STRING: ECNAME
 
 // nearly Python string, but no [ubf]? as prefix options
 // check Lark example of Python parser for reference
-ADVANCED_STRING: /(r?)("(?!"").*?(?<!\\)(\\\\)*?"|'(?!'').*?(?<!\\)(\\\\)*?')/
+advanced_string: /(r?)("(?!"").*?(?<!\\)(\\\\)*?"|'(?!'').*?(?<!\\)(\\\\)*?')/
 
 %import common (LETTER, DIGIT, WS, INT, WORD, NUMBER, CNAME, _STRING_ESC_INNER)
 %import common.SH_COMMENT -> COMMENT
