@@ -353,3 +353,25 @@ def test_find_with_where_centered_pattern(proc_bundle_file):
 
         assert len(procs) == 1
         assert procs.records_count == 1
+
+
+def test_find_from_empty_input(proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+                conns = get network-traffic
+                        FROM file://{proc_bundle_file}
+                        WHERE network-traffic:src_ref.value = '100.0.0.1'
+
+                procs = FIND process CREATED conns
+                        WHERE name = 'vmware.exe'
+                """
+        s.execute(stmt)
+
+        conns = s.symtable["conns"]
+        procs = s.symtable["procs"]
+
+        assert len(conns) == 0
+        assert conns.records_count == 0
+
+        assert len(procs) == 0
+        assert procs.records_count == 0
