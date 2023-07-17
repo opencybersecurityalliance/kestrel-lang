@@ -79,7 +79,12 @@ def _skip_command_if_empty_input(func):
         var_names = get_all_input_var_names(stmt)
         if not var_names:
             return func(stmt, session)
-        elif any([session.symtable[v].entity_table for v in var_names]):
+        elif any(
+            [
+                session.symtable[v].length + session.symtable[v].records_count
+                for v in var_names
+            ]
+        ):
             return func(stmt, session)
         elif "output" in stmt:
             var_struct = new_var(session.store, None, [], stmt, session.symtable)
