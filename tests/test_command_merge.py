@@ -39,3 +39,18 @@ ip3 = ip1 + ip2
         values = [row["value"] for row in ip3]
         values.sort()
         assert values == ["10.0.1.1", "10.0.2.2", "10.0.3.3", "127.0.0.1", "127.0.1.15"]
+
+
+def test_merge_empty_vars():
+    with Session() as s:
+        stmt = """
+newips = NEW ipv4-addr ["127.0.0.1", "127.0.1.15"]
+ip1 = GET ipv4-addr FROM newips WHERE value = '10.0.0.1'
+ip2 = GET ipv4-addr FROM newips WHERE value = '10.0.0.2'
+ip3 = ip1 + ip2
+"""
+        s.execute(stmt)
+
+        ip3 = s.symtable["ip3"]
+        assert len(ip3) == 0
+        assert ip3.records_count == 0
