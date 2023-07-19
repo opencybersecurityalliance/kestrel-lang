@@ -372,7 +372,7 @@ class _KestrelT(Transformer):
 
     def json_value(self, args):
         v = _first(args)
-        if "ESCAPED_STRING" in args[0].type:
+        if args[0].type == self.token_prefix + "ESCAPED_STRING":
             v = unescape_quoted_string(v)
         elif args[0].type == self.token_prefix + "NUMBER":
             v = float(v) if "." in v else int(v)
@@ -447,9 +447,6 @@ class _KestrelT(Transformer):
 
     def op(self, args):
         return " ".join([arg.upper() for arg in args])
-
-    def op_sign(self, args):
-        return _first(args) if args else ""
 
     def op_keyword(self, args):
         return _first(args)

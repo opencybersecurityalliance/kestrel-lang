@@ -237,7 +237,7 @@ op_keyword: IN
           | ISSUBSET
           | ISSUPERSET
 
-null_op: IS (NOT)?
+null_op: IS NOT?
 
 //
 // Common language constructs
