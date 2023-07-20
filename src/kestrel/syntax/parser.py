@@ -195,10 +195,20 @@ class _KestrelT(Transformer):
         return packet
 
     def new(self, args):
+        if len(args) == 1:
+            # Try to get entity type from first entity
+            data = args[0]
+            if isinstance(data, list):
+                entity_type = data[0].get("type")
+            else:
+                entity_type = None
+        else:
+            entity_type = _first(args)
+            data = args[1]
         return {
             "command": "new",
-            "type": self._extract_entity_type(args),
-            "data": self._assert_and_extract_single("VAR_DATA", args),
+            "type": entity_type,
+            "data": data,
         }
 
     def expression(self, args):
@@ -236,13 +246,13 @@ class _KestrelT(Transformer):
     def comparison_std(self, args):
         etype, attr = _extract_entity_and_attribute(args[0].value)
         # remove more than one spaces; capitalize op
-        op = " ".join(_second(args).split()).upper()
+        op = args[1]
         value = args[2]
         return ECGPComparison(attr, op, value, etype)
 
     def comparison_null(self, args):
         etype, attr = _extract_entity_and_attribute(args[0].value)
-        op = _second(args)
+        op = args[1]
         if "NOT" in op:
             op = "!="
         else:
@@ -271,12 +281,9 @@ class _KestrelT(Transformer):
             v = _first(args)
         return v
 
-    def string(self, args):
+    def advanced_string(self, args):
         raw = _first(args)
-        if args[0].type == self.token_prefix + "SIMPLE_STRING":
-            value = raw
-        elif args[0].type == self.token_prefix + "ADVANCED_STRING":
-            value = unescape_quoted_string(raw)
+        value = unescape_quoted_string(raw)
         return value
 
     def number(self, args):
@@ -311,13 +318,13 @@ class _KestrelT(Transformer):
     def timespan_relative(self, args):
         num = int(args[0])
         unit = args[1]
-        if unit.type == self.token_prefix + "DAY":
+        if unit == "DAY":
             delta = timedelta(days=num)
-        elif unit.type == self.token_prefix + "HOUR":
+        elif unit == "HOUR":
             delta = timedelta(hours=num)
-        elif unit.type == self.token_prefix + "MINUTE":
+        elif unit == "MINUTE":
             delta = timedelta(minutes=num)
-        elif unit.type == self.token_prefix + "SECOND":
+        elif unit == "SECOND":
             delta = timedelta(seconds=num)
         stop = datetime.utcnow()
         start = stop - delta
@@ -328,8 +335,48 @@ class _KestrelT(Transformer):
         stop = to_datetime(args[1])
         return {"timerange": (start, stop)}
 
+    def day(self, _args):
+        return "DAY"
+
+    def hour(self, _args):
+        return "HOUR"
+
+    def minute(self, _args):
+        return "MINUTE"
+
+    def second(self, _args):
+        return "SECOND"
+
     def timestamp(self, args):
-        return self._assert_and_extract_single("ISOTIMESTAMP", args)
+        return args[0]
+
+    def var_data(self, args):
+        if isinstance(args[0], Token):
+            # Restore the brackets
+            v = "[" + _first(args) + "]"
+        else:
+            v = args[0]
+        return v
+
+    def json_objs(self, args):
+        return args
+
+    def json_obj(self, args):
+        return dict(args)
+
+    def json_pair(self, args):
+        v = _first(args)
+        if "ESCAPED_STRING" in args[0].type:
+            v = unescape_quoted_string(v)
+        return v, args[1]
+
+    def json_value(self, args):
+        v = _first(args)
+        if args[0].type == self.token_prefix + "ESCAPED_STRING":
+            v = unescape_quoted_string(v)
+        elif args[0].type == self.token_prefix + "NUMBER":
+            v = float(v) if "." in v else int(v)
+        return v
 
     def entity_type(self, args):
         return _first(args)
@@ -374,7 +421,7 @@ class _KestrelT(Transformer):
         attr = _first(args)
         num = int(_second(args))
         if len(args) >= 3:
-            unit = _third(args)
+            unit = args[2][0]  # Only pass 1st letter (d, h, m, or s)
         else:
             unit = None
         alias = f"{attr}_bin"
@@ -397,6 +444,15 @@ class _KestrelT(Transformer):
 
     def arg_kv_pair(self, args):
         return {_first(args): args[1]}
+
+    def op(self, args):
+        return " ".join([arg.upper() for arg in args])
+
+    def op_keyword(self, args):
+        return _first(args)
+
+    def null_op(self, args):
+        return " ".join([arg.upper() for arg in args])
 
     def _extract_vars(self, args):
         var_names = []
