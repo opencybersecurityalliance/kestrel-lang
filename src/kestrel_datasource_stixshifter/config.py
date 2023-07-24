@@ -16,6 +16,7 @@ STIXSHIFTER_DEBUG_ENV_VAR = "KESTREL_STIXSHIFTER_DEBUG"  # debug mode for stix-s
 ENV_VAR_PREFIX = "STIXSHIFTER_"
 RETRIEVAL_BATCH_SIZE = 2000
 SINGLE_BATCH_TIMEOUT = 60
+COOL_DOWN_AFTER_TRANSMISSION = 0
 FAST_TRANSLATE_CONNECTORS = []  # Suggested: ["qradar", "elastic_ecs"]
 
 
@@ -139,45 +140,38 @@ def get_datasource_from_profiles(profile_name, profiles):
         if "options" not in connection:
             connection["options"] = {}
 
-        retrieval_batch_size = RETRIEVAL_BATCH_SIZE
-        if "retrieval_batch_size" in connection["options"]:
-            # remove the non-stix-shifter field "retrieval_batch_size" to avoid stix-shifter error
-            try:
-                retrieval_batch_size = int(
-                    connection["options"].pop("retrieval_batch_size")
-                )
-            except:
-                raise InvalidDataSource(
-                    profile_name,
-                    "stixshifter",
-                    f"invalid {profile_name} connection section: options.retrieval_batch_size",
-                )
-            # rename this field for stix-shifter use; x2 the size to ensure retrieval
-            _logger.debug(
-                f"profile-loaded retrieval_batch_size: {retrieval_batch_size}"
-            )
+        retrieval_batch_size = _extract_integer_param_from_connection_config(
+            "retrieval_batch_size",
+            RETRIEVAL_BATCH_SIZE,
+            connection,
+            profile_name,
+        )
+        # rename this field for stix-shifter use; x2 the size to ensure retrieval
         connection["options"]["result_limit"] = retrieval_batch_size * 2
 
-        single_batch_timeout = SINGLE_BATCH_TIMEOUT
-        if "single_batch_timeout" in connection["options"]:
-            # remove the non-stix-shifter field "single_batch_timeout" to avoid stix-shifter error
-            try:
-                single_batch_timeout = int(
-                    connection["options"].pop("single_batch_timeout")
-                )
-            except:
-                raise InvalidDataSource(
-                    profile_name,
-                    "stixshifter",
-                    f"invalid {profile_name} connection section: options.single_batch_timeout",
-                )
-            # rename this field for stix-shifter use
-            _logger.debug(
-                f"profile-loaded single_batch_timeout: {single_batch_timeout}"
-            )
+        single_batch_timeout = _extract_integer_param_from_connection_config(
+            "single_batch_timeout",
+            SINGLE_BATCH_TIMEOUT,
+            connection,
+            profile_name,
+        )
+        # rename this field for stix-shifter use
         connection["options"]["timeout"] = single_batch_timeout
 
-    return connector_name, connection, configuration, retrieval_batch_size
+        cool_down_after_transmission = _extract_integer_param_from_connection_config(
+            "cool_down_after_transmission",
+            COOL_DOWN_AFTER_TRANSMISSION,
+            connection,
+            profile_name,
+        )
+
+    return (
+        connector_name,
+        connection,
+        configuration,
+        retrieval_batch_size,
+        cool_down_after_transmission,
+    )
 
 
 def load_profiles():
@@ -212,3 +206,21 @@ def load_options():
             2, max(1, multiprocessing.cpu_count() - 2)
         )
     return config["options"]
+
+
+def _extract_integer_param_from_connection_config(
+    param_name, default, connection, profile_name
+):
+    value = default
+    if param_name in connection["options"]:
+        # remove the non-stix-shifter field {param_name} to avoid stix-shifter error
+        try:
+            value = int(connection["options"].pop(param_name))
+        except:
+            raise InvalidDataSource(
+                profile_name,
+                "stixshifter",
+                f"invalid {profile_name} connection section: options.{param_name}",
+            )
+        _logger.debug(f"profile-loaded {param_name}: {value}")
+    return value

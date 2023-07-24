@@ -81,6 +81,7 @@ def query_datasource(uri, pattern, session_id, config, store, limit=None):
             connection_dict,
             configuration_dict,
             retrieval_batch_size,
+            cool_down_after_transmission,
         ) = map(
             copy.deepcopy, get_datasource_from_profiles(profile, config["profiles"])
         )
@@ -120,6 +121,7 @@ def query_datasource(uri, pattern, session_id, config, store, limit=None):
                 configuration_dict,
                 retrieval_batch_size,
                 config["options"]["translation_workers_count"],
+                cool_down_after_transmission,
                 dsl["queries"],
                 raw_records_queue,
                 profile_limit,
