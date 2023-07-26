@@ -50,6 +50,7 @@ profiles:
             options:
                 retrieval_batch_size: 10000
                 single_batch_timeout: 120
+                cool_down_after_transmission: 5
                 dialects:
                     - beats
         config:
@@ -78,13 +79,14 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
 
         ss_config = s.config["datasources"]["kestrel_datasource_stixshifter"]
         ss_profiles = ss_config["profiles"]
-        connector_name, connection, configuration, retrieval_batch_size = get_datasource_from_profiles("host101", ss_profiles)
+        connector_name, connection, configuration, retrieval_batch_size, cool_down_after_transmission = get_datasource_from_profiles("host101", ss_profiles)
         assert connector_name == "elastic_ecs"
         assert configuration["auth"]["id"] == "profileA"
         assert configuration["auth"]["api_key"] == "qwer"
         assert connection["options"]["timeout"] == 60
         assert connection["options"]["result_limit"] == 2000 * 2
         assert retrieval_batch_size == 2000
+        assert cool_down_after_transmission == 0
 
         with open(profile_file, "w") as pf:
             pf.write(profileB)
@@ -93,12 +95,13 @@ newvar = NEW [ {"type": "process", "name": "cmd.exe", "pid": "123"}
 
         # need to refresh the pointers since the dict is updated
         ss_profiles = ss_config["profiles"]
-        connector_name, connection, configuration, retrieval_batch_size = get_datasource_from_profiles("host101", ss_profiles)
+        connector_name, connection, configuration, retrieval_batch_size, cool_down_after_transmission = get_datasource_from_profiles("host101", ss_profiles)
         assert connector_name == "elastic_ecs"
         assert configuration["auth"]["id"] == "profileB"
         assert configuration["auth"]["api_key"] == "asdf"
         assert connection["options"]["timeout"] == 120
         assert connection["options"]["result_limit"] == 10000 * 2
         assert retrieval_batch_size == 10000
+        assert cool_down_after_transmission == 5
 
     del os.environ["KESTREL_STIXSHIFTER_CONFIG"]

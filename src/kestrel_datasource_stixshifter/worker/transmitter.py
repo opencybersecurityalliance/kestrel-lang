@@ -18,6 +18,7 @@ class TransmitterPool(Process):
         configuration_dict: dict,
         retrieval_batch_size: int,
         number_of_translators: int,
+        cool_down_after_transmission: int,
         queries: list,
         output_queue: Queue,
         limit: Optional[int],
@@ -29,6 +30,7 @@ class TransmitterPool(Process):
         self.configuration_dict = configuration_dict
         self.retrieval_batch_size = retrieval_batch_size
         self.number_of_translators = number_of_translators
+        self.cool_down_after_transmission = cool_down_after_transmission
         self.queries = queries
         self.queue = output_queue
         self.limit = limit
@@ -40,6 +42,7 @@ class TransmitterPool(Process):
                 self.connection_dict,
                 self.configuration_dict,
                 self.retrieval_batch_size,
+                self.cool_down_after_transmission,
                 query,
                 self.queue,
                 self.limit,
@@ -61,6 +64,7 @@ class Transmitter(Process):
         connection_dict: dict,
         configuration_dict: dict,
         retrieval_batch_size: int,
+        cool_down_after_transmission: int,
         query: str,
         output_queue: Queue,
         limit: Optional[int],
@@ -71,6 +75,7 @@ class Transmitter(Process):
         self.connection_dict = connection_dict
         self.configuration_dict = configuration_dict
         self.retrieval_batch_size = retrieval_batch_size
+        self.cool_down_after_transmission = cool_down_after_transmission
         self.query = query
         self.queue = output_queue
         self.limit = limit
@@ -116,8 +121,10 @@ class Transmitter(Process):
             and status["progress"] < 100
             and status["status"] in ("KINIT", "RUNNING")
         ):
-            if status["status"] == "RUNNING":
-                time.sleep(1)
+            if status["status"] == "KINIT":
+                time.sleep(self.cool_down_after_transmission)
+            elif status["status"] == "RUNNING":
+                time.sleep(max(1, self.cool_down_after_transmission))
             status = self.transmission.status(self.search_id)
             if not status["success"]:
                 err_msg = (
@@ -148,6 +155,7 @@ class Transmitter(Process):
 
         while has_remaining_results:
             packet = None
+            time.sleep(self.cool_down_after_transmission)
             result_batch = self.transmission.results(
                 self.search_id,
                 result_retrieval_offset,
