@@ -172,7 +172,6 @@ def test_fast_translate():
         assert translator.is_alive() == False
 
 
-@pytest.mark.skip(reason="kestrel v1.7.1 released with issue #370 unfixed")
 def test_stixshifter_fast_translate_with_parquet_writing_to_disk(tmpdir):
     query_id = "8df266aa-2901-4a94-ace9-a4403e310fa1"
     check_module_availability(CONNECTOR_NAME)
