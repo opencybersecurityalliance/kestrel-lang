@@ -283,8 +283,6 @@ ESCAPED_STRING: "\"" _STRING_ESC_INNER "\""
               | "'"  _STRING_ESC_INNER "'"
 ESCAPED_STRING_WS: WS* ESCAPED_STRING WS*
 
-SIMPLE_STRING: ECNAME
-
 // nearly Python string, but no [ubf]? as prefix options
 // check Lark example of Python parser for reference
 advanced_string: /(r?)("(?!"").*?(?<!\\)(\\\\)*?"|'(?!'').*?(?<!\\)(\\\\)*?')/
