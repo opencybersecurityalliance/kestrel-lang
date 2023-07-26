@@ -11,7 +11,7 @@ from firepit.query import (
 )
 from collections import OrderedDict
 from kestrel.codegen.relations import get_entity_id_attribute
-from kestrel.exceptions import KestrelInternalError
+from kestrel.exceptions import KestrelInternalError, MissingEntityAttribute
 
 
 def gen_variable_summary(var_name, var_struct):
@@ -92,7 +92,13 @@ def get_variable_entity_count(variable):
     entity_count = 0
     if variable.entity_table:
         entity_id_attr = get_entity_id_attribute(variable)
-        if entity_id_attr not in variable.store.columns(variable.entity_table):
-            return 0
-        entity_count = variable.store.count(variable.entity_table)
+        try:
+            columns = variable.store.columns(variable.entity_table)
+        except InvalidAttr as e:
+            # TODO: a better solution needed for tests/test_timestamped.py::test_timestamped_grouped_assign
+            table_attr = str(e).split()[-1]
+            table_name, _, attr = table_attr.rpartition(".")
+            raise MissingEntityAttribute(table_name, attr) from e
+        if entity_id_attr in columns:
+            entity_count = variable.store.count(variable.entity_table)
     return entity_count

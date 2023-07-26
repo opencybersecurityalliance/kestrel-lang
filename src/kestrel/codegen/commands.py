@@ -119,18 +119,8 @@ def assign(stmt, session):
         qry = _transform_query(session.store, entity_table, transform)
     else:
         qry = Query(entity_table)
-
     qry = _build_query(session.store, entity_table, qry, stmt, [])
-
-    try:
-        session.store.assign_query(stmt["output"], qry)
-        output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
-    except InvalidAttr as e:
-        var_attr = str(e).split()[-1]
-        var_name, _, attr = var_attr.rpartition(".")
-        raise MissingEntityAttribute(var_name, attr) from e
-
-    return output, None
+    session.store.assign_query(stmt["output"], qry)
 
 
 @_debug_logger
@@ -147,9 +137,6 @@ def merge(stmt, session):
     ]
     entity_tables = [t for t in entity_tables if t is not None]
     session.store.merge(stmt["output"], entity_tables)
-
-    output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
-    return output, None
 
 
 @_debug_logger
