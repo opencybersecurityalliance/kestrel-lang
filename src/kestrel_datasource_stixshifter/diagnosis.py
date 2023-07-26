@@ -2,16 +2,13 @@ import json
 from multiprocessing import Queue
 from kestrel.utils import mask_value_in_nested_dict
 from kestrel_datasource_stixshifter.config import (
+    set_stixshifter_logging_level,
     get_datasource_from_profiles,
     load_options,
     load_profiles,
-    set_stixshifter_logging_level,
 )
 from kestrel_datasource_stixshifter.worker import STOP_SIGN
-from kestrel_datasource_stixshifter.query import (
-    gen_observation_metadata,
-    translate_query,
-)
+from kestrel_datasource_stixshifter.query import translate_query
 from kestrel_datasource_stixshifter.worker.transmitter import Transmitter
 from stix_shifter.stix_transmission import stix_transmission
 
@@ -31,6 +28,7 @@ class Diagnosis:
         self.if_fast_translation = (
             self.connector_name in self.kestrel_options["fast_translate"]
         )
+        set_stixshifter_logging_level()
 
     def diagnose_config(self):
         print()
