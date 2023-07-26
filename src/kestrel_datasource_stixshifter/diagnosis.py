@@ -130,9 +130,9 @@ class Diagnosis:
                 print("#### data retrieval results:")
                 for packet in iter(result_queue.get, STOP_SIGN):
                     if packet.success:
-                        cnt = len(packet.data[0]["objects"])
+                        cnt = len(packet.data)
                         result_counts.append(cnt)
-                        print(f"one batch retrieved: {cnt} observations")
+                        print(f"one batch retrieved: {cnt} entries")
                     else:
                         print(packet.log)
 

@@ -15,7 +15,7 @@ def test_diagnosis(stixshifter_profile_lab101):
     diag.diagnose_ping()
     assert pattern == diag.diagnose_translate_query(pattern)["queries"][0]
     res = diag.diagnose_run_query_and_retrieval_result([pattern], 1)
-    assert len(res) == 1 and res[0] == 15
+    assert len(res) == 1 and res[0] == 533
 
 
 def test_cli(stixshifter_profile_lab101):
@@ -68,12 +68,12 @@ configuration object [ref: https://github.com/opencybersecurityalliance/stix-shi
 ## Diagnose: stix-shifter query execution: <=1 batch(s)
 
 #### data retrieval results:
-one batch retrieved: 15 observations
+one batch retrieved: 533 entries
 
 ## Diagnose: stix-shifter query execution: <=5 batch(s)
 
 #### data retrieval results:
-one batch retrieved: 15 observations
+one batch retrieved: 533 entries
 """
 
     result = subprocess.run(args = ["stix-shifter-diag", "lab101"], 
