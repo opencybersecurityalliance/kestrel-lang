@@ -1,4 +1,5 @@
 import json
+from copy import deepcopy
 from multiprocessing import Queue
 from kestrel.utils import mask_value_in_nested_dict
 from kestrel_datasource_stixshifter.config import (
@@ -36,7 +37,9 @@ class Diagnosis:
         print()
         print("## Diagnose: config verification")
 
-        configuration_dict_masked = mask_value_in_nested_dict(self.configuration_dict)
+        configuration_dict_masked = mask_value_in_nested_dict(
+            deepcopy(self.configuration_dict)
+        )
 
         print()
         print("#### Kestrel specific config")
