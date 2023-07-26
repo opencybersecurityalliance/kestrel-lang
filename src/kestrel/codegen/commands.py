@@ -73,15 +73,24 @@ def _default_output(func):
     return wrapper
 
 
-def _guard_empty_input(func):
+def _skip_command_if_empty_input(func):
     @functools.wraps(func)
     def wrapper(stmt, session):
-        for varname in get_all_input_var_names(stmt):
-            v = session.symtable[varname]
-            if v.length + v.records_count == 0:
-                raise EmptyInputVariable(varname)
-        else:
+        var_names = get_all_input_var_names(stmt)
+        if not var_names:
             return func(stmt, session)
+        elif any(
+            [
+                session.symtable[v].length + session.symtable[v].records_count
+                for v in var_names
+            ]
+        ):
+            return func(stmt, session)
+        elif "output" in stmt:
+            var_struct = new_var(session.store, None, [], stmt, session.symtable)
+            return var_struct, None
+        else:
+            return None, None
 
     return wrapper
 
@@ -102,6 +111,7 @@ def _debug_logger(func):
 
 @_debug_logger
 @_default_output
+@_skip_command_if_empty_input
 def assign(stmt, session):
     entity_table = session.symtable[stmt["input"]].entity_table
     transform = stmt.get("transformer")
@@ -109,22 +119,13 @@ def assign(stmt, session):
         qry = _transform_query(session.store, entity_table, transform)
     else:
         qry = Query(entity_table)
-
     qry = _build_query(session.store, entity_table, qry, stmt, [])
-
-    try:
-        session.store.assign_query(stmt["output"], qry)
-        output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
-    except InvalidAttr as e:
-        var_attr = str(e).split()[-1]
-        var_name, _, attr = var_attr.rpartition(".")
-        raise MissingEntityAttribute(var_name, attr) from e
-
-    return output, None
+    session.store.assign_query(stmt["output"], qry)
 
 
 @_debug_logger
 @_default_output
+@_skip_command_if_empty_input
 def merge(stmt, session):
     entity_types = list(
         set([session.symtable[var_name].type for var_name in stmt["inputs"]])
@@ -134,9 +135,8 @@ def merge(stmt, session):
     entity_tables = [
         session.symtable[var_name].entity_table for var_name in stmt["inputs"]
     ]
+    entity_tables = [t for t in entity_tables if t is not None]
     session.store.merge(stmt["output"], entity_tables)
-    output = new_var(session.store, stmt["output"], [], stmt, session.symtable)
-    return output, None
 
 
 @_debug_logger
@@ -154,7 +154,6 @@ def load(stmt, session):
 
 
 @_debug_logger
-@_guard_empty_input
 def save(stmt, session):
     dump_data_to_file(
         session.store, session.symtable[stmt["input"]].entity_table, stmt["path"]
@@ -163,6 +162,7 @@ def save(stmt, session):
 
 
 @_debug_logger
+@_skip_command_if_empty_input
 def info(stmt, session):
     header = session.store.columns(session.symtable[stmt["input"]].entity_table)
     direct_attrs, associ_attrs, custom_attrs, references = [], [], [], []
@@ -202,6 +202,7 @@ def info(stmt, session):
 
 
 @_debug_logger
+@_skip_command_if_empty_input
 def disp(stmt, session):
     entity_table = session.symtable[stmt["input"]].entity_table
     transform = stmt.get("transformer")
@@ -224,6 +225,7 @@ def disp(stmt, session):
 
 @_debug_logger
 @_default_output
+@_skip_command_if_empty_input
 def get(stmt, session):
     pattern = stmt["stixpattern"]
     local_var_table = stmt["output"] + "_local"
@@ -296,7 +298,7 @@ def get(stmt, session):
 
 @_debug_logger
 @_default_output
-@_guard_empty_input
+@_skip_command_if_empty_input
 def find(stmt, session):
     # shortcuts
     return_type = stmt["type"]
@@ -344,7 +346,7 @@ def find(stmt, session):
 
 @_debug_logger
 @_default_output
-@_guard_empty_input
+@_skip_command_if_empty_input
 def join(stmt, session):
     session.store.join(
         stmt["output"],
@@ -357,7 +359,7 @@ def join(stmt, session):
 
 @_debug_logger
 @_default_output
-@_guard_empty_input
+@_skip_command_if_empty_input
 def group(stmt, session):
     if "aggregations" in stmt:
         aggs = [(i["func"], i["attr"], i["alias"]) for i in stmt["aggregations"]]
@@ -373,7 +375,7 @@ def group(stmt, session):
 
 @_debug_logger
 @_default_output
-@_guard_empty_input
+@_skip_command_if_empty_input
 def sort(stmt, session):
     session.store.assign(
         stmt["output"],
@@ -386,7 +388,7 @@ def sort(stmt, session):
 
 @_debug_logger
 @_default_output
-@_guard_empty_input
+@_skip_command_if_empty_input
 def apply(stmt, session):
     arg_vars = [session.symtable[v_name] for v_name in stmt["inputs"]]
     display = session.analytics_manager.execute(

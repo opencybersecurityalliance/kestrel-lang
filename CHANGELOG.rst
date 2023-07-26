@@ -9,7 +9,28 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
-- Issue #370 (the last unit test in test_stixshifter_translator.py disabled)
+1.7.2 (2023-07-26)
+==================
+
+Added
+-----
+
+- Minimal version requirements for all dependencies
+- param ``cool_down_after_transmission`` in stix-shifter interface
+- Unit tests on empty input variable for commands
+- ``lark-js`` support for ``kestrel.lark`` #371
+
+Changed
+-------
+
+- Keep stix-shifter to v5 (not v6) to avoid a dependency specification issue
+
+Fixed
+-----
+
+- Fast translation bug on ``group`` keyword in stix-shifter mapping #370
+- ``typeguard`` old version cause exception
+- Exception with empty variable #254
 
 1.7.1 (2023-07-13)
 ==================
@@ -35,10 +56,10 @@ Fixed
 
 - stix-shifter interface translator error msg passing bugs
 - stix-shifter interface transmitter error msg passing bug
-- infinite loop in stix-shifter interface transmitter
+- Infinite loop in stix-shifter interface transmitter
 - stix-shifter connector pip uninstall hanging issue
-- prefetch logic error with empty return
-- dataframe index error in CSV export
+- Prefetch logic error with empty return
+- Dataframe index error in CSV export
 
 1.7.0 (2023-06-14)
 ==================

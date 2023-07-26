@@ -78,3 +78,21 @@ conns = GET network-traffic
         data = out[0].to_dict()["data"]
         df = pd.DataFrame.from_records(data)
         assert df.columns.tolist() == ["first_observed", "src_ref.value", "src_port"]
+
+
+def test_disp_empty_variable():
+    with Session() as s:
+        stmt = """
+newvar = NEW [ {"type": "network-traffic", "src_ref.value": "1.2.3.4", "dst_ref.value": "4.3.2.1"}
+             , {"type": "network-traffic", "src_ref.value": "2.2.3.4", "dst_ref.value": "4.3.2.1"}
+             , {"type": "network-traffic", "src_ref.value": "1.2.3.4", "dst_ref.value": "5.3.2.1"}
+             ]
+
+v2 = GET network-traffic FROM newvar
+     WHERE dst_ref.value = '1.2.3.4'
+
+DISP v2
+"""
+        s.execute(stmt)
+        out = s.execute("DISP v2")
+        assert out == []

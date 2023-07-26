@@ -89,3 +89,13 @@ def test_assign_with_reference_and_in(proc_bundle_file):
         assert len(q) == 106 + 149 + 1 + 1
         print(q[0])
         assert 'binary_ref' in q[0]
+
+
+def test_assign_from_empty_var(proc_bundle_file):
+    with Session() as s:
+        s.execute(f"p = GET process FROM file://{proc_bundle_file} WHERE [process:pid < 0]")
+        s.execute(REF_PROCS)
+        s.execute("q = p WHERE pid = ref.pid")
+        q = s.symtable["q"]
+        assert len(q) == 0
+        assert q.records_count == 0

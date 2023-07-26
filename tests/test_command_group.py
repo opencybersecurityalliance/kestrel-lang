@@ -143,3 +143,24 @@ def test_group_nt_binned_port(fake_bundle_file):
         assert hist[1]["count"] == 69
         assert hist[2]["src_port_bin"] == 60000
         assert hist[2]["count"] == 27
+
+
+def test_group_empty_variable(fake_bundle_file):
+    with Session(debug_mode=True) as session:
+        session.execute(
+            f"""conns = get network-traffic
+            from file://{fake_bundle_file}
+            where [network-traffic:dst_port < 0]
+            src_grps = group conns by src_ref.value""",
+        )
+
+        conns = session.symtable["conns"]
+        srcgrps = session.symtable["src_grps"]
+
+        assert len(conns) == 0
+        assert conns.records_count == 0
+
+        assert len(srcgrps) == 0
+        assert srcgrps.records_count == 0
+
+

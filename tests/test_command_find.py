@@ -19,7 +19,7 @@ def proc_bundle_file():
     return os.path.join(cwd, "doctored-1k.json")
 
 
-def test_return_table_not_exist(fake_bundle_file):
+def test_return_table_not_exist(set_empty_kestrel_config, fake_bundle_file):
     with Session() as s:
         stmt = f"""
                 conns = get network-traffic
@@ -59,7 +59,7 @@ def test_return_table_not_exist(fake_bundle_file):
     assert output_dict == correct_dict
 
 
-def test_find_srcs(fake_bundle_file):
+def test_find_srcs(set_empty_kestrel_config, fake_bundle_file):
     with Session() as s:
         stmt = f"""
                 conns = get network-traffic
@@ -72,7 +72,7 @@ def test_find_srcs(fake_bundle_file):
         assert len(srcs) == 24
 
 
-def test_find_srcs_limit(fake_bundle_file):
+def test_find_srcs_limit(set_empty_kestrel_config, fake_bundle_file):
     with Session() as s:
         stmt = f"""
                 conns = get network-traffic
@@ -85,7 +85,7 @@ def test_find_srcs_limit(fake_bundle_file):
         assert len(srcs) == 1
 
 
-def test_find_file_linked_to_process(proc_bundle_file):
+def test_find_file_linked_to_process(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 procs = get process
@@ -102,7 +102,7 @@ def test_find_file_linked_to_process(proc_bundle_file):
         assert len(files) == 4
 
 
-def test_find_file_linked_to_process_limit_1(proc_bundle_file):
+def test_find_file_linked_to_process_limit_1(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 procs = get process
@@ -119,7 +119,7 @@ def test_find_file_linked_to_process_limit_1(proc_bundle_file):
         assert len(files) == 1
 
 
-def test_find_file_linked_to_process_limit_2(proc_bundle_file):
+def test_find_file_linked_to_process_limit_2(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 procs = get process
@@ -136,7 +136,7 @@ def test_find_file_linked_to_process_limit_2(proc_bundle_file):
         assert len(files) == 4
 
 
-def test_find_file_linked_to_process_2():
+def test_find_file_linked_to_process_2(set_empty_kestrel_config):
     stixshifter_data_url = "https://raw.githubusercontent.com/opencybersecurityalliance/stix-shifter/develop/data/cybox"
     bundle = f"{stixshifter_data_url}/carbon_black/cb_observed_156.json"
     with Session() as s:
@@ -152,7 +152,7 @@ def test_find_file_linked_to_process_2():
         assert len(files) == 3
 
 
-def test_find_file_linked_to_process_2_limit():
+def test_find_file_linked_to_process_2_limit(set_empty_kestrel_config):
     stixshifter_data_url = "https://raw.githubusercontent.com/opencybersecurityalliance/stix-shifter/develop/data/cybox"
     bundle = f"{stixshifter_data_url}/carbon_black/cb_observed_156.json"
     with Session() as s:
@@ -168,7 +168,7 @@ def test_find_file_linked_to_process_2_limit():
         assert len(files) == 2
 
 
-def test_find_file_loaded_by_process(proc_bundle_file):
+def test_find_file_loaded_by_process(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 procs = get process
@@ -185,7 +185,7 @@ def test_find_file_loaded_by_process(proc_bundle_file):
         assert len(files) == 1
 
 
-def test_find_process_created_process(proc_bundle_file):
+def test_find_process_created_process(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 procs = get process
@@ -199,7 +199,7 @@ def test_find_process_created_process(proc_bundle_file):
         assert len(data)
 
 
-def test_find_refs_resolution_not_reversed_src_ref(proc_bundle_file):
+def test_find_refs_resolution_not_reversed_src_ref(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 nt = get network-traffic
@@ -213,7 +213,7 @@ def test_find_refs_resolution_not_reversed_src_ref(proc_bundle_file):
         assert len(p) >= 948  # FIXME: duplicate process objects
 
 
-def test_find_refs_resolution_not_reversed_src_ref_limit(proc_bundle_file):
+def test_find_refs_resolution_not_reversed_src_ref_limit(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 nt = get network-traffic
@@ -227,7 +227,7 @@ def test_find_refs_resolution_not_reversed_src_ref_limit(proc_bundle_file):
         assert len(p) == 10
  
 
-def test_find_refs_resolution_reversed_src_ref(proc_bundle_file):
+def test_find_refs_resolution_reversed_src_ref(set_empty_kestrel_config, proc_bundle_file):
     with Session(debug_mode=True) as s:
         stmt = f"""
                 procs = get process
@@ -247,7 +247,7 @@ def test_find_refs_resolution_reversed_src_ref(proc_bundle_file):
         print(json.dumps(data, indent=4))
 
 
-def test_find_refs_resolution_reversed_src_ref_limit(proc_bundle_file):
+def test_find_refs_resolution_reversed_src_ref_limit(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 procs = get process
@@ -267,7 +267,7 @@ def test_find_refs_resolution_reversed_src_ref_limit(proc_bundle_file):
         print(json.dumps(data, indent=4))
 
 
-def test_find_without_where_ext_pattern(proc_bundle_file):
+def test_find_without_where_ext_pattern(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 conns = get network-traffic
@@ -312,7 +312,7 @@ def test_find_with_where_ext_pattern(set_no_prefetch_kestrel_config, proc_bundle
         assert procs.records_count == 203
 
 
-def test_find_with_limit(proc_bundle_file):
+def test_find_with_limit(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 conns = get network-traffic
@@ -333,7 +333,7 @@ def test_find_with_limit(proc_bundle_file):
         assert procs.records_count == 100
 
 
-def test_find_with_where_centered_pattern(proc_bundle_file):
+def test_find_with_where_centered_pattern(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 conns = get network-traffic
@@ -353,3 +353,25 @@ def test_find_with_where_centered_pattern(proc_bundle_file):
 
         assert len(procs) == 1
         assert procs.records_count == 1
+
+
+def test_find_from_empty_input(set_empty_kestrel_config, proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+                conns = get network-traffic
+                        FROM file://{proc_bundle_file}
+                        WHERE network-traffic:src_ref.value = '100.0.0.1'
+
+                procs = FIND process CREATED conns
+                        WHERE name = 'vmware.exe'
+                """
+        s.execute(stmt)
+
+        conns = s.symtable["conns"]
+        procs = s.symtable["procs"]
+
+        assert len(conns) == 0
+        assert conns.records_count == 0
+
+        assert len(procs) == 0
+        assert procs.records_count == 0
