@@ -142,3 +142,5 @@ class Diagnosis:
                 break
             else:
                 print(f"no result matched for pattern: {pattern}, go next pattern")
+
+        return result_counts
