@@ -198,7 +198,7 @@ class InvalidDataSource(KestrelException):
 class DataSourceError(KestrelException):
     def __init__(self, error, suggestion=""):
         if not suggestion:
-            suggestion = "please check data source config or test the query manually"
+            suggestion = "please check data source config or diagnose with stix-shifter-diag command"
         super().__init__(
             error,
             suggestion,

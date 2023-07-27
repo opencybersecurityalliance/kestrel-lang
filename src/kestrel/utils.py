@@ -16,6 +16,16 @@ def lowered_str_list(xs):
     return [x.lower() for x in xs if isinstance(x, str)]
 
 
+def mask_value_in_nested_dict(d):
+    if d:
+        for k, v in d.items():
+            if isinstance(v, collections.abc.Mapping):
+                d[k] = mask_value_in_nested_dict(v)
+            elif isinstance(v, str):
+                d[k] = "********"
+    return d
+
+
 def update_nested_dict(dict_old, dict_new):
     if dict_new:
         for k, v in dict_new.items():

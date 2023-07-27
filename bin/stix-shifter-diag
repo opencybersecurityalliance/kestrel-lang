@@ -1,0 +1,28 @@
+#!/usr/bin/env python3
+
+import argparse
+from kestrel_datasource_stixshifter.diagnosis import Diagnosis
+
+def gen_patterns():
+    time_range = "START t'2000-01-01T00:00:00.000Z' STOP t'3000-01-01T00:00:00.000Z'"
+    patterns = [
+        "[ipv4-addr:value LIKE '%']",
+        "[process:pid > 0]",
+        "[email-addr:value LIKE '%']",
+    ]
+    return [" ".join([p, time_range]) for p in patterns]
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Kestrel stix-shifter data source interface diagnosis")
+    parser.add_argument("datasource", help="data source name specified in stixshifter.yaml")
+    args = parser.parse_args()
+
+    patterns = gen_patterns()
+
+    diag = Diagnosis(args.datasource)
+
+    diag.diagnose_config()
+    diag.diagnose_ping()
+    diag.diagnose_translate_query(patterns[0])
+    diag.diagnose_run_query_and_retrieval_result(patterns, 1)
+    diag.diagnose_run_query_and_retrieval_result(patterns, 5)
