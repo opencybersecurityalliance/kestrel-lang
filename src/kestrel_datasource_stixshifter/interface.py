@@ -98,11 +98,9 @@ After added data source profiles into ``stixshifter.yaml``, you can test the dat
 
     $ stix-shifter-diag data_source_name
 
-    #. ``data_source_name`` is any profile named in the ``stixshifter.yaml`` config file, usually used in ``FROM stixshifter://data_source_name`` in the ``GET`` command.
+where ``data_source_name`` is any profile named in the ``stixshifter.yaml`` config file, usually used in ``FROM stixshifter://data_source_name`` in the ``GET`` command.
 
-    #. The diagnosis utility will check config, test query translation, try connect to the data source to execute a small and a large query, and retrieve data back.
-
-    #. Details of all steps will be printed for diagnosis purpose.
+The diagnosis utility will check config, test query translation, try connect to the data source to execute a small and a large query, and retrieve data back. Details of all steps will be printed for diagnosis purpose.
 
 If you launch Kestrel in debug mode, STIX-shifter debug mode is still not
 enabled by default. To record debug level logs of STIX-shifter, create
