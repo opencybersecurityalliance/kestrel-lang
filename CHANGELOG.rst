@@ -9,6 +9,18 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.7.3 (2023-07-26)
+==================
+
+Added
+-----
+
+- stix-shifter data source interface diagnosis module
+- ``stix-shifter-diag``: stix-shifter data source interface diagnosis utility
+- Docs on ``stix-shifter-diag``
+- Error message update to point to ``stix-shifter-diag``
+- Unit tests of the diagnosis module and CLI utility
+
 1.7.2 (2023-07-26)
 ==================
 
