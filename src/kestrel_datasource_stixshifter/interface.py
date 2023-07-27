@@ -92,6 +92,12 @@ will load profiles from 3 places (the later will override the former):
 
 #. any in-session edit through the ``CONFIG`` command.
 
+Once you added data source profiles into ``stixshifter.yaml``, you can test the data source with command:
+
+.. code-block:: console
+
+    $ stix-shifter-diag data_source_name
+
 If you launch Kestrel in debug mode, STIX-shifter debug mode is still not
 enabled by default. To record debug level logs of STIX-shifter, create
 environment variable ``KESTREL_STIXSHIFTER_DEBUG`` with any value.
