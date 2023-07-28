@@ -147,8 +147,8 @@ grp_spec: grp_expr ("," grp_expr)*
 grp_expr: ATTRIBUTE
         | bin_func
 
-bin_func: "BIN"i "(" ATTRIBUTE "," INT timeunit? ")"
 // No other scalar funcs are supported yet
+bin_func: "BIN"i "(" ATTRIBUTE "," INT timeunit? ")"
 
 agg_list: agg ("," agg)*
 
