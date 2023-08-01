@@ -15,6 +15,7 @@ on:
       - develop_*
     paths:
       - 'src/**'
+      - 'bin/**'
       - 'tests/**'
     types:
       - opened
