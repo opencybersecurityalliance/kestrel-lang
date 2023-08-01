@@ -6,9 +6,9 @@ from kestrel_datasource_stixshifter.diagnosis import Diagnosis
 def gen_patterns():
     time_range = "START t'2000-01-01T00:00:00.000Z' STOP t'3000-01-01T00:00:00.000Z'"
     patterns = [
-        "[ipv4-addr:value LIKE '%']",
+        "[ipv4-addr:value != '255.255.255.255']",
         "[process:pid > 0]",
-        "[email-addr:value LIKE '%']",
+        "[email-addr:value != 'null@xyz.com']",
     ]
     return [" ".join([p, time_range]) for p in patterns]
 
