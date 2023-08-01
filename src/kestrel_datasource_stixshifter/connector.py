@@ -26,7 +26,9 @@ def verify_package_origin(connector_name, stixshifter_version, requests_verify=T
     package_name = get_package_name(connector_name)
 
     try:
-        pypi_response = requests.get(f"https://pypi.org/project/{package_name}", verify = requests_verify)
+        pypi_response = requests.get(
+            f"https://pypi.org/project/{package_name}", verify=requests_verify
+        )
         pypi_etree = html.fromstring(pypi_response.content)
     except:
         raise DataSourceError(

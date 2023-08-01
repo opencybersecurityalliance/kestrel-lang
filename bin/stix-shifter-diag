@@ -16,10 +16,16 @@ def gen_patterns():
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Kestrel stix-shifter data source interface diagnosis")
-    parser.add_argument("datasource", help="data source name specified in stixshifter.yaml")
+    parser = argparse.ArgumentParser(
+        description="Kestrel stix-shifter data source interface diagnosis"
+    )
     parser.add_argument(
-        "--ignore-cert", help="ignore certificate (PKI) verification in connector verification and install", action="store_false"
+        "datasource", help="data source name specified in stixshifter.yaml"
+    )
+    parser.add_argument(
+        "--ignore-cert",
+        help="ignore certificate (PKI) verification in connector verification and install",
+        action="store_false",
     )
     args = parser.parse_args()
 
