@@ -7,7 +7,7 @@ from .utils import stixshifter_profile_lab101
 
 def test_diagnosis(stixshifter_profile_lab101):
     pattern = " ".join([
-        "[ipv4-addr:value LIKE '%']",
+        "[ipv4-addr:value != '255.255.255.255']",
         "START t'2000-01-01T00:00:00.000Z' STOP t'3000-01-01T00:00:00.000Z'",
     ])
     diag = Diagnosis("lab101")
@@ -56,12 +56,12 @@ configuration object [ref: https://github.com/opencybersecurityalliance/stix-shi
 ## Diagnose: stix-shifter query translation
 
 #### Input pattern
-[ipv4-addr:value LIKE '%'] START t'2000-01-01T00:00:00.000Z' STOP t'3000-01-01T00:00:00.000Z'
+[ipv4-addr:value != '255.255.255.255'] START t'2000-01-01T00:00:00.000Z' STOP t'3000-01-01T00:00:00.000Z'
 
 #### Output data source native query
 {
     "queries": [
-        "[ipv4-addr:value LIKE '%'] START t'2000-01-01T00:00:00.000Z' STOP t'3000-01-01T00:00:00.000Z'"
+        "[ipv4-addr:value != '255.255.255.255'] START t'2000-01-01T00:00:00.000Z' STOP t'3000-01-01T00:00:00.000Z'"
     ]
 }
 
