@@ -205,8 +205,8 @@ def test_get_single_stixshifter_stix_bundle_limit(set_no_prefetch_kestrel_config
                var = GET process
                      FROM HOST2
                      WHERE [ipv4-addr:value = '127.0.0.1']
-                     LIMIT 4
                      START 2019-01-01T00:00:00Z STOP 2023-01-01T00:00:00Z
+                     LIMIT 4
                """
 
         s.execute(stmt)
@@ -264,8 +264,8 @@ def test_get_multiple_stixshifter_stix_bundles_limit(set_no_prefetch_kestrel_con
                var = GET process
                      FROM HOST1,HOST2
                      WHERE ipv4-addr:value = '127.0.0.1'
-                     LIMIT 10
                      START 2019-01-01T00:00:00Z STOP 2023-01-01T00:00:00Z
+                     LIMIT 10
                """
 
         s.execute(stmt)
@@ -303,8 +303,8 @@ def test_get_multiple_stixshifter_stix_bundles_limit_1(set_no_prefetch_kestrel_c
                var = GET process
                      FROM HOST1,HOST2
                      WHERE ipv4-addr:value = '127.0.0.1'
-                     LIMIT 15
                      START 2019-01-01T00:00:00Z STOP 2023-01-01T00:00:00Z
+                     LIMIT 15
                """
 
         s.execute(stmt)
@@ -342,8 +342,8 @@ def test_get_multiple_stixshifter_stix_bundles_limit_2(set_no_prefetch_kestrel_c
                var = GET process
                      FROM HOST1,HOST2
                      WHERE ipv4-addr:value = '127.0.0.1'
-                     LIMIT 50
                      START 2019-01-01T00:00:00Z STOP 2023-01-01T00:00:00Z
+                     LIMIT 50
                """
 
         s.execute(stmt)
