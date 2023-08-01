@@ -1,18 +1,25 @@
 #!/usr/bin/env python3
 
 import argparse
+import datetime
 from kestrel_datasource_stixshifter.diagnosis import Diagnosis
 from kestrel_datasource_stixshifter.connector import check_module_availability
+from firepit.timestamp import timefmt
 
 
-def gen_patterns():
-    time_range = "START t'2000-01-01T00:00:00.000Z' STOP t'3000-01-01T00:00:00.000Z'"
+def gen_patterns(use_now_as_stop_time: bool):
+    start_time = "START t'2000-01-01T00:00:00.000Z'"
+    stop_time = (
+        f"STOP t'{timefmt(datetime.datetime.utcnow())}'"
+        if use_now_as_stop_time
+        else "STOP t'3000-01-01T00:00:00.000Z'"
+    )
     patterns = [
         "[ipv4-addr:value != '255.255.255.255']",
         "[process:pid > 0]",
         "[email-addr:value != 'null@xyz.com']",
     ]
-    return [" ".join([p, time_range]) for p in patterns]
+    return [" ".join([p, start_time, stop_time]) for p in patterns]
 
 
 if __name__ == "__main__":
@@ -24,17 +31,32 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--ignore-cert",
-        help="ignore certificate (PKI) verification in connector verification and install",
+        help="ignore certificate (PKI) verification in connector verification",
         action="store_false",
     )
+    parser.add_argument(
+        "-f",
+        "--pattern-file",
+        help="write your STIX pattern in a file and put the file path here to use for diagnosis",
+    )
+    parser.add_argument(
+        "--stop-at-now",
+        help="use the current timestamp as the STOP time instead of default year 3000",
+        action="store_true",
+    )
     args = parser.parse_args()
-
-    patterns = gen_patterns()
 
     diag = Diagnosis(args.datasource)
 
     # 1. check config manually
     diag.diagnose_config()
+
+    custom_pattern = None
+    if args.pattern_file:
+        with open(args.pattern_file) as pf:
+            custom_pattern = pf.read()
+
+    patterns = [custom_pattern] if custom_pattern else gen_patterns(args.stop_at_now)
 
     # 2. setup connector and ping
     check_module_availability(diag.connector_name, args.ignore_cert)
