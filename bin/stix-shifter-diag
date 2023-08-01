@@ -2,6 +2,8 @@
 
 import argparse
 from kestrel_datasource_stixshifter.diagnosis import Diagnosis
+from kestrel_datasource_stixshifter.connector import check_module_availability
+
 
 def gen_patterns():
     time_range = "START t'2000-01-01T00:00:00.000Z' STOP t'3000-01-01T00:00:00.000Z'"
@@ -12,17 +14,31 @@ def gen_patterns():
     ]
     return [" ".join([p, time_range]) for p in patterns]
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Kestrel stix-shifter data source interface diagnosis")
     parser.add_argument("datasource", help="data source name specified in stixshifter.yaml")
+    parser.add_argument(
+        "--ignore-cert", help="ignore certificate (PKI) verification in connector verification and install", action="store_false"
+    )
     args = parser.parse_args()
 
     patterns = gen_patterns()
 
     diag = Diagnosis(args.datasource)
 
+    # 1. check config manually
     diag.diagnose_config()
+
+    # 2. setup connector and ping
+    check_module_availability(diag.connector_name, args.ignore_cert)
     diag.diagnose_ping()
+
+    # 3. query translation test
     diag.diagnose_translate_query(patterns[0])
+
+    # 4. single-batch query execution test
     diag.diagnose_run_query_and_retrieval_result(patterns, 1)
+
+    # 5. multi-batch query execution test
     diag.diagnose_run_query_and_retrieval_result(patterns, 5)
