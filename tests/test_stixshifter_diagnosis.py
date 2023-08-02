@@ -46,13 +46,6 @@ configuration object [ref: https://github.com/opencybersecurityalliance/stix-shi
     }
 }
 
-## Diagnose: stix-shifter to data source connection (network, auth)
-
-#### Results from stixshifter transmission.ping()
-{
-    "success": true
-}
-
 ## Diagnose: stix-shifter query translation
 
 #### Input pattern
@@ -63,6 +56,13 @@ configuration object [ref: https://github.com/opencybersecurityalliance/stix-shi
     "queries": [
         "[ipv4-addr:value != '255.255.255.255'] START t'2000-01-01T00:00:00.000Z' STOP t'3000-01-01T00:00:00.000Z'"
     ]
+}
+
+## Diagnose: stix-shifter to data source connection (network, auth)
+
+#### Results from stixshifter transmission.ping()
+{
+    "success": true
 }
 
 ## Diagnose: stix-shifter query execution: <=1 batch(s)
