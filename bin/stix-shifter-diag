@@ -35,6 +35,11 @@ if __name__ == "__main__":
         action="store_false",
     )
     parser.add_argument(
+        "-p",
+        "--stix-pattern",
+        help="STIX pattern in double quotes",
+    )
+    parser.add_argument(
         "-f",
         "--pattern-file",
         help="write your STIX pattern in a file and put the file path here to use for diagnosis",
@@ -64,14 +69,13 @@ if __name__ == "__main__":
         ch.setFormatter(formatter)
         logger.addHandler(ch)
 
-    custom_pattern = None
-    if args.pattern_file:
+    if args.stix_pattern:
+        patterns = [args.stix_pattern]
+    elif args.pattern_file:
         with open(args.pattern_file) as pf:
-            custom_pattern = pf.read()
-
-    patterns = (
-        [custom_pattern] if custom_pattern else default_patterns(args.stop_at_now)
-    )
+            patterns = [pf.read()]
+    else:
+        patterns = default_patterns(args.stop_at_now)
 
     diag = Diagnosis(args.datasource)
 
@@ -91,5 +95,5 @@ if __name__ == "__main__":
         # 5. single-batch query execution test
         diag.diagnose_run_query_and_retrieval_result(patterns, 1)
 
-        # 5. multi-batch query execution test
+        # 6. multi-batch query execution test
         diag.diagnose_run_query_and_retrieval_result(patterns, 5)
