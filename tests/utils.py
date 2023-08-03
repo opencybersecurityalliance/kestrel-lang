@@ -48,3 +48,26 @@ profiles:
 """)
     yield None
     del os.environ["KESTREL_STIXSHIFTER_CONFIG"]
+
+
+@pytest.fixture
+def stixshifter_profile_ecs(tmp_path):
+    profile_file = tmp_path / "stixshifter.yaml"
+    os.environ["KESTREL_STIXSHIFTER_CONFIG"] = str(profile_file.expanduser().resolve())
+    with open(profile_file, "w") as pf:
+        pf.write("""
+profiles:
+    ecs:
+        connector: elastic_ecs
+        connection:
+            host: elastic.securitylog.company.com
+            port: 9200
+            selfSignedCert: false
+            indices: host101
+        config:
+            auth:
+                id: VuaCfGcBCdbkQm-e5aOx
+                api_key: ui2lp2axTNmsyakw9tvNnw
+""")
+    yield None
+    del os.environ["KESTREL_STIXSHIFTER_CONFIG"]

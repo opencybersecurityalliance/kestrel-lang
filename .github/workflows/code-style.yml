@@ -7,12 +7,14 @@ on:
       - develop_*
     paths:
       - 'src/**'
+      - 'bin/**'
   pull_request:
     branches:
       - develop
       - develop_*
     paths:
       - 'src/**'
+      - 'bin/**'
     types:
       - opened
       - reopened
