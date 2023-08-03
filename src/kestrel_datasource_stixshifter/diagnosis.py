@@ -84,6 +84,11 @@ class Diagnosis:
             print()
             print("## Diagnose: stix-shifter query translation")
 
+        if not quiet:
+            print()
+            print("#### Input: STIX pattern")
+            print(stix_pattern)
+
         dsl = translate_query(
             self.connector_name,
             {},
@@ -91,13 +96,14 @@ class Diagnosis:
             self.connection_dict,
         )
 
+        if "queries" not in dsl:
+            raise Exception(str(dsl))
+
         if not quiet:
             print()
-            print("#### Input pattern")
-            print(stix_pattern)
-            print()
-            print("#### Output data source native query")
-            print(json.dumps(dsl, indent=4))
+            print(f"#### Output: {len(dsl['queries'])} data source native queries")
+            for query in dsl["queries"]:
+                print(query)
 
         return dsl
 
