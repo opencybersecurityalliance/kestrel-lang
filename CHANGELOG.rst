@@ -9,6 +9,25 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.7.4 (2023-08-03)
+==================
+
+Added
+-----
+
+- New simpler default STIX patterns for stix-shifter-diag
+- Connector verification/install in stix-shifter-diag #388
+- Custom pattern (string and file) support for stix-shifter-diag
+- Debug info output support for stix-shifter-diag
+- Current time as stop time support for default pattern in stix-shifter-diag
+- Query-translate-only mode for stix-shifter-diag
+
+Changed
+-------
+
+- Fix/change the order of LIMIT and timespan in Lark file according to Kestrel doc
+- stix-shifter update to v6 (6.0.3)
+
 1.7.3 (2023-07-26)
 ==================
 
