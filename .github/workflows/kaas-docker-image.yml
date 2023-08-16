@@ -1,4 +1,4 @@
-name: Build and publish a Docker image
+name: Docker image
 on:
   push:
     branches:
@@ -13,34 +13,32 @@ jobs:
     name: Build & push docker image
     runs-on: ubuntu-latest
     env:
-      IMG_NAME: ${{ github.repository }}
+      IMG_NAME: https://github.com/kpeeples/kestrel-lang/tree/kaas-container/src/containers/docker
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3.5.3
 
-      - name: Debug
-        run: |
-          echo "github.ref -> {{ github.ref }}"
- 
+      - name: Info
+        run: echo "Parameters. ${{ github.event.base_ref }}, ${{ github.ref_type }}, ${{ github.ref }}"
+
       - name: Docker metadata
         id: metadata
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMG_NAME }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
+            type=raw,value=dev-{{date 'YYYYMMDDhhmm'}}.{{sha}},enable=${{ github.ref_type != 'tag' }}
 
       - name: Log in to Docker Hub
-        uses: docker/login-action@v1
-        if: ${{ github.ref_type == 'tag' }}
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
           context: .
           push: ${{ github.event.base_ref =='refs/heads/main' && github.ref_type == 'tag' && !startsWith(github.ref, 'refs/tags/v0.')}}
