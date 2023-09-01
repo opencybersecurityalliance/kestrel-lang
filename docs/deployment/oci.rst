@@ -1,2 +1,3 @@
+Placeholder for future `Open Container Initiative`_ (OCI)
 
-Placeholder for future OCI (Open Container Initiative) - https://opencontainers.org/
+.. _Open Container Initiative: https://opencontainers.org/

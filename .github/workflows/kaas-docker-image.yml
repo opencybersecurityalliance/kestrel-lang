@@ -1,8 +1,10 @@
-name: Docker image
+name: Build Docker image
+
 on:
   release:
     types: [published]
   workflow_dispatch:
+
 jobs:
   build:
     name: Build & push docker image
@@ -23,7 +25,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: "{{defaultContext}}:src/containers/docker"
+          context: "{{defaultContext}}:containers/docker"
           push: true
           tags: kpeeples/kaas-baseline:latest
-
