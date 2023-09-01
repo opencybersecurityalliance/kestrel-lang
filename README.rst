@@ -109,6 +109,7 @@ Visit `Kestrel documentation`_ to learn Kestrel:
   - `How to connect to your data sources`_
   - `How to execute an analytic hunt step in Python/Docker`_
   - `How to use Kestrel via API`_
+  - `How to launch Kestrel as a Docker container`_
 
 Kestrel Huntbooks And Analytics
 ===============================
@@ -180,6 +181,7 @@ Connecting With The Community
 .. _How to execute an analytic hunt step in Python/Docker: https://kestrel.readthedocs.io/en/stable/installation/analytics.html
 .. _Language reference book: https://kestrel.readthedocs.io/en/stable/language/commands.html
 .. _How to use Kestrel via API: https://kestrel.readthedocs.io/en/stable/source/kestrel.session.html
+.. _How to launch Kestrel as a Docker container: https://kestrel.readthedocs.io/en/stable/deployment/
 .. _Kestrel documentation on talks: https://kestrel.readthedocs.io/en/stable/talks.html
 
 .. _Kestrel huntbook: https://github.com/opencybersecurityalliance/kestrel-huntbook
