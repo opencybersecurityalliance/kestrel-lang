@@ -1,5 +1,5 @@
 Besides Python package release on PyPI, Kestrel is also released into Docker
-container image on DockerHub Kestrel.
+container image on DockerHub.
 
 The image provides a full Kestrel runtime composed of the basic Kestrel
 runtime, `kestrel-jupyter`_ package, open-source Kestrel analytics in the
