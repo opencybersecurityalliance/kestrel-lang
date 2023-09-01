@@ -23,6 +23,7 @@ talks, community entrances, and more.
    configuration
    debug
    runtime
+   deployment/index
    theory
    talks
    contributing
