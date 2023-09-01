@@ -1,13 +1,13 @@
-================================
-Container Formats for Deployment
-================================
+====================
+Container Deployment
+====================
 
-Docker Format for Dockerhub
-===========================
+Docker (at Dockerhub)
+=====================
 
 .. include:: dockerhub.rst
 
-OCI Format
-==========
+OCI
+===
 
 .. include:: oci.rst
