@@ -1,8 +1,13 @@
-import pytest
+import os
 import subprocess
+import pytest
 
 from kestrel_datasource_stixshifter.diagnosis import Diagnosis
 from .utils import stixshifter_profile_lab101, stixshifter_profile_ecs
+
+
+cwd = os.path.dirname(os.path.abspath(__file__))
+STIX_SHIFTER_DIAG = os.path.join(cwd, "../bin/stix-shifter-diag")
 
 
 def test_diagnosis(stixshifter_profile_lab101):
@@ -74,7 +79,7 @@ one batch retrieved: 533 entries
 """
 
     result = subprocess.run(
-        args=["stix-shifter-diag", "lab101"],
+        args=[STIX_SHIFTER_DIAG, "lab101"],
         universal_newlines=True,
         stdout=subprocess.PIPE,
     )
@@ -128,7 +133,7 @@ configuration object [ref: https://github.com/opencybersecurityalliance/stix-shi
 
     result = subprocess.run(
         args=[
-            "stix-shifter-diag",
+            STIX_SHIFTER_DIAG,
             "-p",
             "[x-oca-asset:device_id = '123456'] START t'2000-01-01T00:00:00.000Z' STOP t'3000-01-01T00:00:00.000Z'",
             "-t",
