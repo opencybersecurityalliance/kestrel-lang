@@ -7,6 +7,7 @@ on:
       - release
     paths:
       - 'src/**'
+      - 'setup.cfg'
   pull_request:
     branches:
       - develop
@@ -14,6 +15,7 @@ on:
       - release
     paths:
       - 'src/**'
+      - 'setup.cfg'
     types:
       - opened
       - synchronize
