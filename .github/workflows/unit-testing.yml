@@ -21,6 +21,7 @@ on:
       - opened
       - reopened
       - synchronize
+  workflow_dispatch:
 
 jobs:
   unittest:
