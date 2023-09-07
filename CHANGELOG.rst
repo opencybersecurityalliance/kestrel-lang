@@ -9,6 +9,16 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.7.5 (2023-09-07)
+==================
+
+Added
+-----
+
+- Kestrel Docker container image in DockerHub
+- Documentation on how to use Kestrel Docker container
+- case insensitive option ``(?i)`` for Elasticserach via stix-shifter data source interface (stix-shifter v6.2.1)
+
 1.7.4 (2023-08-03)
 ==================
 
