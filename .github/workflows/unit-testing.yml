@@ -9,6 +9,7 @@ on:
       - 'src/**'
       - 'bin/**'
       - 'tests/**'
+      - 'setup.cfg'
   pull_request:
     branches:
       - develop
@@ -17,6 +18,7 @@ on:
       - 'src/**'
       - 'bin/**'
       - 'tests/**'
+      - 'setup.cfg'
     types:
       - opened
       - reopened
