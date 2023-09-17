@@ -7,7 +7,7 @@ A Kestrel command describes a :ref:`language/tac:hunt step` in one of the five c
 #. Retrieval: ``GET``, ``FIND``, ``NEW``.
 #. Transformation: ``SORT``, ``GROUP``.
 #. Enrichment: ``APPLY``.
-#. Inspection: ``INFO``, ``DISP``.
+#. Inspection: ``INFO``, ``DISP``, ``DESCRIBE``.
 #. Flow-control: ``SAVE``, ``LOAD``, ``ASSIGN``, ``MERGE``, ``JOIN``.
 
 To achieve :ref:`language/tac:composable hunt flow` and allow threat hunters to compose hunt
@@ -46,6 +46,8 @@ object, or both a variable and a display object.
 | INFO    | yes            | no            | no             | yes           |
 +---------+----------------+---------------+----------------+---------------+
 | DISP    | yes            | maybe         | no             | yes           |
++---------+----------------+---------------+----------------+---------------+
+| DESCRIBE | yes           | no            | no             | yes           |
 +---------+----------------+---------------+----------------+---------------+
 | SORT    | yes            | yes           | yes            | no            |
 +---------+----------------+---------------+----------------+---------------+
@@ -673,6 +675,41 @@ Examples
 
     # display the timestamps from observations of those processes:
     DISP TIMESTAMPED(procs) ATTR pid, name, command_line
+
+DESCRIBE
+--------
+
+The command ``DESCRIBE`` is an *inspection* hunt step to show
+descriptive statistics of a Kestrel variable attribute.
+
+Syntax
+^^^^^^
+::
+
+    DESCRIBE varx.attr
+
+The command shows the following information of an numeric attribute:
+
+- count: the number of non-NULL values
+- mean: the average value
+- min: the minimum value
+- max: the maximum value
+
+The command shows the following information of other attributes:
+
+- count: the number of non-NULL values
+- unique: the number of unique values
+- top: the most freqently occurring value
+- freq: the number of occurrences of the top value
+
+Examples
+^^^^^^^^
+
+.. code-block:: coffeescript
+
+    # showing information like unique count of src_port
+    nt = GET network-traffic FROM stixshifter://idsX WHERE dst_port = 80
+    DESCRIBE nt.src_port
 
 SORT
 ----
