@@ -89,9 +89,13 @@ def install_package(connector_name, requests_verify=True):
         )
 
 
-def setup_connector_module(connector_name, allow_dev_connector=False, requests_verify=True):
+def setup_connector_module(
+    connector_name, allow_dev_connector=False, requests_verify=True
+):
     try:
-        importlib.import_module("stix_shifter_modules." + connector_name + ".entry_point")
+        importlib.import_module(
+            "stix_shifter_modules." + connector_name + ".entry_point"
+        )
     except:
         connector_available = False
     else:
