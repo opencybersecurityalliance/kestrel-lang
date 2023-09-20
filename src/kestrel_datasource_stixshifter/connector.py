@@ -89,7 +89,7 @@ def install_package(connector_name, requests_verify=True):
         )
 
 
-def setup_connector_module(connector_name, requests_verify=True):
+def setup_connector_module(connector_name, allow_dev_connector=False, requests_verify=True):
     try:
         importlib.import_module("stix_shifter_modules." + connector_name + ".entry_point")
     except:
@@ -98,7 +98,7 @@ def setup_connector_module(connector_name, requests_verify=True):
         stixshifter_version = version("stix_shifter")
         package_name = get_package_name(connector_name)
         package_version = version(package_name)
-        if package_version == stixshifter_version:
+        if package_version == stixshifter_version or allow_dev_connector:
             connector_available = True
         else:
             connector_available = False

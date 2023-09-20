@@ -82,11 +82,12 @@ def query_datasource(uri, pattern, session_id, config, store, limit=None):
             configuration_dict,
             retrieval_batch_size,
             cool_down_after_transmission,
+            allow_dev_connector,
         ) = map(
             copy.deepcopy, get_datasource_from_profiles(profile, config["profiles"])
         )
 
-        setup_connector_module(connector_name)
+        setup_connector_module(connector_name, allow_dev_connector)
 
         if _logger.isEnabledFor(logging.DEBUG):
             data_path_striped = "".join(filter(str.isalnum, profile))
