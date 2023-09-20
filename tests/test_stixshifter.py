@@ -5,7 +5,7 @@ from kestrel.session import Session
 
 from kestrel_datasource_stixshifter.connector import (
     verify_package_origin,
-    check_module_availability,
+    setup_connector_module,
 )
 
 from kestrel_datasource_stixshifter.config import get_datasource_from_profiles
@@ -17,10 +17,10 @@ def test_verify_package_origin():
         verify_package_origin(connector_name, "test_version")
 
 
-def test_check_module_availability():
+def test_setup_connector_module():
     connectors = ["stix_bundle"]
     for connector_name in connectors:
-        check_module_availability(connector_name)
+        setup_connector_module(connector_name)
 
 
 def test_yaml_profiles_refresh(tmp_path):

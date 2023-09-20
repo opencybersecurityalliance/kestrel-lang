@@ -4,7 +4,7 @@ import pandas
 import pytest
 from multiprocessing import Queue
 
-from kestrel_datasource_stixshifter.connector import check_module_availability
+from kestrel_datasource_stixshifter.connector import setup_connector_module
 from kestrel_datasource_stixshifter import multiproc
 from kestrel_datasource_stixshifter.worker.utils import TransmissionResult
 from kestrel_datasource_stixshifter.worker import STOP_SIGN
@@ -78,7 +78,7 @@ SAMPLE_RESULT = TransmissionResult(
 
 def test_stixshifter_translate():
     query_id = "8df266aa-2901-4a94-ace9-a4403e310fa1"
-    check_module_availability(CONNECTOR_NAME)
+    setup_connector_module(CONNECTOR_NAME)
 
     input_queue = Queue()
     output_queue = Queue()
@@ -108,7 +108,7 @@ def test_stixshifter_translate():
 
 def test_stixshifter_translate_with_bundle_writing_to_disk(tmpdir):
     query_id = "8df266aa-2901-4a94-ace9-a4403e310fa1"
-    check_module_availability(CONNECTOR_NAME)
+    setup_connector_module(CONNECTOR_NAME)
     cache_bundle_path_prefix = str(tmpdir.join("test"))
     offset_str = str(SAMPLE_RESULT.offset).zfill(32)
     cache_bundle_path = cache_bundle_path_prefix + f"_{offset_str}.json"
@@ -145,7 +145,7 @@ def test_stixshifter_translate_with_bundle_writing_to_disk(tmpdir):
 
 def test_fast_translate():
     query_id = "8df266aa-2901-4a94-ace9-a4403e310fa1"
-    check_module_availability(CONNECTOR_NAME)
+    setup_connector_module(CONNECTOR_NAME)
 
     input_queue = Queue()
     output_queue = Queue()
@@ -174,7 +174,7 @@ def test_fast_translate():
 
 def test_stixshifter_fast_translate_with_parquet_writing_to_disk(tmpdir):
     query_id = "8df266aa-2901-4a94-ace9-a4403e310fa1"
-    check_module_availability(CONNECTOR_NAME)
+    setup_connector_module(CONNECTOR_NAME)
     cache_parquet_path_prefix = str(tmpdir.join("test"))
     offset_str = str(SAMPLE_RESULT.offset).zfill(32)
     cache_parquet_path = cache_parquet_path_prefix + f"_{offset_str}.parquet"

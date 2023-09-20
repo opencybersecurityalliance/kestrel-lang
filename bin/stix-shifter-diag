@@ -3,7 +3,7 @@
 import argparse
 import datetime
 from kestrel_datasource_stixshifter.diagnosis import Diagnosis
-from kestrel_datasource_stixshifter.connector import check_module_availability
+from kestrel_datasource_stixshifter.connector import setup_connector_module
 from firepit.timestamp import timefmt
 
 
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     diag.diagnose_config()
 
     # 2. setup connector and ping
-    check_module_availability(diag.connector_name, args.ignore_cert)
+    setup_connector_module(diag.connector_name, args.ignore_cert)
 
     # 3. query translation test
     diag.diagnose_translate_query(patterns[0])
