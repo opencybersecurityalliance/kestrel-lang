@@ -31,6 +31,7 @@ assignment: VARIABLE "=" expression
                   | disp
                   | info
                   | save
+                  | describe
 
 //
 // All commands
@@ -57,6 +58,8 @@ disp: "DISP"i expression
 info: "INFO"i VARIABLE
 
 save: "SAVE"i VARIABLE "TO"i stdpath
+
+describe: "DESCRIBE"i var_attr
 
 //
 // Variable definition
@@ -254,6 +257,8 @@ literal_list: "(" literal ("," literal)* ")"
             | "[" literal ("," literal)* "]"
 
 reference_or_simple_string: ECNAME ("." ATTRIBUTE)?
+
+var_attr: ECNAME "." ATTRIBUTE
 
 ?string: advanced_string
 

@@ -25,7 +25,18 @@ from collections import OrderedDict
 
 from firepit.deref import auto_deref
 from firepit.exceptions import InvalidAttr
-from firepit.query import Limit, Offset, Order, Predicate, Projection, Query
+from firepit.query import (
+    Aggregation,
+    Column,
+    Limit,
+    Group,
+    Offset,
+    Order,
+    Predicate,
+    Projection,
+    Query,
+    Table,
+)
 from firepit.stix20 import summarize_pattern
 
 from kestrel.utils import remove_empty_dicts, dedup_ordered_dicts
@@ -221,6 +232,57 @@ def disp(stmt, session):
     content = cursor.fetchall()
 
     return None, DisplayDataframe(dedup_ordered_dicts(remove_empty_dicts(content)))
+
+
+@_debug_logger
+@_skip_command_if_empty_input
+def describe(stmt, session):
+    entity_table = session.symtable[stmt["input"]].entity_table
+    attribute = stmt["attribute"]
+    schema = {i["name"]: i["type"] for i in session.store.schema(entity_table)}
+    attr_type = schema[attribute].lower()
+
+    result = OrderedDict()
+
+    qry = Query(entity_table)
+    if attr_type in ("integer", "bigint", "numeric"):
+        qry.append(
+            Aggregation(
+                [
+                    ("COUNT", attribute, "count"),
+                    ("AVG", attribute, "mean"),
+                    ("MIN", attribute, "min"),
+                    ("MAX", attribute, "max"),
+                ]
+            )
+        )
+    else:
+        qry.append(
+            Aggregation(
+                [("COUNT", attribute, "count"), ("NUNIQUE", attribute, "unique")]
+            )
+        )
+        cursor = session.store.run_query(qry)
+        content = cursor.fetchall()[0]
+        result.update(content)
+
+        # Need second query for top and freq
+        qry = Query(
+            [
+                Table(entity_table),
+                Group([Column(attribute, alias="top")]),
+                Aggregation([("COUNT", "*", "freq")]),
+                Order([("freq", Order.DESC)]),
+                Limit(1),
+            ]
+        )
+
+    cursor = session.store.run_query(qry)
+    content = cursor.fetchall()[0]
+
+    result.update(content)
+
+    return None, DisplayDict(result)
 
 
 @_debug_logger
