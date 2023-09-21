@@ -25,6 +25,7 @@ class Diagnosis:
             self.configuration_dict,
             self.retrieval_batch_size,
             self.cool_down_after_transmission,
+            self.allow_dev_connector,
         ) = get_datasource_from_profiles(datasource_name, self.profiles)
         self.if_fast_translation = (
             self.connector_name in self.kestrel_options["fast_translate"]

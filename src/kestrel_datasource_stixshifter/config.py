@@ -17,6 +17,7 @@ ENV_VAR_PREFIX = "STIXSHIFTER_"
 RETRIEVAL_BATCH_SIZE = 2000
 SINGLE_BATCH_TIMEOUT = 60
 COOL_DOWN_AFTER_TRANSMISSION = 0
+ALLOW_DEV_CONNECTOR = False
 FAST_TRANSLATE_CONNECTORS = []  # Suggested: ["qradar", "elastic_ecs"]
 
 
@@ -140,8 +141,9 @@ def get_datasource_from_profiles(profile_name, profiles):
         if "options" not in connection:
             connection["options"] = {}
 
-        retrieval_batch_size = _extract_integer_param_from_connection_config(
+        retrieval_batch_size = _extract_param_from_connection_config(
             "retrieval_batch_size",
+            int,
             RETRIEVAL_BATCH_SIZE,
             connection,
             profile_name,
@@ -149,8 +151,9 @@ def get_datasource_from_profiles(profile_name, profiles):
         # rename this field for stix-shifter use; x2 the size to ensure retrieval
         connection["options"]["result_limit"] = retrieval_batch_size * 2
 
-        single_batch_timeout = _extract_integer_param_from_connection_config(
+        single_batch_timeout = _extract_param_from_connection_config(
             "single_batch_timeout",
+            int,
             SINGLE_BATCH_TIMEOUT,
             connection,
             profile_name,
@@ -158,9 +161,18 @@ def get_datasource_from_profiles(profile_name, profiles):
         # rename this field for stix-shifter use
         connection["options"]["timeout"] = single_batch_timeout
 
-        cool_down_after_transmission = _extract_integer_param_from_connection_config(
+        cool_down_after_transmission = _extract_param_from_connection_config(
             "cool_down_after_transmission",
+            int,
             COOL_DOWN_AFTER_TRANSMISSION,
+            connection,
+            profile_name,
+        )
+
+        allow_dev_connector = _extract_param_from_connection_config(
+            "allow_dev_connector",
+            bool,
+            ALLOW_DEV_CONNECTOR,
             connection,
             profile_name,
         )
@@ -171,6 +183,7 @@ def get_datasource_from_profiles(profile_name, profiles):
         configuration,
         retrieval_batch_size,
         cool_down_after_transmission,
+        allow_dev_connector,
     )
 
 
@@ -208,14 +221,14 @@ def load_options():
     return config["options"]
 
 
-def _extract_integer_param_from_connection_config(
-    param_name, default, connection, profile_name
+def _extract_param_from_connection_config(
+    param_name, processing_func, default, connection, profile_name
 ):
     value = default
     if param_name in connection["options"]:
         # remove the non-stix-shifter field {param_name} to avoid stix-shifter error
         try:
-            value = int(connection["options"].pop(param_name))
+            value = processing_func(connection["options"].pop(param_name))
         except:
             raise InvalidDataSource(
                 profile_name,

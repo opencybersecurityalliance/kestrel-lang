@@ -89,40 +89,36 @@ def install_package(connector_name, requests_verify=True):
         )
 
 
-def ensure_version_consistency(connector_name, requests_verify=True):
-    """Check if the installed connector package has the same version as
-    stix-shifter If the version is different, uninstall connector
-    package and the install the same version as stix-shifter
-
-    """
-    stixshifter_version = version("stix_shifter")
-    package_name = get_package_name(connector_name)
-    package_version = version(package_name)
-    if package_version == stixshifter_version:
-        return
-    package_w_ver = package_name + "==" + package_version
-    _logger.info(
-        f"{package_name} version {package_version} is different "
-        f"from stix-shifter version {stixshifter_version}."
-    )
-    _logger.info(f'uninstalling Python package "{package_w_ver}".')
-    try:
-        subprocess.check_call(
-            [sys.executable, "-m", "pip", "uninstall", "--yes", package_w_ver]
-        )
-    except:
-        _logger.info(f"failed to uninstall package {package_w_ver}")
-    install_package(connector_name, requests_verify)
-
-
-def check_module_availability(connector_name, requests_verify=True):
+def setup_connector_module(
+    connector_name, allow_dev_connector=False, requests_verify=True
+):
     try:
         importlib.import_module(
             "stix_shifter_modules." + connector_name + ".entry_point"
         )
-
-        ensure_version_consistency(connector_name, requests_verify)
-
     except:
+        connector_available = False
+    else:
+        stixshifter_version = version("stix_shifter")
+        package_name = get_package_name(connector_name)
+        package_version = version(package_name)
+        if package_version == stixshifter_version or allow_dev_connector:
+            connector_available = True
+        else:
+            connector_available = False
+            package_w_ver = package_name + "==" + package_version
+            _logger.info(
+                f"{package_name} version {package_version} is different "
+                f"from stix-shifter version {stixshifter_version}."
+            )
+            _logger.info(f'uninstalling Python package "{package_w_ver}".')
+            try:
+                subprocess.check_call(
+                    [sys.executable, "-m", "pip", "uninstall", "--yes", package_w_ver]
+                )
+            except:
+                _logger.info(f"failed to uninstall package {package_w_ver}")
+
+    if not connector_available:
         _logger.info(f'miss STIX-shifter connector "{connector_name}"')
         install_package(connector_name, requests_verify)

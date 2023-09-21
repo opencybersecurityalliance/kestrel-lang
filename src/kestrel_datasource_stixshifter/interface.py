@@ -32,6 +32,7 @@ will load profiles from 3 places (the later will override the former):
                         retrieval_batch_size: 10000  # set to 10000 to match default Elasticsearch page size; Kestrel default across connectors: 2000
                         single_batch_timeout: 120  # increase it if hit 60 seconds (Kestrel default) timeout error for each batch of retrieval
                         cool_down_after_transmission: 2  # seconds to cool down between data source API calls, required by some API such as sentinelone; Kestrel default: 0
+                        allow_dev_connector: True  # do not check version of a connector to allow custom/testing connector installed with any version; Kestrel default: False
                         dialects:  # more info: https://github.com/opencybersecurityalliance/stix-shifter/tree/develop/stix_shifter_modules/elastic_ecs#dialects
                           - beats  # need it if the index is created by Filebeat/Winlogbeat/*beat
                 config:
