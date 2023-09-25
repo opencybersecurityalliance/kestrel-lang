@@ -19,6 +19,11 @@ Added
 - ``ikestrel`` interactive shell (command-line utility)
 - Custom stix-shifter connector support #402
 
+Fixed
+-----
+
+- Command-line utility tests failed without install
+
 1.7.5 (2023-09-07)
 ==================
 
