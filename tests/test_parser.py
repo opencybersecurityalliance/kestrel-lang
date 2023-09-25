@@ -345,3 +345,12 @@ def test_grouping_3():
         {"attr": "baz", "func": "count", "alias": "count_baz"},
         {"attr": "blah", "func": "max", "alias": "whatever"},
     ]
+
+
+def test_describe_simple():
+    results = parse_kestrel("describe foo.bar")
+    result = results[0]
+    print(result)
+    assert result["command"] == "describe"
+    assert result["input"] == "foo"
+    assert result["attribute"] == "bar"

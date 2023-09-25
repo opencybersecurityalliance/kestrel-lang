@@ -100,6 +100,11 @@ class _KestrelT(Transformer):
             packet["attrs"] = "*"
         return packet
 
+    def describe(self, args):
+        packet = {"command": "describe"}
+        packet.update(args[0])
+        return packet
+
     def get(self, args):
         packet = {
             "command": "get",
@@ -271,6 +276,9 @@ class _KestrelT(Transformer):
 
     def literal(self, args):
         return args[0]
+
+    def var_attr(self, args):
+        return {"input": _first(args), "attribute": _second(args)}
 
     def reference_or_simple_string(self, args):
         if len(args) > 1:

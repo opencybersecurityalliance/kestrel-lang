@@ -9,6 +9,21 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.7.6 (2023-09-25)
+==================
+
+Added
+-----
+
+- ``DESCRIBE`` command to get insight of attributes
+- ``ikestrel`` interactive shell (command-line utility)
+- Custom stix-shifter connector support #402
+
+Fixed
+-----
+
+- Command-line utility tests failed without install
+
 1.7.5 (2023-09-07)
 ==================
 
