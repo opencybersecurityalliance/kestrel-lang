@@ -1,6 +1,6 @@
 from typeguard import typechecked
 from lark import Lark
-from pkgutil import get_data
+from importlib import resources
 from itertools import chain
 from typing import Tuple, Iterable
 import datetime
@@ -20,7 +20,7 @@ TRANSFORMS = {"TIMESTAMPED", "ADDOBSID", "RECORDS"}
 
 
 def get_keywords():
-    grammar = get_data(__name__, "kestrel.lark").decode("utf-8")
+    grammar = resources.files("kestrel.syntax").joinpath("kestrel.lark").read_text()
     parser = Lark(grammar, parser="lalr")
     alphabet_patterns = filter(lambda x: x.pattern.value.isalnum(), parser.terminals)
     keywords = [x.pattern.value for x in alphabet_patterns] + all_relations

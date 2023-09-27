@@ -1,7 +1,7 @@
 import os
 import yaml
 import pathlib
-import pkgutil
+from importlib import resources
 import logging
 
 from kestrel.utils import update_nested_dict
@@ -15,7 +15,8 @@ _logger = logging.getLogger(__name__)
 
 def load_default_config():
     _logger.debug(f"Loading default config file...")
-    return yaml.safe_load(pkgutil.get_data(__name__, "config.yaml"))
+    default_config = resources.files("kestrel").joinpath("config.yaml").read_text()
+    return yaml.safe_load(default_config)
 
 
 def load_user_config(config_path_env_var, config_path_default):

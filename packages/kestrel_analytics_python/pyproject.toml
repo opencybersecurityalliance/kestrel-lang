@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools >= 68.2.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kestrel_analytics_python"
+version = "1.8.0"
+description = "Kestrel Python Analytics Interface"
+requires-python = ">=3.8"
+license = {text = "Apache 2.0 License"}
+maintainers = [
+    {name = "Xiaokui Shu", email = "xiaokui.shu@ibm.com"},
+    {name = "Paul Coccoli", email = "pcoccoli@us.ibm.com"},
+]
+keywords = [
+    "kestrel",
+    "analytics",
+    "interface",
+    "python",
+]
+classifiers = [
+    "Topic :: Security",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+    "kestrel_core==1.8.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/opencybersecurityalliance/kestrel-lang"
+Documentation = "https://kestrel.readthedocs.io/"
+Repository = "https://github.com/opencybersecurityalliance/kestrel-lang.git"

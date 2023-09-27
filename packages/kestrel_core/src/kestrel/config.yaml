@@ -3,7 +3,7 @@ language:
   default_variable: "_"
   default_sort_order: "desc"
   default_datasource_schema: "stixshifter"
-  default_analytics_schema: "docker"
+  default_analytics_schema: "python"
 
 # how a Kestrel session is executed
 session:

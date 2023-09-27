@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools >= 68.2.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kestrel_datasource_stixbundle"
+version = "1.8.0"
+description = "Kestrel STIX-bundle Datasource Interface"
+requires-python = ">=3.8"
+license = {text = "Apache 2.0 License"}
+maintainers = [
+    {name = "Xiaokui Shu", email = "xiaokui.shu@ibm.com"},
+    {name = "Paul Coccoli", email = "pcoccoli@us.ibm.com"},
+]
+keywords = [
+    "kestrel",
+    "datasource",
+    "interface",
+    "STIX bundle",
+]
+classifiers = [
+    "Topic :: Security",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+    "kestrel_core==1.8.0",
+    "requests>=2.31.0",
+    "stix2-matcher>=3.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/opencybersecurityalliance/kestrel-lang"
+Documentation = "https://kestrel.readthedocs.io/"
+Repository = "https://github.com/opencybersecurityalliance/kestrel-lang.git"

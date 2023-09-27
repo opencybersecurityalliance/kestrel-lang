@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import argparse
 import datetime
 from kestrel_datasource_stixshifter.diagnosis import Diagnosis
@@ -22,7 +20,7 @@ def default_patterns(use_now_as_stop_time: bool):
     return [" ".join([p, start_time, stop_time]) for p in patterns]
 
 
-if __name__ == "__main__":
+def stix_shifter_diag():
     parser = argparse.ArgumentParser(
         description="Kestrel stix-shifter data source interface diagnosis"
     )

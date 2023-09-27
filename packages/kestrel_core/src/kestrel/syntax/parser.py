@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
-from pkgutil import get_data
-import importlib
+from importlib import resources
+from importlib.util import find_spec
 from lark import Lark, Token, Transformer
 from lark.visitors import merge_transformers
 
@@ -25,7 +25,7 @@ def parse_kestrel(
     # the public parsing interface for Kestrel
     # return abstract syntax tree
     # check kestrel.lark for details
-    grammar = get_data(__name__, "kestrel.lark").decode("utf-8")
+    grammar = resources.files("kestrel.syntax").joinpath("kestrel.lark").read_text()
     return Lark(
         grammar,
         parser="lalr",
@@ -34,8 +34,8 @@ def parse_kestrel(
 
 
 def parse_ecgpattern(pattern_str) -> ExtCenteredGraphPattern:
-    grammar = get_data(__name__, "ecgpattern.lark").decode("utf-8")
-    paths = importlib.util.find_spec("kestrel.syntax").submodule_search_locations
+    grammar = resources.files("kestrel.syntax").joinpath("ecgpattern.lark").read_text()
+    paths = find_spec("kestrel.syntax").submodule_search_locations
     return Lark(
         grammar,
         parser="lalr",

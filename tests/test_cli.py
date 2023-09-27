@@ -35,16 +35,3 @@ def test_cli(create_huntflow, stixshifter_profile_lab101):
     result_lines = result.stdout.splitlines()
     assert result_lines[-3] == expected_result_lines[0]
     assert result_lines[-2] == expected_result_lines[1]
-
-
-def test_python_module_call(create_huntflow, stixshifter_profile_lab101):
-
-    huntflow_file_path, expected_result_lines = create_huntflow
-    result = subprocess.run(args = ["python", "-m", "kestrel", huntflow_file_path], 
-                            universal_newlines = True,
-                            stdout = subprocess.PIPE
-                           )
-
-    result_lines = result.stdout.splitlines()
-    assert result_lines[-3] == expected_result_lines[0]
-    assert result_lines[-2] == expected_result_lines[1]

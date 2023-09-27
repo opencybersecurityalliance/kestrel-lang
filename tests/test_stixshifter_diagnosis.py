@@ -1,4 +1,3 @@
-import os
 import subprocess
 import pytest
 
@@ -6,8 +5,7 @@ from kestrel_datasource_stixshifter.diagnosis import Diagnosis
 from .utils import stixshifter_profile_lab101, stixshifter_profile_ecs
 
 
-cwd = os.path.dirname(os.path.abspath(__file__))
-STIX_SHIFTER_DIAG = os.path.join(cwd, "../bin/stix-shifter-diag")
+STIX_SHIFTER_DIAG = "stix-shifter-diag"
 
 
 def test_diagnosis(stixshifter_profile_lab101):
