@@ -49,6 +49,8 @@ class InterfaceManager:
                 uri = default_schema + "://" + uri
             else:
                 uri = default_schema + uri
+        if not scheme:
+            raise self.nonexist_interface_exception("???")
         return scheme, uri
 
     def _get_interface_with_config(self, scheme):
@@ -72,7 +74,7 @@ class InterfaceManager:
 
         if default_schema not in self.scheme_to_interface:
             _logger.error(f"default datasource schema {default_schema} not found.")
-            raise self.nonexist_interface_exception(default_schema)
+            default_schema = None
 
         return default_schema
 
