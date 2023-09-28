@@ -1,12 +1,11 @@
 import pytest
 import subprocess
 
-from .utils import stixshifter_profile_lab101
 
 @pytest.fixture()
 def create_huntflow(tmp_path):
     huntflow = """
-procs = GET process FROM stixshifter://lab101
+procs = GET process FROM "https://github.com/opencybersecurityalliance/data-bucket-kestrel/blob/main/stix-bundles/lab101.json?raw=true"
         WHERE name = 'svchost.exe'
         START 2021-01-01T00:00:00Z STOP 2022-01-01T00:00:00Z
 """
@@ -24,7 +23,7 @@ procs = GET process FROM stixshifter://lab101
 
 
 
-def test_cli(create_huntflow, stixshifter_profile_lab101):
+def test_cli(create_huntflow):
 
     huntflow_file_path, expected_result_lines = create_huntflow
     result = subprocess.run(args = ["kestrel", huntflow_file_path], 

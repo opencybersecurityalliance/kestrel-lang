@@ -36,53 +36,6 @@ KNOWN_ETYPES = {
 
 
 @pytest.fixture
-def datasource_env_setup(tmp_path):
-
-    profiles = f"""profiles:
-    thost101:
-        connector: elastic_ecs
-        connection:
-            host: elastic.securitylog.company.com
-            port: 9200
-            selfSignedCert: false # this means do NOT check cert
-            indices: asdfqwer
-        config:
-            auth:
-                id: VuaCfGcBCdbkQm-e5aOx
-                api_key: ui2lp2axTNmsyakw9tvNnw
-    thost102:
-        connector: qradar
-        connection:
-            host: qradar.securitylog.company.com
-            port: 443
-        config:
-            auth:
-                SEC: 123e4567-e89b-12d3-a456-426614174000
-    thost103:
-        connector: cbcloud
-        connection:
-            host: cbcloud.securitylog.company.com
-            port: 443
-        config:
-            auth:
-                org-key: D5DQRHQP
-                token: HT8EMI32DSIMAQ7DJM
-    """
-
-    profile_file = tmp_path / "stixshifter.yaml"
-    with open(profile_file, "w") as pf:
-        pf.write(profiles)
-
-    os.environ["KESTREL_STIXSHIFTER_CONFIG"] = str(
-        profile_file.expanduser().resolve()
-    )
-
-    # https://docs.pytest.org/en/latest/how-to/fixtures.html#teardown-cleanup-aka-fixture-finalization
-    yield None
-    del os.environ["KESTREL_STIXSHIFTER_CONFIG"]
-
-
-@pytest.fixture
 def analytics_env_setup(tmp_path):
 
     analytics_module_path = str(
@@ -114,9 +67,9 @@ def analytics_env_setup(tmp_path):
 
 
 @pytest.fixture
-def a_session(datasource_env_setup, analytics_env_setup):
+def a_session(analytics_env_setup):
     cwd = os.path.dirname(os.path.abspath(__file__))
-    bundle = os.path.join(cwd, "test_bundle.json")
+    bundle = os.path.join(cwd, "../../../test-data/test_bundle.json")
     session = Session(debug_mode=True)
     stmt = (
         "conns = get network-traffic"
@@ -170,19 +123,19 @@ def test_do_complete_disp(a_session, code, expected):
         ("urls = ge", ["t"]),
         ("urls = get ", KNOWN_ETYPES),
         ("urls = get url ", ["FROM", "WHERE"]),
-        (
-            "urls = GET url FROM ",
-            ["_", "conns", "file://", "http://", "https://", "stixshifter://"],
-        ),
-        ( "urls = GET url FROM stixshi", {"fter://"}),
-        ( "urls = GET url FROM stixshifter://", {"thost101", "thost102", "thost103"}),
-        ( "urls = GET url FROM stixshifter://thost", {"101", "102", "103"}),
+#        (
+#            "urls = GET url FROM ",
+#            ["_", "conns", "file://", "http://", "https://", "stixshifter://"],
+#        ),
+#        ( "urls = GET url FROM stixshi", {"fter://"}),
+#        ( "urls = GET url FROM stixshifter://", {"thost101", "thost102", "thost103"}),
+#        ( "urls = GET url FROM stixshifter://thost", {"101", "102", "103"}),
         ("urls = get url where ", []), # TODO: attribute completion
         ("urls = get url where name = 'a' ", {"START"}),
         ("urls = get url where name = 'a' START 2022-01-01T00:00:00Z ", {"STOP"}),
     ],
 )
-def test_do_complete_cmd_get(datasource_env_setup, a_session, code, expected):
+def test_do_complete_cmd_get(a_session, code, expected):
     result = a_session.do_complete(code, len(code))
     assert set(result) == set(expected)
 
@@ -225,7 +178,6 @@ def test_do_complete_cmd_sort(a_session, code, expected):
 @pytest.mark.parametrize(
     "code, expected",
     [
-        ("APPLY ", {"python://", "docker://"}),
         ("APPLY pyth", {"on://"}),
         ("APPLY python://", {"enrich_one_variable", "html_visualization", "enrich_multiple_variables", "enrich_variable_with_arguments"}),
         ("APPLY python://enrich", {"_one_variable", "_multiple_variables", "_variable_with_arguments"}),

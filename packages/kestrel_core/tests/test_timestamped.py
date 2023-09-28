@@ -10,7 +10,7 @@ from kestrel.session import Session
 @pytest.fixture
 def fake_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "test_bundle.json")
+    return os.path.join(cwd, "../../../test-data/test_bundle.json")
 
 
 def test_timestamped_disp(fake_bundle_file):

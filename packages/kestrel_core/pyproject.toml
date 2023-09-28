@@ -38,6 +38,13 @@ dependencies = [
     "firepit>=2.3.29",
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "kestrel_datasource_stixbundle",
+    "kestrel_analytics_python",
+]
+
 [project.urls]
 Homepage = "https://github.com/opencybersecurityalliance/kestrel-lang"
 Documentation = "https://kestrel.readthedocs.io/"

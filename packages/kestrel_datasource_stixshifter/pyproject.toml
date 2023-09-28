@@ -34,6 +34,12 @@ dependencies = [
     "stix-shifter-utils==6.2.1",
 ]
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "stix-shifter-modules-elastic-ecs",
+]
+
 [project.urls]
 Homepage = "https://github.com/opencybersecurityalliance/kestrel-lang"
 Documentation = "https://kestrel.readthedocs.io/"

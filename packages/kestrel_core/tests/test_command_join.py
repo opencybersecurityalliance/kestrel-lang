@@ -5,7 +5,7 @@ from kestrel.session import Session
 
 def test_join_csv_data():
     data_file_path = os.path.join(
-        os.path.dirname(__file__), "test_input_data_ips.csv"
+        os.path.dirname(__file__), "../../../test-data/test_input_data_ips.csv"
     )
     with Session() as s:
         s.execute(f"assets = LOAD {data_file_path} AS ipv4-addr")

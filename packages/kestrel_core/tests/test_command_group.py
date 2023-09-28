@@ -13,7 +13,7 @@ from kestrel.session import Session
 @pytest.fixture
 def fake_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "test_bundle.json")
+    return os.path.join(cwd, "../../../test-data/test_bundle.json")
 
 
 def test_group_srcref(fake_bundle_file):
@@ -162,5 +162,3 @@ def test_group_empty_variable(fake_bundle_file):
 
         assert len(srcgrps) == 0
         assert srcgrps.records_count == 0
-
-

@@ -7,19 +7,19 @@ from kestrel.session import Session
 @pytest.fixture
 def fake_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "test_bundle.json")
+    return os.path.join(cwd, "../../../test-data/test_bundle.json")
 
 
 @pytest.fixture
 def proc_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "doctored-1k.json")
+    return os.path.join(cwd, "../../../test-data/doctored-1k.json")
 
 
 def test_save_parquet_gz(tmp_path):
     save_path = tmp_path / "test_save_data.parquet.gz"
     data_file_path = os.path.join(
-        os.path.dirname(__file__), "test_input_data_procs.parquet.gz"
+        os.path.dirname(__file__), "../../../test-data/test_input_data_procs.parquet.gz"
     )
     stmt_save = f"newvar = LOAD {data_file_path} SAVE newvar TO {save_path}"
     stmt_load = f"newload = LOAD {save_path}"

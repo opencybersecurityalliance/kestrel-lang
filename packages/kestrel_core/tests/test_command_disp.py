@@ -9,7 +9,7 @@ from kestrel.session import Session
 @pytest.fixture
 def proc_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "doctored-1k.json")
+    return os.path.join(cwd, "../../../test-data/doctored-1k.json")
 
 
 def test_disp():

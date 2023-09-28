@@ -24,13 +24,13 @@ ref = NEW [
 @pytest.fixture
 def fake_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "test_bundle.json")
+    return os.path.join(cwd, "../../../test-data/test_bundle.json")
 
 
 @pytest.fixture
 def fake_bundle_4():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "test_bundle_4.json")
+    return os.path.join(cwd, "../../../test-data/test_bundle_4.json")
 
 
 @pytest.fixture(autouse=True)

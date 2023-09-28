@@ -1,12 +1,9 @@
 import json
-import logging
 import os
 import pytest
 import pathlib
 import shutil
 import tempfile
-import kestrel
-import kestrel_datasource_stixshifter
 import pandas as pd
 
 from kestrel.session import Session
@@ -25,25 +22,25 @@ def execute(session, script):
 @pytest.fixture
 def fake_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "test_bundle.json")
+    return os.path.join(cwd, "../../../test-data/test_bundle.json")
 
 
 @pytest.fixture
 def fake_bundle_2():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "test_bundle_2.json")
+    return os.path.join(cwd, "../../../test-data/test_bundle_2.json")
 
 
 @pytest.fixture
 def fake_bundle_3():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "test_bundle_3.json")
+    return os.path.join(cwd, "../../../test-data/test_bundle_3.json")
 
 
 @pytest.fixture
 def cbcloud_powershell_bundle():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "powershell_search_stix_result.json")
+    return os.path.join(cwd, "../../../test-data/powershell_search_stix_result.json")
 
 
 def test_session_1(fake_bundle_file):
@@ -165,7 +162,6 @@ def test_generated_pattern_match(fake_bundle_file, fake_bundle_3):
 
 
 def test_disp_column_order(fake_bundle_file, caplog):
-    #caplog.set_level(logging.DEBUG)
     with Session(debug_mode=True) as session:
         execute(
             session,
@@ -294,22 +290,6 @@ grouped = group conns by src_ref.value, dst_ref.value with count(src_ref.value) 
         out = session.execute("DISP grouped ATTR src_ref.value, dst_ref.value, count")
         df = out[0].dataframe
         assert list(df.columns) == ["src_ref.value", "dst_ref.value", "count"]
-
-
-def test_env_var_resolve(tmp_path):
-    os.chdir(tmp_path)
-    config_name = "abc.yaml"
-    with open(config_name, "w") as config:
-        config.write(r"""
-language:
-  default_variable: "_"
-""")
-    os.environ[kestrel.config.CONFIG_PATH_ENV_VAR] = config_name
-    os.environ[kestrel_datasource_stixshifter.config.PROFILE_PATH_ENV_VAR] = config_name
-    s = Session()
-    full_path = os.path.join(os.getcwd(), config_name)
-    assert os.environ[kestrel.config.CONFIG_PATH_ENV_VAR] == full_path 
-    assert os.environ[kestrel_datasource_stixshifter.config.PROFILE_PATH_ENV_VAR] == full_path
 
 
 def test_where_deref_network_traffic(fake_bundle_file):

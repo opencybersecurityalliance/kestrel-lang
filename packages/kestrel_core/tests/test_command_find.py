@@ -10,13 +10,13 @@ from .utils import set_empty_kestrel_config, set_no_prefetch_kestrel_config
 @pytest.fixture
 def fake_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "test_bundle.json")
+    return os.path.join(cwd, "../../../test-data/test_bundle.json")
 
 
 @pytest.fixture
 def proc_bundle_file():
     cwd = os.path.dirname(os.path.abspath(__file__))
-    return os.path.join(cwd, "doctored-1k.json")
+    return os.path.join(cwd, "../../../test-data/doctored-1k.json")
 
 
 def test_return_table_not_exist(set_empty_kestrel_config, fake_bundle_file):
