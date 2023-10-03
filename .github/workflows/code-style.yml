@@ -6,15 +6,13 @@ on:
       - develop
       - develop_*
     paths:
-      - 'src/**'
-      - 'bin/**'
+      - 'packages/*/src/**'
   pull_request:
     branches:
       - develop
       - develop_*
     paths:
-      - 'src/**'
-      - 'bin/**'
+      - 'packages/*/src/**'
     types:
       - opened
       - reopened
@@ -33,6 +31,5 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install black
-          python -m pip install .
       - name: Code style check (please black your code)
-        run: python -m black --check src/
+        run: python -m black --check packages/*/src/

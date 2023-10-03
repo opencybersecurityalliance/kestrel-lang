@@ -6,42 +6,99 @@ on:
       - develop
       - develop_*
     paths:
-      - 'src/**'
-      - 'bin/**'
-      - 'tests/**'
-      - 'setup.cfg'
+      - 'packages/**'
   pull_request:
     branches:
       - develop
       - develop_*
     paths:
-      - 'src/**'
-      - 'bin/**'
-      - 'tests/**'
-      - 'setup.cfg'
+      - 'packages/**'
     types:
       - opened
       - reopened
       - synchronize
 
 jobs:
-  unittest:
-    runs-on: ${{ matrix.os }}
+  test-kestrel-core:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
         python-version: ['3.8', '3.9', '3.10', '3.11']
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./packages/kestrel_core
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Kestrel
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          python -m pip install .
+      - name: Install Python Tools
+        run: python -m pip install --upgrade pip setuptools wheel pytest
+      - name: Install kestrel_core
+        run: python -m pip install .
+      - name: Install kestrel_datasource_stixbundle
+        working-directory: ./packages/kestrel_datasource_stixbundle
+        run: python -m pip install .
+      - name: Install kestrel_analytics_python (for test_completion.py)
+        working-directory: ./packages/kestrel_analytics_python
+        run: python -m pip install .
       - name: Unit testing
-        run: |
-          python -m pip install pytest
-          python -m pytest -vv
+        run: python -m pytest -vv
+
+  test-kestrel-datasource-stixshifter:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./packages/kestrel_datasource_stixshifter
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Python Tools
+        run: python -m pip install --upgrade pip setuptools wheel
+      - name: Install kestrel_core
+        working-directory: ./packages/kestrel_core
+        run: python -m pip install .
+      - name: Install kestrel_datasource_stixshifter
+        run: python -m pip install .[test]
+      - name: Unit testing
+        run: python -m pytest -vv
+
+  test-kestrel-analytics-python:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./packages/kestrel_analytics_python
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Python Tools
+        run: python -m pip install --upgrade pip setuptools wheel
+      - name: Install kestrel_core
+        working-directory: ./packages/kestrel_core
+        run: python -m pip install .
+      - name: Install kestrel_datasource_stixbundle
+        working-directory: ./packages/kestrel_datasource_stixbundle
+        run: python -m pip install .
+      - name: Install kestrel_analytics_python
+        run: python -m pip install .[test]
+      - name: Unit testing
+        run: python -m pytest -vv
