@@ -1,0 +1,1 @@
+import kestrel_ipython.magic
