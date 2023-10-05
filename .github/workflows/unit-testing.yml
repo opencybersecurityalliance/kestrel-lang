@@ -36,17 +36,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Python Tools
-        run: python -m pip install --upgrade pip setuptools wheel pytest
+        run: pip install --upgrade pip setuptools wheel pytest
       - name: Install kestrel_core
-        run: python -m pip install .
+        run: pip install .
       - name: Install kestrel_datasource_stixbundle
         working-directory: ./packages/kestrel_datasource_stixbundle
-        run: python -m pip install .
+        run: pip install .
       - name: Install kestrel_analytics_python (for test_completion.py)
         working-directory: ./packages/kestrel_analytics_python
-        run: python -m pip install .
+        run: pip install .
       - name: Unit testing
-        run: python -m pytest -vv
+        run: pytest -vv
 
   test-kestrel-datasource-stixshifter:
     strategy:
@@ -65,14 +65,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Python Tools
-        run: python -m pip install --upgrade pip setuptools wheel
+        run: pip install --upgrade pip setuptools wheel
       - name: Install kestrel_core
         working-directory: ./packages/kestrel_core
-        run: python -m pip install .
+        run: pip install .
       - name: Install kestrel_datasource_stixshifter
-        run: python -m pip install .[test]
+        run: pip install .[test]
       - name: Unit testing
-        run: python -m pytest -vv
+        run: pytest -vv
 
   test-kestrel-analytics-python:
     strategy:
@@ -91,17 +91,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Python Tools
-        run: python -m pip install --upgrade pip setuptools wheel
+        run: pip install --upgrade pip setuptools wheel
       - name: Install kestrel_core
         working-directory: ./packages/kestrel_core
-        run: python -m pip install .
+        run: pip install .
       - name: Install kestrel_datasource_stixbundle
         working-directory: ./packages/kestrel_datasource_stixbundle
-        run: python -m pip install .
+        run: pip install .
       - name: Install kestrel_analytics_python
-        run: python -m pip install .[test]
+        run: pip install .[test]
       - name: Unit testing
-        run: python -m pytest -vv
+        run: pytest -vv
 
   test-kestrel-jupyter:
     strategy:
@@ -120,23 +120,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Python Tools
-        run: python -m pip install --upgrade pip setuptools wheel
+        run: pip install --upgrade pip setuptools wheel
       - name: Install kestrel_core
         working-directory: ./packages/kestrel_core
-        run: python -m pip install .
+        run: pip install .
       - name: Install kestrel_datasource_stixbundle
         working-directory: ./packages/kestrel_datasource_stixbundle
-        run: python -m pip install .
+        run: pip install .
       - name: Install kestrel_datasource_stixshifter
         working-directory: ./packages/kestrel_datasource_stixshifter
-        run: python -m pip install .
+        run: pip install .
       - name: Install kestrel_analytics_python
         working-directory: ./packages/kestrel_analytics_python
-        run: python -m pip install .
+        run: pip install .
       - name: Install kestrel_analytics_docker
         working-directory: ./packages/kestrel_analytics_docker
-        run: python -m pip install .
+        run: pip install .
       - name: Install kestrel_jupyter
-        run: python -m pip install .[test]
+        run: pip install .[test]
       - name: Unit testing
-        run: python -m pytest -vv
+        run: pytest -vv
