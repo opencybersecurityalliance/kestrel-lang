@@ -131,24 +131,25 @@ any newly opened terminal.
 
         .. code-block:: console
 
-            $ pip install kestrel-lang
+            $ pip install kestrel-jupyter
+            $ python -m kestrel_jupyter_kernel.setup
 
     .. tab-item:: Nightly Built
 
         .. code-block:: console
 
             $ git clone git://github.com/opencybersecurityalliance/kestrel-lang
-            $ cd kestrel-lang && pip install .
+            $ cd kestrel-lang
+            $ packages=(kestrel_core kestrel_datasource_stixbundle kestrel_datasource_stixshifter kestrel_analytics_python kestrel_analytics_docker kestrel_jupyter)
+            $ for package in ${packages[@]}; do pip install packages/$package; done
+            $ python -m kestrel_jupyter_kernel.setup
 
-Kestrel Front-End Setup
-=======================
+Kestrel Front-Ends
+==================
 
 Kestrel runtime currently supports three front-ends
-(:ref:`overview/index:Kestrel in a Nutshell`).
-
-Choose one and execute the command to install/use them in the terminal you
-opened in the last step. If you use `Python virtual environment`_, the virtual
-environment should be activated for any newly opened terminal.
+(:ref:`overview/index:Kestrel in a Nutshell`). Use the following command to
+invoke any of them:
 
 .. tab-set::
 
@@ -156,14 +157,7 @@ environment should be activated for any newly opened terminal.
         
         This is the most popular front-end for Kestrel and it provides an
         interactive way to develop :ref:`language/tac:Hunt Flow` and
-        :ref:`language/tac:Huntbook`. You can install the Jupyter front-end by:
-
-        .. code-block:: console
-
-            $ pip install kestrel-jupyter
-            $ python -m kestrel_jupyter_kernel.setup
-
-        Then, you can start the Jupyter Notebook and dive into
+        :ref:`language/tac:Huntbook`. Start the Jupyter Notebook and dive into
         :ref:`tutorial:Kestrel + Jupyter`:
 
         .. code-block:: console
@@ -172,9 +166,8 @@ environment should be activated for any newly opened terminal.
 
     .. tab-item:: Command-line Utility
         
-        The ``kestrel`` command is installed along with the Kestrel runtime
-        installation in the last step. This is designed for batch execution and
-        hunting automation. You can use it right away like:
+        The ``kestrel`` command is designed for batch execution and hunting
+        automation. Use it right away in a terminal:
 
         .. code-block:: console
 
