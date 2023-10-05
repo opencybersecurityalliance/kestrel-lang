@@ -9,6 +9,12 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+Changed
+-------
+
+- Split namespace package ``kestrel-lang`` into individual Python packages
+- Merge ``kestrel-jupyter`` into this repo
+
 1.7.6 (2023-09-25)
 ==================
 
@@ -162,7 +168,6 @@ Changed
 
 - Examples in Kestrel config YAML
 
-
 1.6.1 (2023-05-31)
 ==================
 
@@ -219,7 +224,6 @@ Fixed
 
 - Logging module reimplemented to fix #334
 - asyncio bug in ``tests/test_fast_translate.py``
-
 
 1.5.14 (2023-04-19)
 ===================
@@ -300,7 +304,6 @@ Changed
 - stix-shifter API argument name change to be consistent across connectors
 - stix-shifter minimal version for elastic_ecs connector pagination support
 - stix-shifter minimal version for elastic_ecs connector mapping update
-
 
 1.5.9 (2023-02-17)
 ==================
@@ -396,7 +399,6 @@ Fixed
 
 - STIX-shifter module verification failure due to pypi website update
 - codecov rate limit for public repo
-
 
 1.5.3 (2022-11-23)
 ==================
