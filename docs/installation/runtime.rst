@@ -140,9 +140,7 @@ any newly opened terminal.
 
             $ git clone git://github.com/opencybersecurityalliance/kestrel-lang
             $ cd kestrel-lang
-            $ packages=(kestrel_core kestrel_datasource_stixbundle kestrel_datasource_stixshifter kestrel_analytics_python kestrel_analytics_docker kestrel_jupyter)
-            $ for package in ${packages[@]}; do pip install packages/$package; done
-            $ kestrel_jupyter_setup
+            $ make install
 
 Kestrel Front-Ends
 ==================
