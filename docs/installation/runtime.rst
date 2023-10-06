@@ -132,7 +132,7 @@ any newly opened terminal.
         .. code-block:: console
 
             $ pip install kestrel_jupyter
-            $ python -m kestrel_jupyter_kernel.setup
+            $ kestrel_jupyter_setup
 
     .. tab-item:: Nightly Built
 
@@ -142,7 +142,7 @@ any newly opened terminal.
             $ cd kestrel-lang
             $ packages=(kestrel_core kestrel_datasource_stixbundle kestrel_datasource_stixshifter kestrel_analytics_python kestrel_analytics_docker kestrel_jupyter)
             $ for package in ${packages[@]}; do pip install packages/$package; done
-            $ python -m kestrel_jupyter_kernel.setup
+            $ kestrel_jupyter_setup
 
 Kestrel Front-Ends
 ==================

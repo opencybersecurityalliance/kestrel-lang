@@ -45,6 +45,9 @@ Homepage = "https://github.com/opencybersecurityalliance/kestrel-lang"
 Documentation = "https://kestrel.readthedocs.io/"
 Repository = "https://github.com/opencybersecurityalliance/kestrel-lang.git"
 
+[project.scripts]
+kestrel_jupyter_setup = "kestrel_jupyter_kernel.setup:run"
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

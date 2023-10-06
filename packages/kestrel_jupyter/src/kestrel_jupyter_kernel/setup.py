@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 ################################################################
 #                   Setup Kestrel Jupyter Kernel
 #
@@ -9,7 +7,9 @@
 #      installed kestrel Python package for syntax highlighting
 #   3. install the codemirror mode into Jupyter
 #
-# Usage: `python3 -m kestrel_jupyter_kernel.setup`
+# Install: pip will install the utility `kestrel_jupyter_setup`
+#
+# Usage: `kestrel_jupyter_setup`
 #
 ################################################################
 
@@ -38,7 +38,7 @@ def install_kernelspec():
         m.install_kernel_spec(kernel_dirname, "kestrel", user=True)
 
 
-if __name__ == "__main__":
+def run():
     print("Setup Kestrel Jupyter Kernel")
     print("  Install new Jupyter kernel ...", end=" ")
     install_kernelspec()
