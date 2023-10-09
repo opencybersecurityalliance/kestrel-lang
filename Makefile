@@ -21,7 +21,7 @@ kestrel_analytics_python: kestrel_core
 	cd packages/kestrel_analytics_python; pip install .
 
 ## Install Kestrel kernel for Jupyter
-kestrel_jupyter: kestrel_analytics_docker kestrel_analytics_python
+kestrel_jupyter: kestrel_datasource_stixbundle kestrel_datasource_stixshifter kestrel_analytics_docker kestrel_analytics_python
 	cd packages/kestrel_jupyter; pip install .; kestrel_jupyter_setup
 
 ## Install Kestrel kernel for Jupyter
