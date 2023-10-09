@@ -81,7 +81,9 @@ def stix_shifter_diag():
     diag.diagnose_config()
 
     # 2. setup connector and ping
-    setup_connector_module(diag.connector_name, diag.allow_dev_connector, args.ignore_cert)
+    setup_connector_module(
+        diag.connector_name, diag.allow_dev_connector, args.ignore_cert
+    )
 
     # 3. query translation test
     diag.diagnose_translate_query(patterns[0])

@@ -40,7 +40,7 @@ def kestrel():
         print(results)
 
 
-#TODO: fix #405 so we do not need this
+# TODO: fix #405 so we do not need this
 CMDS = [  # command_no_result from kestrel.lark
     "APPLY",
     "DISP",
