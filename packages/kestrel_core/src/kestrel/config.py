@@ -1,10 +1,10 @@
 import os
 import yaml
 import pathlib
-from importlib import resources
 import logging
 
 from kestrel.utils import update_nested_dict
+from kestrel.deprecating import load_data_file
 
 CONFIG_DIR_DEFAULT = pathlib.Path.home() / ".config" / "kestrel"
 CONFIG_PATH_DEFAULT = CONFIG_DIR_DEFAULT / "kestrel.yaml"
@@ -15,7 +15,7 @@ _logger = logging.getLogger(__name__)
 
 def load_default_config():
     _logger.debug(f"Loading default config file...")
-    default_config = resources.files("kestrel").joinpath("config.yaml").read_text()
+    default_config = load_data_file("kestrel", "config.yaml")
     return yaml.safe_load(default_config)
 
 

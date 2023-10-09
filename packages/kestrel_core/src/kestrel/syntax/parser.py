@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from importlib import resources
 from importlib.util import find_spec
 from lark import Lark, Token, Transformer
 from lark.visitors import merge_transformers
@@ -8,6 +7,7 @@ from firepit.timestamp import to_datetime
 from firepit.query import BinnedColumn
 from kestrel.utils import unescape_quoted_string, resolve_path
 from kestrel.syntax.utils import resolve_uri
+from kestrel.deprecating import load_data_file
 from kestrel.syntax.ecgpattern import (
     ECGPComparison,
     ECGPJunction,
@@ -25,7 +25,7 @@ def parse_kestrel(
     # the public parsing interface for Kestrel
     # return abstract syntax tree
     # check kestrel.lark for details
-    grammar = resources.files("kestrel.syntax").joinpath("kestrel.lark").read_text()
+    grammar = load_data_file("kestrel.syntax", "kestrel.lark")
     return Lark(
         grammar,
         parser="lalr",
@@ -34,7 +34,7 @@ def parse_kestrel(
 
 
 def parse_ecgpattern(pattern_str) -> ExtCenteredGraphPattern:
-    grammar = resources.files("kestrel.syntax").joinpath("ecgpattern.lark").read_text()
+    grammar = load_data_file("kestrel.syntax", "ecgpattern.lark")
     paths = find_spec("kestrel.syntax").submodule_search_locations
     return Lark(
         grammar,

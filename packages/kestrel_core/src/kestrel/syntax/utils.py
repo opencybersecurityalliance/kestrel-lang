@@ -1,12 +1,12 @@
 from typeguard import typechecked
 from lark import Lark
-from importlib import resources
 from itertools import chain
 from typing import Tuple, Iterable
 import datetime
 import os
 
 from kestrel.utils import resolve_path
+from kestrel.deprecating import load_data_file
 from kestrel.codegen.relations import (
     all_relations,
     stix_2_0_ref_mapping,
@@ -20,7 +20,7 @@ TRANSFORMS = {"TIMESTAMPED", "ADDOBSID", "RECORDS"}
 
 
 def get_keywords():
-    grammar = resources.files("kestrel.syntax").joinpath("kestrel.lark").read_text()
+    grammar = load_data_file("kestrel.syntax", "kestrel.lark")
     parser = Lark(grammar, parser="lalr")
     alphabet_patterns = filter(lambda x: x.pattern.value.isalnum(), parser.terminals)
     keywords = [x.pattern.value for x in alphabet_patterns] + all_relations
