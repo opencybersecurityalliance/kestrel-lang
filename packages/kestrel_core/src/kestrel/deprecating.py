@@ -1,6 +1,7 @@
 from pkgutil import get_data
 from importlib import resources
 
+
 def load_data_file(package_name, file_name):
     try:
         # resources.files() is introduced in Python 3.9
