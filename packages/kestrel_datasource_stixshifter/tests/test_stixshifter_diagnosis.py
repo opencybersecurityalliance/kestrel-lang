@@ -2,6 +2,7 @@ import subprocess
 import pytest
 
 from kestrel_datasource_stixshifter.diagnosis import Diagnosis
+from kestrel_datasource_stixshifter.connector import setup_connector_module
 from .utils import stixshifter_profile_lab101, stixshifter_profile_ecs
 
 
@@ -128,6 +129,8 @@ configuration object [ref: https://github.com/opencybersecurityalliance/stix-shi
 #### Output: 1 data source native queries
 (host.id : "123456" OR observer.serial_number : "123456") AND (@timestamp:["2000-01-01T00:00:00.000Z" TO "3000-01-01T00:00:00.000Z"])
 """
+
+    setup_connector_module("elastic_ecs")
 
     result = subprocess.run(
         args=[

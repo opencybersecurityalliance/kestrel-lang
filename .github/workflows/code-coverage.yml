@@ -31,24 +31,8 @@ jobs:
         run: pip install --upgrade pip setuptools wheel
       - name: Install Pytest
         run: pip install pytest pytest-cov
-      - name: Install kestrel_core
-        working-directory: ./packages/kestrel_core
-        run: pip install .
-      - name: Install kestrel_datasource_stixbundle
-        working-directory: ./packages/kestrel_datasource_stixbundle
-        run: pip install .
-      - name: Install kestrel_datasource_stixshifter
-        working-directory: ./packages/kestrel_datasource_stixshifter
-        run: pip install .
-      - name: Install kestrel_analytics_python
-        working-directory: ./packages/kestrel_analytics_python
-        run: pip install .
-      - name: Install kestrel_analytics_docker
-        working-directory: ./packages/kestrel_analytics_docker
-        run: pip install .
-      - name: Install kestrel_jupyter
-        working-directory: ./packages/kestrel_jupyter
-        run: pip install .
+      - name: Install kestrel [all packages]
+        run: make install
       - name: Coverage for kestrel_core and kestrel_datasource_stixbundle
         working-directory: ./packages/kestrel_core
         run: pytest -vv --cov-report=xml --cov=kestrel --cov=kestrel_datasource_stixbundle
