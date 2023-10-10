@@ -30,8 +30,8 @@ dependencies = [
     "lxml>=4.9.3",
     "requests>=2.31.0",
     "nest-asyncio>=1.5.8",
-    "stix-shifter==6.2.1",
-    "stix-shifter-utils==6.2.1",
+    "stix-shifter==6.2.2",
+    "stix-shifter-utils==6.2.2",
 ]
 
 [project.optional-dependencies]
