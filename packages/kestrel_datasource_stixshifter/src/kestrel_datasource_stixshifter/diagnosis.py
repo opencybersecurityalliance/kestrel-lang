@@ -39,7 +39,7 @@ class Diagnosis:
         print("## Diagnose: config verification")
 
         configuration_dict_masked = mask_value_in_nested_dict(
-            deepcopy(self.configuration_dict)
+            deepcopy(self.configuration_dict), "*"
         )
 
         print()

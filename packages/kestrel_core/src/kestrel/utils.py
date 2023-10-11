@@ -2,31 +2,42 @@ import pathlib
 import os
 import uuid
 import collections.abc
+from typeguard import typechecked
+from typing import Union
 import logging
 
 
-def unescape_quoted_string(s):
+@typechecked
+def unescape_quoted_string(s: str):
     if s.startswith("r"):
         return s[2:-1]
     else:
         return s[1:-1].encode("utf-8").decode("unicode_escape")
 
 
-def lowered_str_list(xs):
+@typechecked
+def lowered_str_list(xs: list):
     return [x.lower() for x in xs if isinstance(x, str)]
 
 
-def mask_value_in_nested_dict(d):
+@typechecked
+def mask_value_in_nested_dict(d: dict, sensitive_branch: str):
+    # sensitive_branch is the key of the branch to be masked out
+    # if sensitive_branch == '*', then mask all values in the branch
+    # if not, locate the sensitive branch and masks all values in that branch
     if d:
         for k, v in d.items():
+            if k == sensitive_branch:
+                sensitive_branch = "*"
             if isinstance(v, collections.abc.Mapping):
-                d[k] = mask_value_in_nested_dict(v)
-            elif isinstance(v, str):
+                d[k] = mask_value_in_nested_dict(v, sensitive_branch)
+            elif isinstance(v, str) and sensitive_branch == "*":
                 d[k] = "********"
     return d
 
 
-def update_nested_dict(dict_old, dict_new):
+@typechecked
+def update_nested_dict(dict_old: dict, dict_new: Union[dict, None]):
     if dict_new:
         for k, v in dict_new.items():
             if isinstance(v, collections.abc.Mapping) and k in dict_old:
@@ -36,19 +47,22 @@ def update_nested_dict(dict_old, dict_new):
     return dict_old
 
 
-def remove_empty_dicts(ds):
+@typechecked
+def remove_empty_dicts(ds: list[dict]):
     # remove dict with all values as None in list({string:string})
     # this is the results from SQL query
     return [d for d in ds if set(d.values()) != {None}]
 
 
-def dedup_dicts(ds):
+@typechecked
+def dedup_dicts(ds: list[dict]):
     # deduplicate list({string:string})
     # this is the results from SQL query
     return [dict(s) for s in set(frozenset(d.items()) for d in ds)]
 
 
-def dedup_ordered_dicts(ds):
+@typechecked
+def dedup_ordered_dicts(ds: list[dict]):
     # deduplicate list({string:string})
     # maintain the order if seen
     res = []

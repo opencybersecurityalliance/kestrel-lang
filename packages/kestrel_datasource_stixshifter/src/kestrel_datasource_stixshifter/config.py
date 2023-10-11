@@ -2,12 +2,16 @@ import os
 import json
 import logging
 import multiprocessing
+from copy import deepcopy
 
 from kestrel.config import (
     CONFIG_DIR_DEFAULT,
     load_user_config,
 )
-from kestrel.utils import update_nested_dict
+from kestrel.utils import (
+    update_nested_dict,
+    mask_value_in_nested_dict,
+)
 from kestrel.exceptions import InvalidDataSource
 
 PROFILE_PATH_DEFAULT = CONFIG_DIR_DEFAULT / "stixshifter.yaml"
@@ -92,7 +96,8 @@ def get_datasource_from_profiles(profile_name, profiles):
                 "stixshifter",
                 f"the profile is empty",
             )
-        _logger.debug(f"profile to use: {profile}")
+        profile_masked = mask_value_in_nested_dict(deepcopy(profile), "config")
+        _logger.debug(f"profile to use: {profile_masked}")
         if "connector" not in profile:
             raise InvalidDataSource(
                 profile_name,
@@ -199,7 +204,8 @@ def load_profiles():
         profiles_from_file = {}
     profiles_from_env_var = load_profiles_from_env_var()
     profiles = update_nested_dict(profiles_from_file, profiles_from_env_var)
-    _logger.debug(f"profiles loaded: {profiles}")
+    profiles_masked = mask_value_in_nested_dict(deepcopy(profiles), "config")
+    _logger.debug(f"profiles loaded: {profiles_masked}")
     return profiles
 
 

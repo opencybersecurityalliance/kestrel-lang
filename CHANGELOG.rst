@@ -9,6 +9,12 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+Added
+-----
+
+- Hide credentials in debug log
+- Type checking in kestrel/utils.py
+
 Changed
 -------
 
