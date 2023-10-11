@@ -3,7 +3,7 @@ import os
 import uuid
 import collections.abc
 from typeguard import typechecked
-from typing import Union
+from typing import Union, Iterable, Mapping
 import logging
 
 
@@ -16,12 +16,12 @@ def unescape_quoted_string(s: str):
 
 
 @typechecked
-def lowered_str_list(xs: list):
+def lowered_str_list(xs: Iterable):
     return [x.lower() for x in xs if isinstance(x, str)]
 
 
 @typechecked
-def mask_value_in_nested_dict(d: dict, sensitive_branch: str):
+def mask_value_in_nested_dict(d: Mapping, sensitive_branch: str):
     # sensitive_branch is the key of the branch to be masked out
     # if sensitive_branch == '*', then mask all values in the branch
     # if not, locate the sensitive branch and masks all values in that branch
@@ -37,7 +37,7 @@ def mask_value_in_nested_dict(d: dict, sensitive_branch: str):
 
 
 @typechecked
-def update_nested_dict(dict_old: dict, dict_new: Union[dict, None]):
+def update_nested_dict(dict_old: Mapping, dict_new: Union[Mapping, None]):
     if dict_new:
         for k, v in dict_new.items():
             if isinstance(v, collections.abc.Mapping) and k in dict_old:
@@ -48,21 +48,21 @@ def update_nested_dict(dict_old: dict, dict_new: Union[dict, None]):
 
 
 @typechecked
-def remove_empty_dicts(ds: list[dict]):
+def remove_empty_dicts(ds: Iterable[Mapping]):
     # remove dict with all values as None in list({string:string})
     # this is the results from SQL query
     return [d for d in ds if set(d.values()) != {None}]
 
 
 @typechecked
-def dedup_dicts(ds: list[dict]):
+def dedup_dicts(ds: Iterable[Mapping]):
     # deduplicate list({string:string})
     # this is the results from SQL query
     return [dict(s) for s in set(frozenset(d.items()) for d in ds)]
 
 
 @typechecked
-def dedup_ordered_dicts(ds: list[dict]):
+def dedup_ordered_dicts(ds: Iterable[Mapping]):
     # deduplicate list({string:string})
     # maintain the order if seen
     res = []
