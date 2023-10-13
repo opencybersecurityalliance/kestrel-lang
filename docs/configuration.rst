@@ -17,7 +17,7 @@ configuration of STIX-shifter data sources.
 Default Kestrel Configuration
 =============================
 
-.. literalinclude:: ../src/kestrel/config.yaml
+.. literalinclude:: ../packages/kestrel_core/src/kestrel/config.yaml
    :language: yaml
 
 Example of User-Defined Configurations
