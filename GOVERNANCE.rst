@@ -49,15 +49,18 @@ A maintainer should release a new Kestrel runtime (PyPI package name: ``kestre-l
 #. Update version and changelog
 
     #. Sync the local git repo to the latest of the ``develop`` branch.
-    #. Update the ``version`` field in ``setup.cfg``.
-    #. Add changes in ``CHANGELOG.rst`` under a new version section.
+    #. Update the ``version`` field in ``packages/*/pyproject.toml`` for any package that has been updated.
+    #. Update dependencies in ``packages/*/pyproject.toml``.
+    #. Always bump the ``version`` field in ``packages/kestrel_jupyter/pyproject.toml`` (the umbralla package).
+    #. Add changes in ``CHANGELOG.rst`` under a new date section.
+    #. Add changes of each package under a new version subsection of the date section.
     #. Add new contributors to ``AUTHORS.rst`` if any.
-    #. Commit the updates with the new version number as the message.
+    #. Commit the updates with ``<date> NIGHTLY`` as the message.
     #. Push the local ``develop`` branch to remote.
 
 #. Graduate code to the ``release`` branch
 
-    #. Open a PR to merge the ``develop`` branch to the ``release`` branch. Use the version number as the PR title.
+    #. Open a PR to merge the ``develop`` branch to the ``release`` branch. Use the date as the PR title.
 
     #. Merge the PR.
 
@@ -69,7 +72,7 @@ A maintainer should release a new Kestrel runtime (PyPI package name: ``kestre-l
 
     #. Choose ``release`` branch as the *Target*.
 
-    #. Specify a release title. Use the version number for ordinary release.
+    #. Specify a release title. Use the date for ordinary release.
 
     #. Write a summary of the release.
 
@@ -81,7 +84,7 @@ A maintainer should release a new Kestrel runtime (PyPI package name: ``kestre-l
 
 #. After release check
 
-    - Check `kestrel-lang on PyPI`_ after a few minutes to confirm new package built and released.
+    - Check `kestrel_jupyter on PyPI`_ after a few minutes to confirm new package built and released.
     - May activate/pin the released version of Kestrel documentation at `readthedocs version control`_.
     - Announce the release at OCA Kestrel channel.
 
@@ -96,6 +99,6 @@ In the case of a vulnerability, please contact any of the maintainers via slack 
 .. _branching model: https://nvie.com/posts/a-successful-git-branching-model
 .. _entity-based cyber reasoning: https://kestrel.readthedocs.io/en/latest/language.html#entity-based-reasoning
 .. _firepit: https://github.com/opencybersecurityalliance/firepit
-.. _kestrel-lang on PyPI: https://pypi.org/project/kestrel-lang/
+.. _kestrel_jupyter on PyPI: https://pypi.org/project/kestrel_jupyter/
 .. _readthedocs version control: https://readthedocs.org/projects/kestrel/versions/
 .. _README: README.rst
