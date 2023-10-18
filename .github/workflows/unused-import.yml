@@ -6,15 +6,13 @@ on:
       - develop
       - develop_*
     paths:
-      - 'src/**'
-      - 'bin/**'
+      - 'packages/*/src/**'
   pull_request:
     branches:
       - develop
       - develop_*
     paths:
-      - 'src/**'
-      - 'bin/**'
+      - 'packages/*/src/**'
     types:
       - opened
       - reopened
@@ -31,8 +29,7 @@ jobs:
           python-version: '3.10'
       - name: Install Kestrel package
         run: |
-          python -m pip install --upgrade pip setuptools wheel
-          python -m pip install unimport
-          python -m pip install .
+          pip install --upgrade pip setuptools wheel
+          pip install unimport
       - name: Check
-        run: python -m unimport --check --exclude __init__.py src/
+        run: unimport --check --exclude __init__.py packages/*/src/

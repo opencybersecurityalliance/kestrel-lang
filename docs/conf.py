@@ -1,11 +1,10 @@
-import os
-from configparser import RawConfigParser
+import tomllib
 
 def get_version():
-    """Return package version from setup.cfg."""
-    config = RawConfigParser()
-    config.read(os.path.join("..", "setup.cfg"))
-    return config.get("metadata", "version")
+    """Use the kestrel_jupyter (umbralla package) version as doc version"""
+    with open("../packages/kestrel_jupyter/pyproject.toml", "rb") as f:
+        pyproject_config = tomllib.load(f)
+    return pyproject_config["project"]["version"]
 
 project = "Kestrel Threat Hunting Language"
 version = get_version()

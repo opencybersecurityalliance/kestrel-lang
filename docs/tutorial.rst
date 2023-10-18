@@ -65,9 +65,10 @@ The results have two parts:
 Kestrel + Jupyter
 =================
 
-To develop a hunt flow using Jupyter Notebook, you need to first follow the
-instructions in :ref:`installation/runtime:Kestrel Front-End Setup` to install
-the Kestrel Jupyter Notebook kernel if you haven't done so.
+Jupyter is one of the three default Kestrel front-ends. Follow
+:ref:`installation/runtime:Kestrel Runtime Installation` and
+:ref:`installation/runtime:Kestrel Front-Ends` to install the Kestrel Jupyter
+kernel and start your interactive hunt in Jupyter.
 
 Creating A Hunt Book
 --------------------
