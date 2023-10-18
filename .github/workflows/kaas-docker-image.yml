@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Wait for release to complete
-        run: sleep 300s
+        run: sleep 600s
         shell: bash
       - name: Checkout
         uses: actions/checkout@v3.5.3
