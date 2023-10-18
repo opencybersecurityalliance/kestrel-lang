@@ -6,20 +6,63 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
-Unreleased
+2023-10-18
 ==========
 
+kestrel_core 1.8.0
+------------------
+
 Added
------
+^^^^^
 
 - Hide credentials in debug log
 - Type checking in kestrel/utils.py
 
 Changed
--------
+^^^^^^^
 
-- Split namespace package ``kestrel-lang`` into individual Python packages
-- Merge ``kestrel-jupyter`` into this repo
+- Package name from ``kestrel-lang`` to ``kestrel-core`` to peel off components into standalone packages
+- Installation documentation
+
+kestrel_jupyter 1.8.0
+---------------------
+
+Added
+^^^^^
+
+- Merge ``opencybersecurityalliance/kestrel-jupyter`` repo into this repo as the umbralla package for Kestrel
+
+kestrel_datasource_stixbundle 1.8.0
+-----------------------------------
+
+Added
+^^^^^
+
+- Establish standalone package with its own ``pyproject.toml``
+
+kestrel_datasource_stixshifter 1.8.0
+------------------------------------
+
+Added
+^^^^^
+
+- Establish standalone package with its own ``pyproject.toml``
+
+kestrel_analytics_python 1.8.0
+------------------------------
+
+Added
+^^^^^
+
+- Establish standalone package with its own ``pyproject.toml``
+
+kestrel_analytics_docker 1.8.0
+------------------------------
+
+Added
+^^^^^
+
+- Establish standalone package with its own ``pyproject.toml``
 
 1.7.6 (2023-09-25)
 ==================
