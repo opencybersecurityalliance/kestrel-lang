@@ -60,7 +60,7 @@ A maintainer should release a new Kestrel runtime (PyPI package name: ``kestre-l
 
 #. Graduate code to the ``release`` branch
 
-    #. Open a PR to merge the ``develop`` branch to the ``release`` branch. Use the date as the PR title.
+    #. Open a PR to merge the ``develop`` branch to the ``release`` branch. Use ``<date> TO RELEASE`` as the PR title.
 
     #. Merge the PR.
 
