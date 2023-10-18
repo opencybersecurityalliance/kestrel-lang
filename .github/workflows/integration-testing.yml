@@ -6,16 +6,16 @@ on:
       - develop_*
       - release
     paths:
-      - 'src/**'
-      - 'setup.cfg'
+      - 'packages/*/src/**'
+      - 'pyproject.toml'
   pull_request:
     branches:
       - develop
       - develop_*
       - release
     paths:
-      - 'src/**'
-      - 'setup.cfg'
+      - 'packages/*/src/**'
+      - 'pyproject.toml'
     types:
       - opened
       - synchronize

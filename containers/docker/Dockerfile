@@ -20,7 +20,6 @@ RUN apt-get update --yes && \
     git \
     curl \
     gnupg\
-    nano-tiny \
     tzdata \
     unzip \
     vim-tiny \
@@ -39,15 +38,9 @@ RUN apt-get update --yes && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # analytics prereq
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+RUN curl https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sh -
 
-RUN sudo apt-get install --yes git-lfs
-
-# Install kestrel-LANG
-RUN pip install kestrel-lang
-
-# Create alternative for nano -> nano-tiny
-RUN update-alternatives --install /usr/bin/nano nano /bin/nano-tiny 10
+RUN apt-get install --yes git-lfs
 
 RUN mkdir -p /opt/kaas && chown ${NB_UID}:${NB_UID} /opt/kaas
 
@@ -55,10 +48,10 @@ RUN mkdir -p /opt/kaas && chown ${NB_UID}:${NB_UID} /opt/kaas
 USER ${NB_UID}
 
 # Install kestrel-JUPYTER
-RUN pip install kestrel-jupyter
+RUN pip install kestrel_jupyter
 
 # setup Jupyter
-RUN python -m kestrel_jupyter_kernel.setup
+RUN kestrel_jupyter_setup
 
 RUN mv "${HOME}/.local/share/jupyter/kernels/kestrel"* "${CONDA_DIR}/share/jupyter/kernels/" && \
     chmod -R go+rx "${CONDA_DIR}/share/jupyter" && \

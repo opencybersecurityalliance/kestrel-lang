@@ -131,24 +131,23 @@ any newly opened terminal.
 
         .. code-block:: console
 
-            $ pip install kestrel-lang
+            $ pip install kestrel_jupyter
+            $ kestrel_jupyter_setup
 
     .. tab-item:: Nightly Built
 
         .. code-block:: console
 
             $ git clone git://github.com/opencybersecurityalliance/kestrel-lang
-            $ cd kestrel-lang && pip install .
+            $ cd kestrel-lang
+            $ make install
 
-Kestrel Front-End Setup
-=======================
+Kestrel Front-Ends
+==================
 
 Kestrel runtime currently supports three front-ends
-(:ref:`overview/index:Kestrel in a Nutshell`).
-
-Choose one and execute the command to install/use them in the terminal you
-opened in the last step. If you use `Python virtual environment`_, the virtual
-environment should be activated for any newly opened terminal.
+(:ref:`overview/index:Kestrel in a Nutshell`). Use the following command to
+invoke any of them:
 
 .. tab-set::
 
@@ -156,14 +155,7 @@ environment should be activated for any newly opened terminal.
         
         This is the most popular front-end for Kestrel and it provides an
         interactive way to develop :ref:`language/tac:Hunt Flow` and
-        :ref:`language/tac:Huntbook`. You can install the Jupyter front-end by:
-
-        .. code-block:: console
-
-            $ pip install kestrel-jupyter
-            $ python -m kestrel_jupyter_kernel.setup
-
-        Then, you can start the Jupyter Notebook and dive into
+        :ref:`language/tac:Huntbook`. Start the Jupyter Notebook and dive into
         :ref:`tutorial:Kestrel + Jupyter`:
 
         .. code-block:: console
@@ -172,9 +164,8 @@ environment should be activated for any newly opened terminal.
 
     .. tab-item:: Command-line Utility
         
-        The ``kestrel`` command is installed along with the Kestrel runtime
-        installation in the last step. This is designed for batch execution and
-        hunting automation. You can use it right away like:
+        The ``kestrel`` command is designed for batch execution and hunting
+        automation. Use it right away in a terminal:
 
         .. code-block:: console
 
@@ -188,7 +179,7 @@ environment should be activated for any newly opened terminal.
 
         - Start a Kestrel session in Python directly. See more at :doc:`../source/kestrel.session`.
 
-        - Use `magic command`_ in iPython environment. Check `kestrel-jupyter`_ package for usage.
+        - Use `magic command`_ in iPython environment. Check `kestrel_jupyter`_ package for usage.
 
 What's to Do Next
 =================
@@ -202,7 +193,7 @@ What's to Do Next
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _Xcode: https://developer.apple.com/xcode/
 .. _kestrel-lang: http://github.com/opencybersecurityalliance/kestrel-lang
-.. _kestrel-jupyter: http://github.com/opencybersecurityalliance/kestrel-jupyter
+.. _kestrel_jupyter: http://github.com/opencybersecurityalliance/kestrel-jupyter
 .. _firepit: http://github.com/opencybersecurityalliance/firepit
 .. _Jupyter Notebook: https://jupyter.org/
 .. _magic command: https://ipython.readthedocs.io/en/stable/interactive/magics.html

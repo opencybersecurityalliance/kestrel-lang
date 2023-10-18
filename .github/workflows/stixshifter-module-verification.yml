@@ -10,16 +10,22 @@ on:
 jobs:
   verify-stixshifter:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./packages/kestrel_datasource_stixshifter
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.10'
-      - name: Install Kestrel package
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
-          python -m pip install pytest
-          python -m pip install .
+      - name: Install Python Tools
+        run: pip install --upgrade pip setuptools wheel
+      - name: Install kestrel_core
+        working-directory: ./packages/kestrel_core
+        run: pip install .
+      - name: Install kestrel_datasource_stixshifter
+        run: pip install .[test]
       - name: Sample STIX-shifter Connector Package Verification on PyPI
-        run: python -m pytest -vv tests/test_stixshifter.py -k test_verify_package_origin
+        run: pytest -vv tests/test_stixshifter.py -k test_verify_package_origin

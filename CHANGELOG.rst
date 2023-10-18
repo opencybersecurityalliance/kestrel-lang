@@ -6,8 +6,63 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
-Unreleased
+2023-10-18
 ==========
+
+kestrel_core 1.8.0
+------------------
+
+Added
+^^^^^
+
+- Hide credentials in debug log
+- Type checking in kestrel/utils.py
+
+Changed
+^^^^^^^
+
+- Package name from ``kestrel-lang`` to ``kestrel-core`` to peel off components into standalone packages
+- Installation documentation
+
+kestrel_jupyter 1.8.0
+---------------------
+
+Added
+^^^^^
+
+- Merge ``opencybersecurityalliance/kestrel-jupyter`` repo into this repo as the umbralla package for Kestrel
+
+kestrel_datasource_stixbundle 1.8.0
+-----------------------------------
+
+Added
+^^^^^
+
+- Establish standalone package with its own ``pyproject.toml``
+
+kestrel_datasource_stixshifter 1.8.0
+------------------------------------
+
+Added
+^^^^^
+
+- Establish standalone package with its own ``pyproject.toml``
+
+kestrel_analytics_python 1.8.0
+------------------------------
+
+Added
+^^^^^
+
+- Establish standalone package with its own ``pyproject.toml``
+
+kestrel_analytics_docker 1.8.0
+------------------------------
+
+Added
+^^^^^
+
+- Establish standalone package with its own ``pyproject.toml``
 
 1.7.6 (2023-09-25)
 ==================
@@ -162,7 +217,6 @@ Changed
 
 - Examples in Kestrel config YAML
 
-
 1.6.1 (2023-05-31)
 ==================
 
@@ -219,7 +273,6 @@ Fixed
 
 - Logging module reimplemented to fix #334
 - asyncio bug in ``tests/test_fast_translate.py``
-
 
 1.5.14 (2023-04-19)
 ===================
@@ -300,7 +353,6 @@ Changed
 - stix-shifter API argument name change to be consistent across connectors
 - stix-shifter minimal version for elastic_ecs connector pagination support
 - stix-shifter minimal version for elastic_ecs connector mapping update
-
 
 1.5.9 (2023-02-17)
 ==================
@@ -396,7 +448,6 @@ Fixed
 
 - STIX-shifter module verification failure due to pypi website update
 - codecov rate limit for public repo
-
 
 1.5.3 (2022-11-23)
 ==================
