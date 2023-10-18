@@ -51,7 +51,7 @@ USER ${NB_UID}
 RUN pip install kestrel_jupyter
 
 # setup Jupyter
-RUN python -m kestrel_jupyter_kernel.setup
+RUN kestrel_jupyter_setup
 
 RUN mv "${HOME}/.local/share/jupyter/kernels/kestrel"* "${CONDA_DIR}/share/jupyter/kernels/" && \
     chmod -R go+rx "${CONDA_DIR}/share/jupyter" && \
