@@ -83,7 +83,7 @@ A maintainer should release a new Kestrel runtime (PyPI package name: ``kestre-l
 
 #. After release check
 
-    - Check `kestrel_jupyter on PyPI`_ after a few minutes to confirm new package built and released.
+    - Check `kestrel-jupyter on PyPI`_ after a few minutes to confirm new package built and released.
     - May activate/pin the released version of Kestrel documentation at `readthedocs version control`_.
     - Announce the release at OCA Kestrel channel.
 
@@ -98,6 +98,6 @@ In the case of a vulnerability, please contact any of the maintainers via slack 
 .. _branching model: https://nvie.com/posts/a-successful-git-branching-model
 .. _entity-based cyber reasoning: https://kestrel.readthedocs.io/en/latest/language.html#entity-based-reasoning
 .. _firepit: https://github.com/opencybersecurityalliance/firepit
-.. _kestrel_jupyter on PyPI: https://pypi.org/project/kestrel_jupyter/
+.. _kestrel-jupyter on PyPI: https://pypi.org/project/kestrel-jupyter/
 .. _readthedocs version control: https://readthedocs.org/projects/kestrel/versions/
 .. _README: README.rst
