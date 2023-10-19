@@ -35,6 +35,7 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          build --sdist --wheel --outdir dist/ .
+          # `build` is installed as a Python module, not a standalone commandline
+          python -m build --sdist --wheel --outdir dist/ .
           twine check dist/*
           twine upload --verbose dist/*
