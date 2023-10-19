@@ -37,6 +37,10 @@ RUN apt-get update --yes && \
     xclip && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# add git lfs repo
+RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
+
+# install git lfs
 RUN apt-get install --yes git-lfs
 
 RUN mkdir -p /opt/kaas && chown ${NB_UID}:${NB_UID} /opt/kaas
