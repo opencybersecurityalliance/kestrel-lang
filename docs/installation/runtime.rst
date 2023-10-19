@@ -131,7 +131,7 @@ any newly opened terminal.
 
         .. code-block:: console
 
-            $ pip install kestrel_jupyter
+            $ pip install kestrel-jupyter
             $ kestrel_jupyter_setup
 
     .. tab-item:: Nightly Built
@@ -179,7 +179,7 @@ invoke any of them:
 
         - Start a Kestrel session in Python directly. See more at :doc:`../source/kestrel.session`.
 
-        - Use `magic command`_ in iPython environment. Check `kestrel_jupyter`_ package for usage.
+        - Use `magic command`_ in iPython environment. Check `kestrel-jupyter`_ package for usage.
 
 What's to Do Next
 =================
@@ -193,7 +193,7 @@ What's to Do Next
 .. _Python virtual environment: https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/
 .. _Xcode: https://developer.apple.com/xcode/
 .. _kestrel-lang: http://github.com/opencybersecurityalliance/kestrel-lang
-.. _kestrel_jupyter: http://github.com/opencybersecurityalliance/kestrel-jupyter
+.. _kestrel-jupyter: http://github.com/opencybersecurityalliance/kestrel-jupyter
 .. _firepit: http://github.com/opencybersecurityalliance/firepit
 .. _Jupyter Notebook: https://jupyter.org/
 .. _magic command: https://ipython.readthedocs.io/en/stable/interactive/magics.html
