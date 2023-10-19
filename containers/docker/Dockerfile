@@ -51,7 +51,7 @@ USER ${NB_UID}
 RUN git lfs install
 
 # Install kestrel-JUPYTER
-RUN pip install kestrel_jupyter
+RUN pip install kestrel-jupyter
 
 # setup Jupyter
 RUN kestrel_jupyter_setup
