@@ -51,16 +51,15 @@ A maintainer should release a new Kestrel runtime (PyPI package name: ``kestre-l
     #. Sync the local git repo to the latest of the ``develop`` branch.
     #. Update the ``version`` field in ``packages/*/pyproject.toml`` for any package that has been updated.
     #. Update dependencies in ``packages/*/pyproject.toml``.
-    #. Always bump the ``version`` field in ``packages/kestrel_jupyter/pyproject.toml`` (the umbralla package).
-    #. Add changes in ``CHANGELOG.rst`` under a new date section.
-    #. Add changes of each package under a new version subsection of the date section.
+    #. Always bump the ``version`` field in ``packages/kestrel_jupyter/pyproject.toml`` (the umbrella package).
+    #. Add changes in ``CHANGELOG.rst`` under the umbrella package version.
     #. Add new contributors to ``AUTHORS.rst`` if any.
-    #. Commit the updates with ``<date> NIGHTLY`` as the message.
+    #. Commit the updates with the umbrella package version as the message.
     #. Push the local ``develop`` branch to remote.
 
 #. Graduate code to the ``release`` branch
 
-    #. Open a PR to merge the ``develop`` branch to the ``release`` branch. Use ``<date> TO RELEASE`` as the PR title.
+    #. Open a PR to merge the ``develop`` branch to the ``release`` branch. Use umbrella package version as the PR title.
 
     #. Merge the PR.
 
@@ -68,7 +67,7 @@ A maintainer should release a new Kestrel runtime (PyPI package name: ``kestre-l
 
     #. Go to the release page and click *Draft a new release*.
 
-    #. Type the version number as the new tag to create.
+    #. Type the umbrella package version number as the new tag to create.
 
     #. Choose ``release`` branch as the *Target*.
 
