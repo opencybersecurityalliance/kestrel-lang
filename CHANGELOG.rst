@@ -9,10 +9,16 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.8.1 (2023-10-23)
+==================
+
 Fixed
 -----
 
-- `jsonschema extra bug`_
+- Git LFS install failure in Dockerfile
+- Kestrel logo font rendering inconsistency
+- PyPI release error if version exists (GitHub workflow)
+- ``kestrel-jupyter`` 1.8.1: `jsonschema extra bug`_
 
 1.8.0 (2023-10-18)
 ==================
