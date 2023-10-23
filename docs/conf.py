@@ -35,7 +35,7 @@ autosectionlabel_prefix_document = True
 html_title = project
 html_theme = "sphinx_rtd_theme"
 highlight_language = "none"
-html_logo = "../logo/logo_w_text_white.svg"
+html_logo = "../logo/logo_w_text_white.png"
 html_theme_options = {
     'logo_only': True,
     'display_version': False,
