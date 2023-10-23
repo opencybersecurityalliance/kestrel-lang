@@ -2,17 +2,9 @@
    :width: 460
    :alt: Kestrel Threat Hunting Language
 
-.. image:: https://img.shields.io/pypi/pyversions/kestrel-core
-        :target: https://www.python.org/
-        :alt: Python 3
-
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-        :target: https://github.com/psf/black
-        :alt: Code Style: Black
-
-.. image:: https://codecov.io/gh/opencybersecurityalliance/kestrel-lang/branch/develop/graph/badge.svg?token=HM4ax10IW3
-        :target: https://codecov.io/gh/opencybersecurityalliance/kestrel-lang
-        :alt: Code Coverage
+.. image:: https://readthedocs.org/projects/kestrel/badge/?version=latest
+        :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
+        :alt: Documentation Status
 
 .. image:: https://img.shields.io/pypi/v/kestrel-core
         :target: https://pypi.python.org/pypi/kestrel-core
@@ -22,9 +14,13 @@
         :target: https://pypistats.org/packages/kestrel-core
         :alt: PyPI Downloads
 
-.. image:: https://readthedocs.org/projects/kestrel/badge/?version=latest
-        :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
+.. image:: https://codecov.io/gh/opencybersecurityalliance/kestrel-lang/branch/develop/graph/badge.svg?token=HM4ax10IW3
+        :target: https://codecov.io/gh/opencybersecurityalliance/kestrel-lang
+        :alt: Code Coverage
+
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+        :target: https://github.com/psf/black
+        :alt: Code Style: Black
 
 |
 
