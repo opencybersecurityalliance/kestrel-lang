@@ -38,4 +38,4 @@ jobs:
           # `build` is installed as a Python module, not a standalone commandline
           python -m build --sdist --wheel --outdir dist/ .
           twine check dist/*
-          twine upload --verbose dist/*
+          twine upload --verbose --skip-existing dist/*
