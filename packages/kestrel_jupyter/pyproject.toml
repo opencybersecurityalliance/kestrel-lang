@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kestrel_jupyter"
-version = "1.8.0"
+version = "1.8.1"
 description = "Kestrel Jupyter Kernel"
 readme = "README.rst"
 requires-python = ">=3.8"
@@ -31,9 +31,10 @@ dependencies = [
     "kestrel_datasource_stixshifter==1.8.0",
     "kestrel_analytics_python==1.8.0",
     "kestrel_analytics_docker==1.8.0",
-    "jupyterlab-server==2.15.2",
+    "jupyterlab-server",
     "jupyterlab",
     "jupyter_client",
+    "nbclassic",
 ]
 
 [project.optional-dependencies]

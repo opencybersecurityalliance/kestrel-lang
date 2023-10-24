@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog`_.
 
+Unreleased
+==========
+
+1.8.1 (2023-10-23)
+==================
+
+Fixed
+-----
+
+- Git LFS install failure in Dockerfile
+- Kestrel logo font rendering inconsistency
+- PyPI release error if version exists (GitHub workflow)
+- ``kestrel-jupyter`` 1.8.1: `jsonschema extra bug`_
+
 1.8.0 (2023-10-18)
 ==================
 
@@ -1127,3 +1141,4 @@ Added
 - First release of Kestrel Core.
 
 .. _Keep a Changelog: https://keepachangelog.com/en/1.0.0/
+.. _jsonschema extra bug: https://github.com/opencybersecurityalliance/kestrel-jupyter/issues/24 

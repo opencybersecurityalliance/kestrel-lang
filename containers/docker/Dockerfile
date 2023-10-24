@@ -37,9 +37,10 @@ RUN apt-get update --yes && \
     xclip && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# analytics prereq
-RUN curl https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sh -
+# add git lfs repo
+RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
 
+# install git lfs
 RUN apt-get install --yes git-lfs
 
 RUN mkdir -p /opt/kaas && chown ${NB_UID}:${NB_UID} /opt/kaas
@@ -47,8 +48,10 @@ RUN mkdir -p /opt/kaas && chown ${NB_UID}:${NB_UID} /opt/kaas
 # Switch back to jovyan to avoid accidental container runs as root
 USER ${NB_UID}
 
+RUN git lfs install
+
 # Install kestrel-JUPYTER
-RUN pip install kestrel_jupyter
+RUN pip install kestrel-jupyter
 
 # setup Jupyter
 RUN kestrel_jupyter_setup
