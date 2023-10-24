@@ -6,8 +6,8 @@
         :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://img.shields.io/pypi/v/kestrel-core
-        :target: https://pypi.python.org/pypi/kestrel-core
+.. image:: https://img.shields.io/pypi/v/kestrel-jupyter
+        :target: https://pypi.python.org/pypi/kestrel-jupyter
         :alt: Latest Version
 
 .. image:: https://img.shields.io/pypi/dm/kestrel-core
