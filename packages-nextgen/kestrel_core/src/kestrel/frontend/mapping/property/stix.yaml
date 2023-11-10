@@ -25,7 +25,7 @@ email-message:subject: email.subject
 # email-message:received_lines
 email-message:additional_header_fields: email.raw_header
 # email-message:body
-# email-message:body_multipart,
+email-message:body_multipart.body_raw_ref.name: file.name
 # email-message:raw_email_ref
 
 # email-mime-part-type:body: file.mime_type
@@ -37,9 +37,9 @@ file:accessed: file.accessed_time
 file:created: file.created_time
 file:name: file.name
 file:size: file.size
-file:hashes.SHA-256: file.hashes.SHA-256
-file:hashes.SHA-1: file.hashes.SHA-1
-file:hashes.MD5: file.hashes.MD5
+file:hashes.SHA-256: file.hashes[?algorithm_id == 3].value
+file:hashes.SHA-1: file.hashes[?algorithm_id == 2].value
+file:hashes.MD5: file.hashes[?algorithm_id == 1].value
 file:parent_directory_ref.path: file.parent_folder
 # file:name_enc
 # file:magic_number_hex
@@ -90,9 +90,7 @@ network_traffic:end: end_time
 # network_traffic:encapsulated_by_ref
 
 process:binary_ref.name: file.name
-process:command_line: 
-  - process.cmd_line
-  - actor.process.cmd_line
+process:command_line: process.cmd_line
 process:created: process.created_time
 process:mime_type: mime_type
 process:name: process.name
@@ -154,7 +152,7 @@ x-oca-asset:os_ref: device.os
 x-oca-asset:architecture: device.hw_info
 x-oca-asset:host_type: device.type
 x-oca-asset:ingress: device.network_interfaces
-x-oca-asset:egress:	device.network_interfaces
+x-oca-asset:egress: device.network_interfaces
 x-oca-asset:geo_ref: device.location
 
 x-oca-event:action:

@@ -8,17 +8,17 @@ file: file
 ipv4-addr: endpoint
 ipv6-addr: endpoint
 mac-addr: endpoint
-network-traffic: network-activity
+network-traffic: network_activity
 process: process
 software: product
 url: http_request
 user-account: user
-x-ibm-finding: security-finding
+x-ibm-finding: security_finding
 x-ibm-ttp-tagging: attack
 x-oca-asset: device
-# TODO: mapping for x-oca-event
+# TODO: check mapping for x-oca-event
 x-oca-event:
-  - network-activity
-  - process-activity
+  - event
+  - activity
 x509-certificate: certificate
 windows-registry-key: win/registry_key
