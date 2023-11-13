@@ -1,19 +1,22 @@
+# Device Object [20]
 autonomous-system:name: organization.name
 autonomous-system:number: organization.uid
 
+# File System Activity [1001]
 directory:path: file.path
 directory:accessed: file.accessed_time
 directory:created: file.created_time
 directory:modified: file.modified_time
 
+# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], Email Activity [4009]
 domain-name.value:
   - src_endpoint.domain
   - dst_endpoint.domain
   - dns_query.hostname
 
+# Email Activity [4009]
 email-addr:value: user.email_addr
 email-addr:display_name: user.full_name
-
 # email-message:is_multipart
 # email-message:date
 # email-message:content_type
@@ -27,12 +30,9 @@ email-message:additional_header_fields: email.raw_header
 # email-message:body
 email-message:body_multipart.body_raw_ref.name: file.name
 # email-message:raw_email_ref
+# email-message:body_multipart.body: file.mime_type
 
-# email-mime-part-type:body: file.mime_type
-# email-mime-part-type:body_raw_ref
-# email-mime-part-type:content_type
-# email-mime-part-type:content_disposition
-
+# File System Activity [1001], Network File Activity [4010], Email File Activity [4011]
 file:accessed: file.accessed_time
 file:created: file.created_time
 file:name: file.name
@@ -50,6 +50,7 @@ file:mime_type: file.mime_type
 # file:contains_refs
 # file:content_ref
 
+# Network Activity [4001], Device Object [20]
 ipv4-addr:value:
   - dst_endpoint.ip
   - src_endpoint.ip
@@ -57,21 +58,23 @@ ipv4-addr:value:
 # ipv4-addr.belongs_to_refs
 # ipv4-addr.resolves_to_refs
 
+# Network Activity [4001], Device Object [20]
 ipv6-addr:value:
   - dst_endpoint.ip
   - src_endpoint.ip
   - device.ip
 
+# Network Activity [4001], Device Object [20]
 mac-addr:value: 
   - dst_endpoint.mac
   - src_endpoint.mac
   - device.mac
 
+# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003]
 network-traffic:dst_byte_count: traffic.bytes_in
 network-traffic:dst_packets: traffic.packets_in
 network-traffic:dst_port: dst_endpoint.port
 network-traffic:dst_ref.value: dst_endpoint.ip
-
 network-traffic:protocols[*]:
   - connection_info.protocol_num
   - connection_info.protocol_name
@@ -89,6 +92,7 @@ network_traffic:end: end_time
 # network_traffic:encapsulates_refs
 # network_traffic:encapsulated_by_ref
 
+# Process Activity [1007]
 process:binary_ref.name: file.name
 process:command_line: process.cmd_line
 process:created: process.created_time
@@ -100,6 +104,7 @@ process:parent_ref.name:
   - actor.process.name
   - process.parent_process.name
 
+# Base Event [0]
 software:extension.product.feature_name: metadata.product.feature.name
 software:extension.product.feature_uid: metadata.product.feature.uid
 software:extension.product.feature_version: metadata.product.feature.version
@@ -110,12 +115,15 @@ software:name: metadata.product.name
 software:vendor: metadata.product.vendor_name
 software:version: metadata.product.version
 
+# HTTP Activity [4002]
 url:value: http_request.url
 
+# Account Change [3001], Authentication [3002], Authorize Session [3003], User Access Management [3005]
 user-account:account_type: user.account.type
 user-account:display_name: user.account.name
 user-account:user_id: user.account.uid
 
+# Base Event [0]
 x-ibm-finding:alert_id:
   - observables.type_id
   - finding.uid
@@ -133,12 +141,14 @@ x-ibm-finding:start: finding.created_time
 x-ibm-finding:time_observed: finding.first_seen_time
 x-ibm-finding:types: finding.types
 
+# Attack Object [n/a]
 x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.tactic_id: attack.tactics.uid
 x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.tactic_name: attack.tactics.name
 x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.technique_id: attack.technique.uid
 x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.version: attack.version
 x-ibm-ttp-tagging:name: attack.technique.name
 
+# Device Object [20]
 x-oca-asset:name:
   - dst_endpoint.name
   - src_endpoint.name
@@ -155,6 +165,7 @@ x-oca-asset:ingress: device.network_interfaces
 x-oca-asset:egress: device.network_interfaces
 x-oca-asset:geo_ref: device.location
 
+# Base Event [0]
 x-oca-event:action:
   - activity
   - activity_name
@@ -170,6 +181,7 @@ x-oca-event:network_ref.dst_ref.value: dst_endpoint.ip
 x-oca-event:network_ref.src_ref.value: src_endpoint.ip
 x-oca-event:timezone: timezone_offset
 
+# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], FTP Activity [4008], SSH Activity [4007]
 x509-certificate:hashes.SHA-256: file.hashes.SHA-256
 x509-certificate:hashes.SHA-1: file.hashes.SHA-1
 x509-certificate:hashes.MD5: file.hashes.MD5
@@ -182,13 +194,17 @@ x509-certificate:subject: tls.certificate.subject
 x509-certificate:x509_v3_extensions: tls.extension_list
 x509-certificate:signature_algorithm: tls.certificate.fingerprints.algorithm
 
+# Registry Key Activity [201001]
 windows-registry-key:key: win/registry_key.path
 
 # Additional mapping for STIX 2.1
+# File System Activity [1001]
 directory:atime: file.accessed_time
 directory:ctime: file.created_time
 directory:mtime: file.modified_time
 file:atime: file.accessed_time
 file:ctime: file.created_time
 file:mtime: file.modified_time
+
+# Process Activity [1007]
 process:image_ref.name: file.name
