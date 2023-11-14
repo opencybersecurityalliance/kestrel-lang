@@ -35,6 +35,7 @@ dependencies = [
     "lark>=1.1.7",
     "pandas>=2.0.3",
     "pyarrow>=13.0.0",
+    "mashumaro>=3.10",
 ]
 
 [project.optional-dependencies]
