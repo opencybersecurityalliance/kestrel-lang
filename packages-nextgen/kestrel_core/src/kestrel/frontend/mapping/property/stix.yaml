@@ -1,6 +1,6 @@
-# Device Object [20]
-autonomous-system:name: organization.name
-autonomous-system:number: organization.uid
+# All Categories [*]
+autonomous-system:name: device.org.name
+autonomous-system:number: device.org.uid
 
 # File System Activity [1001]
 directory:path: file.path
@@ -50,7 +50,7 @@ file:mime_type: file.mime_type
 # file:contains_refs
 # file:content_ref
 
-# Network Activity [4001], Device Object [20]
+# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], FTP Activity [4008], SSH Activity [4007]
 ipv4-addr:value:
   - dst_endpoint.ip
   - src_endpoint.ip
@@ -58,13 +58,13 @@ ipv4-addr:value:
 # ipv4-addr.belongs_to_refs
 # ipv4-addr.resolves_to_refs
 
-# Network Activity [4001], Device Object [20]
+# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], FTP Activity [4008], SSH Activity [4007]
 ipv6-addr:value:
   - dst_endpoint.ip
   - src_endpoint.ip
   - device.ip
 
-# Network Activity [4001], Device Object [20]
+# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], FTP Activity [4008], SSH Activity [4007]
 mac-addr:value: 
   - dst_endpoint.mac
   - src_endpoint.mac
@@ -141,14 +141,14 @@ x-ibm-finding:start: finding.created_time
 x-ibm-finding:time_observed: finding.first_seen_time
 x-ibm-finding:types: finding.types
 
-# Attack Object [n/a]
-x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.tactic_id: attack.tactics.uid
-x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.tactic_name: attack.tactics.name
-x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.technique_id: attack.technique.uid
-x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.version: attack.version
-x-ibm-ttp-tagging:name: attack.technique.name
+# All Categories [*]
+x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.tactic_id: attacks[*].tactics.uid
+x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.tactic_name: attacks[*].tactics.name
+x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.technique_id: attacks[*].technique.uid
+x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.version: attacks[*].version
+x-ibm-ttp-tagging:name: attacks[*].technique.name
 
-# Device Object [20]
+# All Categories [*]
 x-oca-asset:name:
   - dst_endpoint.name
   - src_endpoint.name
@@ -182,9 +182,9 @@ x-oca-event:network_ref.src_ref.value: src_endpoint.ip
 x-oca-event:timezone: timezone_offset
 
 # Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], FTP Activity [4008], SSH Activity [4007]
-x509-certificate:hashes.SHA-256: file.hashes.SHA-256
-x509-certificate:hashes.SHA-1: file.hashes.SHA-1
-x509-certificate:hashes.MD5: file.hashes.MD5
+x509-certificate:hashes.SHA-256: file.hashes[?algorithm_id == 3].value
+x509-certificate:hashes.SHA-1: file.hashes[?algorithm_id == 2].value
+x509-certificate:hashes.MD5: file.hashes[?algorithm_id == 1].value
 x509-certificate:version: tls.certificate.version
 x509-certificate:serial_number: tls.certificate.serial_number
 x509-certificate:issuer: tls.certificate.issuer
