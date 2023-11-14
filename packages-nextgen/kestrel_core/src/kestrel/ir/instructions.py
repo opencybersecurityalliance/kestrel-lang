@@ -11,10 +11,10 @@ from kestrel.ir.filter import (
 )
 
 
-class IRNode(DataClassJSONMixin):
+class Instruction(DataClassJSONMixin):
     pass
 
 
 @dataclass
-class Filter(IRNode):
+class Filter(Instruction):
     exp: Union[IntComparison, FloatComparison, StrComparison, ListComparison, BoolExp]
