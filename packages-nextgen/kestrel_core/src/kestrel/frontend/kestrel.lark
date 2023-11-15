@@ -1,0 +1,299 @@
+//
+// Kestrel Grammar
+//
+
+//
+// A huntflow is a sequence of statements
+//
+
+start: statement*
+
+statement: assignment
+         | command_no_result
+
+// If no VARIABLE is given, default to _ in post-parsing
+// For assign or merge, the result variable is required
+// This eliminates meaningless huntflows like `var1 var2 var3`
+assignment: VARIABLE "=" expression
+          | VARIABLE "=" VARIABLE ("+" VARIABLE)+
+          | (VARIABLE "=")? command_with_result
+
+// "?" at the beginning will inline command
+?command_with_result: find
+                    | get
+                    | group
+                    | join
+                    | load
+                    | new
+                    | sort
+
+?command_no_result: apply
+                  | disp
+                  | info
+                  | save
+                  | describe
+
+//
+// All commands
+//
+
+find: "FIND"i ENTITY_TYPE RELATION (REVERSED)? VARIABLE where_clause? timespan? limit_clause?
+
+get: "GET"i ENTITY_TYPE ("FROM"i datasource)? where_clause timespan? limit_clause?
+
+group: "GROUP"i VARIABLE BY grp_spec ("WITH"i agg_list)?
+
+join: "JOIN"i VARIABLE "," VARIABLE (BY ATTRIBUTE "," ATTRIBUTE)?
+
+load: "LOAD"i stdpath ("AS"i ENTITY_TYPE)?
+
+new: "NEW"i ENTITY_TYPE? var_data
+
+sort: "SORT"i VARIABLE BY ATTRIBUTE (ASC|DESC)?
+
+apply: "APPLY"i analytics_uri "ON"i variables ("WITH"i args)?
+
+disp: "DISP"i expression
+
+info: "INFO"i VARIABLE
+
+save: "SAVE"i VARIABLE "TO"i stdpath
+
+describe: "DESCRIBE"i var_attr
+
+//
+// Variable definition
+//
+
+variables: VARIABLE ("," VARIABLE)*
+
+VARIABLE: CNAME
+
+//
+// Expression
+//
+
+expression: vtrans where_clause? attr_clause? sort_clause? limit_clause? offset_clause?
+
+// not use rule name `transform` since it is a special function in Lark
+// the function in transformer will mal-function in `merge_transformers()`
+vtrans: transformer "(" VARIABLE ")"
+      | VARIABLE
+
+transformer: TIMESTAMPED
+           | ADDOBSID
+           | RECORDS
+
+TIMESTAMPED: "TIMESTAMPED"i
+ADDOBSID: "ADDOBSID"i
+RECORDS: "RECORDS"i
+
+where_clause: "WHERE"i ecg_pattern
+attr_clause: "ATTR"i ATTRIBUTES
+sort_clause: "SORT"i BY ATTRIBUTE (ASC|DESC)?
+limit_clause: "LIMIT"i INT
+offset_clause: "OFFSET"i INT
+
+?ecg_pattern: disjunction
+            | "[" disjunction "]" // STIX compatible
+
+?disjunction: conjunction
+            | disjunction "OR"i conjunction -> expression_or
+
+?conjunction: comparison
+            | conjunction "AND"i comparison -> expression_and
+
+?comparison: comparison_std
+           | comparison_null
+           | "(" disjunction ")"
+
+comparison_std:  ENTITY_ATTRIBUTE_PATH op      value
+comparison_null: ENTITY_ATTRIBUTE_PATH null_op NULL
+
+//
+// Timespan
+//
+
+?timespan: "start"i timestamp "stop"i timestamp -> timespan_absolute
+         | "last"i INT timeunit                 -> timespan_relative
+
+?timeunit: day
+         | hour
+         | minute
+         | second
+
+day: "days"i | "day"i | "d"i
+hour: "hours"i | "hour"i | "h"i
+minute: "minutes"i | "minute"i | "m"i
+second: "seconds"i | "second"i | "s"i
+
+timestamp:       ISOTIMESTAMP
+         | "\""  ISOTIMESTAMP "\""
+         | "'"   ISOTIMESTAMP "'"
+         | "t\"" ISOTIMESTAMP "\""
+         | "t'"  ISOTIMESTAMP "'"
+
+ISOTIMESTAMP: /\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d(\.\d+)?Z/
+
+//
+// FIND command constructs
+//
+
+RELATION: WORD
+
+//
+// GROUP command constructs
+//
+
+grp_spec: grp_expr ("," grp_expr)*
+
+grp_expr: ATTRIBUTE
+        | bin_func
+
+// No other scalar funcs are supported yet
+bin_func: "BIN"i "(" ATTRIBUTE "," INT timeunit? ")"
+
+agg_list: agg ("," agg)*
+
+agg: funcname "(" ATTRIBUTE ")" ("AS"i alias)?
+
+?funcname: (MIN|MAX|SUM|AVG|COUNT|NUNIQUE)
+MIN: "MIN"i
+MAX: "MAX"i
+SUM: "SUM"i
+AVG: "AVG"i
+COUNT: "COUNT"i
+NUNIQUE: "NUNIQUE"i
+
+?alias: ECNAME
+
+//
+// GET command constructs
+//
+
+datasource: DATASRC_SIMPLE
+          | DATASRC_ESCAPED
+          | VARIABLE
+
+DATASRC_SIMPLE: PATH_SIMPLE ("," PATH_SIMPLE)*
+DATASRC_ESCAPED: PATH_ESCAPED
+
+//
+// APPLY command constructs
+//
+
+analytics_uri: ANALYTICS_SIMPLE
+             | ANALYTICS_ESCAPED
+
+ANALYTICS_SIMPLE: PATH_SIMPLE
+ANALYTICS_ESCAPED: PATH_ESCAPED
+
+//
+// Two-level JSON in command NEW
+//
+
+// use terminal to load the entire var_data without parsing into it
+var_data: "[" (RAW_VALUES | json_objs) "]"
+
+RAW_VALUES: ESCAPED_STRING_WS ("," ESCAPED_STRING_WS)*
+
+json_objs: json_obj ("," json_obj)*
+json_obj: "{" json_pair ("," json_pair)* "}"
+json_pair: ESCAPED_STRING ":" json_value
+json_value: (NUMBER|ESCAPED_STRING|TRUE|FALSE|NULL)
+
+//
+// Arguments
+//
+
+args: arg_kv_pair ("," arg_kv_pair)*
+
+arg_kv_pair: ECNAME "=" value
+
+//
+// Shared keywords
+//
+
+BY: "BY"i
+ASC: "ASC"i
+DESC: "DESC"i
+REVERSED: "BY"i
+TRUE: "TRUE"i
+FALSE: "FALSE"i
+NULL: "NULL"i
+IN: "IN"i
+LIKE: "LIKE"i
+MATCHES: "MATCHES"i
+IS: "IS"i
+NOT: "NOT"i
+ISSUBSET: "ISSUBSET"i
+ISSUPERSET: "ISSUPERSET"i
+
+op: OP_SIGN
+  | NOT? op_keyword
+
+OP_SIGN: /([!=]?=|[<>]=?)/
+
+op_keyword: IN
+          | LIKE
+          | MATCHES
+          | ISSUBSET
+          | ISSUPERSET
+
+null_op: IS NOT?
+
+//
+// Common language constructs
+//
+
+value: literal_list
+     | literal
+
+literal: reference_or_simple_string
+       | string
+       | number
+
+literal_list: "(" literal ("," literal)* ")"
+            | "[" literal ("," literal)* "]"
+
+reference_or_simple_string: ECNAME ("." ATTRIBUTE)?
+
+var_attr: ECNAME "." ATTRIBUTE
+
+?string: advanced_string
+
+number: NUMBER
+
+ENTITY_ATTRIBUTE_PATH: (ENTITY_TYPE ":")? ATTRIBUTE
+
+ENTITY_TYPE: ECNAME
+
+stdpath: PATH_SIMPLE
+       | PATH_ESCAPED
+
+// TODO: support attributes without quote for dash
+//       x.hash.SHA-256 instead of x.hash.'SHA-256'
+ATTRIBUTE: ECNAME "[*]"? ("." ECNAME_W_QUOTE)*
+ATTRIBUTES: ATTRIBUTE (WS* "," WS* ATTRIBUTE)*
+
+ECNAME: (LETTER|"_") (LETTER|DIGIT|"_"|"-")*
+ECNAME_W_QUOTE: (LETTER|DIGIT|"_"|"-"|"'")+
+
+PATH_SIMPLE: (ECNAME "://")? (LETTER|DIGIT|"_"|"-"|"."|"/")+
+
+PATH_ESCAPED: "\"" (ECNAME "://")? _STRING_ESC_INNER "\""
+            | "'"  (ECNAME "://")? _STRING_ESC_INNER "'"
+
+ESCAPED_STRING: "\"" _STRING_ESC_INNER "\""
+              | "'"  _STRING_ESC_INNER "'"
+ESCAPED_STRING_WS: WS* ESCAPED_STRING WS*
+
+// nearly Python string, but no [ubf]? as prefix options
+// check Lark example of Python parser for reference
+advanced_string: /(r?)("(?!"").*?(?<!\\)(\\\\)*?"|'(?!'').*?(?<!\\)(\\\\)*?')/
+
+%import common (LETTER, DIGIT, WS, INT, WORD, NUMBER, CNAME, _STRING_ESC_INNER)
+%import common.SH_COMMENT -> COMMENT
+
+%ignore WS
+%ignore COMMENT

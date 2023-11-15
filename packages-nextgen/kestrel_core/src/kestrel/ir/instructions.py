@@ -18,3 +18,13 @@ class Instruction(DataClassJSONMixin):
 @dataclass
 class Filter(Instruction):
     exp: Union[IntComparison, FloatComparison, StrComparison, ListComparison, BoolExp]
+
+
+@dataclass
+class Source(Instruction):
+    name: str
+
+
+@dataclass
+class Variable(Instruction):
+    name: str
