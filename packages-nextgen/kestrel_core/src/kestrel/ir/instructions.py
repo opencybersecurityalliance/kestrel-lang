@@ -1,3 +1,4 @@
+from typeguard import typechecked
 from typing import (
     Union,
     Mapping,
@@ -62,6 +63,7 @@ class Filter(Instruction):
     exp: Union[IntComparison, FloatComparison, StrComparison, ListComparison, BoolExp]
 
 
+@typechecked
 def get_instruction_class(name: str) -> Instruction:
     classes = inspect.getmembers(sys.modules[__name__], inspect.isclass)
     instructions = [cls for _, cls in classes if issubclass(cls, Instruction)]
@@ -71,11 +73,13 @@ def get_instruction_class(name: str) -> Instruction:
         raise InvalidInstruction(name)
 
 
+@typechecked
 def instruction_from_dict(d: Mapping[str, Union[str, bool]]) -> Instruction:
     instruction_class = get_instruction_class(d["instruction"])
     try:
         instruction = instruction_class.from_dict(d)
+        instruction.id = uuid.UUID(d["id"])
     except:
         raise InvalidSeralizedInstruction(d)
-    instruction.id = uuid.UUID(d["id"])
-    return instruction
+    else:
+        return instruction
