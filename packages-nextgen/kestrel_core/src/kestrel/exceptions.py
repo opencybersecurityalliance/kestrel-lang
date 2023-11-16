@@ -13,10 +13,13 @@ class InvalidSeralizedGraph(KestrelError):
 class InvalidSeralizedInstruction(KestrelError):
     pass
 
-class VariableNotExist(KestrelError):
+class InvalidDataSource(KestrelError):
     pass
 
-class SourceNotExist(KestrelError):
+class VariableNotFound(KestrelError):
+    pass
+
+class SourceNotFound(KestrelError):
     pass
 
 class DuplicatedVariable(KestrelError):

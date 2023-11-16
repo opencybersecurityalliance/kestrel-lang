@@ -23,8 +23,8 @@ from kestrel.cache import Cache
 from kestrel.exceptions import (
     InstructionNotFound,
     InvalidSeralizedGraph,
-    VariableNotExist,
-    SourceNotExist,
+    VariableNotFound,
+    SourceNotFound,
     DuplicatedVariable,
     DuplicatedDataSource,
     MultiInterfacesInGraph,
@@ -103,7 +103,7 @@ class IRGraph(networkx.DiGraph):
     def get_variables(self) -> Iterable[Variable]:
         """Get all variables
 
-        This method returns a list variables, equivalent to *Symbol Table* used in traditional (non-graph-IR) language compilers.
+        This method returns a list of variables, equivalent to *Symbol Table* used in traditional (non-graph-IR) language compilers.
 
         Returns:
             The list of all Kestrel variables in this huntflow.
@@ -128,7 +128,7 @@ class IRGraph(networkx.DiGraph):
             else:
                 return xs.pop()
         else:
-            raise VariableNotExist(var_name)
+            raise VariableNotFound(var_name)
 
     def add_variable(self, var_name: str, dependent_node: Instruction) -> Variable:
         """Create new variable and add to IRGraph
@@ -142,7 +142,7 @@ class IRGraph(networkx.DiGraph):
         """
         try:
             ve = self.get_variable(var_name)
-        except VariableNotExist:
+        except VariableNotFound:
             pass
         else:
             ve.deceased = True
@@ -175,7 +175,7 @@ class IRGraph(networkx.DiGraph):
             else:
                 return xs.pop()
         else:
-            raise SourceNotExist(uri)
+            raise SourceNotFound(uri)
 
     def add_source(self, uri: str) -> Source:
         """Create new datasource and add to IRGraph if not exist
@@ -188,7 +188,7 @@ class IRGraph(networkx.DiGraph):
         """
         try:
             s = self.get_source(uri)
-        except SourceNotExist:
+        except SourceNotFound:
             s = Source(uri)
             self.add_node(s)
         return s

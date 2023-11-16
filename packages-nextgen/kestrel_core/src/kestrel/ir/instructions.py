@@ -6,6 +6,7 @@ from typing import (
 from dataclasses import (
     dataclass,
     field,
+    InitVar,
 )
 from mashumaro.mixins.json import DataClassJSONMixin
 import sys
@@ -23,6 +24,7 @@ from kestrel.ir.filter import (
 from kestrel.exceptions import (
     InvalidInstruction,
     InvalidSeralizedInstruction,
+    InvalidDataSource,
 )
 
 
@@ -49,8 +51,17 @@ class Variable(Instruction):
 
 @dataclass
 class Source(Instruction):
-    uri: str
-    interface: str
+    uri: InitVar[str]
+    interface: str = field(init=False)
+    datasource: str = field(init=False)
+
+    def __post_init__(self, uri):
+        xs = uri.split("://")
+        if len(xs) != 2:
+            raise InvalidDataSource(uri)
+        else:
+            self.interface = xs[0]
+            self.datasource = xs[1]
 
 
 @dataclass
