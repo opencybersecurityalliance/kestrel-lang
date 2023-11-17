@@ -1,4 +1,4 @@
-class KestrelError():
+class KestrelError(Exception):
     pass
 
 class InstructionNotFound(KestrelError):

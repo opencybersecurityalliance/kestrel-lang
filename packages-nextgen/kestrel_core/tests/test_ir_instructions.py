@@ -1,4 +1,4 @@
-import json
+import pytest
 
 from kestrel.ir.instructions import (
     Variable,
@@ -7,8 +7,10 @@ from kestrel.ir.instructions import (
     instruction_from_dict,
     source_from_uri,
 )
-
-import pytest
+from kestrel.exceptions import (
+    InvalidSeralizedInstruction,
+    InvalidDataSource,
+)
 
 
 def test_instruction_post_init():
@@ -41,8 +43,23 @@ def test_source_from_uri():
     assert j["datasource"] == "abc"
     assert "uri" not in j
 
+    x = source_from_uri("abc", "stixshifter")
+    assert x.interface == "stixshifter"
+    assert x.datasource == "abc"
+
+    with pytest.raises(InvalidDataSource):
+        source_from_uri("sss://eee://ccc")
+
+    with pytest.raises(InvalidDataSource):
+        source_from_uri("sss")
+
 
 def test_instruction_from_dict():
     v = Variable("asdf")
-    w = instruction_from_dict(v.to_dict())
+    d = v.to_dict()
+    w = instruction_from_dict(d)
     assert w == v
+
+    del d["id"]
+    with pytest.raises(InvalidSeralizedInstruction):
+        instruction_from_dict(d)
