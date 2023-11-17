@@ -5,10 +5,11 @@ from typing import (
     Tuple,
     Mapping,
     Union,
-    TypedDict,
+    Optional,
 )
 from collections import defaultdict
 from itertools import combinations
+from uuid import UUID
 import networkx
 import json
 
@@ -69,19 +70,20 @@ class IRGraph(networkx.DiGraph):
     def add_edges_from(self, edges: Iterable[Tuple[Instruction, Instruction]]):
         super().add_edge(edges)
 
-    def get_node_by_id(self, id_val: int) -> Instruction:
+    def get_node_by_id(self, ux: Union[UUID, str]) -> Instruction:
         """Get node by ID
 
         Parameters:
-            id_val: node ID
+            ux: node ID
 
         Returns:
             The Kestrel instruction (node in IRGraph)
         """
+        u = UUID(ux) if isinstance(ux, str) else ux
         try:
-            return next(filter(lambda n: n.id == id_val, self.nodes()))
+            return next(filter(lambda n: n.id == u, self.nodes()))
         except StopIteration:
-            raise InstructionNotFound(id_val)
+            raise InstructionNotFound(u)
 
     def get_nodes_by_type(self, ntype: type) -> Iterable[Instruction]:
         """Get nodes by type
@@ -153,7 +155,7 @@ class IRGraph(networkx.DiGraph):
         Returns:
             The variable node created/added
         """
-        v = Variable(var_name) if isinstance(vx, str) else vx
+        v = Variable(vx) if isinstance(vx, str) else vx
         try:
             ve = self.get_variable(v.name)
         except VariableNotFound:
@@ -172,7 +174,7 @@ class IRGraph(networkx.DiGraph):
         """
         return self.get_nodes_by_type(Source)
 
-    def get_source(self, interface: str, datasource: str) -> Souce:
+    def get_source(self, interface: str, datasource: str) -> Source:
         """Get a Kestrel datasource by its URI
 
         Parameters:
@@ -182,7 +184,7 @@ class IRGraph(networkx.DiGraph):
         Returns:
             The datasource
         """
-        xs = self.get_nodes_by_type_and_attributes(Source, {"interface", interface, "datasource": datasource})
+        xs = self.get_nodes_by_type_and_attributes(Source, {"interface": interface, "datasource": datasource})
         if xs:
             if len(xs) > 1:
                 raise DuplicatedDataSource(interface, datasource)
@@ -201,7 +203,7 @@ class IRGraph(networkx.DiGraph):
         Returns:
             The Source node found or added
         """
-        sy = source_from_uri(uri, default_interface) if isinstance(sx, str) else sx
+        sy = source_from_uri(sx, default_interface) if isinstance(sx, str) else sx
         try:
             s = self.get_source(sy.interface, sy.datasource)
         except SourceNotFound:
@@ -302,14 +304,14 @@ class IRGraph(networkx.DiGraph):
 
         return simple_dependent_subgraphs
 
-    def to_dict(self) -> Mapping[str : Iterable[Mapping]]:
+    def to_dict(self) -> Mapping[str, Iterable[Mapping]]:
         """Serialize to a Python dictionary (D3 graph format)
 
         Returns:
             The graph in a Python dictionary to be dumped as JSON string
         """
         nodes = [n.to_dict() for n in self.nodes()]
-        links = [{"source": u.id, "target": v.id} for (u, v) in self.edges()]
+        links = [{"source": str(u.id), "target": str(v.id)} for (u, v) in self.edges()]
         return {"nodes": nodes, "links": links}
 
     def to_json(self) -> str:
@@ -329,7 +331,7 @@ class IRGraph(networkx.DiGraph):
             graph_in_dict: the serialized graph in Python dictionary
         """
         nodes = graph_in_dict["nodes"]
-        edges = graph_in_dict["edges"]
+        edges = graph_in_dict["links"]
         for n in nodes:
             self._add_node(instruction_from_dict(n))
         for e in edges:

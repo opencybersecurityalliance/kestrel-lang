@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typeguard import typechecked
 from typing import (
     Type,
@@ -39,29 +40,32 @@ class Instruction(DataClassJSONMixin):
         self.id = uuid.uuid4()
         self.instruction = self.__class__.__name__
 
+    def __eq__(self, other: Instruction):
+        return self.id == other.id
+
     def __hash__(self):
         # stable hash during Instruction lifetime
-        return hash(self.id)
+        return self.id.int
 
 
-@dataclass
+@dataclass(eq=False)
 class Variable(Instruction):
     name: str
     deceased: bool = False
 
 
-@dataclass
+@dataclass(eq=False)
 class Source(Instruction):
     interface: str
     datasource: str
 
 
-@dataclass
+@dataclass(eq=False)
 class Return(Instruction):
     pass
 
 
-@dataclass
+@dataclass(eq=False)
 class Filter(Instruction):
     exp: Union[IntComparison, FloatComparison, StrComparison, ListComparison, BoolExp]
 

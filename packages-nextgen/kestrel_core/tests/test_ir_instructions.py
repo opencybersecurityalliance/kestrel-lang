@@ -29,6 +29,22 @@ def test_stable_id():
     assert v.id == _id
 
 
+def test_stable_hash():
+    s = source_from_uri("stixshifter://abc")
+    h1 = hash(s)
+    s.datasource = "abcd"
+    h2 = hash(s)
+    assert h1 == h2
+
+
+def test_eq():
+    s1 = source_from_uri("stixshifter://abc")
+    s2 = source_from_uri("stixshifter://abc")
+    s3 = instruction_from_dict(s1.to_dict())
+    assert s1 != s2
+    assert s1 == s3
+
+
 def test_get_instruction_class():
     cls = get_instruction_class("Variable")
     v = cls("asdf")
