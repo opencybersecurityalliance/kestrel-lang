@@ -160,39 +160,41 @@ class IRGraph(networkx.DiGraph):
         """
         return self.get_nodes_by_type(Source)
 
-    def get_source(self, uri: str) -> Souce:
+    def get_source(self, interface: str, datasource: str) -> Souce:
         """Get a Kestrel datasource by its URI
 
         Parameters:
-            uri: the URI of the datasource
+            interface: the datasource interface name
+            datasource: the datasource name under the interface
 
         Returns:
             The datasource
         """
-        xs = self.get_nodes_by_type_and_attributes(Source, {"uri", uri})
+        xs = self.get_nodes_by_type_and_attributes(Source, {"interface", interface, "datasource": datasource})
         if xs:
             if len(xs) > 1:
-                raise DuplicatedDataSource(uri)
+                raise DuplicatedDataSource(interface, datasource)
             else:
                 return xs.pop()
         else:
-            raise SourceNotFound(uri)
+            raise SourceNotFound(interface, datasource)
 
-    def add_source(self, uri: str) -> Source:
+    def add_source(self, uri: str, default_interface: Optional[str]=None) -> Source:
         """Create new datasource and add to IRGraph if not exist
 
         Parameters:
-            uri: the URI of the datasource
+            uri: the full URI of the datasource
+            default_interface: default interface name
 
         Returns:
             The Source node found or added
         """
+        s = source_from_uri(uri, default_interface)
         try:
-            s = self.get_source(uri)
+            _s = self.get_source(s.interface, s.datasource)
         except SourceNotFound:
-            s = source_from_uri(uri)
             self.add_node(s)
-        return s
+        return _s
 
     def cached_dependent_graph_of_node(
         self, node: Instruction, cache: Cache
