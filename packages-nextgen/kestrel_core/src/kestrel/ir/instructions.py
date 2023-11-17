@@ -1,12 +1,13 @@
 from typeguard import typechecked
 from typing import (
+    Type,
     Union,
     Mapping,
+    Optional,
 )
 from dataclasses import (
     dataclass,
     field,
-    InitVar,
 )
 from mashumaro.mixins.json import DataClassJSONMixin
 import sys
@@ -51,17 +52,8 @@ class Variable(Instruction):
 
 @dataclass
 class Source(Instruction):
-    uri: InitVar[str]
-    interface: str = field(init=False)
-    datasource: str = field(init=False)
-
-    def __post_init__(self, uri):
-        xs = uri.split("://")
-        if len(xs) != 2:
-            raise InvalidDataSource(uri)
-        else:
-            self.interface = xs[0]
-            self.datasource = xs[1]
+    interface: str
+    datasource: str
 
 
 @dataclass
@@ -75,7 +67,7 @@ class Filter(Instruction):
 
 
 @typechecked
-def get_instruction_class(name: str) -> Instruction:
+def get_instruction_class(name: str) -> Type[Instruction]:
     classes = inspect.getmembers(sys.modules[__name__], inspect.isclass)
     instructions = [cls for _, cls in classes if issubclass(cls, Instruction)]
     try:
@@ -94,3 +86,14 @@ def instruction_from_dict(d: Mapping[str, Union[str, bool]]) -> Instruction:
         raise InvalidSeralizedInstruction(d)
     else:
         return instruction
+
+
+@typechecked
+def source_from_uri(uri: str, default_interface: Optional[str]=None) -> Source:
+    xs = uri.split("://")
+    if len(xs) == 2:
+        return Source(xs[0], xs[1])
+    elif len(xs) == 1 and default_interface:
+        return Source(default_interface, xs[0])
+    else:
+        raise InvalidDataSource(uri)

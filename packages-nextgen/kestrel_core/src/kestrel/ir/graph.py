@@ -18,6 +18,7 @@ from kestrel.ir.instructions import (
     Source,
     Return,
     instruction_from_dict,
+    source_from_uri,
 )
 from kestrel.cache import Cache
 from kestrel.exceptions import (
@@ -189,7 +190,7 @@ class IRGraph(networkx.DiGraph):
         try:
             s = self.get_source(uri)
         except SourceNotFound:
-            s = Source(uri)
+            s = source_from_uri(uri)
             self.add_node(s)
         return s
 
