@@ -45,10 +45,22 @@ class IRGraph(networkx.DiGraph):
                 graph_in_dict = serialized_graph
             self._from_dict(graph_in_dict)
 
-    def add_node(self, node: Instruction):
+    def add_node(self, node: Instruction, *args):
+        if isinstance(node, Variable):
+            self.add_variable(node, *args)
+        elif isinstance(node, Source):
+            self.add_source(node, *args)
+        else:
+            self._add_node(node)
+        return node
+
+    def _add_node(self, node: Instruction):
         super().add_node(node)
 
     def add_nodes_from(self, nodes: Iterable[Instruction]):
+        raise NotImplementedError()
+
+    def _add_nodes_from(self, nodes: Iterable[Instruction]):
         super().add_nodes_from(nodes)
 
     def add_edge(self, u: Instruction, v: Instruction):
@@ -131,24 +143,24 @@ class IRGraph(networkx.DiGraph):
         else:
             raise VariableNotFound(var_name)
 
-    def add_variable(self, var_name: str, dependent_node: Instruction) -> Variable:
-        """Create new variable and add to IRGraph
+    def add_variable(self, vx: Union[str, Variable], dependent_node: Instruction) -> Variable:
+        """Create new variable (if needed) and add to IRGraph
 
         Parameters:
-            var_name: variable name
+            vx: variable name (str) or already created node (Variable)
             dependent_node: the instruction to which the variable refer
 
         Returns:
-            The new variable node created/added
+            The variable node created/added
         """
+        v = Variable(var_name) if isinstance(vx, str) else vx
         try:
-            ve = self.get_variable(var_name)
+            ve = self.get_variable(v.name)
         except VariableNotFound:
             pass
         else:
             ve.deceased = True
-        v = Variable(var_name)
-        self.add_node(v)
+        self._add_node(v)
         self.add_edge(dependent_node, v)
         return v
 
@@ -179,22 +191,23 @@ class IRGraph(networkx.DiGraph):
         else:
             raise SourceNotFound(interface, datasource)
 
-    def add_source(self, uri: str, default_interface: Optional[str]=None) -> Source:
-        """Create new datasource and add to IRGraph if not exist
+    def add_source(self, sx: Union[str, Source], default_interface: Optional[str]=None) -> Source:
+        """Create new datasource (if needed) and add to IRGraph if not exist
 
         Parameters:
-            uri: the full URI of the datasource
+            sx: the full URI of the datasource (str) or already created node (Source)
             default_interface: default interface name
 
         Returns:
             The Source node found or added
         """
-        s = source_from_uri(uri, default_interface)
+        sy = source_from_uri(uri, default_interface) if isinstance(sx, str) else sx
         try:
-            _s = self.get_source(s.interface, s.datasource)
+            s = self.get_source(sy.interface, sy.datasource)
         except SourceNotFound:
-            self.add_node(s)
-        return _s
+            s = sy
+            self._add_node(s)
+        return s
 
     def cached_dependent_graph_of_node(
         self, node: Instruction, cache: Cache
@@ -318,7 +331,7 @@ class IRGraph(networkx.DiGraph):
         nodes = graph_in_dict["nodes"]
         edges = graph_in_dict["edges"]
         for n in nodes:
-            self.add_node(instruction_from_dict(n))
+            self._add_node(instruction_from_dict(n))
         for e in edges:
             try:
                 u = self.get_node_by_id(e["source"])
@@ -347,8 +360,8 @@ class IRGraphSimple(IRGraph):
             self = graph.copy()
             self.interface = interfaces.pop() if interfaces else None
 
-    def add_node(self, node: Instruction):
+    def _add_node(self, node: Instruction):
         if isinstance(node, Source):
             if self.interface and node.interface != self.interface:
                 raise MultiInterfacesInGraph([self.interface, node.interface])
-        super().add_node(node)
+        super()._add_node(node)
