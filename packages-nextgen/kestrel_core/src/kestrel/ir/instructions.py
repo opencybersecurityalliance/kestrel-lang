@@ -14,6 +14,7 @@ from mashumaro.mixins.json import DataClassJSONMixin
 import sys
 import inspect
 import uuid
+import json
 
 from kestrel.ir.filter import (
     IntComparison,
@@ -90,6 +91,12 @@ def instruction_from_dict(d: Mapping[str, Union[str, bool]]) -> Instruction:
         raise InvalidSeralizedInstruction(d)
     else:
         return instruction
+
+
+@typechecked
+def instruction_from_json(json_str: str) -> Instruction:
+    instruction_in_dict = json.loads(json_str)
+    return instruction_from_dict(instruction_in_dict)
 
 
 @typechecked

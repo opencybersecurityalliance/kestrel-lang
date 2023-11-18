@@ -3,7 +3,10 @@ import json
 from kestrel.ir.filter import (IntComparison, FloatComparison,
                                StrComparison, ListComparison, ListOp,
                                NumCompOp, StrCompOp, ExpOp, BoolExp)
-from kestrel.ir.instructions import Filter
+from kestrel.ir.instructions import (
+    Filter,
+    instruction_from_json,
+)
 
 import pytest
 
@@ -87,7 +90,7 @@ def test_bool_exp(lhs, op, rhs):
     # Also test Filter
     filt = Filter(exp)
     data = filt.to_json()
-    filt2 = Filter.from_json(data)
+    filt2 = instruction_from_json(data)
     assert filt == filt2
 
 
@@ -101,5 +104,5 @@ def test_filter_compound_exp():
     exp3 = BoolExp(exp1, ExpOp.AND, exp2)
     filt = Filter(exp3)
     data = filt.to_json()
-    filt2 = Filter.from_json(data)
+    filt2 = instruction_from_json(data)
     assert filt == filt2

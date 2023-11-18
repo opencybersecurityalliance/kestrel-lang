@@ -5,6 +5,7 @@ from kestrel.ir.instructions import (
     Source,
     get_instruction_class,
     instruction_from_dict,
+    instruction_from_json,
     source_from_uri,
 )
 from kestrel.exceptions import (
@@ -23,7 +24,6 @@ def test_instruction_post_init():
 
 def test_stable_id():
     v = Variable("asdf")
-    j = v.to_json()
     _id = v.id
     v.name = "qwer"
     assert v.id == _id
@@ -79,3 +79,10 @@ def test_instruction_from_dict():
     del d["id"]
     with pytest.raises(InvalidSeralizedInstruction):
         instruction_from_dict(d)
+
+
+def test_instruction_from_json():
+    v = Variable("asdf")
+    j = v.to_json()
+    w = instruction_from_json(j)
+    assert w == v
