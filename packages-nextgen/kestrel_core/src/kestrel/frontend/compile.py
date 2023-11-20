@@ -14,7 +14,7 @@ from kestrel.ir.filter import (
     ExpOp,
     BoolExp,
 )
-from kestrel.ir.instructions import Filter, Source, Variable
+from kestrel.ir.instructions import Filter, Variable, source_from_uri
 
 
 DEFAULT_VARIABLE = "_"
@@ -122,4 +122,4 @@ class _KestrelT(Transformer):
         return args[0]
 
     def datasource(self, args):
-        return Source(args[0].value)
+        return source_from_uri(args[0].value)

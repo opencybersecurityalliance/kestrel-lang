@@ -6,12 +6,12 @@ import pytest
 
 @pytest.mark.parametrize(
     "stmt", [
-        "x = GET thing FROM ds WHERE foo = 'bar'",
-        "x = GET thing FROM ds WHERE foo > 1.5",
-        r"x = GET thing FROM ds WHERE foo = r'C:\TMP'",
-        "x = GET thing FROM ds WHERE foo = 'bar' OR baz != 42",
-        "x = GET thing FROM ds WHERE foo = 'bar' AND baz IN (1, 2, 3)",
-        "x = GET thing FROM ds WHERE foo = 'bar' AND baz IN (1)",
+        "x = GET thing FROM if://ds WHERE foo = 'bar'",
+        "x = GET thing FROM if://ds WHERE foo > 1.5",
+        r"x = GET thing FROM if://ds WHERE foo = r'C:\TMP'",
+        "x = GET thing FROM if://ds WHERE foo = 'bar' OR baz != 42",
+        "x = GET thing FROM if://ds WHERE foo = 'bar' AND baz IN (1, 2, 3)",
+        "x = GET thing FROM if://ds WHERE foo = 'bar' AND baz IN (1)",
     ]
 )
 def test_parser_get_statements(stmt):
