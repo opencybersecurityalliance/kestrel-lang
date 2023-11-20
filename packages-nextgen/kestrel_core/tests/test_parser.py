@@ -1,4 +1,5 @@
 from kestrel.frontend.parser import parse_kestrel
+from kestrel.ir.graph import IRGraph
 from kestrel.ir.instructions import Filter
 
 import pytest
@@ -21,8 +22,8 @@ def test_parser_get_statements(stmt):
     This will need to be updated as we build out the new Transformer
     """
 
-    result = parse_kestrel(stmt)
-    #TODO: assert isinstance(result, IRGraph)?
+    graph = parse_kestrel(stmt)
+    assert len(graph) == 3  # TODO: should be 4
 
     # Ensure result is serializable
-    #TODO: _ = result.to_json()
+    _ = graph.to_json()

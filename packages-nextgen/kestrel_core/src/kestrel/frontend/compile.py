@@ -14,7 +14,14 @@ from kestrel.ir.filter import (
     ExpOp,
     BoolExp,
 )
-from kestrel.ir.instructions import Filter, Variable, source_from_uri
+from kestrel.ir.graph import IRGraph
+from kestrel.ir.instructions import (
+    Filter,
+    ProjectEntity,
+    Source,
+    Variable,
+    source_from_uri,
+)
 
 
 DEFAULT_VARIABLE = "_"
@@ -63,15 +70,20 @@ class _KestrelT(Transformer):
         return args[0]
 
     def statement(self, args):
-        return args
+        return args[0]
 
     def assignment(self, args):
-        args[0] = Variable(args[0].value)
-        return args
+        variable = Variable(args[0].value)
+        return_type, source, filt = args[1]
+        result = IRGraph()
+        result.add_node(filt)
+        result.add_source(source, filt)
+        result.add_variable(variable, source)
+        return result
 
     def get(self, args):
-        args[0] = args[0].value  # TEMP: convert entity type to plain string
-        return args  # TODO: Return IRGraph (sub-graph)?
+        args[0] = ProjectEntity(args[0].value)
+        return args
 
     def where_clause(self, args):
         exp = args[0]
