@@ -36,7 +36,7 @@ dependencies = [
     "pandas>=2.0.3",
     "pyarrow>=13.0.0",
     "mashumaro>=3.10",
-    "networkx>=3.2.1",
+    "networkx>=3.1", # networkx==3.2.1 only for Python>=3.9
 ]
 
 [project.optional-dependencies]
