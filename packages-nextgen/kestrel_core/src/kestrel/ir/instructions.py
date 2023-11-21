@@ -4,6 +4,7 @@ from typing import (
     Type,
     Union,
     Mapping,
+    List,
     Optional,
 )
 from dataclasses import (
@@ -61,9 +62,14 @@ class SourceInstruction(Instruction):
     pass
 
 
-@dataclass(eq=False)
 class Return(Instruction):
     """The sink instruction that forces execution
+    """
+    pass
+
+
+class IntermediateInstruction(Instruction):
+    """The instruction that aids AST to Kestrel IR compilation
     """
     pass
 
@@ -79,6 +85,12 @@ class ProjectEntity(TransformingInstruction):
 
 
 @dataclass(eq=False)
+class ProjectAttrs(TransformingInstruction):
+    # mashumaro does not support typing.Iterable, only List
+    attrs: List[str]
+
+
+@dataclass(eq=False)
 class Source(SourceInstruction):
     interface: str
     datasource: str
@@ -88,6 +100,13 @@ class Source(SourceInstruction):
 class Variable(TransformingInstruction):
     name: str
     deceased: bool = False
+
+
+@dataclass(eq=False)
+class Reference(IntermediateInstruction):
+    """Referred Kestrel variable (used in AST) before de-referencing to a Kestrel variable
+    """
+    name: str
 
 
 @typechecked
