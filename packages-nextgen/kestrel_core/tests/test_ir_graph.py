@@ -1,4 +1,5 @@
 import pytest
+import networkx.utils
 
 from kestrel.ir.instructions import (
     source_from_uri,
@@ -84,13 +85,9 @@ def test_cached_dependent_graph_of_node():
     c2 = g.add_node(Variable("zxcv"), c1)
 
     g2 = g.cached_dependent_graph_of_node(c2, Cache())
-    assert len(g2) == len(g)
-    assert g2.edges() == g.edges()
+    assert networkx.utils.graphs_equal(g, g2)
 
-    g2 = g.cached_dependent_graph_of_node(c2, Cache({a2.id: "asdf", b2.id: "asdfe"}))
-    assert len(g2) == len(g) - 2
-    edges = set(g.edges().keys())
-    for n in (a2, b2):
-        for e in g.in_edges(n):
-            edges.remove(e)
-    assert g2.edges() == edges
+    g3 = g.cached_dependent_graph_of_node(c2, Cache({a2.id: object(), b2.id: object()}))
+    g.remove_node(a1)
+    g.remove_node(b1)
+    assert networkx.utils.graphs_equal(g, g3)
