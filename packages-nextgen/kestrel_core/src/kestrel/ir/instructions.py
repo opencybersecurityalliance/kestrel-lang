@@ -50,9 +50,18 @@ class Instruction(DataClassJSONMixin):
 
 
 @dataclass(eq=False)
-class Variable(Instruction):
-    name: str
-    deceased: bool = False
+class Filter(Instruction):
+    exp: Union[IntComparison, FloatComparison, StrComparison, ListComparison, BoolExp]
+
+
+@dataclass(eq=False)
+class ProjectEntity(Instruction):
+    entity_type: str
+
+
+@dataclass(eq=False)
+class Return(Instruction):
+    pass
 
 
 @dataclass(eq=False)
@@ -62,13 +71,9 @@ class Source(Instruction):
 
 
 @dataclass(eq=False)
-class Return(Instruction):
-    pass
-
-
-@dataclass(eq=False)
-class Filter(Instruction):
-    exp: Union[IntComparison, FloatComparison, StrComparison, ListComparison, BoolExp]
+class Variable(Instruction):
+    name: str
+    deceased: bool = False
 
 
 @typechecked
