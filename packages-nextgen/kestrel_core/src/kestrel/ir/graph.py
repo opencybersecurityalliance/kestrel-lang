@@ -214,7 +214,7 @@ class IRGraph(networkx.DiGraph):
             self._add_node(s)
         return s
 
-    def copy_dependent_subgraph_of_node(self, node: Instruction) -> IRGraph:
+    def duplicate_dependent_subgraph_of_node(self, node: Instruction) -> IRGraph:
         """Find and copy the dependent subgraph of a node (including the node)
 
         Parameters:
@@ -237,12 +237,12 @@ class IRGraph(networkx.DiGraph):
         Returns:
             The pruned IRGraph without nodes before cached Variable nodes
         """
-        g = self.copy_dependent_subgraph_of_node(node)
+        g = self.duplicate_dependent_subgraph_of_node(node)
         in_edges = [g.in_edges(n) for n in g.get_variables() if n.id in cache]
         g.remove_edges_from(set().union(*in_edges))
 
         # important last step to discard any unconnected nodes/subgraphs prior to the dropped edges
-        return g.copy_dependent_subgraph_of_node(node)
+        return g.duplicate_dependent_subgraph_of_node(node)
 
     def find_simple_dependent_subgraphs_of_node(
         self, node: Return, cache: Cache
