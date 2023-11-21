@@ -59,16 +59,13 @@ class IRGraph(networkx.DiGraph):
         super().add_node(node)
 
     def add_nodes_from(self, nodes: Iterable[Instruction]):
-        raise NotImplementedError()
-
-    def _add_nodes_from(self, nodes: Iterable[Instruction]):
         super().add_nodes_from(nodes)
 
     def add_edge(self, u: Instruction, v: Instruction):
         super().add_edge(u, v)
 
     def add_edges_from(self, edges: Iterable[Tuple[Instruction, Instruction]]):
-        super().add_edge(edges)
+        super().add_edges_from(edges)
 
     def get_node_by_id(self, ux: Union[UUID, str]) -> Instruction:
         """Get node by ID
@@ -145,7 +142,9 @@ class IRGraph(networkx.DiGraph):
         else:
             raise VariableNotFound(var_name)
 
-    def add_variable(self, vx: Union[str, Variable], dependent_node: Instruction) -> Variable:
+    def add_variable(
+        self, vx: Union[str, Variable], dependent_node: Instruction
+    ) -> Variable:
         """Create new variable (if needed) and add to IRGraph
 
         Parameters:
@@ -184,7 +183,9 @@ class IRGraph(networkx.DiGraph):
         Returns:
             The datasource
         """
-        xs = self.get_nodes_by_type_and_attributes(Source, {"interface": interface, "datasource": datasource})
+        xs = self.get_nodes_by_type_and_attributes(
+            Source, {"interface": interface, "datasource": datasource}
+        )
         if xs:
             if len(xs) > 1:
                 raise DuplicatedDataSource(interface, datasource)
@@ -193,7 +194,9 @@ class IRGraph(networkx.DiGraph):
         else:
             raise SourceNotFound(interface, datasource)
 
-    def add_source(self, sx: Union[str, Source], default_interface: Optional[str]=None) -> Source:
+    def add_source(
+        self, sx: Union[str, Source], default_interface: Optional[str] = None
+    ) -> Source:
         """Create new datasource (if needed) and add to IRGraph if not exist
 
         Parameters:
@@ -211,6 +214,19 @@ class IRGraph(networkx.DiGraph):
             self._add_node(s)
         return s
 
+    def duplicate_dependent_subgraph_of_node(self, node: Instruction) -> IRGraph:
+        """Find and copy the dependent subgraph of a node (including the node)
+
+        Parameters:
+            node: instruction node to start
+
+        Returns:
+            A copy of the dependent subgraph (including the input node)
+        """
+        nodes = networkx.ancestors(self, node)
+        nodes.add(node)
+        return self.subgraph(nodes).copy()
+
     def cached_dependent_graph_of_node(
         self, node: Instruction, cache: Cache
     ) -> IRGraph:
@@ -221,13 +237,12 @@ class IRGraph(networkx.DiGraph):
         Returns:
             The pruned IRGraph without nodes before cached Variable nodes
         """
-        g = self.subgraph(networkx.ancestors(self, node)).copy()
-        for n in g.get_variables():
-            if n.id in cache:
-                g.remove_edges_from(g.in_edges(n))
+        g = self.duplicate_dependent_subgraph_of_node(node)
+        in_edges = [g.in_edges(n) for n in g.get_variables() if n.id in cache]
+        g.remove_edges_from(set().union(*in_edges))
 
         # important last step to discard any unconnected nodes/subgraphs prior to the dropped edges
-        return g.subgraph(networkx.ancestors(g, node))
+        return g.duplicate_dependent_subgraph_of_node(node)
 
     def find_simple_dependent_subgraphs_of_node(
         self, node: Return, cache: Cache
