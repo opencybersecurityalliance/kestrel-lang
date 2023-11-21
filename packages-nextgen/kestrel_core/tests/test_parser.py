@@ -23,7 +23,7 @@ def test_parser_get_statements(stmt):
     """
 
     graph = parse_kestrel(stmt)
-    assert len(graph) == 3  # TODO: should be 4
+    assert len(graph) == 4
 
     # Ensure result is serializable
     _ = graph.to_json()

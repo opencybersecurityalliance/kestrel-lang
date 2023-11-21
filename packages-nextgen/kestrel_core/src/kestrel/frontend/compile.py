@@ -73,17 +73,17 @@ class _KestrelT(Transformer):
         return args[0]
 
     def assignment(self, args):
-        variable = Variable(args[0].value)
-        return_type, source, filt = args[1]
-        result = IRGraph()
-        result.add_node(filt)
-        result.add_source(source, filt)
-        result.add_variable(variable, source)
-        return result
+        variable_node = Variable(args[0].value)
+        graph, root = args[1]
+        graph.add_node(variable_node, root)
+        return graph
 
     def get(self, args):
-        args[0] = ProjectEntity(args[0].value)
-        return args
+        graph = IRGraph()
+        source_node = graph.add_node(args[1])
+        filter_node = graph.add_node(args[2], source_node)
+        projection_node = graph.add_node(ProjectEntity(args[0].value), filter_node)
+        return graph, projection_node
 
     def where_clause(self, args):
         exp = args[0]

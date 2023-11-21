@@ -49,29 +49,43 @@ class Instruction(DataClassJSONMixin):
         return self.id.int
 
 
-@dataclass(eq=False)
-class Filter(Instruction):
-    exp: Union[IntComparison, FloatComparison, StrComparison, ListComparison, BoolExp]
+class TransformingInstruction(Instruction):
+    """The instruction that builds/dependent on one or more instructions
+    """
+    pass
 
 
-@dataclass(eq=False)
-class ProjectEntity(Instruction):
-    entity_type: str
-
-
-@dataclass(eq=False)
-class Return(Instruction):
+class SourceInstruction(Instruction):
+    """The instruction that does not dependent on any instruction
+    """
     pass
 
 
 @dataclass(eq=False)
-class Source(Instruction):
+class Return(Instruction):
+    """The sink instruction that forces execution
+    """
+    pass
+
+
+@dataclass(eq=False)
+class Filter(TransformingInstruction):
+    exp: Union[IntComparison, FloatComparison, StrComparison, ListComparison, BoolExp]
+
+
+@dataclass(eq=False)
+class ProjectEntity(TransformingInstruction):
+    entity_type: str
+
+
+@dataclass(eq=False)
+class Source(SourceInstruction):
     interface: str
     datasource: str
 
 
 @dataclass(eq=False)
-class Variable(Instruction):
+class Variable(TransformingInstruction):
     name: str
     deceased: bool = False
 
