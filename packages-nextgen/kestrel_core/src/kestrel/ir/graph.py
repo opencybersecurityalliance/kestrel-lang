@@ -59,16 +59,13 @@ class IRGraph(networkx.DiGraph):
         super().add_node(node)
 
     def add_nodes_from(self, nodes: Iterable[Instruction]):
-        raise NotImplementedError()
-
-    def _add_nodes_from(self, nodes: Iterable[Instruction]):
         super().add_nodes_from(nodes)
 
     def add_edge(self, u: Instruction, v: Instruction):
         super().add_edge(u, v)
 
     def add_edges_from(self, edges: Iterable[Tuple[Instruction, Instruction]]):
-        super().add_edge(edges)
+        super().add_edges_from(edges)
 
     def get_node_by_id(self, ux: Union[UUID, str]) -> Instruction:
         """Get node by ID
@@ -221,13 +218,16 @@ class IRGraph(networkx.DiGraph):
         Returns:
             The pruned IRGraph without nodes before cached Variable nodes
         """
-        g = self.subgraph(networkx.ancestors(self, node)).copy()
-        for n in g.get_variables():
-            if n.id in cache:
-                g.remove_edges_from(g.in_edges(n))
+        nodes = networkx.ancestors(self, node)
+        nodes.add(node)
+        g = self.subgraph(nodes).copy()
+        in_edges = [g.in_edges(n) for n in g.get_variables() if n.id in cache]
+        g.remove_edges_from(set().union(*in_edges))
 
         # important last step to discard any unconnected nodes/subgraphs prior to the dropped edges
-        return g.subgraph(networkx.ancestors(g, node))
+        nodes = networkx.ancestors(g, node)
+        nodes.add(node)
+        return g.subgraph(nodes).copy()
 
     def find_simple_dependent_subgraphs_of_node(
         self, node: Return, cache: Cache
