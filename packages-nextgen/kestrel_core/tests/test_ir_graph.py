@@ -64,7 +64,7 @@ def test_serialization_deserialization():
     assert g2.edges() == {(s,v)}
 
 
-def test_cached_dependent_graph_of_node():
+def test_find_cached_dependent_subgraph_of_node():
     g = IRGraph()
 
     a1 = g.add_node(source_from_uri("ss://ee"))
@@ -84,10 +84,10 @@ def test_cached_dependent_graph_of_node():
     g.add_edge(b4, c1)
     c2 = g.add_node(Variable("zxcv"), c1)
 
-    g2 = g.cached_dependent_graph_of_node(c2, Cache())
+    g2 = g.find_cached_dependent_subgraph_of_node(c2, Cache())
     assert networkx.utils.graphs_equal(g, g2)
 
-    g3 = g.cached_dependent_graph_of_node(c2, Cache({a2.id: object(), b2.id: object()}))
+    g3 = g.find_cached_dependent_subgraph_of_node(c2, Cache({a2.id: object(), b2.id: object()}))
     g.remove_node(a1)
     g.remove_node(b1)
     assert networkx.utils.graphs_equal(g, g3)

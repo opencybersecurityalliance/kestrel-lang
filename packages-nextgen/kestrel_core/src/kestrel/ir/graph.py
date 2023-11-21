@@ -15,6 +15,8 @@ import json
 
 from kestrel.ir.instructions import (
     Instruction,
+    TransformingInstruction,
+    SourceInstruction,
     Variable,
     Source,
     Return,
@@ -46,11 +48,14 @@ class IRGraph(networkx.DiGraph):
                 graph_in_dict = serialized_graph
             self._from_dict(graph_in_dict)
 
-    def add_node(self, node: Instruction, *args):
-        if isinstance(node, Variable):
-            self.add_variable(node, *args)
-        elif isinstance(node, Source):
-            self.add_source(node, *args)
+    def add_node(self, node: Instruction, *args) -> Instruction:
+        if isinstance(node, TransformingInstruction):
+            self.add_node_with_dependent_node(node, *args)
+        elif isinstance(node, SourceInstruction):
+            if isinstance(node, Source):
+                self.add_source(node, *args)
+            else:
+                self._add_node(node)
         else:
             self._add_node(node)
         return node
@@ -214,6 +219,18 @@ class IRGraph(networkx.DiGraph):
             self._add_node(s)
         return s
 
+    def add_node_with_dependent_node(self, node: Instruction, dependent_node: Instruction) -> Instruction:
+        if dependent_node not in self:
+            raise InstructionNotFound(dependent_node)
+        if isinstance(node, Variable):
+            # require special setup
+            self.add_variable(node, dependent_node)
+        else:
+            # generic node with dependent node
+            self._add_node(node)
+            self.add_edge(dependent_node, node)
+        return node
+
     def duplicate_dependent_subgraph_of_node(self, node: Instruction) -> IRGraph:
         """Find and copy the dependent subgraph of a node (including the node)
 
@@ -227,7 +244,7 @@ class IRGraph(networkx.DiGraph):
         nodes.add(node)
         return self.subgraph(nodes).copy()
 
-    def cached_dependent_graph_of_node(
+    def find_cached_dependent_subgraph_of_node(
         self, node: Instruction, cache: Cache
     ) -> IRGraph:
         """Return the cached dependent graph of the a node
