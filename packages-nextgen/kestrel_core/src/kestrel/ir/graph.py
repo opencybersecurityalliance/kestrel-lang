@@ -219,7 +219,9 @@ class IRGraph(networkx.DiGraph):
             self._add_node(s)
         return s
 
-    def add_node_with_dependent_node(self, node: Instruction, dependent_node: Instruction) -> Instruction:
+    def add_node_with_dependent_node(
+        self, node: Instruction, dependent_node: Instruction
+    ) -> Instruction:
         if dependent_node not in self:
             raise InstructionNotFound(dependent_node)
         if isinstance(node, Variable):
@@ -287,7 +289,9 @@ class IRGraph(networkx.DiGraph):
         """
 
         simple_dependent_subgraphs = []
-        cached_dependent_graph = self.cached_dependent_graph_of_node(node, cache)
+        cached_dependent_graph = self.find_cached_dependent_subgraph_of_node(
+            node, cache
+        )
 
         interface2source = defaultdict(list)
         for source in cached_dependent_graph.get_nodes_by_type(Source):
@@ -300,39 +304,40 @@ class IRGraph(networkx.DiGraph):
                 source_affected_nodes = networkx.descendants(
                     cached_dependent_graph, source
                 )
+                source_affected_nodes.add(source)
                 affected_nodes_by_interface[interface].update(source_affected_nodes)
 
         # find all nodes not affected by any interface
         # put them (may not be fully connected) into one IRGraphSimple
-        all_interface_affected_nodes = set()
-        for nodes in affected_nodes_by_interface.values():
-            all_interface_affected_nodes.update(nodes)
-        non_interface_nodes = (
-            cached_dependent_graph.nodes() - all_interface_affected_nodes
-        )
+        interface_affected_nodes = set().union(*affected_nodes_by_interface.values())
+        non_interface_nodes = cached_dependent_graph.nodes() - interface_affected_nodes
         if non_interface_nodes:
-            non_interface_subgraph = cached_dependent_graph.subgraph(
-                non_interface_nodes
+            simple_dependent_subgraphs.append(
+                cached_dependent_graph.subgraph(non_interface_nodes).copy()
             )
-            simple_dependent_subgraphs.append(non_interface_subgraph)
 
-        # find all nodes that are affected by more than two interfaces
-        shared_affected_nodes = set()
-        for ix, iy in combinations(affected_nodes_by_interface.keys(), 2):
-            shared_nodes_between_two = set.intersection(
-                affected_nodes_by_interface[ix], affected_nodes_by_interface[iy]
-            )
-            shared_affected_nodes.update(shared_nodes_between_two)
+        # find all nodes that are affected by two or more interfaces
+        shared_affected_nodes = set().union(
+            *[
+                set.intersection(
+                    affected_nodes_by_interface[ix], affected_nodes_by_interface[iy]
+                )
+                for ix, iy in combinations(affected_nodes_by_interface.keys(), 2)
+            ]
+        )
 
         # per interface:
         # - find nodes affected only by each interface
         # - get their subgraph
         # - put such subgraph into IRGraphSimple
-        for interface, affected_nodes in affected_nodes_by_interface:
+        for interface, affected_nodes in affected_nodes_by_interface.items():
             unshared_nodes = affected_nodes - shared_affected_nodes
             if len(unshared_nodes) > 1:
-                sg = IRGraphSimple(cached_dependent_graph.subgraph(unshared_nodes))
-                simple_dependent_subgraphs.append(sg)
+                simple_dependent_subgraphs.append(
+                    IRGraphSimple(
+                        cached_dependent_graph.subgraph(unshared_nodes).copy()
+                    )
+                )
 
         return simple_dependent_subgraphs
 
