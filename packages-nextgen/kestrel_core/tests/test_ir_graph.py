@@ -37,9 +37,9 @@ def test_add_variable():
     v = Variable("asdf")
     v3 = g.add_variable(v, s)
     assert v == v3
-    assert v1.deceased
-    assert v2.deceased
-    assert not v3.deceased
+    assert v1.freshness == 0
+    assert v2.freshness == 1
+    assert v3.freshness == 2
     assert len(g) == 4
     assert len(g.edges()) == 3
 

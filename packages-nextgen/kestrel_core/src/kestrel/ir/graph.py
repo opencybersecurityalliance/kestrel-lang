@@ -137,13 +137,14 @@ class IRGraph(networkx.DiGraph):
             The Kestrel variable given its name
         """
         xs = self.get_nodes_by_type_and_attributes(
-            Variable, {"name": var_name, "deceased": False}
+            Variable, {"name": var_name}
         )
         if xs:
-            if len(xs) > 1:
+            if len({x.freshness for x in xs}) < len(xs):
                 raise DuplicatedVariable(var_name)
             else:
-                return xs.pop()
+                xs.sort(key=lambda x: x.freshness)
+                return xs[-1]
         else:
             raise VariableNotFound(var_name)
 
@@ -165,7 +166,7 @@ class IRGraph(networkx.DiGraph):
         except VariableNotFound:
             pass
         else:
-            ve.deceased = True
+            v.freshness = ve.freshness + 1
         self._add_node(v)
         self.add_edge(dependent_node, v)
         return v

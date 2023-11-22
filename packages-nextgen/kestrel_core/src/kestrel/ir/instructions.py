@@ -99,7 +99,7 @@ class Source(SourceInstruction):
 @dataclass(eq=False)
 class Variable(TransformingInstruction):
     name: str
-    deceased: bool = False
+    freshness: int = 0 # the larger, the fresher
 
 
 @dataclass(eq=False)
