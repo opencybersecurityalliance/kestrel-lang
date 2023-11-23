@@ -79,7 +79,7 @@ class _KestrelT(Transformer):
     def assignment(self, args):
         variable_node = Variable(args[0].value)
         graph, root = args[1]
-        graph.add_variable(variable_node, root)
+        graph.add_node(variable_node, root)
         return graph
 
     def get(self, args):
