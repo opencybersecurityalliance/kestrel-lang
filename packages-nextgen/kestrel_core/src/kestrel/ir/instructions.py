@@ -10,12 +10,14 @@ from typing import (
 from dataclasses import (
     dataclass,
     field,
+    fields,
 )
 from mashumaro.mixins.json import DataClassJSONMixin
 import sys
 import inspect
 import uuid
 import json
+import copy
 
 from kestrel.ir.filter import (
     IntComparison,
@@ -49,6 +51,12 @@ class Instruction(DataClassJSONMixin):
         # stable hash during Instruction lifetime
         return self.id.int
 
+    def copy(self):
+        return copy.copy(self)
+
+    def deepcopy(self):
+        return copy.deepcopy(self)
+
 
 class TransformingInstruction(Instruction):
     """The instruction that builds/dependent on one or more instructions
@@ -59,7 +67,15 @@ class TransformingInstruction(Instruction):
 class SourceInstruction(Instruction):
     """The instruction that does not dependent on any instruction
     """
-    pass
+    def is_same_as(self, instruction: SourceInstruction) -> bool:
+        if self.instruction == instruction.instruction:
+            flag = True
+            for f in fields(self):
+                if f.name != "id" and getattr(self, f.name) != getattr(instruction, f.name):
+                    flag = False
+        else:
+            flag = False
+        return flag
 
 
 class Return(Instruction):
@@ -103,7 +119,7 @@ class Variable(TransformingInstruction):
 
 
 @dataclass(eq=False)
-class Reference(IntermediateInstruction):
+class Reference(SourceInstruction):
     """Referred Kestrel variable (used in AST) before de-referencing to a Kestrel variable
     """
     name: str

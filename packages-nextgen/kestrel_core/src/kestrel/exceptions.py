@@ -25,7 +25,7 @@ class SourceNotFound(KestrelError):
 class DuplicatedVariable(KestrelError):
     pass
 
-class DuplicatedDataSource(KestrelError):
+class DuplicatedSourceInstruction(KestrelError):
     pass
 
 class MultiInterfacesInGraph(KestrelError):
