@@ -28,8 +28,8 @@ def test_add_source():
 def test_add_same_node():
     g = IRGraph()
     n = Instruction()
-    s = g._add_node(n)
-    s = g._add_node(n)
+    s = g._add_single_node(n)
+    s = g._add_single_node(n)
     assert len(g) == 1
 
 
@@ -116,12 +116,13 @@ def test_update_graph():
 def test_serialization_deserialization():
     g1 = IRGraph()
     s = g1.add_node(source_from_uri("ss://ee"))
+    r = g1.add_node(Reference("asdf"))
     v = g1.add_node(Variable("asdf"), s)
     j = g1.to_json()
     g2 = IRGraph(j)
     assert s in g2.nodes()
     assert v in g2.nodes()
-    assert len(g2) == 2
+    assert len(g2) == 3
     assert g2.edges() == {(s,v)}
 
 
