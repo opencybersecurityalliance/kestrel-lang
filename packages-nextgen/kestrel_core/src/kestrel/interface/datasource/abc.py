@@ -28,7 +28,7 @@ class AbstractDataSourceInterface(ABC):
 
         datasources: map a datasource name to datalake table name
 
-        cache: map a cached item (instruction.id) to datalake table name
+        cache: map a cached item (instruction.id) to datalake table/view name
     """
 
     def __init__(
@@ -61,7 +61,7 @@ class AbstractDataSourceInterface(ABC):
     def create(
         self, datasource: str, df: DataFrame, session_id: Union[None, UUID] = None
     ):
-        """Create datasource (table) given a dataframe
+        """Create cached entries (table) from a dataframe
 
         In the implementation, recommend use `session_id` in the table
         name/path to isolate intermediate results of one session from another.
