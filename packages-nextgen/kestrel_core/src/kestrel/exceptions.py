@@ -40,3 +40,6 @@ class DuplicatedSourceInstruction(KestrelError):
 
 class MultiInterfacesInGraph(KestrelError):
     pass
+
+class InvalidSerializedDatasourceInterfaceCacheCatalog(KestrelError):
+    pass
