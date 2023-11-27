@@ -53,17 +53,32 @@ def _create_comp(field: str, op: str, value):
     return comp
 
 
+def _create_multiple_or_expression(field_list, op, value):
+    res = None
+    for field in field_list:
+        comp = _create_comp(field, op, value)
+        if res is None:
+            res = comp
+        else:
+            res = BoolExp(res, ExpOp.OR, comp)
+    return res
+
+
 class _KestrelT(Transformer):
     def __init__(
         self,
         default_variable=DEFAULT_VARIABLE,
         default_sort_order=DEFAULT_SORT_ORDER,
         token_prefix="",
+        entity_map={},
+        property_map={}
     ):
         # token_prefix is the modification by Lark when using `merge_transformers()`
         self.default_variable = default_variable
         self.default_sort_order = default_sort_order
         self.token_prefix = token_prefix
+        self.entity_map = entity_map
+        self.property_map = property_map
         super().__init__()
 
     def start(self, args):
@@ -82,7 +97,9 @@ class _KestrelT(Transformer):
         return result
 
     def get(self, args):
-        args[0] = ProjectEntity(args[0].value)
+        # TODO: map entity for args[0].value
+        entity_name = self.entity_map.get(args[0].value, args[0].value)
+        args[0] = ProjectEntity(entity_name)
         return args
 
     def where_clause(self, args):
@@ -99,9 +116,13 @@ class _KestrelT(Transformer):
         """Emit a Comparison object for a Filter"""
         field = args[0].value
         # TODO: frontend field mapping
+        mapped_field = self.property_map.get(field, field)
         op = args[1]
         value = args[2]
-        comp = _create_comp(field, op, value)
+        if isinstance(mapped_field, (list, tuple)):
+            comp = _create_multiple_or_expression(mapped_field, op, value)
+        else:
+            comp = _create_comp(mapped_field, op, value)
         return comp
 
     def op(self, args):
