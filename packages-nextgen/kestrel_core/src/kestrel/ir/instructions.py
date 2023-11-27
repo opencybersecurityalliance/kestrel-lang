@@ -117,7 +117,9 @@ class Source(SourceInstruction):
 @dataclass(eq=False)
 class Variable(TransformingInstruction):
     name: str
-    freshness: int = 0  # the larger, the fresher
+    # required to dereference a variable that has been created multiple times
+    # the variable with the largest version will be used by dereference
+    version: int = 0
 
 
 @dataclass(eq=False)

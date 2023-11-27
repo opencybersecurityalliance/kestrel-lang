@@ -232,10 +232,10 @@ class IRGraph(networkx.DiGraph):
         """
         xs = self.get_nodes_by_type_and_attributes(Variable, {"name": var_name})
         if xs:
-            if len({x.freshness for x in xs}) < len(xs):
+            if len({x.version for x in xs}) < len(xs):
                 raise DuplicatedVariable(var_name)
             else:
-                xs.sort(key=lambda x: x.freshness)
+                xs.sort(key=lambda x: x.version)
                 return xs[-1]
         else:
             raise VariableNotFound(var_name)
@@ -262,7 +262,7 @@ class IRGraph(networkx.DiGraph):
             except VariableNotFound:
                 pass
             else:
-                v.freshness = ve.freshness + 1
+                v.version = ve.version + 1
 
             # add_edge will add node v
             self.add_edge(dependent_node, v)
@@ -349,7 +349,7 @@ class IRGraph(networkx.DiGraph):
         # prepare new variables from ng before merge
         for nv in ng.get_nodes_by_type(Variable):
             if nv.name in original_variables:
-                nv.freshness += original_variables[nv.name].freshness + 1
+                nv.version += original_variables[nv.name].version + 1
 
         edges = []
         for u, v in ng.edges():

@@ -50,9 +50,9 @@ def test_add_variable():
     v4 = g.add_variable(v, s)
     assert v3 == v4
 
-    assert v1.freshness == 0
-    assert v2.freshness == 1
-    assert v3.freshness == 2
+    assert v1.version == 0
+    assert v2.version == 1
+    assert v3.version == 2
     assert len(g) == 4
     assert len(g.edges()) == 3
 
@@ -93,20 +93,20 @@ def test_update_graph():
     v4 = g2.add_variable("asdf", g2.add_node(Reference("asdf")))
     v5 = g2.add_variable("asdf", g2.add_node(TransformingInstruction(), s2))
 
-    assert v1.freshness == 0
-    assert v2.freshness == 1
-    assert v3.freshness == 2
-    assert v4.freshness == 0
-    assert v5.freshness == 1
+    assert v1.version == 0
+    assert v2.version == 1
+    assert v3.version == 2
+    assert v4.version == 0
+    assert v5.version == 1
     assert len(g) == 4
     assert len(g2) == 5
 
     g.update(g2)
-    assert v1.freshness == 0
-    assert v2.freshness == 1
-    assert v3.freshness == 2
-    assert v4.freshness == 3
-    assert v5.freshness == 4
+    assert v1.version == 0
+    assert v2.version == 1
+    assert v3.version == 2
+    assert v4.version == 3
+    assert v5.version == 4
     assert len(g) == 7
     assert (v3, v4) in g.edges()
     assert g.in_degree(v4) == 1
