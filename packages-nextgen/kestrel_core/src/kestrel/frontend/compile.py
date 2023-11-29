@@ -1,8 +1,11 @@
 # Lark Transformer
 
+from datetime import datetime, timedelta
+from functools import reduce
+
+from dateutil.parser import parse as to_datetime
 from lark import Transformer
 from typeguard import typechecked
-from functools import reduce
 
 from kestrel.ir.filter import (
     IntComparison,
@@ -14,6 +17,7 @@ from kestrel.ir.filter import (
     StrCompOp,
     ExpOp,
     BoolExp,
+    TimeRange,
 )
 from kestrel.ir.graph import (
     IRGraph,
@@ -21,8 +25,8 @@ from kestrel.ir.graph import (
 )
 from kestrel.ir.instructions import (
     Filter,
-    ProjectEntity,
     Source,
+    ProjectEntity,
     Variable,
 )
 
@@ -86,6 +90,8 @@ class _KestrelT(Transformer):
         source_node = graph.add_node(args[1])
         filter_node = graph.add_node(args[2], source_node)
         projection_node = graph.add_node(ProjectEntity(args[0].value), filter_node)
+        if len(args) > 3:
+            filter_node.timerange = args[3]
         return graph, projection_node
 
     def where_clause(self, args):
@@ -138,3 +144,39 @@ class _KestrelT(Transformer):
 
     def datasource(self, args):
         return Source(args[0].value)
+
+    # Timespans
+    def timespan_relative(self, args):
+        num = int(args[0])
+        unit = args[1]
+        if unit == "DAY":
+            delta = timedelta(days=num)
+        elif unit == "HOUR":
+            delta = timedelta(hours=num)
+        elif unit == "MINUTE":
+            delta = timedelta(minutes=num)
+        elif unit == "SECOND":
+            delta = timedelta(seconds=num)
+        stop = datetime.utcnow()
+        start = stop - delta
+        return TimeRange(start, stop)
+
+    def timespan_absolute(self, args):
+        start = to_datetime(args[0])
+        stop = to_datetime(args[1])
+        return TimeRange(start, stop)
+
+    def day(self, _args):
+        return "DAY"
+
+    def hour(self, _args):
+        return "HOUR"
+
+    def minute(self, _args):
+        return "MINUTE"
+
+    def second(self, _args):
+        return "SECOND"
+
+    def timestamp(self, args):
+        return args[0]

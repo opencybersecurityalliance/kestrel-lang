@@ -1,6 +1,7 @@
+from datetime import datetime
 from enum import Enum
 from typing import Union, List
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from mashumaro.mixins.json import DataClassJSONMixin
 
 
@@ -95,13 +96,42 @@ class ExpOp(str, Enum):
 
 
 @dataclass
+class MultiComp(DataClassJSONMixin):
+    """Boolean expression of multiple comparisons.
+
+    The single operator applies to ALL comparisons, so `OR` acts like `any` and `AND` acts like `all`.
+    """
+
+    op: ExpOp
+    comps: List[Union[IntComparison, FloatComparison, StrComparison, ListComparison]]
+
+
+@dataclass
 class BoolExp(DataClassJSONMixin):
-    """Boolean expression of comparisons"""
+    """Binary boolean expression of comparisons"""
 
     lhs: Union[
-        IntComparison, FloatComparison, StrComparison, ListComparison, "BoolExp"
-    ]  # "Forward declaration"
+        IntComparison,
+        FloatComparison,
+        StrComparison,
+        ListComparison,
+        MultiComp,
+        "BoolExp",
+    ]  # "Forward declaration" of BoolExp
     op: ExpOp
     rhs: Union[
-        IntComparison, FloatComparison, StrComparison, ListComparison, "BoolExp"
-    ]  # "Forward declaration"
+        IntComparison,
+        FloatComparison,
+        StrComparison,
+        ListComparison,
+        MultiComp,
+        "BoolExp",
+    ]  # "Forward declaration" of BoolExp
+
+
+@dataclass
+class TimeRange(DataClassJSONMixin):
+    """The time range of interest"""
+
+    start: datetime = field(default=None)
+    stop: datetime = field(default=None)

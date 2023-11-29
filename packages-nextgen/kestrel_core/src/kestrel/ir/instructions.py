@@ -27,6 +27,8 @@ from kestrel.ir.filter import (
     StrComparison,
     ListComparison,
     BoolExp,
+    MultiComp,
+    TimeRange,
 )
 
 from kestrel.exceptions import (
@@ -101,7 +103,15 @@ class IntermediateInstruction(Instruction):
 
 @dataclass(eq=False)
 class Filter(TransformingInstruction):
-    exp: Union[IntComparison, FloatComparison, StrComparison, ListComparison, BoolExp]
+    exp: Union[
+        IntComparison,
+        FloatComparison,
+        StrComparison,
+        ListComparison,
+        MultiComp,
+        BoolExp,
+    ]
+    timerange: TimeRange = field(default_factory=TimeRange)
 
 
 @dataclass(eq=False)
