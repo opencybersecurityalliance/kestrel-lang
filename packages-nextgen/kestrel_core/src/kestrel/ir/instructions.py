@@ -25,6 +25,7 @@ from kestrel.ir.filter import (
     StrComparison,
     ListComparison,
     BoolExp,
+    MultiComp,
 )
 
 from kestrel.exceptions import (
@@ -94,7 +95,14 @@ class IntermediateInstruction(Instruction):
 
 @dataclass(eq=False)
 class Filter(TransformingInstruction):
-    exp: Union[IntComparison, FloatComparison, StrComparison, ListComparison, BoolExp]
+    exp: Union[
+        IntComparison,
+        FloatComparison,
+        StrComparison,
+        ListComparison,
+        MultiComp,
+        BoolExp,
+    ]
 
 
 @dataclass(eq=False)
