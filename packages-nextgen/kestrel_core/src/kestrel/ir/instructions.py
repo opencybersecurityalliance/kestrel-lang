@@ -104,7 +104,7 @@ class Filter(TransformingInstruction):
         MultiComp,
         BoolExp,
     ]
-    timerange: TimeRange = TimeRange()
+    timerange: TimeRange = field(default_factory=TimeRange)
 
 
 @dataclass(eq=False)
