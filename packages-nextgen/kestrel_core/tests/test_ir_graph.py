@@ -1,5 +1,6 @@
 import pytest
 import networkx.utils
+from pandas import DataFrame
 
 from kestrel.ir.instructions import (
     Variable,
@@ -9,7 +10,7 @@ from kestrel.ir.instructions import (
     TransformingInstruction,
 )
 from kestrel.ir.graph import IRGraph
-from kestrel.cache import Cache
+from kestrel.cache.inmemory import InMemoryCache
 
 
 def test_add_source():
@@ -146,10 +147,10 @@ def test_find_cached_dependent_subgraph_of_node():
     g.add_edge(b4, c1)
     c2 = g.add_node(Variable("zxcv"), c1)
 
-    g2 = g.find_cached_dependent_subgraph_of_node(c2, Cache())
+    g2 = g.find_cached_dependent_subgraph_of_node(c2, InMemoryCache())
     assert networkx.utils.graphs_equal(g, g2)
 
-    g3 = g.find_cached_dependent_subgraph_of_node(c2, Cache({a2.id: object(), b2.id: object()}))
+    g3 = g.find_cached_dependent_subgraph_of_node(c2, InMemoryCache({a2.id: DataFrame(), b2.id: DataFrame()}))
     g.remove_node(a1)
     g.remove_node(b1)
     assert networkx.utils.graphs_equal(g, g3)
