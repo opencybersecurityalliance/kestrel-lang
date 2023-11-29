@@ -165,6 +165,11 @@ class Reference(SourceInstruction):
     name: str
 
 
+@dataclass(eq=False)
+class Limit(TransformingInstruction):
+    num: int
+
+
 @typechecked
 def get_instruction_class(name: str) -> Type[Instruction]:
     classes = inspect.getmembers(sys.modules[__name__], inspect.isclass)
