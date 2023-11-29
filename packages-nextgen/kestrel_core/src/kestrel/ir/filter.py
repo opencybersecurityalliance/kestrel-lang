@@ -1,6 +1,7 @@
+from datetime import datetime
 from enum import Enum
 from typing import Union, List
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from mashumaro.mixins.json import DataClassJSONMixin
 
 
@@ -126,3 +127,11 @@ class BoolExp(DataClassJSONMixin):
         MultiComp,
         "BoolExp",
     ]  # "Forward declaration" of BoolExp
+
+
+@dataclass
+class TimeRange(DataClassJSONMixin):
+    """The time range of interest"""
+
+    start: datetime = field(default=None)
+    stop: datetime = field(default=None)

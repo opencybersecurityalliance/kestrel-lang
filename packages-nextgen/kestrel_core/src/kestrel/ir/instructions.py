@@ -26,6 +26,7 @@ from kestrel.ir.filter import (
     ListComparison,
     BoolExp,
     MultiComp,
+    TimeRange,
 )
 
 from kestrel.exceptions import (
@@ -103,6 +104,7 @@ class Filter(TransformingInstruction):
         MultiComp,
         BoolExp,
     ]
+    timerange: TimeRange = field(default_factory=TimeRange)
 
 
 @dataclass(eq=False)
