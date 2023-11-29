@@ -2,7 +2,7 @@ import json
 
 from kestrel.ir.filter import (IntComparison, FloatComparison,
                                StrComparison, ListComparison, ListOp,
-                               NumCompOp, StrCompOp, ExpOp, BoolExp)
+                               NumCompOp, StrCompOp, ExpOp, BoolExp, MultiComp)
 from kestrel.ir.instructions import (
     Filter,
     instruction_from_json,
@@ -69,6 +69,18 @@ def test_list_comparison(field, op, value):
     assert comp == comp2
 
 
+
+
+def test_multi_comparison():
+    comp1 = StrComparison("foo", StrCompOp.EQ, "X")
+    comp2 = StrComparison("bar", StrCompOp.EQ, "Y")
+    comp3 = StrComparison("baz", StrCompOp.EQ, "Z")
+    mcomp = MultiComp(ExpOp.OR, [comp1, comp2, comp3])
+    data = mcomp.to_json()
+    mcomp2 = MultiComp.from_json(data)
+    assert mcomp == mcomp2
+
+
 @pytest.mark.parametrize(
     "lhs, op, rhs", [
         (StrComparison("foo", StrCompOp.EQ, "bar"), ExpOp.AND, IntComparison("baz", NumCompOp.EQ, 42)),
@@ -79,6 +91,8 @@ def test_list_comparison(field, op, value):
         (StrComparison("foo", StrCompOp.EQ, "bar"), ExpOp.OR, ListComparison("baz", ListOp.IN, [1, 2, 3])),
         (ListComparison("baz", ListOp.IN, ["a", "b", "c"]), ExpOp.AND, StrComparison("foo", StrCompOp.EQ, "bar")),
         (ListComparison("baz", ListOp.IN, [1, 2, 3]), ExpOp.OR, StrComparison("foo", StrCompOp.EQ, "bar")),
+        (StrComparison("foo", StrCompOp.EQ, "X"), ExpOp.AND,
+         MultiComp(ExpOp.OR, [StrComparison("bar", StrCompOp.EQ, "A"), StrComparison("baz", StrCompOp.EQ, "B")])),
     ]
 )
 def test_bool_exp(lhs, op, rhs):

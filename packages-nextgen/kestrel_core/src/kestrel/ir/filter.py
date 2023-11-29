@@ -95,13 +95,34 @@ class ExpOp(str, Enum):
 
 
 @dataclass
+class MultiComp(DataClassJSONMixin):
+    """Boolean expression of multiple comparisons.
+
+    The single operator applies to ALL comparisons, so `OR` acts like `any` and `AND` acts like `all`.
+    """
+
+    op: ExpOp
+    comps: List[Union[IntComparison, FloatComparison, StrComparison, ListComparison]]
+
+
+@dataclass
 class BoolExp(DataClassJSONMixin):
-    """Boolean expression of comparisons"""
+    """Binary boolean expression of comparisons"""
 
     lhs: Union[
-        IntComparison, FloatComparison, StrComparison, ListComparison, "BoolExp"
-    ]  # "Forward declaration"
+        IntComparison,
+        FloatComparison,
+        StrComparison,
+        ListComparison,
+        MultiComp,
+        "BoolExp",
+    ]  # "Forward declaration" of BoolExp
     op: ExpOp
     rhs: Union[
-        IntComparison, FloatComparison, StrComparison, ListComparison, "BoolExp"
-    ]  # "Forward declaration"
+        IntComparison,
+        FloatComparison,
+        StrComparison,
+        ListComparison,
+        MultiComp,
+        "BoolExp",
+    ]  # "Forward declaration" of BoolExp
