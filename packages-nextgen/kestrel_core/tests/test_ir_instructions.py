@@ -51,12 +51,15 @@ def test_get_instruction_class():
     assert isinstance(v, Variable)
 
 
-def test_Source():
+def test_add_source():
     s = Source("stixshifter://abc")
     j = s.to_dict()
     assert j["interface"] == "stixshifter"
     assert j["datasource"] == "abc"
+    assert "id" in j
+    assert "instruction" in j
     assert "uri" not in j
+    assert "default_interface" not in j
 
     x = Source("abc", "stixshifter")
     assert x.interface == "stixshifter"
