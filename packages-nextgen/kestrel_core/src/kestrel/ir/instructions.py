@@ -20,6 +20,7 @@ import uuid
 import json
 import copy
 
+from kestrel.__future__ import is_python_older_than_minor_version
 from kestrel.ir.filter import (
     IntComparison,
     FloatComparison,
@@ -33,6 +34,11 @@ from kestrel.exceptions import (
     InvalidSeralizedInstruction,
     InvalidDataSource,
 )
+
+
+# https://stackoverflow.com/questions/70400639/how-do-i-get-python-dataclass-initvar-fields-to-work-with-typing-get-type-hints
+if is_python_older_than_minor_version(11):
+    InitVar.__call__ = lambda *args: None
 
 
 @dataclass
