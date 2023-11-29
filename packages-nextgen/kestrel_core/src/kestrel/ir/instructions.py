@@ -11,6 +11,7 @@ from dataclasses import (
     dataclass,
     field,
     fields,
+    InitVar,
 )
 from mashumaro.mixins.json import DataClassJSONMixin
 import sys
@@ -110,8 +111,27 @@ class ProjectAttrs(TransformingInstruction):
 
 @dataclass(eq=False)
 class Source(SourceInstruction):
-    interface: str
-    datasource: str
+    uri: InitVar[Optional[str]] = None
+    default_interface: InitVar[Optional[str]] = None
+    interface: str = ""
+    datasource: str = ""
+
+    def __post_init__(self, uri: Optional[str], default_interface: Optional[str]):
+        super().__post_init__()
+        if uri:
+            # normal constructor, not from deserliazation
+            xs = uri.split("://")
+            if len(xs) == 2:
+                self.interface = xs[0]
+                self.datasource = xs[1]
+            elif len(xs) == 1 and default_interface:
+                self.interface = default_interface
+                self.datasource = xs[0]
+            else:
+                raise InvalidDataSource(uri)
+        else:
+            # from deserliazation; mashumaro will take care
+            pass
 
 
 @dataclass(eq=False)
@@ -155,14 +175,3 @@ def instruction_from_dict(d: Mapping[str, Union[str, bool]]) -> Instruction:
 def instruction_from_json(json_str: str) -> Instruction:
     instruction_in_dict = json.loads(json_str)
     return instruction_from_dict(instruction_in_dict)
-
-
-@typechecked
-def source_from_uri(uri: str, default_interface: Optional[str] = None) -> Source:
-    xs = uri.split("://")
-    if len(xs) == 2:
-        return Source(xs[0], xs[1])
-    elif len(xs) == 1 and default_interface:
-        return Source(default_interface, xs[0])
-    else:
-        raise InvalidDataSource(uri)

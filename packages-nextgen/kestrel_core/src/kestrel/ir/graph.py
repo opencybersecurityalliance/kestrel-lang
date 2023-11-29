@@ -22,7 +22,6 @@ from kestrel.ir.instructions import (
     Reference,
     Return,
     instruction_from_dict,
-    source_from_uri,
 )
 from kestrel.cache import Cache
 from kestrel.exceptions import (
@@ -309,7 +308,7 @@ class IRGraph(networkx.DiGraph):
         Returns:
             The Source node found or added
         """
-        sy = source_from_uri(sx, default_interface) if isinstance(sx, str) else sx
+        sy = Source(sx, default_interface) if isinstance(sx, str) else sx
         return self.add_node(sy)
 
     def add_node_with_dependent_node(

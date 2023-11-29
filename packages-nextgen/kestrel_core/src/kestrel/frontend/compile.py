@@ -24,7 +24,6 @@ from kestrel.ir.instructions import (
     ProjectEntity,
     Source,
     Variable,
-    source_from_uri,
 )
 
 
@@ -138,4 +137,4 @@ class _KestrelT(Transformer):
         return args[0]
 
     def datasource(self, args):
-        return source_from_uri(args[0].value)
+        return Source(args[0].value)

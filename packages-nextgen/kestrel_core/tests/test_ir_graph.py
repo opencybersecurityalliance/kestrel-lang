@@ -2,8 +2,8 @@ import pytest
 import networkx.utils
 
 from kestrel.ir.instructions import (
-    source_from_uri,
     Variable,
+    Source,
     Reference,
     Instruction,
     TransformingInstruction,
@@ -16,11 +16,11 @@ def test_add_source():
     g = IRGraph()
     g.add_source("stixshifter://abc")
 
-    s = source_from_uri("stixshifter://abc")
+    s = Source("stixshifter://abc")
     g.add_source(s)
     assert len(g) == 1
 
-    s = source_from_uri("stixshifter://abcd")
+    s = Source("stixshifter://abcd")
     g.add_source(s)
     assert len(g) == 2
 
@@ -70,7 +70,7 @@ def test_get_variables():
 
 def test_add_reference():
     g = IRGraph()
-    s = g.add_node(source_from_uri("ss://ee"))
+    s = g.add_node(Source("ss://ee"))
     g.add_node(Variable("asdf"), s)
     g.add_node(Reference("asdf"))
     g.add_node(Reference("qwer"))
@@ -115,7 +115,7 @@ def test_update_graph():
 
 def test_serialization_deserialization():
     g1 = IRGraph()
-    s = g1.add_node(source_from_uri("ss://ee"))
+    s = g1.add_node(Source("ss://ee"))
     r = g1.add_node(Reference("asdf"))
     v = g1.add_node(Variable("asdf"), s)
     j = g1.to_json()
@@ -129,13 +129,13 @@ def test_serialization_deserialization():
 def test_find_cached_dependent_subgraph_of_node():
     g = IRGraph()
 
-    a1 = g.add_node(source_from_uri("ss://ee"))
+    a1 = g.add_node(Source("ss://ee"))
     a2 = g.add_node(Variable("asdf"), a1)
     a3 = g.add_node(Instruction())
     g.add_edge(a2, a3)
     a4 = g.add_node(Variable("qwer"), a3)
 
-    b1 = g.add_node(source_from_uri("ss://eee"))
+    b1 = g.add_node(Source("ss://eee"))
     b2 = g.add_node(Variable("asdfe"), b1)
     b3 = g.add_node(Instruction())
     g.add_edge(b2, b3)
