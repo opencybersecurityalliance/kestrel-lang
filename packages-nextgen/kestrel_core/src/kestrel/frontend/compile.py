@@ -2,6 +2,7 @@
 
 from lark import Transformer
 from typeguard import typechecked
+from functools import reduce
 
 from kestrel.ir.filter import (
     IntComparison,
@@ -14,7 +15,10 @@ from kestrel.ir.filter import (
     ExpOp,
     BoolExp,
 )
-from kestrel.ir.graph import IRGraph
+from kestrel.ir.graph import (
+    IRGraph,
+    compose,
+)
 from kestrel.ir.instructions import (
     Filter,
     ProjectEntity,
@@ -67,7 +71,7 @@ class _KestrelT(Transformer):
         super().__init__()
 
     def start(self, args):
-        return args[0]
+        return reduce(compose, args, IRGraph())
 
     def statement(self, args):
         return args[0]

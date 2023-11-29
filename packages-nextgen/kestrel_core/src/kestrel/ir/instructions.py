@@ -10,12 +10,14 @@ from typing import (
 from dataclasses import (
     dataclass,
     field,
+    fields,
 )
 from mashumaro.mixins.json import DataClassJSONMixin
 import sys
 import inspect
 import uuid
 import json
+import copy
 
 from kestrel.ir.filter import (
     IntComparison,
@@ -49,28 +51,44 @@ class Instruction(DataClassJSONMixin):
         # stable hash during Instruction lifetime
         return self.id.int
 
+    def copy(self):
+        return copy.copy(self)
+
+    def deepcopy(self):
+        return copy.deepcopy(self)
+
 
 class TransformingInstruction(Instruction):
-    """The instruction that builds/dependent on one or more instructions
-    """
+    """The instruction that builds/dependent on one or more instructions"""
+
     pass
 
 
 class SourceInstruction(Instruction):
-    """The instruction that does not dependent on any instruction
-    """
-    pass
+    """The instruction that does not dependent on any instruction"""
+
+    def is_same_as(self, instruction: SourceInstruction) -> bool:
+        if self.instruction == instruction.instruction:
+            flag = True
+            for f in fields(self):
+                if f.name != "id" and getattr(self, f.name) != getattr(
+                    instruction, f.name
+                ):
+                    flag = False
+        else:
+            flag = False
+        return flag
 
 
 class Return(Instruction):
-    """The sink instruction that forces execution
-    """
+    """The sink instruction that forces execution"""
+
     pass
 
 
 class IntermediateInstruction(Instruction):
-    """The instruction that aids AST to Kestrel IR compilation
-    """
+    """The instruction that aids AST to Kestrel IR compilation"""
+
     pass
 
 
@@ -99,13 +117,15 @@ class Source(SourceInstruction):
 @dataclass(eq=False)
 class Variable(TransformingInstruction):
     name: str
-    deceased: bool = False
+    # required to dereference a variable that has been created multiple times
+    # the variable with the largest version will be used by dereference
+    version: int = 0
 
 
 @dataclass(eq=False)
-class Reference(IntermediateInstruction):
-    """Referred Kestrel variable (used in AST) before de-referencing to a Kestrel variable
-    """
+class Reference(SourceInstruction):
+    """Referred Kestrel variable (used in AST) before de-referencing to a Kestrel variable"""
+
     name: str
 
 
@@ -138,7 +158,7 @@ def instruction_from_json(json_str: str) -> Instruction:
 
 
 @typechecked
-def source_from_uri(uri: str, default_interface: Optional[str]=None) -> Source:
+def source_from_uri(uri: str, default_interface: Optional[str] = None) -> Source:
     xs = uri.split("://")
     if len(xs) == 2:
         return Source(xs[0], xs[1])
