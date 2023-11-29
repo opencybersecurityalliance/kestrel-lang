@@ -25,9 +25,9 @@ from kestrel.ir.graph import (
 )
 from kestrel.ir.instructions import (
     Filter,
+    Source,
     ProjectEntity,
     Variable,
-    source_from_uri,
 )
 
 
@@ -143,7 +143,7 @@ class _KestrelT(Transformer):
         return args[0]
 
     def datasource(self, args):
-        return source_from_uri(args[0].value)
+        return Source(args[0].value)
 
     # Timespans
     def timespan_relative(self, args):

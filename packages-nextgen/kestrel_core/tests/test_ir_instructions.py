@@ -6,7 +6,6 @@ from kestrel.ir.instructions import (
     get_instruction_class,
     instruction_from_dict,
     instruction_from_json,
-    source_from_uri,
 )
 from kestrel.exceptions import (
     InvalidSeralizedInstruction,
@@ -30,7 +29,7 @@ def test_stable_id():
 
 
 def test_stable_hash():
-    s = source_from_uri("stixshifter://abc")
+    s = Source("stixshifter://abc")
     h1 = hash(s)
     s.datasource = "abcd"
     h2 = hash(s)
@@ -38,8 +37,8 @@ def test_stable_hash():
 
 
 def test_eq():
-    s1 = source_from_uri("stixshifter://abc")
-    s2 = source_from_uri("stixshifter://abc")
+    s1 = Source("stixshifter://abc")
+    s2 = Source("stixshifter://abc")
     s3 = instruction_from_dict(s1.to_dict())
     assert s1 != s2
     assert s1 == s3
@@ -52,22 +51,25 @@ def test_get_instruction_class():
     assert isinstance(v, Variable)
 
 
-def test_source_from_uri():
-    s = source_from_uri("stixshifter://abc")
+def test_add_source():
+    s = Source("stixshifter://abc")
     j = s.to_dict()
     assert j["interface"] == "stixshifter"
     assert j["datasource"] == "abc"
+    assert "id" in j
+    assert "instruction" in j
     assert "uri" not in j
+    assert "default_interface" not in j
 
-    x = source_from_uri("abc", "stixshifter")
+    x = Source("abc", "stixshifter")
     assert x.interface == "stixshifter"
     assert x.datasource == "abc"
 
     with pytest.raises(InvalidDataSource):
-        source_from_uri("sss://eee://ccc")
+        Source("sss://eee://ccc")
 
     with pytest.raises(InvalidDataSource):
-        source_from_uri("sss")
+        Source("sss")
 
 
 def test_instruction_from_dict():
