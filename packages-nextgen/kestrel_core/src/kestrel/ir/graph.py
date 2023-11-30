@@ -191,7 +191,7 @@ class IRGraph(networkx.DiGraph):
         return [n for n in self.nodes() if isinstance(n, ntype)]
 
     def get_nodes_by_type_and_attributes(
-        self, ntype: type, attr2val: Mapping[str, Union[str, bool]]
+        self, ntype: type, attr2val: Mapping[str, Union[str, bool, int]]
     ) -> Iterable[Instruction]:
         """Get nodes by both type and attributes/values
 
