@@ -26,6 +26,7 @@ from kestrel.ir.graph import (
 from kestrel.ir.instructions import (
     Filter,
     Source,
+    Limit,
     ProjectEntity,
     Variable,
 )
@@ -90,9 +91,14 @@ class _KestrelT(Transformer):
         source_node = graph.add_node(args[1])
         filter_node = graph.add_node(args[2], source_node)
         projection_node = graph.add_node(ProjectEntity(args[0].value), filter_node)
+        root = projection_node
         if len(args) > 3:
-            filter_node.timerange = args[3]
-        return graph, projection_node
+            for arg in args[3:]:
+                if isinstance(arg, TimeRange):
+                    filter_node.timerange = args[3]
+                elif isinstance(arg, Limit):
+                    root = graph.add_node(arg, projection_node)
+        return graph, root
 
     def where_clause(self, args):
         exp = args[0]
@@ -180,3 +186,8 @@ class _KestrelT(Transformer):
 
     def timestamp(self, args):
         return args[0]
+
+    # Limit
+    def limit_clause(self, args):
+        n = int(args[0])
+        return Limit(n)
