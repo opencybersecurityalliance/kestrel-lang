@@ -181,7 +181,7 @@ def get_instruction_class(name: str) -> Type[Instruction]:
 
 
 @typechecked
-def instruction_from_dict(d: Mapping[str, Union[str, bool]]) -> Instruction:
+def instruction_from_dict(d: Mapping[str, Union[str, bool, int]]) -> Instruction:
     instruction_class = get_instruction_class(d["instruction"])
     try:
         instruction = instruction_class.from_dict(d)
