@@ -23,7 +23,7 @@ from kestrel.ir.instructions import (
     Return,
     instruction_from_dict,
 )
-from kestrel.cache import Cache
+from kestrel.cache.abc import AbstractCache
 from kestrel.exceptions import (
     InstructionNotFound,
     InvalidSeralizedGraph,
@@ -380,7 +380,7 @@ class IRGraph(networkx.DiGraph):
         return self.subgraph(nodes).copy()
 
     def find_cached_dependent_subgraph_of_node(
-        self, node: Instruction, cache: Cache
+        self, node: Instruction, cache: AbstractCache
     ) -> IRGraph:
         """Return the cached dependent graph of the a node
 
@@ -397,7 +397,7 @@ class IRGraph(networkx.DiGraph):
         return g.duplicate_dependent_subgraph_of_node(node)
 
     def find_simple_dependent_subgraphs_of_node(
-        self, node: Return, cache: Cache
+        self, node: Return, cache: AbstractCache
     ) -> Iterable[IRGraphSoleInterface]:
         """Segment dependent graph of a node and return subgraphs that do not have further dependency
 
