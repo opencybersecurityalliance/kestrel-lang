@@ -1,4 +1,5 @@
 from pandas import DataFrame
+from typeguard import typechecked
 from uuid import UUID
 from typing import (
     Mapping,
@@ -9,6 +10,7 @@ from kestrel.cache.base import Cache
 from kestrel.ir.graph import IRGraphSoleInterface
 
 
+@typechecked
 class InMemoryCache(Cache):
     def __init__(self, initial_cache: Union[None, Mapping[UUID, DataFrame]] = None):
         super().__init__()
