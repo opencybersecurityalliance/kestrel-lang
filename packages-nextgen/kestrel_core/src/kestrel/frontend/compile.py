@@ -12,6 +12,7 @@ from kestrel.ir.filter import (
     FloatComparison,
     StrComparison,
     ListComparison,
+    MultiComp,
     ListOp,
     NumCompOp,
     StrCompOp,
@@ -61,17 +62,61 @@ def _create_comp(field: str, op: str, value):
     return comp
 
 
+def _map_filter_exp(entity_name, filter_exp, property_map):
+    if isinstance(filter_exp, (IntComparison, FloatComparison, StrComparison,
+                               ListComparison)):
+        # get the field
+        field = filter_exp.field
+        # add entity to field if it doesn't have one already
+        if ':' not in field:
+            field = f"{entity_name}:{field}"
+        # map field to new syntax (e.g. STIX to OCSF)
+        map_result = property_map.get(field, field)
+        # Build a MultiComp if field maps to several values
+        if isinstance(map_result, (list, tuple)):
+            op = filter_exp.op
+            value = filter_exp.value
+            filter_exp = MultiComp(
+                ExpOp.OR,
+                [_create_comp(field, op, value) for field in map_result]
+            )
+        else:  # change the name of the field if it maps to a single value
+            filter_exp.field = map_result
+    elif isinstance(filter_exp, BoolExp):
+        # recursively map boolean expressions
+        filter_exp = BoolExp(
+            _map_filter_exp(entity_name, filter_exp.lhs, property_map),
+            filter_exp.op,
+            _map_filter_exp(entity_name, filter_exp.rhs, property_map)
+        )
+    elif isinstance(filter_exp, MultiComp):
+        # normally, this should be unreachable
+        # if this becomes a valid case, we need to change
+        # the definition of MultiComp to accept a MultiComp
+        # in addition to Comparisons in its `comps` list
+        filter_exp = MultiComp(
+            filter_exp.op,
+            [_map_filter_exp(entity_name, x, property_map)
+             for x in filter_exp.comps]
+        )
+    return filter_exp
+
+
 class _KestrelT(Transformer):
     def __init__(
         self,
         default_variable=DEFAULT_VARIABLE,
         default_sort_order=DEFAULT_SORT_ORDER,
         token_prefix="",
+        entity_map={},
+        property_map={}
     ):
         # token_prefix is the modification by Lark when using `merge_transformers()`
         self.default_variable = default_variable
         self.default_sort_order = default_sort_order
         self.token_prefix = token_prefix
+        self.entity_map = entity_map
+        self.property_map = property_map
         super().__init__()
 
     def start(self, args):
@@ -88,8 +133,13 @@ class _KestrelT(Transformer):
 
     def get(self, args):
         graph = IRGraph()
+        entity_name = args[0].value
+        mapped_entity_name = self.entity_map.get(entity_name, entity_name)
+        filter = args[2]
+        mapped_filter_exp = _map_filter_exp(args[0].value, filter.exp,
+                                            self.property_map)
         source_node = graph.add_node(args[1])
-        filter_node = graph.add_node(args[2], source_node)
+        filter_node = graph.add_node(Filter(mapped_filter_exp), source_node)
         projection_node = graph.add_node(ProjectEntity(args[0].value), filter_node)
         root = projection_node
         if len(args) > 3:
@@ -113,7 +163,6 @@ class _KestrelT(Transformer):
     def comparison_std(self, args):
         """Emit a Comparison object for a Filter"""
         field = args[0].value
-        # TODO: frontend field mapping
         op = args[1]
         value = args[2]
         comp = _create_comp(field, op, value)
