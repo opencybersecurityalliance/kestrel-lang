@@ -22,7 +22,7 @@ class InMemoryCache(Cache):
 
     def __delitem__(self, instruction_id: UUID):
         del self.cache[instruction_id]
-        del self.cache_catelog[instruction_id]
+        del self.cache_catalog[instruction_id]
 
     def store(
         self,
