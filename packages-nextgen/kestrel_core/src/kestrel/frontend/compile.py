@@ -71,7 +71,7 @@ def _map_filter_exp(entity_name, filter_exp, property_map):
         if ':' not in field:
             field = f"{entity_name}:{field}"
         # map field to new syntax (e.g. STIX to OCSF)
-        map_result = property_map.get(field, field)
+        map_result = property_map.get(field, filter_exp.field)
         # Build a MultiComp if field maps to several values
         if isinstance(map_result, (list, tuple)):
             op = filter_exp.op
@@ -135,12 +135,13 @@ class _KestrelT(Transformer):
         graph = IRGraph()
         entity_name = args[0].value
         mapped_entity_name = self.entity_map.get(entity_name, entity_name)
-        filter = args[2]
-        mapped_filter_exp = _map_filter_exp(args[0].value, filter.exp,
-                                            self.property_map)
+        filter_instruction = args[2]
+        mapped_filter_exp = _map_filter_exp(
+            args[0].value, filter_instruction.exp, self.property_map)
         source_node = graph.add_node(args[1])
         filter_node = graph.add_node(Filter(mapped_filter_exp), source_node)
-        projection_node = graph.add_node(ProjectEntity(args[0].value), filter_node)
+        projection_node = graph.add_node(ProjectEntity(mapped_entity_name),
+                                         filter_node)
         root = projection_node
         if len(args) > 3:
             for arg in args[3:]:
