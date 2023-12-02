@@ -159,7 +159,7 @@ class Variable(TransformingInstruction):
 
 
 @dataclass(eq=False)
-class Reference(SourceInstruction):
+class Reference(IntermediateInstruction):
     """Referred Kestrel variable (used in AST) before de-referencing to a Kestrel variable"""
 
     name: str
@@ -168,6 +168,11 @@ class Reference(SourceInstruction):
 @dataclass(eq=False)
 class Limit(TransformingInstruction):
     num: int
+
+
+@dataclass(eq=False)
+class Construct(SourceInstruction):
+    data: List[Mapping[str, Union[str, int, bool]]]
 
 
 @typechecked
