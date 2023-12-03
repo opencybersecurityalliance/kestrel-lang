@@ -159,7 +159,7 @@ class Variable(TransformingInstruction):
 
 
 @dataclass(eq=False)
-class Reference(IntermediateInstruction):
+class Reference(SourceInstruction):
     """Referred Kestrel variable (used in AST) before de-referencing to a Kestrel variable"""
 
     name: str
