@@ -6,6 +6,7 @@ from functools import reduce
 from dateutil.parser import parse as to_datetime
 from lark import Transformer
 from typeguard import typechecked
+from typing import Union
 
 from kestrel.ir.filter import (
     IntComparison,
@@ -62,7 +63,25 @@ def _create_comp(field: str, op: str, value):
     return comp
 
 
-def _map_filter_exp(entity_name, filter_exp, property_map):
+@typechecked
+def _map_filter_exp(
+    entity_name: str,
+    filter_exp: Union[
+        IntComparison,
+        FloatComparison,
+        StrComparison,
+        ListComparison,
+        MultiComp,
+        BoolExp,
+    ],
+    property_map: dict) -> Union[
+        IntComparison,
+        FloatComparison,
+        StrComparison,
+        ListComparison,
+        MultiComp,
+        BoolExp,
+    ]:
     if isinstance(filter_exp, (IntComparison, FloatComparison, StrComparison,
                                ListComparison)):
         # get the field

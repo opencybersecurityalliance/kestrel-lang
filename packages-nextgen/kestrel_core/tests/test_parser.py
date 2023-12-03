@@ -78,33 +78,27 @@ def test_parser_get_with_limit(stmt, expected):
 
 def get_parsed_filter_exp(stmt):
     parse_tree = parse_kestrel(stmt)
-    parse_tree_string = parse_tree.to_json()
-    parse_tree_json = json.loads(parse_tree_string)
-    parse_tree_nodes = parse_tree_json.get('nodes', [])
-    assert isinstance(parse_tree_nodes, list) and len(parse_tree_nodes) > 1
-    parse_filter_exp = parse_tree_nodes[1].get('exp', {})
-    return parse_filter_exp
+    filter_node = parse_tree.get_nodes_by_type(Filter).pop()
+    return filter_node.exp
 
 
 def test_parser_mapping_single_comparison_to_single_value():
     # test for attributes in the form entity_name:property_name
     stmt = "x = GET process FROM if://ds WHERE process:binary_ref.name = 'foo'"
     parse_filter = get_parsed_filter_exp(stmt)
-    field = parse_filter.get('field', '')
-    assert field == 'file.name'
+    assert parse_filter.field == 'file.name'
     # test when entity name is not included in the attributes
     stmt = "x = GET process FROM if://ds WHERE binary_ref.name = 'foo'"
     parse_filter = get_parsed_filter_exp(stmt)
-    field = parse_filter.get('field', '')
-    assert field == 'file.name'
+    assert parse_filter.field == 'file.name'
 
 
 def test_parser_mapping_single_comparison_to_multiple_values():
     stmt = "x = GET ipv4-addr FROM if://ds WHERE value = '192.168.22.3'"
     parse_filter = get_parsed_filter_exp(stmt)
-    comps = parse_filter.get('comps', '')
+    comps = parse_filter.comps
     assert isinstance(comps, list) and len(comps) == 3
-    fields = [x.get('field') for x in comps]
+    fields = [x.field for x in comps]
     assert ("dst_endpoint.ip" in fields and "src_endpoint.ip" in fields and
             "device.ip" in fields)
 
@@ -113,12 +107,12 @@ def test_parser_mapping_multiple_comparison_to_multiple_values():
     stmt = "x = GET process FROM if://ds WHERE binary_ref.name = 'foo' "\
         "OR name = 'bam' AND parent_ref.name = 'boom'"
     parse_filter = get_parsed_filter_exp(stmt)
-    field1 = parse_filter.get('lhs',{}).get('field', '')
+    field1 = parse_filter.lhs.field
     assert field1 == 'file.name'
-    field2 = parse_filter.get('rhs',{}).get('lhs',{}).get('field', '')
+    field2 = parse_filter.rhs.lhs.field
     assert field2 == 'process.name'
-    comps3 = parse_filter.get('rhs',{}).get('rhs',{}).get('comps', [])
+    comps3 = parse_filter.rhs.rhs.comps
     assert isinstance(comps3, list) and len(comps3) == 2
-    fields3 = [x.get('field') for x in comps3]
+    fields3 = [x.field for x in comps3]
     assert ("actor.process.name" in fields3 and
             "process.parent_process.name" in fields3)

@@ -4,12 +4,18 @@ from kestrel.frontend.compile import _KestrelT
 from kestrel.utils import load_data_file
 from lark import Lark
 import os
+from typeguard import typechecked
 import yaml
 
 frontend_mapping = {}
 
 
-def get_mapping(mapping_type, mapping_package, mapping_filepath):
+@typechecked
+def get_mapping(
+    mapping_type: str,
+    mapping_package: str,
+    mapping_filepath: str) -> dict:
+
     global frontend_mapping
     mapping = frontend_mapping.get(mapping_type)
     if mapping is not None:
