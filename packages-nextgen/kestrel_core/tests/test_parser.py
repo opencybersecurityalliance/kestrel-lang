@@ -4,6 +4,7 @@ from kestrel.frontend.parser import parse_kestrel
 from kestrel.ir.graph import IRGraph
 from kestrel.ir.instructions import Filter, ProjectEntity, Source, Variable, Limit
 
+import json
 import pytest
 
 
@@ -73,3 +74,45 @@ def test_parser_get_with_limit(stmt, expected):
     assert len(limits) == 1
     limit = limits[0]
     assert limit.num == expected
+
+
+def get_parsed_filter_exp(stmt):
+    parse_tree = parse_kestrel(stmt)
+    filter_node = parse_tree.get_nodes_by_type(Filter).pop()
+    return filter_node.exp
+
+
+def test_parser_mapping_single_comparison_to_single_value():
+    # test for attributes in the form entity_name:property_name
+    stmt = "x = GET process FROM if://ds WHERE process:binary_ref.name = 'foo'"
+    parse_filter = get_parsed_filter_exp(stmt)
+    assert parse_filter.field == 'file.name'
+    # test when entity name is not included in the attributes
+    stmt = "x = GET process FROM if://ds WHERE binary_ref.name = 'foo'"
+    parse_filter = get_parsed_filter_exp(stmt)
+    assert parse_filter.field == 'file.name'
+
+
+def test_parser_mapping_single_comparison_to_multiple_values():
+    stmt = "x = GET ipv4-addr FROM if://ds WHERE value = '192.168.22.3'"
+    parse_filter = get_parsed_filter_exp(stmt)
+    comps = parse_filter.comps
+    assert isinstance(comps, list) and len(comps) == 3
+    fields = [x.field for x in comps]
+    assert ("dst_endpoint.ip" in fields and "src_endpoint.ip" in fields and
+            "device.ip" in fields)
+
+
+def test_parser_mapping_multiple_comparison_to_multiple_values():
+    stmt = "x = GET process FROM if://ds WHERE binary_ref.name = 'foo' "\
+        "OR name = 'bam' AND parent_ref.name = 'boom'"
+    parse_filter = get_parsed_filter_exp(stmt)
+    field1 = parse_filter.lhs.field
+    assert field1 == 'file.name'
+    field2 = parse_filter.rhs.lhs.field
+    assert field2 == 'process.name'
+    comps3 = parse_filter.rhs.rhs.comps
+    assert isinstance(comps3, list) and len(comps3) == 2
+    fields3 = [x.field for x in comps3]
+    assert ("actor.process.name" in fields3 and
+            "process.parent_process.name" in fields3)
