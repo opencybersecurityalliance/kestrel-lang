@@ -22,12 +22,7 @@ import copy
 
 from kestrel.__future__ import is_python_older_than_minor_version
 from kestrel.ir.filter import (
-    IntComparison,
-    FloatComparison,
-    StrComparison,
-    ListComparison,
-    BoolExp,
-    MultiComp,
+    FExpression,
     TimeRange,
 )
 
@@ -103,14 +98,7 @@ class IntermediateInstruction(Instruction):
 
 @dataclass(eq=False)
 class Filter(TransformingInstruction):
-    exp: Union[
-        IntComparison,
-        FloatComparison,
-        StrComparison,
-        ListComparison,
-        MultiComp,
-        BoolExp,
-    ]
+    exp: FExpression
     timerange: TimeRange = field(default_factory=TimeRange)
 
 
