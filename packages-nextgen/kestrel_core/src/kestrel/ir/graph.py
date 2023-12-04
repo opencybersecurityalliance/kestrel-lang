@@ -396,6 +396,9 @@ class IRGraph(networkx.DiGraph):
         # important last step to discard any unconnected nodes/subgraphs prior to the dropped edges
         return g.duplicate_dependent_subgraph_of_node(node)
 
+    def get_sink_nodes(self) -> Iterable[Instruction]:
+        return [n for (n, d) in self.out_degree() if d == 0]
+
     def find_simple_dependent_subgraphs_of_node(
         self, node: Return, cache: AbstractCache
     ) -> Iterable[IRGraphSoleInterface]:

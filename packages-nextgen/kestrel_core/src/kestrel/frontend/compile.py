@@ -4,11 +4,13 @@ from datetime import datetime, timedelta
 from functools import reduce
 
 from dateutil.parser import parse as to_datetime
-from lark import Transformer
+from lark import Transformer, Token
 from typeguard import typechecked
 from typing import Union
 
+from kestrel.utils import unescape_quoted_string
 from kestrel.ir.filter import (
+    FExpression,
     IntComparison,
     FloatComparison,
     StrComparison,
@@ -31,6 +33,9 @@ from kestrel.ir.instructions import (
     Limit,
     ProjectEntity,
     Variable,
+    Construct,
+    Reference,
+    ProjectAttrs,
 )
 
 
@@ -65,29 +70,15 @@ def _create_comp(field: str, op: str, value):
 
 @typechecked
 def _map_filter_exp(
-    entity_name: str,
-    filter_exp: Union[
-        IntComparison,
-        FloatComparison,
-        StrComparison,
-        ListComparison,
-        MultiComp,
-        BoolExp,
-    ],
-    property_map: dict) -> Union[
-        IntComparison,
-        FloatComparison,
-        StrComparison,
-        ListComparison,
-        MultiComp,
-        BoolExp,
-    ]:
-    if isinstance(filter_exp, (IntComparison, FloatComparison, StrComparison,
-                               ListComparison)):
+    entity_name: str, filter_exp: FExpression, property_map: dict
+) -> FExpression:
+    if isinstance(
+        filter_exp, (IntComparison, FloatComparison, StrComparison, ListComparison)
+    ):
         # get the field
         field = filter_exp.field
         # add entity to field if it doesn't have one already
-        if ':' not in field:
+        if ":" not in field:
             field = f"{entity_name}:{field}"
         # map field to new syntax (e.g. STIX to OCSF)
         map_result = property_map.get(field, filter_exp.field)
@@ -96,8 +87,7 @@ def _map_filter_exp(
             op = filter_exp.op
             value = filter_exp.value
             filter_exp = MultiComp(
-                ExpOp.OR,
-                [_create_comp(field, op, value) for field in map_result]
+                ExpOp.OR, [_create_comp(field, op, value) for field in map_result]
             )
         else:  # change the name of the field if it maps to a single value
             filter_exp.field = map_result
@@ -106,7 +96,7 @@ def _map_filter_exp(
         filter_exp = BoolExp(
             _map_filter_exp(entity_name, filter_exp.lhs, property_map),
             filter_exp.op,
-            _map_filter_exp(entity_name, filter_exp.rhs, property_map)
+            _map_filter_exp(entity_name, filter_exp.rhs, property_map),
         )
     elif isinstance(filter_exp, MultiComp):
         # normally, this should be unreachable
@@ -115,8 +105,7 @@ def _map_filter_exp(
         # in addition to Comparisons in its `comps` list
         filter_exp = MultiComp(
             filter_exp.op,
-            [_map_filter_exp(entity_name, x, property_map)
-             for x in filter_exp.comps]
+            [_map_filter_exp(entity_name, x, property_map) for x in filter_exp.comps],
         )
     return filter_exp
 
@@ -128,7 +117,7 @@ class _KestrelT(Transformer):
         default_sort_order=DEFAULT_SORT_ORDER,
         token_prefix="",
         entity_map={},
-        property_map={}
+        property_map={},
     ):
         # token_prefix is the modification by Lark when using `merge_transformers()`
         self.default_variable = default_variable
@@ -145,10 +134,70 @@ class _KestrelT(Transformer):
         return args[0]
 
     def assignment(self, args):
+        # TODO: move the var+var into expression in Lark
         variable_node = Variable(args[0].value)
         graph, root = args[1]
         graph.add_node(variable_node, root)
         return graph
+
+    def expression(self, args):
+        # TODO: add more clauses than WHERE
+        # TODO: think about order of clauses when turning into nodes
+        graph = IRGraph()
+        reference = args[0]
+        graph.add_node(reference)
+        if len(args) > 1:
+            w = args[1]
+            graph.add_node(w, reference)
+        return graph, w
+
+    def vtrans(self, args):
+        if len(args) == 1:
+            return Reference(args[0].value)
+        else:
+            # TODO: transformer support
+            ...
+
+    def new(self, args):
+        # TODO: use entity type
+
+        graph = IRGraph()
+        if len(args) == 1:
+            # Try to get entity type from first entity
+            data = args[0]
+        else:
+            data = args[1]
+        data_node = Construct(data)
+        graph.add_node(data_node)
+        return graph, data_node
+
+    def var_data(self, args):
+        if isinstance(args[0], Token):
+            # TODO
+            ...
+        else:
+            v = args[0]
+        return v
+
+    def json_objs(self, args):
+        return args
+
+    def json_obj(self, args):
+        return dict(args)
+
+    def json_pair(self, args):
+        v = args[0].value
+        if "ESCAPED_STRING" in args[0].type:
+            v = unescape_quoted_string(v)
+        return v, args[1]
+
+    def json_value(self, args):
+        v = args[0].value
+        if args[0].type == self.token_prefix + "ESCAPED_STRING":
+            v = unescape_quoted_string(v)
+        elif args[0].type == self.token_prefix + "NUMBER":
+            v = float(v) if "." in v else int(v)
+        return v
 
     def get(self, args):
         graph = IRGraph()
@@ -156,11 +205,11 @@ class _KestrelT(Transformer):
         mapped_entity_name = self.entity_map.get(entity_name, entity_name)
         filter_instruction = args[2]
         mapped_filter_exp = _map_filter_exp(
-            args[0].value, filter_instruction.exp, self.property_map)
+            args[0].value, filter_instruction.exp, self.property_map
+        )
         source_node = graph.add_node(args[1])
         filter_node = graph.add_node(Filter(mapped_filter_exp), source_node)
-        projection_node = graph.add_node(ProjectEntity(mapped_entity_name),
-                                         filter_node)
+        projection_node = graph.add_node(ProjectEntity(mapped_entity_name), filter_node)
         root = projection_node
         if len(args) > 3:
             for arg in args[3:]:
@@ -173,6 +222,11 @@ class _KestrelT(Transformer):
     def where_clause(self, args):
         exp = args[0]
         return Filter(exp)
+
+    def attr_clause(self, args):
+        attrs = args[0].split(",")
+        attrs = [attr.strip() for attr in attrs]
+        return ProjectAttrs(attrs)
 
     def expression_or(self, args):
         return BoolExp(args[0], ExpOp.OR, args[1])
@@ -260,3 +314,6 @@ class _KestrelT(Transformer):
     def limit_clause(self, args):
         n = int(args[0])
         return Limit(n)
+
+    def disp(self, args):
+        return args[0][0]

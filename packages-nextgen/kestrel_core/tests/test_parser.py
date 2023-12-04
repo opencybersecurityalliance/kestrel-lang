@@ -1,11 +1,19 @@
+import json
+import pytest
 from datetime import datetime, timedelta, timezone
 
 from kestrel.frontend.parser import parse_kestrel
 from kestrel.ir.graph import IRGraph
-from kestrel.ir.instructions import Filter, ProjectEntity, Source, Variable, Limit
-
-import json
-import pytest
+from kestrel.ir.instructions import (
+    Filter,
+    ProjectEntity,
+    Source,
+    Variable,
+    Limit,
+    Construct,
+    Reference,
+    ProjectAttrs,
+)
 
 
 @pytest.mark.parametrize(
@@ -116,3 +124,78 @@ def test_parser_mapping_multiple_comparison_to_multiple_values():
     fields3 = [x.field for x in comps3]
     assert ("actor.process.name" in fields3 and
             "process.parent_process.name" in fields3)
+
+
+def test_parser_new_json():
+    stmt = """
+proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
+                       , {"name": "explorer.exe", "pid": 99}
+                       , {"name": "firefox.exe", "pid": 201}
+                       , {"name": "chrome.exe", "pid": 205}
+                       ]
+"""
+    graph = parse_kestrel(stmt)
+    cs = graph.get_nodes_by_type(Construct)
+    assert len(cs) == 1
+    construct = cs[0]
+    df = [ {"name": "cmd.exe", "pid": 123}
+         , {"name": "explorer.exe", "pid": 99}
+         , {"name": "firefox.exe", "pid": 201}
+         , {"name": "chrome.exe", "pid": 205}
+         ]
+    assert df == construct.data
+    vs = graph.get_variables()
+    assert len(vs) == 1
+    assert vs[0].name == "proclist"
+
+
+@pytest.mark.parametrize(
+    "stmt", [
+        "x = y WHERE foo = 'bar'",
+        "x = y WHERE foo > 1.5",
+        r"x = y WHERE foo = r'C:\TMP'",
+        "x = y WHERE foo = 'bar' OR baz != 42",
+        "x = y WHERE foo = 'bar' AND baz IN (1, 2, 3)",
+        "x = y WHERE foo = 'bar' AND baz IN (1)",
+    ]
+)
+def test_parser_expression(stmt):
+    """
+    This test isn't meant to be comprehensive, but checks basic transformer functionality.
+
+    This will need to be updated as we build out the new Transformer
+    """
+
+    graph = parse_kestrel(stmt)
+    assert len(graph) == 3
+    assert len(graph.get_nodes_by_type(Variable)) == 1
+    assert len(graph.get_nodes_by_type(Reference)) == 1
+    assert len(graph.get_nodes_by_type(Filter)) == 1
+
+
+def test_three_statements_in_a_line():
+    stmt = """
+proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
+                       , {"name": "explorer.exe", "pid": 99}
+                       , {"name": "firefox.exe", "pid": 201}
+                       , {"name": "chrome.exe", "pid": 205}
+                       ]
+browsers = proclist WHERE name = 'firefox.exe' OR name = 'chrome.exe'
+DISP browsers ATTR name, pid
+"""
+    graph = parse_kestrel(stmt)
+    assert len(graph) == 5
+    c = graph.get_nodes_by_type(Construct)[0]
+    assert {"proclist", "browsers"} == {v.name for v in graph.get_variables()}
+    proclist = graph.get_variable("proclist")
+    browsers = graph.get_variable("browsers")
+    proj = graph.get_nodes_by_type(ProjectAttrs)[0]
+    assert proj.attrs == ['name', 'pid']
+    ft = graph.get_nodes_by_type(Filter)[0]
+    assert ft.exp.to_dict() == {"lhs": {"field": "name", "op": "=", "value": "firefox.exe"}, "op": "OR", "rhs": {"field": "name", "op": "=", "value": "chrome.exe"}}
+    assert len(graph.edges) == 4
+    assert (c, proclist) in graph.edges
+    assert (proclist, ft) in graph.edges
+    assert (ft, browsers) in graph.edges
+    assert (browsers, proj) in graph.edges
+    assert graph.get_sink_nodes() == [proj]
