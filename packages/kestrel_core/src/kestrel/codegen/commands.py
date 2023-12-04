@@ -20,6 +20,7 @@
 
 import functools
 import logging
+import re
 import itertools
 from collections import OrderedDict
 
@@ -439,13 +440,9 @@ def group(stmt, session):
 @_default_output
 @_skip_command_if_empty_input
 def sort(stmt, session):
-    session.store.assign(
-        stmt["output"],
-        session.symtable[stmt["input"]].entity_table,
-        op="sort",
-        by=stmt["attribute"],
-        ascending=stmt["ascending"],
-    )
+    entity_table = session.symtable[stmt["input"]].entity_table
+    qry = _build_query(session.store, entity_table, Query(entity_table), stmt, [])
+    session.store.assign_query(stmt["output"], qry)
 
 
 @_debug_logger
@@ -532,6 +529,13 @@ def _build_query(store, entity_table, qry, stmt, paths=None):
     if sort_by:
         direction = "ASC" if stmt["ascending"] else "DESC"
         qry.append(Order([(sort_by, direction)]))
+    else:
+        # Check if we need to preserve original sort order
+        # This is kind of a hack, copied from firepit.
+        viewdef = store._get_view_def(entity_table)
+        match = re.search(r"ORDER BY \"([a-z0-9:'\._\-]*)\" (ASC|DESC)$", viewdef)
+        if match:
+            qry.append(Order([(match.group(1), match.group(2))]))
     limit = stmt.get("limit")
     if limit:
         qry.append(Limit(limit))

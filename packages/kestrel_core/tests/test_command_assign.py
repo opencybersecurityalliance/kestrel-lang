@@ -99,3 +99,10 @@ def test_assign_from_empty_var(proc_bundle_file):
         q = s.symtable["q"]
         assert len(q) == 0
         assert q.records_count == 0
+
+
+def test_assign_sort_by_indirect_attr(proc_bundle_file):
+    with Session() as s:
+        s.execute(f"c = GET network-traffic FROM file://{proc_bundle_file} WHERE src_port > 0")
+        s.execute("d = c SORT BY dst_ref.value")
+        _ = s.get_variable("d")
