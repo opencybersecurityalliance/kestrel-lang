@@ -84,14 +84,14 @@ class SourceInstruction(Instruction):
         return flag
 
 
-class Return(Instruction):
-    """The sink instruction that forces execution"""
+class IntermediateInstruction(Instruction):
+    """The instruction that aids AST to Kestrel IR compilation"""
 
     pass
 
 
-class IntermediateInstruction(Instruction):
-    """The instruction that aids AST to Kestrel IR compilation"""
+class Return(TransformingInstruction):
+    """The sink instruction that forces execution"""
 
     pass
 

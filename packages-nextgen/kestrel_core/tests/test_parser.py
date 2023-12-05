@@ -184,7 +184,7 @@ browsers = proclist WHERE name = 'firefox.exe' OR name = 'chrome.exe'
 DISP browsers ATTR name, pid
 """
     graph = parse_kestrel(stmt)
-    assert len(graph) == 5
+    assert len(graph) == 6
     c = graph.get_nodes_by_type(Construct)[0]
     assert {"proclist", "browsers"} == {v.name for v in graph.get_variables()}
     proclist = graph.get_variable("proclist")
@@ -193,9 +193,10 @@ DISP browsers ATTR name, pid
     assert proj.attrs == ['name', 'pid']
     ft = graph.get_nodes_by_type(Filter)[0]
     assert ft.exp.to_dict() == {"lhs": {"field": "name", "op": "=", "value": "firefox.exe"}, "op": "OR", "rhs": {"field": "name", "op": "=", "value": "chrome.exe"}}
-    assert len(graph.edges) == 4
+    ret = graph.get_returns()[0]
+    assert len(graph.edges) == 5
     assert (c, proclist) in graph.edges
     assert (proclist, ft) in graph.edges
     assert (ft, browsers) in graph.edges
     assert (browsers, proj) in graph.edges
-    assert graph.get_sink_nodes() == [proj]
+    assert (proj, ret) in graph.edges

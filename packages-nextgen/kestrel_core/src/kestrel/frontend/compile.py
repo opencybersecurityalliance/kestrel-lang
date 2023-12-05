@@ -36,6 +36,7 @@ from kestrel.ir.instructions import (
     Construct,
     Reference,
     ProjectAttrs,
+    Return,
 )
 
 
@@ -316,4 +317,6 @@ class _KestrelT(Transformer):
         return Limit(n)
 
     def disp(self, args):
-        return args[0][0]
+        graph, root = args[0]
+        graph.add_node(Return(), root)
+        return graph

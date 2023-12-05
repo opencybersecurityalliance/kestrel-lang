@@ -4,10 +4,14 @@ from pandas import DataFrame
 from uuid import UUID
 from typing import (
     Mapping,
-    Union,
+    Optional,
+    Iterable,
 )
 
-from kestrel.ir.instructions import Reference
+from kestrel.ir.instructions import (
+    Reference,
+    Instruction,
+)
 from kestrel.ir.graph import IRGraphSoleInterface
 from kestrel.exceptions import (
     UnresolvedReference,
@@ -31,7 +35,7 @@ class AbstractDataSourceInterface(ABC):
         cache_catalog: map a cached item (instruction.id) to datalake table/view name
     """
 
-    def __init__(self, serialized_cache_catalog: Union[None, str] = None):
+    def __init__(self, serialized_cache_catalog: Optional[str] = None):
         self.datasources: Mapping[str, str] = {}
         self.cache_catalog: Mapping[UUID, str] = {}
 
@@ -55,7 +59,7 @@ class AbstractDataSourceInterface(ABC):
         self,
         instruction_id: UUID,
         data: DataFrame,
-        session_id: Union[None, UUID] = None,
+        session_id: Optional[UUID] = None,
     ):
         """Create a new table in the datalake from a dataframe
 
@@ -81,23 +85,23 @@ class AbstractDataSourceInterface(ABC):
 
     @abstractmethod
     def evaluate_graph(
-        self, g: IRGraphSoleInterface, all_variables_in_return: bool = False
+        self,
+        graph: IRGraphSoleInterface,
+        instructions_to_evaluate: Optional[Iterable[Instruction]] = None,
     ) -> Mapping[UUID, DataFrame]:
         """Evaluate the IRGraph
 
         Parameters:
 
-            g: The IRGraph with zero or one interface
+            graph: The IRGraph with zero or one interface
 
-            all_variables_in_return: include evaluation results on all variables in return
+            instructions_to_evaluate: instructions to evaluate and return; by default, it will be all Return instructions in the graph
 
         Returns:
 
-            By default, return the dataframes for each sink node in the graph.
-            If all_variables_in_return == True, also include dataframes for
-            each variable node in the return.
+            DataFrames for each instruction in instructions_to_evaluate.
         """
-        # requirement: g should not have any Reference node
+        # requirement: graph should not have any Reference node
         refs = self.get_nodes_by_type(Reference)
         if refs:
             raise UnresolvedReference(refs)
