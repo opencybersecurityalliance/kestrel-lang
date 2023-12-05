@@ -53,7 +53,9 @@ def _unescape_quoted_string(s: str):
 
 
 @typechecked
-def _create_comp(field: str, op: str, value):
+def _create_comp(
+    field: str, op: str, value
+) -> Union[IntComparison, FloatComparison, StrComparison, ListComparison]:
     if op in (ListOp.IN, ListOp.NIN):
         op = ListOp(op)
         comp = ListComparison(field=field, op=op, value=value)

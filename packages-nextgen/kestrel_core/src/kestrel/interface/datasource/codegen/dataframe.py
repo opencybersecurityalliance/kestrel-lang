@@ -55,28 +55,28 @@ def _select_eval_func(instruction_name: str) -> Callable:
 
 
 @typechecked
-def _eval_Construct(instruction: Construct):
+def _eval_Construct(instruction: Construct) -> DataFrame:
     return DataFrame(instruction.data)
 
 
 @typechecked
-def _eval_Limit(instruction: Limit, dataframe: DataFrame):
+def _eval_Limit(instruction: Limit, dataframe: DataFrame) -> DataFrame:
     return dataframe.head(instruction.num)
 
 
 @typechecked
-def _eval_ProjectAttrs(instruction: ProjectAttrs, dataframe: DataFrame):
+def _eval_ProjectAttrs(instruction: ProjectAttrs, dataframe: DataFrame) -> DataFrame:
     return dataframe[instruction.attrs]
 
 
 @typechecked
-def _eval_ProjectEntity(instruction: ProjectEntity, dataframe: DataFrame):
+def _eval_ProjectEntity(instruction: ProjectEntity, dataframe: DataFrame) -> DataFrame:
     # TODO
     ...
 
 
 @typechecked
-def _eval_Filter(instruction: Filter, dataframe: DataFrame):
+def _eval_Filter(instruction: Filter, dataframe: DataFrame) -> DataFrame:
     return dataframe[_eval_Filter_exp(instruction.exp, dataframe)]
 
 
@@ -126,12 +126,12 @@ def _eval_Filter_exp_Comparison(
         NumCompOp.GE: operator.le,  # value first in functools.partial
         StrCompOp.EQ: operator.eq,
         StrCompOp.NEQ: operator.ne,
-        StrCompOp.LIKE: lambda w, x: bool(re.search(
-            w.replace(".", r"\.").replace("%", ".*?"), x
-        )),
-        StrCompOp.NLIKE: lambda w, x: not bool(re.search(
-            w.replace(".", r"\.").replace("%", ".*?"), x
-        )),
+        StrCompOp.LIKE: lambda w, x: bool(
+            re.search(w.replace(".", r"\.").replace("%", ".*?"), x)
+        ),
+        StrCompOp.NLIKE: lambda w, x: not bool(
+            re.search(w.replace(".", r"\.").replace("%", ".*?"), x)
+        ),
         StrCompOp.MATCHES: lambda w, x: bool(re.search(w, x)),
         StrCompOp.NMATCHES: lambda w, x: not bool(re.search(w, x)),
         ListOp.IN: lambda w, x: x in w,

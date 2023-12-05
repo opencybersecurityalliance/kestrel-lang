@@ -15,7 +15,7 @@ def load_data_file(package_name, file_name):
 
 
 @typechecked
-def unescape_quoted_string(s: str):
+def unescape_quoted_string(s: str) -> str:
     if s.startswith("r"):
         return s[2:-1]
     else:
