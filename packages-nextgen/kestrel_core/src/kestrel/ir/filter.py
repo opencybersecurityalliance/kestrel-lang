@@ -1,3 +1,4 @@
+from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 from typing import Union, List
@@ -110,23 +111,9 @@ class MultiComp(DataClassJSONMixin):
 class BoolExp(DataClassJSONMixin):
     """Binary boolean expression of comparisons"""
 
-    lhs: Union[
-        IntComparison,
-        FloatComparison,
-        StrComparison,
-        ListComparison,
-        MultiComp,
-        "BoolExp",
-    ]  # "Forward declaration" of BoolExp
+    lhs: FExpression
     op: ExpOp
-    rhs: Union[
-        IntComparison,
-        FloatComparison,
-        StrComparison,
-        ListComparison,
-        MultiComp,
-        "BoolExp",
-    ]  # "Forward declaration" of BoolExp
+    rhs: FExpression
 
 
 @dataclass
@@ -135,3 +122,13 @@ class TimeRange(DataClassJSONMixin):
 
     start: datetime = field(default=None)
     stop: datetime = field(default=None)
+
+
+FExpression = Union[
+    IntComparison,
+    FloatComparison,
+    StrComparison,
+    ListComparison,
+    MultiComp,
+    BoolExp,
+]

@@ -60,7 +60,7 @@ class IRGraph(networkx.DiGraph):
             self._from_dict(graph_in_dict)
 
     def add_node(
-        self, node: Instruction, dependent_node: Union[Instruction, None] = None
+        self, node: Instruction, dependent_node: Optional[Instruction] = None
     ) -> Instruction:
         """General adding node/instruction operation
 
@@ -396,6 +396,9 @@ class IRGraph(networkx.DiGraph):
         # important last step to discard any unconnected nodes/subgraphs prior to the dropped edges
         return g.duplicate_dependent_subgraph_of_node(node)
 
+    def get_returns(self) -> Iterable[Return]:
+        return self.get_nodes_by_type(Return)
+
     def find_simple_dependent_subgraphs_of_node(
         self, node: Return, cache: AbstractCache
     ) -> Iterable[IRGraphSoleInterface]:
@@ -524,15 +527,16 @@ class IRGraphSoleInterface(IRGraph):
     """
 
     def __init__(self, graph: IRGraph):
+        super().__init__()
         interfaces = {source.interface for source in graph.get_nodes_by_type(Source)}
         if len(interfaces) > 1:
             raise MultiInterfacesInGraph(interfaces)
         else:
-            self = graph.copy()
+            self.update(graph)
             self.interface = interfaces.pop() if interfaces else None
 
-    def _add_single_node(self, node: Instruction):
+    def _add_single_node(self, node: Instruction, deref: bool = True) -> Instruction:
         if isinstance(node, Source):
             if self.interface and node.interface != self.interface:
                 raise MultiInterfacesInGraph([self.interface, node.interface])
-        super()._add_single_node(node)
+        return super()._add_single_node(node, deref)

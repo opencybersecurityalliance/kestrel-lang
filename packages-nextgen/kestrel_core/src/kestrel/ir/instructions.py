@@ -22,12 +22,7 @@ import copy
 
 from kestrel.__future__ import is_python_older_than_minor_version
 from kestrel.ir.filter import (
-    IntComparison,
-    FloatComparison,
-    StrComparison,
-    ListComparison,
-    BoolExp,
-    MultiComp,
+    FExpression,
     TimeRange,
 )
 
@@ -89,28 +84,21 @@ class SourceInstruction(Instruction):
         return flag
 
 
-class Return(Instruction):
-    """The sink instruction that forces execution"""
-
-    pass
-
-
 class IntermediateInstruction(Instruction):
     """The instruction that aids AST to Kestrel IR compilation"""
 
     pass
 
 
+class Return(TransformingInstruction):
+    """The sink instruction that forces execution"""
+
+    pass
+
+
 @dataclass(eq=False)
 class Filter(TransformingInstruction):
-    exp: Union[
-        IntComparison,
-        FloatComparison,
-        StrComparison,
-        ListComparison,
-        MultiComp,
-        BoolExp,
-    ]
+    exp: FExpression
     timerange: TimeRange = field(default_factory=TimeRange)
 
 
@@ -168,6 +156,11 @@ class Reference(SourceInstruction):
 @dataclass(eq=False)
 class Limit(TransformingInstruction):
     num: int
+
+
+@dataclass(eq=False)
+class Construct(SourceInstruction):
+    data: List[Mapping[str, Union[str, int, bool]]]
 
 
 @typechecked
