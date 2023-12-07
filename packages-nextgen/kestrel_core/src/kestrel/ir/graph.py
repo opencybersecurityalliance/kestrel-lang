@@ -347,8 +347,16 @@ class IRGraph(networkx.DiGraph):
             if nv.name in original_variables:
                 nv.version += original_variables[nv.name].version + 1
 
-        # add all nodes with dedup singleton nodes and deref
-        o2n = {n: self._add_node(n) for n in ng.nodes()}
+        # add refs first to deref correctly
+        # if any reference exist, it should be derefed before adding any variable
+        o2n_refs = {n: self._add_node(n) for n in ng.get_references()}
+        # add all nodes with dedup singleton node, e.g., SourceInstruction
+        o2n_nonrefs = {n: self._add_node(n) for n in ng.nodes() if n not in o2n_refs}
+
+        # overall old to new node mapping
+        o2n = {}
+        o2n.update(o2n_refs)
+        o2n.update(o2n_nonrefs)
 
         # add all edges
         self.add_edges_from([(o2n[u],o2n[v]) for (u,v) in ng.edges()])
