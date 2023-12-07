@@ -26,6 +26,10 @@ class VariableNotFound(KestrelError):
     pass
 
 
+class ReferenceNotFound(KestrelError):
+    pass
+
+
 class DataSourceNotFound(KestrelError):
     pass
 
@@ -34,7 +38,11 @@ class DuplicatedVariable(KestrelError):
     pass
 
 
-class DuplicatedSourceInstruction(KestrelError):
+class DuplicatedReference(KestrelError):
+    pass
+
+
+class DuplicatedDataSource(KestrelError):
     pass
 
 

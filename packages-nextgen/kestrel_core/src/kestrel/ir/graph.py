@@ -28,9 +28,11 @@ from kestrel.exceptions import (
     InstructionNotFound,
     InvalidSeralizedGraph,
     VariableNotFound,
+    ReferenceNotFound,
     DataSourceNotFound,
     DuplicatedVariable,
-    DuplicatedSourceInstruction,
+    DuplicatedReference,
+    DuplicatedDataSource,
     DuplicatedSingletonInstruction,
     MultiInterfacesInGraph,
 )
@@ -80,7 +82,7 @@ class IRGraph(networkx.DiGraph):
             if isinstance(node, TransformingInstruction):
                 node = self._add_node_with_dependent_node(node, dependent_node)
             else:
-                node = self._add_single_node(node, deref)
+                node = self._add_node(node, deref)
         return node
 
     def add_nodes_from(self, nodes: Iterable[Instruction], deref: bool = True):
@@ -91,7 +93,7 @@ class IRGraph(networkx.DiGraph):
             deref: whether to deref Reference node
         """
         for node in nodes:
-            self._add_single_node(node, deref)
+            self._add_node(node, deref)
 
     def add_edge(self, u: Instruction, v: Instruction, deref: bool = False):
         """Add edge (add node if not exist)
@@ -101,8 +103,8 @@ class IRGraph(networkx.DiGraph):
             v: the target of the edge
             deref: whether to deref Reference node
         """
-        ux = self._add_single_node(u, deref)
-        vx = self._add_single_node(v, deref)
+        ux = self._add_node(u, deref)
+        vx = self._add_node(v, deref)
         super().add_edge(ux, vx)
 
     def add_edges_from(
@@ -177,17 +179,6 @@ class IRGraph(networkx.DiGraph):
             if all([getattr(n, k, None) == v for (k, v) in attr2val.items()])
         ]
 
-    def get_variables(self) -> Iterable[Variable]:
-        """Get all variables
-
-        This method returns a list of variables, equivalent to *Symbol Table* used in traditional (non-graph-IR) language compilers. Shadowed variables (replaced by new variables with same names) will not be returned.
-
-        Returns:
-            The list of all Kestrel variables in this huntflow.
-        """
-        var_names = {v.name for v in self.get_nodes_by_type(Variable)}
-        return [self.get_variable(var_name) for var_name in var_names]
-
     def get_variable(self, var_name: str) -> Variable:
         """Get a Kestrel variable by its name
 
@@ -207,6 +198,17 @@ class IRGraph(networkx.DiGraph):
         else:
             raise VariableNotFound(var_name)
 
+    def get_variables(self) -> Iterable[Variable]:
+        """Get all variables
+
+        This method returns a list of variables, equivalent to *Symbol Table* used in traditional (non-graph-IR) language compilers. Shadowed variables (replaced by new variables with same names) will not be returned.
+
+        Returns:
+            The list of all Kestrel variables in this huntflow.
+        """
+        var_names = {v.name for v in self.get_nodes_by_type(Variable)}
+        return [self.get_variable(var_name) for var_name in var_names]
+
     def add_variable(
         self, vx: Union[str, Variable], dependent_node: Instruction
     ) -> Variable:
@@ -222,13 +224,32 @@ class IRGraph(networkx.DiGraph):
         v = Variable(vx) if isinstance(vx, str) else vx
         return self.add_node(v, dependent_node)
 
+    def get_reference(self, ref_name: str) -> Reference:
+        """Get a Kestrel reference by its name
+
+        Parameters:
+            ref_name: reference name
+
+        Returns:
+            The Reference node
+        """
+        xs = self.get_nodes_by_type_and_attributes(Reference, {"name": ref_name})
+        if xs:
+            if len(xs) > 1:
+                raise DuplicatedReference(ref_name)
+            else:
+                return xs.pop()
+        else:
+            raise ReferenceNotFound(ref_name)
+
     def get_references(self) -> Iterable[Reference]:
         """Get all references
 
         Returns:
             The list of reference nodes
         """
-        return self.get_nodes_by_type(Reference)
+        ref_names = {r.name for r in self.get_nodes_by_type(Reference)}
+        return [self.get_reference(ref_name) for ref_name in ref_names]
 
     def add_reference(
         self, rx: Union[str, Reference], deref: bool = True
@@ -247,14 +268,6 @@ class IRGraph(networkx.DiGraph):
         r = Reference(rx) if isinstance(rx, str) else rx
         return self.add_node(r, deref)
 
-    def get_sources(self) -> Iterable[Source]:
-        """Get all datasources
-
-        Returns:
-            The list of data sources
-        """
-        return self.get_nodes_by_type(Source)
-
     def get_source(self, interface: str, datasource: str) -> Source:
         """Get a Kestrel datasource by its URI
 
@@ -270,11 +283,20 @@ class IRGraph(networkx.DiGraph):
         )
         if xs:
             if len(xs) > 1:
-                raise DuplicatedSourceInstruction(interface, datasource)
+                raise DuplicatedDataSource(interface, datasource)
             else:
                 return xs.pop()
         else:
             raise DataSourceNotFound(interface, datasource)
+
+    def get_sources(self) -> Iterable[Source]:
+        """Get all datasources
+
+        Returns:
+            The list of data sources
+        """
+        s_names = {s.name for s in self.get_nodes_by_type(Source)}
+        return [self.get_source(s_name) for s_name in s_names]
 
     def add_source(
         self, sx: Union[str, Source], default_interface: Optional[str] = None
@@ -325,24 +347,11 @@ class IRGraph(networkx.DiGraph):
             if nv.name in original_variables:
                 nv.version += original_variables[nv.name].version + 1
 
-        edges = []
-        for u, v in ng.edges():
-            if isinstance(u, IntermediateInstruction):
-                if isinstance(u, Reference):
-                    # deref all Reference edge in read-only mode
-                    # do not do it during adding edges/nodes (variables in self will change)
-                    w = self.add_node(u)
-                else:
-                    raise NotImplementedError(f"unknown IntermediateInstruction: {u}")
-            else:
-                w = u
-            edges.append((w, v))
+        # add all nodes with dedup singleton nodes and deref
+        o2n = {n: self._add_node(n) for n in ng.nodes()}
 
-        # merge all edges (and add nodes if needed)
-        self.add_edges_from(edges)
-
-        # merge all isolated nodes
-        self.add_nodes_from([n for n in ng.nodes() if ng.degree(n) == 0])
+        # add all edges
+        self.add_edges_from([(o2n[u],o2n[v]) for (u,v) in ng.edges()])
 
     def duplicate_dependent_subgraph_of_node(self, node: Instruction) -> IRGraph:
         """Find and copy the dependent subgraph of a node (including the node)
@@ -470,8 +479,10 @@ class IRGraph(networkx.DiGraph):
         """
         return json.dumps(self.to_dict())
 
-    def _add_single_node(self, node: Instruction, deref: bool = True) -> Instruction:
-        """Add a single node
+    def _add_node(self, node: Instruction, deref: bool = True) -> Instruction:
+        """Add just the node
+
+        Dependency (if exists) not handled.
 
         Parameters:
             node: the node/instruction to add
@@ -511,13 +522,13 @@ class IRGraph(networkx.DiGraph):
 
         1. Singleton nodes are nodes that only has one copy in graph
 
-        2. Only node that has no predecessors can be singleton node
+        2. A node that has no predecessors is a singleton node
 
         Parameters:
             node: the node/instruction to add
 
         Returns:
-            The node added or found or derefed
+            The node added or found
         """
         xs = [
             x
@@ -570,7 +581,7 @@ class IRGraph(networkx.DiGraph):
         nodes = graph_in_dict["nodes"]
         edges = graph_in_dict["links"]
         for n in nodes:
-            self._add_single_node(instruction_from_dict(n), False)
+            self._add_node(instruction_from_dict(n), False)
         for e in edges:
             try:
                 u = self.get_node_by_id(e["source"])
@@ -599,8 +610,8 @@ class IRGraphSoleInterface(IRGraph):
             self.update(graph)
             self.interface = interfaces.pop() if interfaces else None
 
-    def _add_single_node(self, node: Instruction, deref: bool = True) -> Instruction:
+    def _add_node(self, node: Instruction, deref: bool = True) -> Instruction:
         if isinstance(node, Source):
             if self.interface and node.interface != self.interface:
                 raise MultiInterfacesInGraph([self.interface, node.interface])
-        return super()._add_single_node(node, deref)
+        return super()._add_node(node, deref)

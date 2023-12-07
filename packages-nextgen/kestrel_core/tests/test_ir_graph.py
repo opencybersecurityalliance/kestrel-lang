@@ -29,8 +29,8 @@ def test_add_source():
 def test_add_same_node():
     g = IRGraph()
     n = Instruction()
-    s = g._add_single_node(n)
-    s = g._add_single_node(n)
+    s = g.add_node(n)
+    s = g.add_node(n)
     assert len(g) == 1
 
 
@@ -131,6 +131,8 @@ def test_update_graph():
     assert v4.version == 3
     assert v5.version == 4
     assert len(g) == 7
+    assert s2 not in g
+    assert not g.get_references()
     assert (v3, v4) in g.edges()
     assert g.in_degree(v4) == 1
     assert g.out_degree(v4) == 0
