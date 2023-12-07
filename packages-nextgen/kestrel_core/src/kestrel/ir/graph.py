@@ -319,6 +319,8 @@ class IRGraph(networkx.DiGraph):
         original_variables = {v.name: v for v in self.get_variables()}
 
         # prepare new variables from ng before merge
+        # should not use ng.get_variable(),
+        # which does not cover all overridden variables
         for nv in ng.get_nodes_by_type(Variable):
             if nv.name in original_variables:
                 nv.version += original_variables[nv.name].version + 1
