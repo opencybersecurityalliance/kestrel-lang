@@ -6,6 +6,7 @@ from kestrel.ir.instructions import (
     Variable,
     DataSource,
     Reference,
+    Return,
     Instruction,
     TransformingInstruction,
 )
@@ -13,17 +14,19 @@ from kestrel.ir.graph import IRGraph
 from kestrel.cache.inmemory import InMemoryCache
 
 
-def test_add_datasource():
+def test_add_get_datasource():
     g = IRGraph()
     g.add_datasource("stixshifter://abc")
 
-    s = DataSource("stixshifter://abc")
-    g.add_datasource(s)
+    s = g.add_datasource(DataSource("stixshifter://abc"))
     assert len(g) == 1
 
-    s = DataSource("stixshifter://abcd")
-    g.add_datasource(s)
+    s2 = DataSource("stixshifter://abcd")
+    g.add_datasource(s2)
     assert len(g) == 2
+
+    assert set(g.get_datasources()) == {s, s2}
+    g.get_datasource("stixshifter", "abc") == s
 
 
 def test_add_same_node():
@@ -32,6 +35,33 @@ def test_add_same_node():
     s = g.add_node(n)
     s = g.add_node(n)
     assert len(g) == 1
+
+
+def test_get_node_by_id():
+    g = IRGraph()
+    n = Instruction()
+    s = g.add_node(n)
+    assert g.get_node_by_id(n.id) == n
+
+
+def test_get_nodes_by_type_and_attributes():
+    g = IRGraph()
+    s = g.add_datasource("stixshifter://abc")
+    v1 = g.add_variable("asdf", s)
+    v2 = g.add_variable("qwer", s)
+    v3 = g.add_variable("123", s)
+    ns = g.get_nodes_by_type_and_attributes(Variable, {"name": "asdf"})
+    assert ns == [v1]
+
+
+def test_get_returns():
+    g = IRGraph()
+    s = g.add_datasource("stixshifter://abc")
+    g.add_node(Return(), s)
+    g.add_node(Return(), s)
+    g.add_node(Return(), s)
+    assert len(g.get_returns()) == 3
+    assert len(g.get_sink_nodes()) == 3
 
 
 def test_add_variable():
@@ -69,17 +99,22 @@ def test_get_variables():
     assert vs[0].name == "asdf"
 
 
-def test_add_reference():
+def test_add_get_reference():
     g = IRGraph()
     s = g.add_node(DataSource("ss://ee"))
     g.add_node(Variable("asdf"), s)
     g.add_node(Reference("asdf"))
-    g.add_node(Reference("qwer"))
-    g.add_node(Reference("qwer"))
+    q1 = g.add_node(Reference("qwer"))
+    q2 = g.add_node(Reference("qwer"))
     g.add_node(Variable("qwer"), s)
     g.add_node(Reference("qwer"))
     assert len(g) == 4
     assert len(g.edges()) == 2
+
+    assert q1 == q2
+    assert g.get_reference("qwer") == q1
+    refs = g.get_references()
+    assert refs == [q1]
 
 
 def test_copy_graph():

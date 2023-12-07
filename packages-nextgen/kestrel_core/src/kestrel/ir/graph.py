@@ -295,8 +295,11 @@ class IRGraph(networkx.DiGraph):
         Returns:
             The list of data sources
         """
-        s_names = {s.name for s in self.get_nodes_by_type(DataSource)}
-        return [self.get_datasource(s_name) for s_name in s_names]
+        xs = self.get_nodes_by_type(DataSource)
+
+        # to check for duplicated datasources
+
+        return xs
 
     def add_datasource(
         self, sx: Union[str, DataSource], default_interface: Optional[str] = None
@@ -359,7 +362,7 @@ class IRGraph(networkx.DiGraph):
         o2n.update(o2n_nonrefs)
 
         # add all edges
-        self.add_edges_from([(o2n[u],o2n[v]) for (u,v) in ng.edges()])
+        self.add_edges_from([(o2n[u], o2n[v]) for (u, v) in ng.edges()])
 
     def duplicate_dependent_subgraph_of_node(self, node: Instruction) -> IRGraph:
         """Find and copy the dependent subgraph of a node (including the node)
