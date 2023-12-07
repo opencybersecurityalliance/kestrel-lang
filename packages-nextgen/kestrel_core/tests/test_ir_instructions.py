@@ -2,10 +2,12 @@ import pytest
 
 from kestrel.ir.instructions import (
     Variable,
-    Source,
+    DataSource,
+    Construct,
     get_instruction_class,
     instruction_from_dict,
     instruction_from_json,
+    CACHE_INTERFACE_IDENTIFIER,
 )
 from kestrel.exceptions import (
     InvalidSeralizedInstruction,
@@ -29,7 +31,7 @@ def test_stable_id():
 
 
 def test_stable_hash():
-    s = Source("stixshifter://abc")
+    s = DataSource("stixshifter://abc")
     h1 = hash(s)
     s.datasource = "abcd"
     h2 = hash(s)
@@ -37,8 +39,8 @@ def test_stable_hash():
 
 
 def test_eq():
-    s1 = Source("stixshifter://abc")
-    s2 = Source("stixshifter://abc")
+    s1 = DataSource("stixshifter://abc")
+    s2 = DataSource("stixshifter://abc")
     s3 = instruction_from_dict(s1.to_dict())
     assert s1 != s2
     assert s1 == s3
@@ -52,7 +54,7 @@ def test_get_instruction_class():
 
 
 def test_add_source():
-    s = Source("stixshifter://abc")
+    s = DataSource("stixshifter://abc")
     j = s.to_dict()
     assert j["interface"] == "stixshifter"
     assert j["datasource"] == "abc"
@@ -61,15 +63,26 @@ def test_add_source():
     assert "uri" not in j
     assert "default_interface" not in j
 
-    x = Source("abc", "stixshifter")
+    x = DataSource("abc", "stixshifter")
     assert x.interface == "stixshifter"
     assert x.datasource == "abc"
 
     with pytest.raises(InvalidDataSource):
-        Source("sss://eee://ccc")
+        DataSource("sss://eee://ccc")
 
     with pytest.raises(InvalidDataSource):
-        Source("sss")
+        DataSource("sss")
+
+
+def test_construct():
+    data = [ {"name": "cmd.exe", "pid": 123}
+           , {"name": "explorer.exe", "pid": 99}
+           , {"name": "firefox.exe", "pid": 201}
+           , {"name": "chrome.exe", "pid": 205}
+           ]
+    c = Construct(data)
+    assert c.data == data
+    assert c.interface == CACHE_INTERFACE_IDENTIFIER
 
 
 def test_instruction_from_dict():

@@ -18,7 +18,7 @@ from kestrel.ir.instructions import (
     IntermediateInstruction,
     SourceInstruction,
     Variable,
-    Source,
+    DataSource,
     Reference,
     Return,
     instruction_from_dict,
@@ -268,7 +268,7 @@ class IRGraph(networkx.DiGraph):
         r = Reference(rx) if isinstance(rx, str) else rx
         return self.add_node(r, deref)
 
-    def get_source(self, interface: str, datasource: str) -> Source:
+    def get_datasource(self, interface: str, datasource: str) -> DataSource:
         """Get a Kestrel datasource by its URI
 
         Parameters:
@@ -279,7 +279,7 @@ class IRGraph(networkx.DiGraph):
             The datasource
         """
         xs = self.get_nodes_by_type_and_attributes(
-            Source, {"interface": interface, "datasource": datasource}
+            DataSource, {"interface": interface, "datasource": datasource}
         )
         if xs:
             if len(xs) > 1:
@@ -289,28 +289,28 @@ class IRGraph(networkx.DiGraph):
         else:
             raise DataSourceNotFound(interface, datasource)
 
-    def get_sources(self) -> Iterable[Source]:
+    def get_datasources(self) -> Iterable[DataSource]:
         """Get all datasources
 
         Returns:
             The list of data sources
         """
-        s_names = {s.name for s in self.get_nodes_by_type(Source)}
-        return [self.get_source(s_name) for s_name in s_names]
+        s_names = {s.name for s in self.get_nodes_by_type(DataSource)}
+        return [self.get_datasource(s_name) for s_name in s_names]
 
-    def add_source(
-        self, sx: Union[str, Source], default_interface: Optional[str] = None
-    ) -> Source:
+    def add_datasource(
+        self, sx: Union[str, DataSource], default_interface: Optional[str] = None
+    ) -> DataSource:
         """Create new datasource (if needed) and add to IRGraph if not exist
 
         Parameters:
-            sx: the full URI of the datasource (str) or already created node (Source)
+            sx: the full URI of the datasource (str) or already created node (DataSource)
             default_interface: default interface name
 
         Returns:
-            The Source node found or added
+            The DataSource node found or added
         """
-        s = Source(sx, default_interface) if isinstance(sx, str) else sx
+        s = DataSource(sx, default_interface) if isinstance(sx, str) else sx
         return self.add_node(s)
 
     def get_returns(self) -> Iterable[Return]:
@@ -422,7 +422,7 @@ class IRGraph(networkx.DiGraph):
         )
 
         interface2source = defaultdict(list)
-        for source in cached_dependent_graph.get_nodes_by_type(Source):
+        for source in cached_dependent_graph.get_nodes_by_type(SourceInstruction):
             interface2source[source.interface].append(source)
 
         # find nodes affected by each interface
@@ -604,22 +604,27 @@ class IRGraph(networkx.DiGraph):
 class IRGraphSoleInterface(IRGraph):
     """Sole-Interface IRGraph
 
-    Sole-interface IRGraph is an IRGraph either:
-    - It does not has any Source node
-    - All its Source nodes share the same datasource interface
+    Sole-interface IRGraph is an IRGraph that all its SourceInstruction has the same interface.
     """
 
     def __init__(self, graph: IRGraph):
         super().__init__()
-        interfaces = {source.interface for source in graph.get_nodes_by_type(Source)}
+
+        # need to initialize it before `self.update(graph)` below
+        self.interface = None
+
+        interfaces = {s.interface for s in graph.get_nodes_by_type(SourceInstruction)}
         if len(interfaces) > 1:
             raise MultiInterfacesInGraph(interfaces)
         else:
+            # update() will call _add_node() internally to set self.interface
             self.update(graph)
-            self.interface = interfaces.pop() if interfaces else None
 
     def _add_node(self, node: Instruction, deref: bool = True) -> Instruction:
-        if isinstance(node, Source):
-            if self.interface and node.interface != self.interface:
-                raise MultiInterfacesInGraph([self.interface, node.interface])
+        if isinstance(node, SourceInstruction):
+            if self.interface:
+                if node.interface != self.interface:
+                    raise MultiInterfacesInGraph([self.interface, node.interface])
+            else:
+                self.interface = node.interface
         return super()._add_node(node, deref)

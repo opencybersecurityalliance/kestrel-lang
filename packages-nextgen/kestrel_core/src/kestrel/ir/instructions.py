@@ -33,6 +33,9 @@ from kestrel.exceptions import (
 )
 
 
+CACHE_INTERFACE_IDENTIFIER = "cache"
+
+
 # https://stackoverflow.com/questions/70400639/how-do-i-get-python-dataclass-initvar-fields-to-work-with-typing-get-type-hints
 if is_python_older_than_minor_version(11):
     InitVar.__call__ = lambda *args: None
@@ -83,7 +86,7 @@ class TransformingInstruction(Instruction):
 class SourceInstruction(Instruction):
     """The instruction that does not dependent on any instruction"""
 
-    pass
+    interface: str
 
 
 class IntermediateInstruction(Instruction):
@@ -116,7 +119,7 @@ class ProjectAttrs(TransformingInstruction):
 
 
 @dataclass(eq=False)
-class Source(SourceInstruction):
+class DataSource(SourceInstruction):
     uri: InitVar[Optional[str]] = None
     default_interface: InitVar[Optional[str]] = None
     interface: str = ""
@@ -163,6 +166,7 @@ class Limit(TransformingInstruction):
 @dataclass(eq=False)
 class Construct(SourceInstruction):
     data: List[Mapping[str, Union[str, int, bool]]]
+    interface: str = CACHE_INTERFACE_IDENTIFIER
 
 
 @typechecked

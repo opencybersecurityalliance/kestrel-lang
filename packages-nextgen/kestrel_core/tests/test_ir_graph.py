@@ -4,7 +4,7 @@ from pandas import DataFrame
 
 from kestrel.ir.instructions import (
     Variable,
-    Source,
+    DataSource,
     Reference,
     Instruction,
     TransformingInstruction,
@@ -13,16 +13,16 @@ from kestrel.ir.graph import IRGraph
 from kestrel.cache.inmemory import InMemoryCache
 
 
-def test_add_source():
+def test_add_datasource():
     g = IRGraph()
-    g.add_source("stixshifter://abc")
+    g.add_datasource("stixshifter://abc")
 
-    s = Source("stixshifter://abc")
-    g.add_source(s)
+    s = DataSource("stixshifter://abc")
+    g.add_datasource(s)
     assert len(g) == 1
 
-    s = Source("stixshifter://abcd")
-    g.add_source(s)
+    s = DataSource("stixshifter://abcd")
+    g.add_datasource(s)
     assert len(g) == 2
 
 
@@ -36,7 +36,7 @@ def test_add_same_node():
 
 def test_add_variable():
     g = IRGraph()
-    s = g.add_source("stixshifter://abc")
+    s = g.add_datasource("stixshifter://abc")
     v1 = g.add_variable("asdf", s)
     assert len(g) == 2
     assert len(g.edges()) == 1
@@ -60,7 +60,7 @@ def test_add_variable():
 
 def test_get_variables():
     g = IRGraph()
-    s = g.add_source("stixshifter://abc")
+    s = g.add_datasource("stixshifter://abc")
     v1 = g.add_variable("asdf", s)
     v2 = g.add_variable("asdf", s)
     v3 = g.add_variable("asdf", s)
@@ -71,7 +71,7 @@ def test_get_variables():
 
 def test_add_reference():
     g = IRGraph()
-    s = g.add_node(Source("ss://ee"))
+    s = g.add_node(DataSource("ss://ee"))
     g.add_node(Variable("asdf"), s)
     g.add_node(Reference("asdf"))
     g.add_node(Reference("qwer"))
@@ -84,7 +84,7 @@ def test_add_reference():
 
 def test_copy_graph():
     g = IRGraph()
-    s = g.add_source("stixshifter://abc")
+    s = g.add_datasource("stixshifter://abc")
     g2 = g.copy()
     assert s in g2
     for n in g2.nodes():
@@ -95,7 +95,7 @@ def test_copy_graph():
 
 def test_deepcopy_graph():
     g = IRGraph()
-    s = g.add_source("stixshifter://abc")
+    s = g.add_datasource("stixshifter://abc")
     g2 = g.deepcopy()
     assert len(g2.nodes()) == 1
     s2 = list(g2.nodes())[0]
@@ -106,13 +106,13 @@ def test_deepcopy_graph():
 
 def test_update_graph():
     g = IRGraph()
-    s = g.add_source("stixshifter://abc")
+    s = g.add_datasource("stixshifter://abc")
     v1 = g.add_variable("asdf", s)
     v2 = g.add_variable("asdf", s)
     v3 = g.add_variable("asdf", s)
 
     g2 = IRGraph()
-    s2 = g2.add_source("stixshifter://abc")
+    s2 = g2.add_datasource("stixshifter://abc")
     v4 = g2.add_variable("asdf", g2.add_node(Reference("asdf")))
     v5 = g2.add_variable("asdf", g2.add_node(TransformingInstruction(), s2))
 
@@ -140,7 +140,7 @@ def test_update_graph():
 
 def test_serialization_deserialization():
     g1 = IRGraph()
-    s = g1.add_node(Source("ss://ee"))
+    s = g1.add_node(DataSource("ss://ee"))
     r = g1.add_node(Reference("asdf"))
     v = g1.add_node(Variable("asdf"), s)
     j = g1.to_json()
@@ -154,13 +154,13 @@ def test_serialization_deserialization():
 def test_find_cached_dependent_subgraph_of_node():
     g = IRGraph()
 
-    a1 = g.add_node(Source("ss://ee"))
+    a1 = g.add_node(DataSource("ss://ee"))
     a2 = g.add_node(Variable("asdf"), a1)
     a3 = g.add_node(Instruction())
     g.add_edge(a2, a3)
     a4 = g.add_node(Variable("qwer"), a3)
 
-    b1 = g.add_node(Source("ss://eee"))
+    b1 = g.add_node(DataSource("ss://eee"))
     b2 = g.add_node(Variable("asdfe"), b1)
     b3 = g.add_node(Instruction())
     g.add_edge(b2, b3)
