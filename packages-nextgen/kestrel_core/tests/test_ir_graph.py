@@ -82,6 +82,28 @@ def test_add_reference():
     assert len(g.edges()) == 2
 
 
+def test_copy_graph():
+    g = IRGraph()
+    s = g.add_source("stixshifter://abc")
+    g2 = g.copy()
+    assert s in g2
+    for n in g2.nodes():
+        n.datasource = "eee"
+    assert s in g
+    assert s.datasource == "eee"
+
+
+def test_deepcopy_graph():
+    g = IRGraph()
+    s = g.add_source("stixshifter://abc")
+    g2 = g.deepcopy()
+    assert len(g2.nodes()) == 1
+    s2 = list(g2.nodes())[0]
+    s2.datasource = "eee"
+    assert s.datasource == "abc"
+    assert s2.datasource == "eee"
+
+
 def test_update_graph():
     g = IRGraph()
     s = g.add_source("stixshifter://abc")

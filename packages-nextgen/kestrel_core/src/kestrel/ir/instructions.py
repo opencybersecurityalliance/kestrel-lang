@@ -61,17 +61,7 @@ class Instruction(DataClassJSONMixin):
     def deepcopy(self):
         return copy.deepcopy(self)
 
-
-class TransformingInstruction(Instruction):
-    """The instruction that builds/dependent on one or more instructions"""
-
-    pass
-
-
-class SourceInstruction(Instruction):
-    """The instruction that does not dependent on any instruction"""
-
-    def is_same_as(self, instruction: SourceInstruction) -> bool:
+    def has_same_content_as(self, instruction: Instruction) -> bool:
         if self.instruction == instruction.instruction:
             flag = True
             for f in fields(self):
@@ -82,6 +72,18 @@ class SourceInstruction(Instruction):
         else:
             flag = False
         return flag
+
+
+class TransformingInstruction(Instruction):
+    """The instruction that builds/dependent on one or more instructions"""
+
+    pass
+
+
+class SourceInstruction(Instruction):
+    """The instruction that does not dependent on any instruction"""
+
+    pass
 
 
 class IntermediateInstruction(Instruction):
@@ -147,7 +149,7 @@ class Variable(TransformingInstruction):
 
 
 @dataclass(eq=False)
-class Reference(SourceInstruction):
+class Reference(IntermediateInstruction):
     """Referred Kestrel variable (used in AST) before de-referencing to a Kestrel variable"""
 
     name: str

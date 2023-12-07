@@ -26,7 +26,7 @@ class VariableNotFound(KestrelError):
     pass
 
 
-class SourceNotFound(KestrelError):
+class DataSourceNotFound(KestrelError):
     pass
 
 
@@ -38,11 +38,17 @@ class DuplicatedSourceInstruction(KestrelError):
     pass
 
 
+class DuplicatedSingletonInstruction(KestrelError):
+    pass
+
+
 class MultiInterfacesInGraph(KestrelError):
     pass
 
+
 class UnresolvedReference(KestrelError):
     pass
+
 
 class InvalidSerializedDatasourceInterfaceCacheCatalog(KestrelError):
     pass
