@@ -36,12 +36,12 @@ _parser = Lark(
     transformer=_KestrelT(
         entity_map=get_mapping(
             "entity",
-            "kestrel.frontend",
-            os.path.join("mapping", "entity", "stix.yaml")),
+            "kestrel.mapping",
+            os.path.join("entityname", "stix.yaml")),
         property_map=get_mapping(
             "property",
-            "kestrel.frontend",
-            os.path.join("mapping", "property", "stix.yaml"))
+            "kestrel.mapping",
+            os.path.join("entityattribute", "stix.yaml"))
     ),
 )
 
