@@ -29,7 +29,7 @@ from kestrel.ir.graph import (
 )
 from kestrel.ir.instructions import (
     Filter,
-    Source,
+    DataSource,
     Limit,
     ProjectEntity,
     Variable,
@@ -275,7 +275,7 @@ class _KestrelT(Transformer):
         return args[0]
 
     def datasource(self, args):
-        return Source(args[0].value)
+        return DataSource(args[0].value)
 
     # Timespans
     def timespan_relative(self, args):

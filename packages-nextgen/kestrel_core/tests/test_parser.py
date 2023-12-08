@@ -7,7 +7,7 @@ from kestrel.ir.graph import IRGraph
 from kestrel.ir.instructions import (
     Filter,
     ProjectEntity,
-    Source,
+    DataSource,
     Variable,
     Limit,
     Construct,
@@ -38,7 +38,7 @@ def test_parser_get_statements(stmt):
     assert len(graph) == 4
     assert len(graph.get_nodes_by_type(Variable)) == 1
     assert len(graph.get_nodes_by_type(ProjectEntity)) == 1
-    assert len(graph.get_nodes_by_type(Source)) == 1
+    assert len(graph.get_nodes_by_type(DataSource)) == 1
     assert len(graph.get_nodes_by_type(Filter)) == 1
 
     # Ensure result is serializable
