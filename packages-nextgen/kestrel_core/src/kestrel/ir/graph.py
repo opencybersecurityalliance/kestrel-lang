@@ -422,7 +422,7 @@ class IRGraph(networkx.DiGraph):
         TODO: analytics node support
 
         Parameters:
-            node: a Return instruction node
+            node: the instruction/node to generate dependent subgraphs for
             cache: any type of node cache, e.g., content, SQL statement
             segment_by: SourceInstruction | Variable
 
@@ -430,33 +430,26 @@ class IRGraph(networkx.DiGraph):
             A list of subgraphs that do not have further dependency
         """
 
-        # simple dependent graphs
-        sdgs = []
-
         # the base graph to segment
         g = self.find_cached_dependent_subgraph_of_node(node, cache)
 
         # Mapping: {grouping attribute: [impacted nodes]}
         a2ns = defaultdict(set)
         for n in g.get_nodes_by_type(segment_by):
-            grouping_attribute = (
-                n.interface if segment_by == SourceInstruction else n.id
-            )
-            a2ns[grouping_attribute].update(networkx.descendants(g, n))
-            a2ns[grouping_attribute].add(n)
+            attr = n.interface if segment_by == SourceInstruction else n.id
+            a2ns[attr].update(networkx.descendants(g, n))
+            a2ns[attr].add(n)
 
-        # find all nodes that are affected by two or more interfaces
-        shared_affected_nodes = set().union(
+        # find all nodes that are affected by two or more grouping attributes
+        shared_impacted_nodes = set().union(
             *[a2ns[ix] & a2ns[iy] for ix, iy in combinations(a2ns.keys(), 2)]
         )
 
-        # get the segmented subgraph for each interface
-        for interface, affected_nodes in a2ns.items():
-            unshared_nodes = affected_nodes - shared_affected_nodes
-            if len(unshared_nodes) > 1:
-                sdgs.append(IRGraphEvaluable(g.subgraph(unshared_nodes)))
+        # get the segmented subgraph for each grouping attribute
+        unshared_nodes = [ns - shared_impacted_nodes for ns in a2ns.values()]
+        dep_graphs = [IRGraphEvaluable(g.subgraph(ns)) for ns in unshared_nodes if ns]
 
-        return sdgs
+        return dep_graphs
 
     def to_dict(self) -> Mapping[str, Iterable[Mapping]]:
         """Serialize to a Python dictionary (D3 graph format)
