@@ -24,8 +24,11 @@ from kestrel.interface.datasource.codegen.dataframe import (
 
 @typechecked
 class InMemoryCache(Cache):
-    def __init__(self, initial_cache: Optional[Mapping[UUID, DataFrame]] = None):
-        super().__init__()
+    def __init__(self,
+                 initial_cache: Optional[Mapping[UUID, DataFrame]] = None,
+                 session_id: Optional[UUID] = None,
+    ):
+        super().__init__(session_id)
         self.cache: Mapping[UUID, DataFrame] = {}
         if initial_cache:
             for k, v in initial_cache.items():
@@ -42,7 +45,6 @@ class InMemoryCache(Cache):
         self,
         instruction_id: UUID,
         data: DataFrame,
-        session_id: Optional[UUID] = None,
     ):
         self.cache[instruction_id] = data
         self.cache_catalog[instruction_id] = instruction_id

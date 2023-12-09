@@ -30,12 +30,18 @@ class AbstractDataSourceInterface(ABC):
 
     Attributes:
 
+        session_id: the optional information to derive table name in datalake
+
         datasources: map a datasource name to datalake table name
 
         cache_catalog: map a cached item (instruction.id) to datalake table/view name
     """
 
-    def __init__(self, serialized_cache_catalog: Optional[str] = None):
+    def __init__(self,
+                 serialized_cache_catalog: Optional[str] = None,
+                 session_id: Optional[UUID] = None,
+    ):
+        self.session_id = session_id
         self.datasources: Mapping[str, str] = {}
         self.cache_catalog: Mapping[UUID, str] = {}
 
@@ -59,7 +65,6 @@ class AbstractDataSourceInterface(ABC):
         self,
         instruction_id: UUID,
         data: DataFrame,
-        session_id: Optional[UUID] = None,
     ):
         """Create a new table in the datalake from a dataframe
 
@@ -78,8 +83,6 @@ class AbstractDataSourceInterface(ABC):
             instruction_id: the key to be placed in `self.cache_catalog`
 
             data: the dataframe to store
-
-            session_id: the optional information to derive table name in datalake
         """
         ...
 
