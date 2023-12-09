@@ -11,7 +11,7 @@ from kestrel.ir.instructions import (
     TransformingInstruction,
 )
 from kestrel.ir.graph import IRGraph
-from kestrel.cache.inmemory import InMemoryCache
+from kestrel.cache import InMemoryCache
 
 
 def test_add_get_datasource():

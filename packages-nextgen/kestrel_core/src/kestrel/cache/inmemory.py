@@ -3,12 +3,13 @@ from typeguard import typechecked
 from uuid import UUID
 from typing import (
     Mapping,
+    MutableMapping,
     Optional,
     Iterable,
 )
 
-from kestrel.cache.base import Cache
-from kestrel.ir.graph import IRGraphSoleInterface
+from kestrel.cache.base import AbstractCache
+from kestrel.ir.graph import IRGraphEvaluable
 from kestrel.ir.instructions import (
     Instruction,
     Return,
@@ -23,16 +24,17 @@ from kestrel.interface.datasource.codegen.dataframe import (
 
 
 @typechecked
-class InMemoryCache(Cache):
-    def __init__(self,
-                 initial_cache: Optional[Mapping[UUID, DataFrame]] = None,
-                 session_id: Optional[UUID] = None,
+class InMemoryCache(AbstractCache):
+    def __init__(
+        self,
+        initial_cache: Mapping[UUID, DataFrame] = {},
+        session_id: Optional[UUID] = None,
     ):
         super().__init__(session_id)
-        self.cache: Mapping[UUID, DataFrame] = {}
-        if initial_cache:
-            for k, v in initial_cache.items():
-                self.store(k, v)
+        self.cache: MutableMapping[UUID, DataFrame] = {}
+
+        # update() will call __setitem__() internally
+        self.update(initial_cache)
 
     def __getitem__(self, instruction_id: UUID) -> DataFrame:
         return self.cache[self.cache_catalog[instruction_id]]
@@ -41,7 +43,10 @@ class InMemoryCache(Cache):
         del self.cache[instruction_id]
         del self.cache_catalog[instruction_id]
 
-    def store(
+    def __iter__(self):
+        return self.cache.__iter__()
+
+    def __setitem__(
         self,
         instruction_id: UUID,
         data: DataFrame,
@@ -51,7 +56,7 @@ class InMemoryCache(Cache):
 
     def evaluate_graph(
         self,
-        graph: IRGraphSoleInterface,
+        graph: IRGraphEvaluable,
         instructions_to_evaluate: Optional[Iterable[Instruction]] = None,
     ) -> Mapping[UUID, DataFrame]:
         if not instructions_to_evaluate:
@@ -63,7 +68,7 @@ class InMemoryCache(Cache):
         return mapping
 
     def _evaluate_instruction_in_graph(
-        self, graph: IRGraphSoleInterface, instruction: Instruction
+        self, graph: IRGraphEvaluable, instruction: Instruction
     ) -> DataFrame:
         # TODO: handle multiple predecessors of a node
 
@@ -75,7 +80,7 @@ class InMemoryCache(Cache):
             df = self._evaluate_instruction_in_graph(
                 graph, next(graph.predecessors(instruction))
             )
-            self.store(instruction.id, df)
+            self[instruction.id] = df
         elif isinstance(instruction, SourceInstruction):
             df = evaluate_source_instruction(instruction)
         elif isinstance(instruction, TransformingInstruction):

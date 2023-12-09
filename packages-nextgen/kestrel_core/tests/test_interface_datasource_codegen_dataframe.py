@@ -15,7 +15,6 @@ from kestrel.ir.instructions import (
 )
 
 from kestrel.frontend.parser import parse_kestrel
-from kestrel.ir.graph import IRGraph, IRGraphSoleInterface
 
 
 def test_evaluate_Construct():
