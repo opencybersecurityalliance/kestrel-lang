@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, Mapping, Optional
+from typing import Iterable, List, Mapping, Optional
 from uuid import UUID
 
 from dateutil.parser import parse as dt_parser
@@ -103,8 +103,8 @@ class SqliteCache(Cache):
         self,
         graph: IRGraphSoleInterface,
         instruction: Instruction,
-        stack: Optional[list[Instruction]] = None,
-    ) -> list[Instruction]:
+        stack: Optional[List[Instruction]] = None,
+    ) -> List[Instruction]:
         """
         Depth-first visit of nodes in graph from variable to variable or variable to source
 
