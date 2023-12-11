@@ -88,7 +88,7 @@ class SqliteCache(Cache):
         instructions_to_evaluate: Optional[Iterable[Instruction]] = None,
     ) -> Mapping[UUID, DataFrame]:
         if not instructions_to_evaluate:
-            instructions_to_evaluate = graph.get_sink_nodes()  # get_variables()
+            instructions_to_evaluate = graph.get_sink_nodes()
         stacks = []
         for inst in instructions_to_evaluate:
             stacks.append(self._visit(graph, inst))
@@ -123,7 +123,7 @@ class SqliteCache(Cache):
             stack.append(instruction)
             return stack
 
-        stack = self._visit(graph, next(graph.predecessors(instruction)))
+        stack = self._visit(graph, next(graph.predecessors(instruction)), stack)
         stack.append(instruction)
         return stack
 

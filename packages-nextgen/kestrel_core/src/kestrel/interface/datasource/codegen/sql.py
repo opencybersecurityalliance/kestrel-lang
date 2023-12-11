@@ -25,6 +25,7 @@ from kestrel.ir.instructions import (
     ProjectEntity,
 )
 
+
 # SQLAlchemy comparison operator functions
 comp2func = {
     NumCompOp.EQ: ColumnOperators.__eq__,
@@ -38,15 +39,17 @@ comp2func = {
     StrCompOp.LIKE: ColumnOperators.like,
     StrCompOp.NLIKE: ColumnOperators.not_like,
     StrCompOp.MATCHES: ColumnOperators.regexp_match,
-    StrCompOp.NMATCHES: ColumnOperators.regexp_match,  # FIXME: negate
+    StrCompOp.NMATCHES: ColumnOperators.regexp_match,  # Caller must negate
     ListOp.IN: ColumnOperators.in_,
-    ListOp.NIN: ColumnOperators.in_,  # FIXME: negate
+    ListOp.NIN: ColumnOperators.not_in,
 }
 
 
 @typechecked
 def _render_comp(comp: FComparison) -> BinaryExpression:
     col = column(comp.field)
+    if comp.op == StrCompOp.NMATCHES:
+        return ~comp2func[comp.op](col, comp.value)
     return comp2func[comp.op](col, comp.value)
 
 

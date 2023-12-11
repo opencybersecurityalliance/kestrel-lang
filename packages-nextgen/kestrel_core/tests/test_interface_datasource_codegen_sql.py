@@ -8,6 +8,7 @@ from kestrel.ir.filter import (
     FComparison,
     IntComparison,
     ListOp,
+    ListComparison,
     NumCompOp,
     StrCompOp,
     StrComparison,
@@ -50,16 +51,18 @@ def _remove_nl(s):
         ([Filter(IntComparison('foo', NumCompOp.GE, 0), timerange=TimeRange(_dt('2023-12-06T08:17:00Z'), _dt('2023-12-07T08:17:00Z'))),
           DataSource(interface='sqlite3', datasource='my_table')],
          "SELECT * FROM my_table WHERE foo >= ? AND timestamp >= ? AND timestamp < ?"),
-        # Time range only, no other field comparisons  <- Not valid?
-        #([Filter(timerange=TimeRange(_dt('2023-12-06T08:17:00Z'), _dt('2023-12-07T08:17:00Z'))),
-        #  DataSource(interface='sqlite3', datasource='my_table')],
-        # "SELECT * FROM my_table WHERE timestamp >= ? AND timestamp < ?"),
         # sqlalchemy's sqlite dialect seems to always add the offset
         ([Limit(3), ProjectAttrs(['foo', 'bar', 'baz']), Filter(StrComparison('foo', StrCompOp.EQ, 'abc')), DataSource(interface='sqlite3', datasource='my_table')],
          "SELECT foo, bar, baz FROM my_table WHERE foo = ? LIMIT ? OFFSET ?"),
         # Same as above but reverse order
         ([DataSource(interface='sqlite3', datasource='my_table'), Filter(StrComparison('foo', StrCompOp.EQ, 'abc')), ProjectAttrs(['foo', 'bar', 'baz']), Limit(3)],
          "SELECT foo, bar, baz FROM my_table WHERE foo = ? LIMIT ? OFFSET ?"),
+        ([DataSource(interface='sqlite3', datasource='my_table'), Filter(ListComparison('foo', ListOp.NIN, ['abc', 'def']))],
+         "SELECT * FROM my_table WHERE (foo NOT IN (?, ?))"),
+        ([DataSource(interface='sqlite3', datasource='my_table'), Filter(StrComparison('foo', StrCompOp.MATCHES, '.*abc.*'))],
+         "SELECT * FROM my_table WHERE foo REGEXP ?"),
+        ([DataSource(interface='sqlite3', datasource='my_table'), Filter(StrComparison('foo', StrCompOp.NMATCHES, '.*abc.*'))],
+         "SELECT * FROM my_table WHERE foo NOT REGEXP ?"),
     ]
 )
 def test_sql_translator(iseq, sql):
