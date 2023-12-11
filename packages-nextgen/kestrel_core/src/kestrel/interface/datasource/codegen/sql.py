@@ -1,7 +1,7 @@
 from typing import Callable
 
 from sqlalchemy import and_, column, not_, or_, select, table
-from sqlalchemy.engine import default
+from sqlalchemy.engine import Compiled, default
 from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
 from sqlalchemy.sql.expression import ColumnOperators
 from sqlalchemy.sql.selectable import Select
@@ -84,10 +84,10 @@ class SqlTranslator:
             rhs = _render_comp(exp.rhs)
         return and_(lhs, rhs) if exp.op == ExpOp.AND else or_(lhs, rhs)
 
-    def add_DataSource(self, source: DataSource):
+    def add_DataSource(self, source: DataSource) -> None:
         self.query = self.query.select_from(table(source.datasource))
 
-    def add_Filter(self, filt: Filter):
+    def add_Filter(self, filt: Filter) -> None:
         if filt.timerange.start:
             # Convert the timerange to the appropriate pair of comparisons
             start_comp = StrComparison(
@@ -108,19 +108,19 @@ class SqlTranslator:
             comp = _render_comp(exp)
         self.query = self.query.where(comp)
 
-    def add_ProjectAttrs(self, proj: ProjectAttrs):
+    def add_ProjectAttrs(self, proj: ProjectAttrs) -> None:
         cols = [column(col) for col in proj.attrs]
         self.query = self.query.with_only_columns(*cols)  # TODO: mapping?
 
-    def add_ProjectEntity(self, proj: ProjectEntity):
+    def add_ProjectEntity(self, proj: ProjectEntity) -> None:
         self.query = self.query.with_only_columns(
             column(proj.entity_type)
         )  # TODO: mapping?
 
-    def add_Limit(self, lim: Limit):
+    def add_Limit(self, lim: Limit) -> None:
         self.query = self.query.limit(lim.num)
 
-    def add_instruction(self, i: Instruction):
+    def add_instruction(self, i: Instruction) -> None:
         inst_name = i.instruction
         method_name = f"add_{inst_name}"
         method = getattr(self, method_name)
@@ -128,7 +128,7 @@ class SqlTranslator:
             raise NotImplementedError(f"SqlTranslator.{method_name}")
         method(i)
 
-    def result(self):
+    def result(self) -> Compiled:
         # If there was no projection, we need to add '*' explicitly
         if len(self.query.selected_columns) == 0:
             self.query = self.query.with_only_columns("*")
