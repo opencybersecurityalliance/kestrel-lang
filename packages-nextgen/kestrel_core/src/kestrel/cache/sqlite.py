@@ -127,7 +127,7 @@ class SqliteCache(Cache):
         stack.append(instruction)
         return stack
 
-    def _evaluate_instruction_stack(self, stack: list[Instruction]) -> DataFrame:
+    def _evaluate_instruction_stack(self, stack: List[Instruction]) -> DataFrame:
         translator = SqliteTranslator()
         df = None
         previous_instruction = None
