@@ -1,8 +1,10 @@
 from __future__ import annotations
+
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Union, List
-from dataclasses import dataclass, field
+from typing import List, Union
+
 from mashumaro.mixins.json import DataClassJSONMixin
 
 
@@ -131,4 +133,13 @@ FExpression = Union[
     ListComparison,
     MultiComp,
     BoolExp,
+]
+
+
+FComparison = Union[
+    IntComparison,
+    FloatComparison,
+    StrComparison,
+    ListComparison,
+    MultiComp,
 ]
