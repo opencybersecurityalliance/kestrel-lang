@@ -1,3 +1,4 @@
+from functools import reduce
 from typing import Callable
 
 from sqlalchemy import and_, column, or_, select, table
@@ -56,14 +57,8 @@ def _render_comp(comp: FComparison) -> BinaryExpression:
 
 @typechecked
 def _render_multi_comp(comps: MultiComp) -> BooleanClauseList:
-    if comps.op == ExpOp.AND:
-        op = and_
-    else:
-        op = or_
-    result = op(_render_comp(comps.comps[0]), _render_comp(comps.comps[1]))
-    for comp in comps.comps[2:]:
-        result = op(result, _render_comp(comp))
-    return result
+    op = and_ if comps.op == ExpOp.AND else or_
+    return reduce(op, map(_render_comp, comps.comps))
 
 
 @typechecked
