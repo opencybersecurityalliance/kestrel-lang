@@ -13,12 +13,11 @@ from kestrel.interface.datasource.codegen.sql import SqlTranslator
 from kestrel.ir.graph import IRGraphSoleInterface
 from kestrel.ir.instructions import (
     Construct,
-    Filter,
     Instruction,
     Return,
     SourceInstruction,
     TransformingInstruction,
-    Variable,
+    Variable
 )
 
 _logger = logging.getLogger(__name__)

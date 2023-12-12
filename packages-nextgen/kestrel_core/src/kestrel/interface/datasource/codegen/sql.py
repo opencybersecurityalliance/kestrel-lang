@@ -1,6 +1,6 @@
 from typing import Callable
 
-from sqlalchemy import and_, column, not_, or_, select, table
+from sqlalchemy import and_, column, or_, select, table
 from sqlalchemy.engine import Compiled, default
 from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
 from sqlalchemy.sql.expression import ColumnClause, ColumnOperators
