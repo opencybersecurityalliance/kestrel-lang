@@ -66,6 +66,8 @@ def _remove_nl(s):
          "SELECT * FROM my_table WHERE foo NOT REGEXP ?"),
         ([DataSource(interface='sqlite3', datasource='my_table'), Filter(MultiComp(ExpOp.OR, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
          "SELECT * FROM my_table WHERE foo = ? OR bar = ?"),
+        ([DataSource(interface='sqlite3', datasource='my_table'), Filter(MultiComp(ExpOp.AND, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
+         "SELECT * FROM my_table WHERE foo = ? AND bar = ?"),
     ]
 )
 def test_sql_translator(iseq, sql):
