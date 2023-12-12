@@ -3,7 +3,7 @@ from typing import Callable
 from sqlalchemy import and_, column, not_, or_, select, table
 from sqlalchemy.engine import Compiled, default
 from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
-from sqlalchemy.sql.expression import ColumnOperators
+from sqlalchemy.sql.expression import ColumnClause, ColumnOperators
 from sqlalchemy.sql.selectable import Select
 from typeguard import typechecked
 
@@ -12,6 +12,7 @@ from kestrel.ir.filter import (
     ExpOp,
     FComparison,
     ListOp,
+    MultiComp,
     NumCompOp,
     StrComparison,
     StrCompOp,
@@ -47,10 +48,22 @@ comp2func = {
 
 @typechecked
 def _render_comp(comp: FComparison) -> BinaryExpression:
-    col = column(comp.field)
+    col: ColumnClause = column(comp.field)
     if comp.op == StrCompOp.NMATCHES:
         return ~comp2func[comp.op](col, comp.value)
     return comp2func[comp.op](col, comp.value)
+
+
+@typechecked
+def _render_multi_comp(comps: MultiComp) -> BooleanClauseList:
+    if comps.op == ExpOp.AND:
+        op = and_
+    else:
+        op = or_
+    result = op(_render_comp(comps.comps[0]), _render_comp(comps.comps[1]))
+    for comp in comps.comps[2:]:
+        result = op(result, _render_comp(comp))
+    return result
 
 
 @typechecked
@@ -76,10 +89,14 @@ class SqlTranslator:
     def _render_exp(self, exp: BoolExp) -> BooleanClauseList:
         if isinstance(exp.lhs, BoolExp):
             lhs = self._render_exp(exp.lhs)
+        elif isinstance(exp.lhs, MultiComp):
+            lhs = _render_multi_comp(exp.lhs)
         else:
             lhs = _render_comp(exp.lhs)
         if isinstance(exp.rhs, BoolExp):
             rhs = self._render_exp(exp.rhs)
+        elif isinstance(exp.rhs, MultiComp):
+            rhs = _render_multi_comp(exp.rhs)
         else:
             rhs = _render_comp(exp.rhs)
         return and_(lhs, rhs) if exp.op == ExpOp.AND else or_(lhs, rhs)
@@ -104,6 +121,8 @@ class SqlTranslator:
             exp = filt.exp
         if isinstance(exp, BoolExp):
             comp = self._render_exp(exp)
+        elif isinstance(exp, MultiComp):
+            comp = _render_multi_comp(exp)
         else:
             comp = _render_comp(exp)
         self.query = self.query.where(comp)

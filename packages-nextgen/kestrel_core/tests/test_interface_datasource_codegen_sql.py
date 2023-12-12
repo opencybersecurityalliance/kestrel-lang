@@ -9,6 +9,7 @@ from kestrel.ir.filter import (
     IntComparison,
     ListOp,
     ListComparison,
+    MultiComp,
     NumCompOp,
     StrCompOp,
     StrComparison,
@@ -63,6 +64,8 @@ def _remove_nl(s):
          "SELECT * FROM my_table WHERE foo REGEXP ?"),
         ([DataSource(interface='sqlite3', datasource='my_table'), Filter(StrComparison('foo', StrCompOp.NMATCHES, '.*abc.*'))],
          "SELECT * FROM my_table WHERE foo NOT REGEXP ?"),
+        ([DataSource(interface='sqlite3', datasource='my_table'), Filter(MultiComp(ExpOp.OR, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
+         "SELECT * FROM my_table WHERE foo = ? OR bar = ?"),
     ]
 )
 def test_sql_translator(iseq, sql):
