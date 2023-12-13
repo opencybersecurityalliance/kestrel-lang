@@ -60,3 +60,7 @@ class UnresolvedReference(KestrelError):
 
 class InvalidSerializedDatasourceInterfaceCacheCatalog(KestrelError):
     pass
+
+
+class InevaluableInstruction(KestrelError):
+    pass

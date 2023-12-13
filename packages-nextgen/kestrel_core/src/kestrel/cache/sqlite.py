@@ -17,7 +17,11 @@ from kestrel.ir.instructions import (
     Return,
     SourceInstruction,
     TransformingInstruction,
-    Variable
+    Variable,
+)
+
+from kestrel.exceptions import (
+    InevaluableInstruction,
 )
 
 _logger = logging.getLogger(__name__)
@@ -25,19 +29,10 @@ _logger = logging.getLogger(__name__)
 
 @typechecked
 class SqliteTranslator(SqlTranslator):
-    def __init__(self):
+    def __init__(self, select_from: str):
         super().__init__(
-            sqlite.dialect(), dt_parser, "time"
+            sqlite.dialect(), dt_parser, "time", select_from
         )  # FIXME: need mapping for timestamp?
-
-
-@typechecked
-def _set_from(translator: SqliteTranslator, table_name: str):
-    """Utility method to set the table for a SQL query.
-
-    This is used to handle Construct instructions.
-    """
-    translator.query = translator.query.select_from(table(table_name))
 
 
 @typechecked
@@ -65,86 +60,80 @@ class SqliteCache(Cache):
         self.connection.close()
 
     def __getitem__(self, instruction_id: UUID) -> DataFrame:
-        result = read_sql(instruction_id.hex, self.connection)
-        return result
+        return read_sql(self.cache_catalog[instruction_id], self.connection)
 
     def __delitem__(self, instruction_id: UUID):
-        self.connection.execute(text(f'DROP TABLE "{instruction_id.hex}"'))
-
-    def _to_sql(self, df: DataFrame, name: str):
-        df.to_sql(name, con=self.connection, if_exists="replace", index=False)
+        table = self.cache_catalog[instruction_id]
+        self.connection.execute(text(f'DROP TABLE "{table}"'))
+        del self.cache_catalog[instruction_id]
 
     def store(
         self,
         instruction_id: UUID,
         data: DataFrame,
     ):
-        self._to_sql(data, instruction_id.hex)
+        self.cache_catalog[instruction_id] = instruction_id.hex
+        data.to_sql(
+            instruction_id.hex, con=self.connection, if_exists="replace", index=False
+        )
 
     def evaluate_graph(
         self,
         graph: IRGraphSoleInterface,
         instructions_to_evaluate: Optional[Iterable[Instruction]] = None,
     ) -> Mapping[UUID, DataFrame]:
+        mapping = {}
         if not instructions_to_evaluate:
             instructions_to_evaluate = graph.get_sink_nodes()
-        stacks = []
-        for inst in instructions_to_evaluate:
-            stacks.append(self._visit(graph, inst))
-        mapping = {}
-        for stack in stacks:
-            tail = stack[-1]
-            mapping[tail.id] = self._evaluate_instruction_stack(stack)
+        for instruction in instructions_to_evaluate:
+            self._evaluate_instruction_in_graph(instruction, graph)
+            if instruction.id not in self:
+                # e.g., the instruction is in the middle of a path (not full select stmt)
+                raise InevaluableInstruction(instruction)
+            else:
+                mapping[instruction.id] = self[instruction.id]
         _logger.debug("mapping: %s", mapping)
         return mapping
 
-    def _visit(
+    def _evaluate_instruction_in_graph(
         self,
-        graph: IRGraphSoleInterface,
         instruction: Instruction,
-        stack: Optional[List[Instruction]] = None,
-    ) -> List[Instruction]:
-        """
-        Depth-first visit of nodes in graph from variable to variable or variable to source
-
-        Returns:
-            stack of Instructions visited
-        """
-        if not stack:
-            stack = []
+        graph: IRGraphSoleInterface,
+    ) -> SqliteTranslator:
         # TODO: handle multiple predecessors of a node
-        _logger.debug("_visit: %s", instruction)
-        if isinstance(instruction, SourceInstruction) or (
-            isinstance(instruction, Variable) and len(stack) > 0
-        ):
-            # Need to first check if stack is empty since we start with var
-            # Since it's non-empty, this var should terminate the chain
-            stack.append(instruction)
-            return stack
+        _logger.debug("_eval: %s", instruction)
 
-        stack = self._visit(graph, next(graph.predecessors(instruction)), stack)
-        stack.append(instruction)
-        return stack
-
-    def _evaluate_instruction_stack(self, stack: List[Instruction]) -> DataFrame:
-        translator = SqliteTranslator()
-        df = None
-        previous_instruction = None
-        for instruction in stack:
-            _logger.debug("_eval: %s", instruction)
-            if isinstance(instruction, Construct):
-                pass  # Handled by the following Variable assignment
-            elif isinstance(instruction, Variable):
-                # This means assignment
-                if isinstance(previous_instruction, Construct):
-                    df = DataFrame(previous_instruction.data)
-                    self.store(instruction.id, df)
-                    _set_from(translator, instruction.id.hex)
-            elif isinstance(instruction, Return):
-                stmt = translator.result()
+        if isinstance(instruction, (Return, Variable)):
+            if instruction.id not in self:
+                # evaluate its ancestry path
+                _translator = self._evaluate_instruction_in_graph(
+                    next(graph.predecessors(instruction)), graph
+                )
+                stmt = _translator.result()
                 _logger.debug("%s -> %s", instruction, stmt)
-                df = read_sql(stmt, self.connection)
-            elif isinstance(instruction, TransformingInstruction):
-                translator.add_instruction(instruction)
-            previous_instruction = instruction
-        return df
+
+                # TODO: more efficient/lightweight implementation using view creation
+                self.store(instruction.id, read_sql(stmt, self.connection))
+
+            # finally init translator from cache for potential descendants use
+            translator = SqliteTranslator(self.cache_catalog[instruction.id])
+
+        elif isinstance(instruction, SourceInstruction):
+            if isinstance(instruction, Construct):
+                self.store(instruction.id, DataFrame(instruction.data))
+                translator = SqliteTranslator(self.cache_catalog[instruction.id])
+            else:
+                raise NotImplementedError(
+                    f"Unknown SourceInstruction {instruction} for Cache"
+                )
+
+        elif isinstance(instruction, TransformingInstruction):
+            translator = self._evaluate_instruction_in_graph(
+                next(graph.predecessors(instruction)), graph
+            )
+            translator.add_instruction(instruction)
+
+        else:
+            raise NotImplementedError(f"Unknown instruction type: {instruction}")
+
+        return translator

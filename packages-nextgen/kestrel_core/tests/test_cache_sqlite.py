@@ -88,9 +88,7 @@ DISP browsers ATTR name, pid
                                                 , {"name": "chrome.exe", "pid": 205}
                                                 ]
     # check whether `browsers` is cached
-    # No need to cache it since it can be recreated from `proclist`
     browsers = graph.get_variable("browsers")
-    assert browsers.id not in c
-    #assert c[browsers.id].to_dict("records") == [ {"name": "firefox.exe", "pid": 201}
-    #                                            , {"name": "chrome.exe", "pid": 205}
-    #                                            ]
+    assert c[browsers.id].to_dict("records") == [ {"name": "firefox.exe", "pid": 201}
+                                                , {"name": "chrome.exe", "pid": 205}
+                                                ]

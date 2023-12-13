@@ -43,35 +43,32 @@ def _remove_nl(s):
 
 @pytest.mark.parametrize(
     "iseq, sql", [
-        ([DataSource(interface='sqlite3', datasource='my_table')],
-         "SELECT * FROM my_table"),
         # Try a simple filter
-        ([Filter(IntComparison('foo', NumCompOp.GE, 0)), DataSource(interface='sqlite3', datasource='my_table')],
+        ([Filter(IntComparison('foo', NumCompOp.GE, 0))],
          "SELECT * FROM my_table WHERE foo >= ?"),
         # Simple filter plus time range
-        ([Filter(IntComparison('foo', NumCompOp.GE, 0), timerange=TimeRange(_dt('2023-12-06T08:17:00Z'), _dt('2023-12-07T08:17:00Z'))),
-          DataSource(interface='sqlite3', datasource='my_table')],
+        ([Filter(IntComparison('foo', NumCompOp.GE, 0), timerange=TimeRange(_dt('2023-12-06T08:17:00Z'), _dt('2023-12-07T08:17:00Z')))],
          "SELECT * FROM my_table WHERE foo >= ? AND timestamp >= ? AND timestamp < ?"),
         # sqlalchemy's sqlite dialect seems to always add the offset
-        ([Limit(3), ProjectAttrs(['foo', 'bar', 'baz']), Filter(StrComparison('foo', StrCompOp.EQ, 'abc')), DataSource(interface='sqlite3', datasource='my_table')],
+        ([Limit(3), ProjectAttrs(['foo', 'bar', 'baz']), Filter(StrComparison('foo', StrCompOp.EQ, 'abc'))],
          "SELECT foo, bar, baz FROM my_table WHERE foo = ? LIMIT ? OFFSET ?"),
         # Same as above but reverse order
-        ([DataSource(interface='sqlite3', datasource='my_table'), Filter(StrComparison('foo', StrCompOp.EQ, 'abc')), ProjectAttrs(['foo', 'bar', 'baz']), Limit(3)],
+        ([Filter(StrComparison('foo', StrCompOp.EQ, 'abc')), ProjectAttrs(['foo', 'bar', 'baz']), Limit(3)],
          "SELECT foo, bar, baz FROM my_table WHERE foo = ? LIMIT ? OFFSET ?"),
-        ([DataSource(interface='sqlite3', datasource='my_table'), Filter(ListComparison('foo', ListOp.NIN, ['abc', 'def']))],
+        ([Filter(ListComparison('foo', ListOp.NIN, ['abc', 'def']))],
          "SELECT * FROM my_table WHERE (foo NOT IN (?, ?))"),
-        ([DataSource(interface='sqlite3', datasource='my_table'), Filter(StrComparison('foo', StrCompOp.MATCHES, '.*abc.*'))],
+        ([Filter(StrComparison('foo', StrCompOp.MATCHES, '.*abc.*'))],
          "SELECT * FROM my_table WHERE foo REGEXP ?"),
-        ([DataSource(interface='sqlite3', datasource='my_table'), Filter(StrComparison('foo', StrCompOp.NMATCHES, '.*abc.*'))],
+        ([Filter(StrComparison('foo', StrCompOp.NMATCHES, '.*abc.*'))],
          "SELECT * FROM my_table WHERE foo NOT REGEXP ?"),
-        ([DataSource(interface='sqlite3', datasource='my_table'), Filter(MultiComp(ExpOp.OR, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
+        ([Filter(MultiComp(ExpOp.OR, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
          "SELECT * FROM my_table WHERE foo = ? OR bar = ?"),
-        ([DataSource(interface='sqlite3', datasource='my_table'), Filter(MultiComp(ExpOp.AND, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
+        ([Filter(MultiComp(ExpOp.AND, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
          "SELECT * FROM my_table WHERE foo = ? AND bar = ?"),
     ]
 )
 def test_sql_translator(iseq, sql):
-    trans = SqlTranslator(sqlite.dialect(), _time2string, 'timestamp')
+    trans = SqlTranslator(sqlite.dialect(), _time2string, "timestamp", "my_table")
     for i in iseq:
         trans.add_instruction(i)
     result = trans.result()

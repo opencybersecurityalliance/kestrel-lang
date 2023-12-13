@@ -68,6 +68,7 @@ class SqlTranslator:
         dialect: default.DefaultDialect,
         timefmt: Callable,
         timestamp: str,
+        select_from: str,
     ):
         # SQLAlchemy Dialect object (e.g. from sqlalchemy.dialects import sqlite; sqlite.dialect())
         self.dialect = dialect
@@ -79,7 +80,7 @@ class SqlTranslator:
         self.timestamp = timestamp
 
         # SQLAlchemy statement object
-        self.query: Select = select()  # Dummy default
+        self.query: Select = select().select_from(table(select_from))
 
     def _render_exp(self, exp: BoolExp) -> BooleanClauseList:
         if isinstance(exp.lhs, BoolExp):
@@ -95,9 +96,6 @@ class SqlTranslator:
         else:
             rhs = _render_comp(exp.rhs)
         return and_(lhs, rhs) if exp.op == ExpOp.AND else or_(lhs, rhs)
-
-    def add_DataSource(self, source: DataSource) -> None:
-        self.query = self.query.select_from(table(source.datasource))
 
     def add_Filter(self, filt: Filter) -> None:
         if filt.timerange.start:
