@@ -14,6 +14,7 @@ from kestrel.ir.instructions import (
     ProjectEntity,
     Instruction,
     TransformingInstruction,
+    CACHE_INTERFACE,
 )
 from kestrel.ir.filter import StrComparison, StrCompOp
 from kestrel.ir.graph import IRGraph
@@ -222,6 +223,28 @@ def test_find_cached_dependent_subgraph_of_node():
     assert networkx.utils.graphs_equal(g, g3)
 
 
+def test_find_dependent_subgraphs_of_node_just_cache():
+    huntflow = """
+p1 = NEW process [ {"name": "cmd.exe", "pid": 123}
+                 , {"name": "explorer.exe", "pid": 99}
+                 , {"name": "firefox.exe", "pid": 201}
+                 , {"name": "chrome.exe", "pid": 205}
+                 ]
+
+browsers = p1 WHERE name = 'firefox.exe' OR name = 'chrome.exe'
+
+DISP browsers ATTR name
+"""
+    graph = parse_kestrel(huntflow)
+    c = InMemoryCache()
+    ret = graph.get_returns()[0]
+    gs = graph.find_dependent_subgraphs_of_node(ret, c)
+    assert len(gs) == 1
+    assert len(gs[0]) == 6
+    assert Counter(map(type, gs[0].nodes())) == Counter([Filter, Variable, Variable, Construct, ProjectAttrs, Return])
+    assert gs[0].interface == CACHE_INTERFACE
+
+
 def test_find_dependent_subgraphs_of_node():
     huntflow = """
 p1 = NEW process [ {"name": "cmd.exe", "pid": 123}
@@ -290,13 +313,25 @@ p31 = p3 WHERE parent.name = "excel.exe"
     assert graph.get_variable("p1").id in c
     assert len(c) == 2
     gs = graph.find_dependent_subgraphs_of_node(ret, c)
+    assert len(gs) == 2
 
-    print(len(gs))
-    for n in gs[0].to_dict()["nodes"]:
-        print(n)
-    print(len(gs))
-    for n in gs[1].to_dict()["nodes"]:
-        print(n)
+    assert len(gs[0]) == 10
+    assert proj1 in gs[0]
+    assert proj2 in gs[0]
+    assert graph.get_variable("p2") in gs[0]
+    assert graph.get_variable("p21") in gs[0]
+    assert p4 in gs[0]
 
-    c[graph.get_variable("p21").id] = DataFrame()
-    c[graph.get_variable("p31").id] = DataFrame()
+    assert len(gs[1]) == 6
+    assert Counter(map(type, gs[1].nodes())) == Counter([Filter, Filter, Variable, Variable, ProjectEntity, DataSource])
+
+    c[proj2.id] = DataFrame()
+    gs = graph.find_dependent_subgraphs_of_node(ret, c)
+    assert len(gs) == 1
+
+    assert len(gs[0]) == 11
+    assert proj2.id in c
+    assert proj2 in gs[0]
+    assert graph.get_variable("p31") in gs[0]
+    assert p5 in gs[0]
+    assert ret in gs[0]
