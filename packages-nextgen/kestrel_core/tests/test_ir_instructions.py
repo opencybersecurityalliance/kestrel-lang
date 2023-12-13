@@ -7,7 +7,7 @@ from kestrel.ir.instructions import (
     get_instruction_class,
     instruction_from_dict,
     instruction_from_json,
-    CACHE_INTERFACE_IDENTIFIER,
+    CACHE_INTERFACE,
 )
 from kestrel.exceptions import (
     InvalidSeralizedInstruction,
@@ -82,7 +82,7 @@ def test_construct():
            ]
     c = Construct(data)
     assert c.data == data
-    assert c.interface == CACHE_INTERFACE_IDENTIFIER
+    assert c.interface == CACHE_INTERFACE
 
 
 def test_instruction_from_dict():

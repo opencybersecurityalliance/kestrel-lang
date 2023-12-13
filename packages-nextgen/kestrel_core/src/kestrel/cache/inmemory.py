@@ -59,12 +59,16 @@ class InMemoryCache(AbstractCache):
         graph: IRGraphEvaluable,
         instructions_to_evaluate: Optional[Iterable[Instruction]] = None,
     ) -> Mapping[UUID, DataFrame]:
+
         if not instructions_to_evaluate:
-            instructions_to_evaluate = graph.get_returns()
-        mapping = {
-            ins.id: self._evaluate_instruction_in_graph(graph, ins)
-            for ins in instructions_to_evaluate
-        }
+            instructions_to_evaluate = graph.get_sink_nodes()
+
+        mapping = {}
+        for ins in instructions_to_evaluate:
+            df = self._evaluate_instruction_in_graph(graph, ins)
+            self[ins.id] = df
+            mapping[ins.id] = df
+
         return mapping
 
     def _evaluate_instruction_in_graph(

@@ -16,6 +16,7 @@ from uuid import UUID
 import networkx
 import json
 from kestrel.ir.instructions import (
+    CACHE_INTERFACE,
     Instruction,
     TransformingInstruction,
     IntermediateInstruction,
@@ -395,7 +396,7 @@ class IRGraph(networkx.DiGraph):
             The pruned IRGraph without nodes before cached Variable nodes
         """
         g = self.duplicate_dependent_subgraph_of_node(node)
-        in_edges = [g.in_edges(n) for n in g.get_variables() if n.id in cache]
+        in_edges = [g.in_edges(n) for n in g.nodes() if n.id in cache]
         g.remove_edges_from(set().union(*in_edges))
 
         # important last step to discard any unconnected nodes/subgraphs prior to the dropped edges
@@ -405,7 +406,6 @@ class IRGraph(networkx.DiGraph):
         self,
         node: Instruction,
         cache: MutableMapping[UUID, Any],
-        segment_by: Union[Type[SourceInstruction], Type[Variable]],
     ) -> Iterable[IRGraphEvaluable]:
         """Find dependency subgraphs that do not have further dependency
 
@@ -424,7 +424,6 @@ class IRGraph(networkx.DiGraph):
         Parameters:
             node: the instruction/node to generate dependent subgraphs for
             cache: any type of node cache, e.g., content, SQL statement
-            segment_by: SourceInstruction | Variable
 
         Returns:
             A list of subgraphs that do not have further dependency
@@ -435,10 +434,17 @@ class IRGraph(networkx.DiGraph):
 
         # Mapping: {grouping attribute: [impacted nodes]}
         a2ns = defaultdict(set)
-        for n in g.get_nodes_by_type(segment_by):
-            attr = n.interface if segment_by == SourceInstruction else n.id
-            a2ns[attr].update(networkx.descendants(g, n))
-            a2ns[attr].add(n)
+        for n in g.get_nodes_by_type(SourceInstruction):
+            ns = networkx.descendants(g, n)
+            preds = set().union(*[set(g.predecessors(n)) for n in ns])
+            cached_predecessors = [n for n in preds if n.id in cache]
+            a2ns[n.interface].update(ns)
+            a2ns[n.interface].update(cached_predecessors)
+            a2ns[n.interface].add(n)
+
+        # add non-source nodes to cache as default execution environment
+        # e.g., a path starting from a cached Variable
+        a2ns[CACHE_INTERFACE].update(g.nodes() - set().union(*a2ns.values()))
 
         # find all nodes that are affected by two or more grouping attributes
         shared_impacted_nodes = set().union(
