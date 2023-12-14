@@ -15,7 +15,6 @@ from kestrel.ir.instructions import (
 )
 from kestrel.ir.graph import IRGraphEvaluable
 from kestrel.exceptions import (
-    UnresolvedReference,
     InvalidSerializedDatasourceInterfaceCacheCatalog,
 )
 
@@ -54,13 +53,29 @@ class AbstractDataSourceInterface(ABC):
                 raise InvalidSerializedDatasourceInterfaceCacheCatalog()
 
     def __contains__(self, instruction_id: UUID) -> bool:
-        """Whether a datasource is in the interface
+        """Whether the data of an instruction is cached in the interface
+
+        If the instruction is a DataSource, check whether the DataSource is in the interface
 
         Parameters:
 
             instruction_id: id of the instruction
         """
         return instruction_id in self.cache_catalog
+
+    @abstractmethod
+    def __getitem__(self, instruction_id: UUID) -> DataFrame:
+        """Retrieve data evaluated on an instruction node
+
+        Parameters:
+
+            instruction_id: the key to be placed in `self.cache_catalog`
+
+        Returns:
+            
+            retrieved entities/events in DataFrame
+        """
+        ...
 
     @abstractmethod
     def __setitem__(
@@ -106,10 +121,7 @@ class AbstractDataSourceInterface(ABC):
 
             DataFrames for each instruction in instructions_to_evaluate.
         """
-        # requirement: graph should not have any Reference node
-        refs = self.get_nodes_by_type(Reference)
-        if refs:
-            raise UnresolvedReference(refs)
+        ...
 
     def cache_catalog_to_json(self) -> str:
         """Serialize the cache catalog to a JSON string"""

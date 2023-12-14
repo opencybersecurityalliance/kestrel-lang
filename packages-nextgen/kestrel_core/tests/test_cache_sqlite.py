@@ -1,9 +1,8 @@
 from uuid import uuid4
-
 from pandas import DataFrame
 
 from kestrel.cache.sqlite import SqliteCache
-from kestrel.ir.graph import IRGraph, IRGraphSoleInterface
+from kestrel.ir.graph import IRGraphEvaluable
 from kestrel.frontend.parser import parse_kestrel
 
 
@@ -11,7 +10,7 @@ def test_sqlite_cache_set_get_del():
     c = SqliteCache()
     idx = uuid4()
     df = DataFrame({'foo': [1, 2, 3]})
-    c.store(idx, df)
+    c[idx] = df
     assert df.equals(c[idx])
     del c[idx]
     assert idx not in c
@@ -37,7 +36,7 @@ proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
                        ]
 DISP proclist ATTR name
 """
-    graph = IRGraphSoleInterface(parse_kestrel(stmt))
+    graph = IRGraphEvaluable(parse_kestrel(stmt))
     c = SqliteCache()
     mapping = c.evaluate_graph(graph)
 
@@ -69,7 +68,7 @@ proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
 browsers = proclist WHERE name = 'firefox.exe' OR name = 'chrome.exe'
 DISP browsers ATTR name, pid
 """
-    graph = IRGraphSoleInterface(parse_kestrel(stmt))
+    graph = IRGraphEvaluable(parse_kestrel(stmt))
     c = SqliteCache()
     mapping = c.evaluate_graph(graph)
 

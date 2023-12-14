@@ -36,15 +36,15 @@ class InMemoryCache(AbstractCache):
         # update() will call __setitem__() internally
         self.update(initial_cache)
 
+    def __del__(self):
+        del self.cache
+
     def __getitem__(self, instruction_id: UUID) -> DataFrame:
         return self.cache[self.cache_catalog[instruction_id]]
 
     def __delitem__(self, instruction_id: UUID):
         del self.cache[instruction_id]
         del self.cache_catalog[instruction_id]
-
-    def __iter__(self):
-        return self.cache.__iter__()
 
     def __setitem__(
         self,

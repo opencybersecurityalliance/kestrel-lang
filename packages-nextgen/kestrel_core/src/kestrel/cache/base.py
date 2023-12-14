@@ -18,6 +18,11 @@ class AbstractCache(AbstractDataSourceInterface, MutableMapping):
     """
 
     @abstractmethod
+    def __del__(self):
+        """Delete the cache and release memory/disk space"""
+        ...
+
+    @abstractmethod
     def __getitem__(self, instruction_id: UUID) -> DataFrame:
         """Get the dataframe for the cached instruction
 
@@ -30,6 +35,18 @@ class AbstractCache(AbstractDataSourceInterface, MutableMapping):
         ...
 
     @abstractmethod
+    def __setitem__(self, instruction_id: UUID, data: DataFrame):
+        """Store the dataframe of an instruction into cache
+
+        Parameters:
+
+            instruction_id: id of the instruction
+
+            data: data associated with the instruction
+        """
+        ...
+
+    @abstractmethod
     def __delitem__(self, instruction_id: UUID):
         """Delete cached item
 
@@ -38,14 +55,13 @@ class AbstractCache(AbstractDataSourceInterface, MutableMapping):
         """
         ...
 
-    @abstractmethod
-    def __iter__(self) -> DataFrame:
-        """Return cached values (dataframes)
+    def __iter__(self) -> UUID:
+        """Return UUIDs of instructions cached
 
         Returns:
-            dataframes in iterator
+            UUIDs in iterator
         """
-        ...
+        return iter(self.cache_catalog)
 
     def __len__(self) -> int:
         """How many items are cached"""
