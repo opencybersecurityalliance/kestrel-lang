@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import logging
 from kestrel_datasource_stixshifter.diagnosis import Diagnosis
 from kestrel_datasource_stixshifter.connector import setup_connector_module
 from firepit.timestamp import timefmt

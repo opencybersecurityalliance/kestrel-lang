@@ -20,11 +20,10 @@ from kestrel.ir.filter import (
     FExpression,
     BoolExp,
     MultiComp,
-    TimeRange,
     StrCompOp,
     NumCompOp,
     ExpOp,
-    ListOp,
+    ListOp
 )
 
 
