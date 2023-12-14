@@ -11,11 +11,7 @@ frontend_mapping = {}
 
 
 @typechecked
-def get_mapping(
-    mapping_type: str,
-    mapping_package: str,
-    mapping_filepath: str) -> dict:
-
+def get_mapping(mapping_type: str, mapping_package: str, mapping_filepath: str) -> dict:
     global frontend_mapping
     mapping = frontend_mapping.get(mapping_type)
     if mapping is not None:
@@ -35,13 +31,11 @@ _parser = Lark(
     parser="lalr",
     transformer=_KestrelT(
         entity_map=get_mapping(
-            "entity",
-            "kestrel.mapping",
-            os.path.join("entityname", "stix.yaml")),
+            "entity", "kestrel.mapping", os.path.join("entityname", "stix.yaml")
+        ),
         property_map=get_mapping(
-            "property",
-            "kestrel.mapping",
-            os.path.join("entityattribute", "stix.yaml"))
+            "property", "kestrel.mapping", os.path.join("entityattribute", "stix.yaml")
+        ),
     ),
 )
 

@@ -72,7 +72,7 @@ class AbstractDataSourceInterface(ABC):
             instruction_id: the key to be placed in `self.cache_catalog`
 
         Returns:
-            
+
             retrieved entities/events in DataFrame
         """
         ...

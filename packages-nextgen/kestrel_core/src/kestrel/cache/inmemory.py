@@ -59,7 +59,6 @@ class InMemoryCache(AbstractCache):
         graph: IRGraphEvaluable,
         instructions_to_evaluate: Optional[Iterable[Instruction]] = None,
     ) -> Mapping[UUID, DataFrame]:
-
         if not instructions_to_evaluate:
             instructions_to_evaluate = graph.get_sink_nodes()
 
