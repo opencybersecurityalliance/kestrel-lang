@@ -14,7 +14,6 @@ class AbstractCache(AbstractDataSourceInterface, MutableMapping):
         - __setitem__()
 
         - evaluate_graph()
-
     """
 
     @abstractmethod
@@ -54,6 +53,17 @@ class AbstractCache(AbstractDataSourceInterface, MutableMapping):
             instruction_id: id of the instruction
         """
         ...
+
+    def store(self, instruction_id: UUID, data: DataFrame):
+        self[instruction_id] = data
+
+    def __contain__(self, instruction_id: UUID) -> bool:
+        """Whether the evaluated instruction is cached
+
+        Parameters:
+            instruction_id: id of the instruction
+        """
+        return instruction_id in self.cache_catalog
 
     def __iter__(self) -> UUID:
         """Return UUIDs of instructions cached
