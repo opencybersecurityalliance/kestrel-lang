@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from pandas import DataFrame
 from uuid import UUID
-from typing import Union
 
 
 class AbstractCache(ABC):

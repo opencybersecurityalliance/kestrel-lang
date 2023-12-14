@@ -1,8 +1,10 @@
 from __future__ import annotations
+
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Union, List
-from dataclasses import dataclass, field
+from typing import List, Optional, Union
+
 from mashumaro.mixins.json import DataClassJSONMixin
 
 
@@ -120,8 +122,8 @@ class BoolExp(DataClassJSONMixin):
 class TimeRange(DataClassJSONMixin):
     """The time range of interest"""
 
-    start: datetime = field(default=None)
-    stop: datetime = field(default=None)
+    start: Optional[datetime] = None
+    stop: Optional[datetime] = None
 
 
 FExpression = Union[
@@ -131,4 +133,13 @@ FExpression = Union[
     ListComparison,
     MultiComp,
     BoolExp,
+]
+
+
+FComparison = Union[
+    IntComparison,
+    FloatComparison,
+    StrComparison,
+    ListComparison,
+    MultiComp,
 ]
