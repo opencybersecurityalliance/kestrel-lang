@@ -33,7 +33,7 @@ from kestrel.exceptions import (
 )
 
 
-CACHE_INTERFACE = "cache"
+CACHE_INTERFACE_IDENTIFIER = "cache"
 
 
 # https://stackoverflow.com/questions/70400639/how-do-i-get-python-dataclass-initvar-fields-to-work-with-typing-get-type-hints
@@ -166,7 +166,7 @@ class Limit(TransformingInstruction):
 @dataclass(eq=False)
 class Construct(SourceInstruction):
     data: List[Mapping[str, Union[str, int, bool]]]
-    interface: str = CACHE_INTERFACE
+    interface: str = CACHE_INTERFACE_IDENTIFIER
 
 
 @typechecked

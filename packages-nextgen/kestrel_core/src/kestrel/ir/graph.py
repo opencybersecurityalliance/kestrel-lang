@@ -16,7 +16,7 @@ from uuid import UUID
 import networkx
 import json
 from kestrel.ir.instructions import (
-    CACHE_INTERFACE,
+    CACHE_INTERFACE_IDENTIFIER,
     Instruction,
     TransformingInstruction,
     IntermediateInstruction,
@@ -444,7 +444,7 @@ class IRGraph(networkx.DiGraph):
 
         # add non-source nodes to cache as default execution environment
         # e.g., a path starting from a cached Variable
-        a2ns[CACHE_INTERFACE].update(g.nodes() - set().union(*a2ns.values()))
+        a2ns[CACHE_INTERFACE_IDENTIFIER].update(g.nodes() - set().union(*a2ns.values()))
 
         # find all nodes that are affected by two or more grouping attributes
         shared_impacted_nodes = set().union(

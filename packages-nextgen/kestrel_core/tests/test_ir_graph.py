@@ -14,7 +14,7 @@ from kestrel.ir.instructions import (
     ProjectEntity,
     Instruction,
     TransformingInstruction,
-    CACHE_INTERFACE,
+    CACHE_INTERFACE_IDENTIFIER,
 )
 from kestrel.ir.filter import StrComparison, StrCompOp
 from kestrel.ir.graph import IRGraph
@@ -242,7 +242,7 @@ DISP browsers ATTR name
     assert len(gs) == 1
     assert len(gs[0]) == 6
     assert Counter(map(type, gs[0].nodes())) == Counter([Filter, Variable, Variable, Construct, ProjectAttrs, Return])
-    assert gs[0].interface == CACHE_INTERFACE
+    assert gs[0].interface == CACHE_INTERFACE_IDENTIFIER
 
 
 def test_find_dependent_subgraphs_of_node():
