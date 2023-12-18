@@ -52,7 +52,8 @@ RUN apt-get update --yes && \
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 RUN sudo apt-get install --yes git-lfs
 RUN mkdir -p /opt/kaas && chown ${NB_UID}:${NB_UID} /opt/kaas
-COPY kaas-logo-san-seriff.png /opt/kaas/kaas-logo-san-seriff.png
+# COPY kaas-logo-san-seriff.png /opt/kaas/kaas-logo-san-seriff.png
+# add logo for KaaS (future)
 
 # USER ACTIVITIES
 # Switch back to jovyan to avoid accidental container runs as root
