@@ -36,8 +36,9 @@ RUN apt-get update --yes && \
 # install prerequisites
 # 1. from requirements.txt for jupyter hub
 # https://github.com/opencybersecurityalliance/kestrel-huntbook/blob/main/.binder/requirements.txt
- # analytics::dataexfiltration analytics::log4shell analytics::piniponmap analytics::sklearn-cluster analytics::attribute-plot analytics::suspiciousscoring 
-RUN apt-get install --yes flask flask-cors tabulate urllib3 geoip2 folium scikit-learn gower business-rules matplotlib
+# analytics::dataexfiltration analytics::log4shell analytics::piniponmap analytics::sklearn-cluster analytics::attribute-plot analytics::suspiciousscoring 
+#RUN pip install flask flask-cors tabulate urllib3 geoip2 folium scikit-learn gower business-rules matplotlib
+#leaving this off until confirmation required for docker vs binder
 # 2. from apt.txt
 # analytics prereq for cloning data-bucket-kestrel
 # mapped to apt.txt https://github.com/opencybersecurityalliance/kestrel-huntbook/blob/main/.binder/apt.txt
@@ -89,3 +90,6 @@ RUN mkdir -p /home/jovyan/.config/kestrel && \
     ln -s /home/jovyan/.config/kestrel/stixshifter.yaml /opt/kaas/kestrel-huntbook/huntbooks/stixshifter.yaml && \
     ln -s /home/jovyan/.config/kestrel/stixshifter.yaml /opt/kaas/kestrel-huntbook/tutorial/stixshifter.yaml && \
     ln -s /home/jovyan/.config/kestrel/stixshifter.yaml /opt/kaas/kestrel-huntbook/blackhat22/stixshifter.yaml
+# this enables trusted ipynb files for jupyter
+RUN jupyter trust */*.ipynb
+
