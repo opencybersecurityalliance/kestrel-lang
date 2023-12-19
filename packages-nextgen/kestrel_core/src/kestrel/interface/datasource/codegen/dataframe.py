@@ -23,7 +23,7 @@ from kestrel.ir.filter import (
     StrCompOp,
     NumCompOp,
     ExpOp,
-    ListOp
+    ListOp,
 )
 
 
