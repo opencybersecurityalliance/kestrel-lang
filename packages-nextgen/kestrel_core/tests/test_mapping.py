@@ -16,16 +16,24 @@ def test_mapping_load_config():
 
 
 def test_mapping_entity_names():
-    res = mapping_utils.translate_entityname("process", "ecs", "ocsf")
+    res = mapping_utils.normalize_entity("process", "ecs", "ocsf")
     assert res == "process"
-    res = mapping_utils.translate_entityname("i_dont_exist", "ecs", "ocsf")
+    res = mapping_utils.normalize_entity("i_dont_exist", "ecs", "ocsf")
     assert res == "i_dont_exist"
-    res = mapping_utils.translate_entityname("network", "ecs", "ocsf")
+    res = mapping_utils.normalize_entity("network", "ecs", "ocsf")
     assert res == ["network_connection_info", "network_traffic"]
 
 
 def test_mapping_entity_attributes():
-    res = mapping_utils.translate_entityattr("process.parent.executable", "ecs", "ocsf")
+    res = mapping_utils.normalize_property("process.parent.executable",
+                                           "ecs", "ocsf")
     assert res == "process.parent_process.file.path"
-    res = mapping_utils.translate_entityattr("process.hash.md5", "ecs", "ocsf")
+    res = mapping_utils.normalize_property("process.hash.md5", "ecs", "ocsf")
     assert res == "process.file.hashes[?algorithm_id == 1].value"
+    res = mapping_utils.normalize_property("process.group.id", "ecs", "ocsf")
+    assert res == "process.group.uid"
+    res = mapping_utils.normalize_property("processx.non.existent",
+                                           "ecs", "ocsf")
+    assert res == "processx.non.existent"
+    res = mapping_utils.normalize_property("file.hash.md5", "ecs", "ocsf")
+    assert res == "file.hashes[?algorithm_id == 1].value"

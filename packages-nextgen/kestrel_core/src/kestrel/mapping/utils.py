@@ -45,12 +45,8 @@ def parse_entityname_mapping_file(mapping_pkg: str, filename: str):
     global _entityname_mapping
     mapping_fpath = os.path.join("entityname", filename)
     filename_no_ext, _ = filename.split(".")
-    if filename_no_ext.startswith("to_"):
-        src_lang = 'ocsf'
-        dst_lang = filename_no_ext[3: ]
-    else:
-        src_lang = "stix" if filename_no_ext == "alias" else filename_no_ext
-        dst_lang = "ocsf"
+    src_lang = "stix" if filename_no_ext == "alias" else filename_no_ext
+    dst_lang = "ocsf"
     src_dict = _entityname_mapping.get(src_lang, {})
     dst_dict = src_dict.get(dst_lang, {})
     try:
@@ -68,6 +64,7 @@ def expand_referenced_field(mapping: dict, key: str, value: dict) -> dict:
     res = {}
     ref = value.get("ref")
     prefix = value.get("prefix")
+    target_entity = value.get("target_entity")
     for k, v in mapping.items():
         if k.startswith(f"{ref}."):
             k_no_ref = k[len(ref) + 1: ]
@@ -77,19 +74,9 @@ def expand_referenced_field(mapping: dict, key: str, value: dict) -> dict:
             else:
                 prefix_tokens = prefix.split(".")
                 v_tokens = v.split(".")
-                i = 0
-                len_prefix_tokens = len(prefix_tokens)
-                len_v_tokens = len(v_tokens)
-                max_len = (len_prefix_tokens if len_prefix_tokens < len_v_tokens
-                           else len_v_tokens)
-                while i < max_len:
-                    if (prefix_tokens[-1 - i].startswith("-") and
-                        prefix_tokens[-1 - i][1: ] == v_tokens[i]):
-                        i += 1
-                    else:
-                        break
-                ref_value = ".".join(prefix_tokens[: len_prefix_tokens - i] +
-                                     v_tokens[i: ])
+                if target_entity is not None:
+                    v_tokens[0] = target_entity
+                ref_value = ".".join(prefix_tokens + v_tokens)
             res[ref_key] = ref_value
     return res
 
@@ -99,12 +86,8 @@ def parse_entityattr_mapping_file(mapping_pkg: str, filename: str):
     global _entityattr_mapping
     mapping_fpath = os.path.join("entityattribute", filename)
     filename_no_ext, _ = filename.split(".")
-    if filename_no_ext.startswith("to_"):
-        src_lang = 'ocsf'
-        dst_lang = filename_no_ext[3: ]
-    else:
-        src_lang = "stix" if filename_no_ext == "alias" else filename_no_ext
-        dst_lang = "ocsf"
+    src_lang = "stix" if filename_no_ext == "alias" else filename_no_ext
+    dst_lang = "ocsf"
     src_dict = _entityattr_mapping.get(src_lang, {})
     dst_dict = src_dict.get(dst_lang, {})
     try:
@@ -129,19 +112,19 @@ def load_custom_config():
     return
 
 
-def normalize_entity():
-    return
-
-
-def normalize_property():
-    return
-
-
 @typechecked
-def translate_entityname(entityname: str, src_lang: str, dst_lang: str) -> Union[str, Iterable[str]]:
+def normalize_entity(entityname: str, src_lang: str, dst_lang: str) -> Union[str, Iterable[str]]:
     return _entityname_mapping.get(src_lang, {}).get(dst_lang, {}).get(entityname, entityname)
 
 
 @typechecked
-def translate_entityattr(entityattr: str, src_lang: str, dst_lang: str) -> Union[str, Iterable[str]]:
+def normalize_property(entityattr: str, src_lang: str, dst_lang: str) -> Union[str, Iterable[str]]:
     return _entityattr_mapping.get(src_lang, {}).get(dst_lang, {}).get(entityattr, entityattr)
+
+
+def generate_from_ocsf_dictionaries(source_schema_name: str) -> [dict, dict]:
+    ...
+
+if __name__ == "__main__":
+    load_standard_config("kestrel.mapping")
+    res = normalize_entity("ecs", "ocsf", "process")

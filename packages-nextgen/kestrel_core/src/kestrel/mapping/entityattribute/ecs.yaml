@@ -165,8 +165,9 @@ referenced_fields:
     ref: hash
     prefix: process
   process.parent:
-    ref: process
-    prefix: process.parent_process.-process
+    ref: process    # ECS entity used for attribute mapping
+    prefix: process # OCSF Prefix
+    target_entity: parent_process # Updated OCSF entity name 
   process.user:
     ref: user
     prefix: process
