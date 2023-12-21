@@ -65,10 +65,12 @@ def test_get_nodes_by_type_and_attributes():
 def test_get_returns():
     g = IRGraph()
     s = g.add_datasource("stixshifter://abc")
-    g.add_node(Return(), s)
-    g.add_node(Return(), s)
-    g.add_node(Return(), s)
-    assert len(g.get_returns()) == 3
+    g.add_return(s)
+    g.add_return(s)
+    g.add_return(s)
+    rets = g.get_returns()
+    assert len(rets) == 3
+    assert [ret.sequence for ret in rets] == [0, 1, 2]
     assert len(g.get_sink_nodes()) == 3
 
 
@@ -153,19 +155,23 @@ def test_update_graph():
     v1 = g.add_variable("asdf", s)
     v2 = g.add_variable("asdf", s)
     v3 = g.add_variable("asdf", s)
+    r1 = g.add_return(v3)
 
     g2 = IRGraph()
     s2 = g2.add_datasource("stixshifter://abc")
     v4 = g2.add_variable("asdf", g2.add_node(Reference("asdf")))
     v5 = g2.add_variable("asdf", g2.add_node(TransformingInstruction(), s2))
+    r2 = g2.add_return(v5)
 
     assert v1.version == 0
     assert v2.version == 1
     assert v3.version == 2
     assert v4.version == 0
     assert v5.version == 1
-    assert len(g) == 4
-    assert len(g2) == 5
+    assert r1.sequence == 0
+    assert r2.sequence == 0
+    assert len(g) == 5
+    assert len(g2) == 6
 
     g.update(g2)
     assert v1.version == 0
@@ -173,8 +179,12 @@ def test_update_graph():
     assert v3.version == 2
     assert v4.version == 3
     assert v5.version == 4
-    assert len(g) == 7
+    assert r1.sequence == 0
+    assert r2.sequence == 1
+    assert len(g) == 9
     assert s2 not in g
+    assert r1 in g
+    assert r2 in g
     assert not g.get_references()
     assert (v3, v4) in g.edges()
     assert g.in_degree(v4) == 1

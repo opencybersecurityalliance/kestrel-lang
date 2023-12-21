@@ -25,15 +25,13 @@ from kestrel.ir.filter import (
     FExpression,
     TimeRange,
 )
+from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
 
 from kestrel.exceptions import (
     InvalidInstruction,
     InvalidSeralizedInstruction,
     InvalidDataSource,
 )
-
-
-CACHE_INTERFACE_IDENTIFIER = "cache"
 
 
 # https://stackoverflow.com/questions/70400639/how-do-i-get-python-dataclass-initvar-fields-to-work-with-typing-get-type-hints
@@ -95,10 +93,12 @@ class IntermediateInstruction(Instruction):
     pass
 
 
+@dataclass(eq=False)
 class Return(TransformingInstruction):
     """The sink instruction that forces execution"""
 
-    pass
+    # the order/sequence of return instruction in huntflow (source code)
+    sequence: int = 0
 
 
 @dataclass(eq=False)
