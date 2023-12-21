@@ -1,6 +1,6 @@
 from importlib import resources
 from kestrel.exceptions import MappingParseError
-from kestrel.utils import load_data_file
+from kestrel.utils import load_data_file, list_folder_files
 import os
 from typeguard import typechecked
 from typing import (
@@ -28,14 +28,12 @@ def load_standard_config(mapping_pkg: str):
     global entityattr_mapping
     if (len(_entityname_mapping) > 0 and len(_entityattr_mapping) > 0):
         return
-    entityname_maps = resources.files(mapping_pkg).joinpath("entityname")
-    entityname_mapping_files = (f for f in entityname_maps.iterdir()
-                                if f.is_file() and f.name.endswith(".yaml"))
+    entityname_mapping_files = list_folder_files(mapping_pkg, "entityname",
+                                                 suffix=".yaml")
     for f in entityname_mapping_files:
         parse_entityname_mapping_file(mapping_pkg, f.name)
-    entityattr_maps = resources.files(mapping_pkg).joinpath("entityattribute")
-    entityattr_mapping_files = (f for f in entityattr_maps.iterdir()
-                                if f.is_file() and f.name.endswith(".yaml"))
+    entityattr_mapping_files = list_folder_files(mapping_pkg, "entityattribute",
+                                                 suffix=".yaml")
     for f in entityattr_mapping_files:
         parse_entityattr_mapping_file(mapping_pkg, f.name)
 
