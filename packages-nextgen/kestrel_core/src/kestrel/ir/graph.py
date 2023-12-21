@@ -16,7 +16,6 @@ from uuid import UUID
 import networkx
 import json
 from kestrel.ir.instructions import (
-    CACHE_INTERFACE_IDENTIFIER,
     Instruction,
     TransformingInstruction,
     IntermediateInstruction,
@@ -40,6 +39,7 @@ from kestrel.exceptions import (
     MultiInterfacesInGraph,
     InevaluableInstruction,
 )
+from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
 
 
 @typechecked

@@ -25,15 +25,13 @@ from kestrel.ir.filter import (
     FExpression,
     TimeRange,
 )
+from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
 
 from kestrel.exceptions import (
     InvalidInstruction,
     InvalidSeralizedInstruction,
     InvalidDataSource,
 )
-
-
-CACHE_INTERFACE_IDENTIFIER = "cache"
 
 
 # https://stackoverflow.com/questions/70400639/how-do-i-get-python-dataclass-initvar-fields-to-work-with-typing-get-type-hints

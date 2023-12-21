@@ -1,16 +1,17 @@
 import logging
 import atexit
 
-from typing import Mapping
+from typing import Iterable
 from typeguard import typechecked
 from contextlib import AbstractContextManager
 from uuid import UUID, uuid4
+from pandas import DataFrame
 
 from kestrel.ir.graph import IRGraph
 from kestrel.frontend.parser import parse_kestrel
 from kestrel.cache import AbstractCache, SqliteCache
-from kestrel.ir.instructions import Variable, CACHE_INTERFACE_IDENTIFIER
 from kestrel.interface.datasource import AbstractDataSourceInterface
+from kestrel.interface.datasource.utils import get_interface_by_name
 
 
 _logger = logging.getLogger(__name__)
@@ -25,15 +26,12 @@ class Session(AbstractContextManager):
         self.irgraph: IRGraph = IRGraph()
         self.cache: AbstractCache = SqliteCache()
 
-        # interface mapper
-        # Select a datasource interface given its name
-        # Note that cache is a special datasource interface and should always be added
+        # Datasource interfaces in this session
+        # Cache is a special datasource interface and should always be added
         # TODO: other datasource interfaces to initialize/add if exist
-        self.im: Mapping[str, AbstractDataSourceInterface] = {
-            CACHE_INTERFACE_IDENTIFIER: self.cache
-        }
+        self.interfaces: Iterable[AbstractDataSourceInterface] = [self.cache]
 
-    def execute(self, huntflow_block: str):
+    def execute(self, huntflow_block: str) -> Iterable[DataFrame]:
         """Execute a Kestrel huntflow block.
 
         Execute a Kestrel statement or multiple consecutive statements (a
@@ -47,14 +45,17 @@ class Session(AbstractContextManager):
         Yields:
             Evaluated result per Return instruction in the huntflow block
         """
+        # TODO: return type generalization
+
         irgraph_new = parse_kestrel(huntflow_block)
         self.irgraph.update(irgraph_new)
 
         for ret in irgraph_new.get_returns():
             while ret.id not in self.cache:
                 for g in self.irgraph.find_dependent_subgraphs_of_node(ret, self.cache):
-                    for iid, df in self.im[g.interface].evaluate_graph(g).items():
-                        if g.interface != CACHE_INTERFACE_IDENTIFIER:
+                    interface = get_interface_by_name(g.interface, self.interfaces)
+                    for iid, df in interface.evaluate_graph(g).items():
+                        if g.interface != self.cache.name:
                             self.cache[iid] = df
             else:
                 yield self.cache[ret.id]
