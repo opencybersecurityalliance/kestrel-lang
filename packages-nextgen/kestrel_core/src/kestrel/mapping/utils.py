@@ -122,9 +122,47 @@ def normalize_property(entityattr: str, src_lang: str, dst_lang: str) -> Union[s
     return _entityattr_mapping.get(src_lang, {}).get(dst_lang, {}).get(entityattr, entityattr)
 
 
-def generate_from_ocsf_dictionaries(source_schema_name: str) -> [dict, dict]:
-    ...
+@typechecked
+def from_ocsf_key_value_pair(from_ocsf_dict: dict, key: str, value: str):
+    values = from_ocsf_dict.get(key)
+    if values is None:
+        from_ocsf_dict[key] = value
+    else:
+        if isinstance(values, list):
+            if value not in values:
+                values.append(value)
+        else:
+            if value != values:
+                values = list((values, value))
+        from_ocsf_dict[key] = values
 
-if __name__ == "__main__":
-    load_standard_config("kestrel.mapping")
-    res = normalize_entity("ecs", "ocsf", "process")
+
+@typechecked
+def from_ocsf_dictionary(to_oscf_dict: dict) -> dict:
+    from_ocsf_dict = {}
+    for key, value in to_oscf_dict.items():
+        if isinstance(value, list):
+            for val in value:
+                from_ocsf_key_value_pair(from_ocsf_dict, val, key)
+        else:
+            from_ocsf_key_value_pair(from_ocsf_dict, value, key)
+    return from_ocsf_dict
+
+
+@typechecked
+def generate_from_ocsf_dictionaries(source_schema_name: str) -> (dict, dict):
+    attr_map = _entityattr_mapping.get(source_schema_name, {}).get("ocsf", {})
+    name_map = _entityname_mapping.get(source_schema_name, {}).get("ocsf", {})
+    from_ocsf_names = from_ocsf_dictionary(name_map)
+    from_ocsf_attrs = from_ocsf_dictionary(attr_map)
+    return (from_ocsf_names, from_ocsf_attrs)
+
+
+# if __name__ == "__main__":
+#     load_standard_config("kestrel.mapping")
+#     res = normalize_entity("ecs", "ocsf", "process")
+#     from_ocsf_names, from_ocsf_attrs = generate_from_ocsf_dictionaries("ecs")
+#     print("\n\n\n NAMES ")
+#     print(yaml.dump(from_ocsf_names))
+#     print("\n\n\n ATTRIBUTES ")
+#     print(yaml.dump(from_ocsf_attrs))
