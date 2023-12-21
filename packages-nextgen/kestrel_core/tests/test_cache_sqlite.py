@@ -91,3 +91,41 @@ DISP browsers ATTR name, pid
     assert c[browsers.id].to_dict("records") == [ {"name": "firefox.exe", "pid": 201}
                                                 , {"name": "chrome.exe", "pid": 205}
                                                 ]
+
+
+def test_eval_two_returns():
+    stmt = """
+proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
+                       , {"name": "explorer.exe", "pid": 99}
+                       , {"name": "firefox.exe", "pid": 201}
+                       , {"name": "chrome.exe", "pid": 205}
+                       ]
+browsers = proclist WHERE name != "cmd.exe"
+DISP browsers
+DISP browsers ATTR pid
+"""
+    graph = parse_kestrel(stmt)
+    c = SqliteCache()
+    rets = graph.get_returns()
+
+    # first DISP
+    gs = graph.find_dependent_subgraphs_of_node(rets[0], c)
+    assert len(gs) == 1
+    mapping = c.evaluate_graph(gs[0])
+    df1 = DataFrame([ {"name": "explorer.exe", "pid": 99}
+                    , {"name": "firefox.exe", "pid": 201}
+                    , {"name": "chrome.exe", "pid": 205}
+                    ])
+    assert len(mapping) == 1
+    assert df1.equals(mapping[rets[0].id])
+
+    # second DISP
+    gs = graph.find_dependent_subgraphs_of_node(rets[1], c)
+    assert len(gs) == 1
+    mapping = c.evaluate_graph(gs[0])
+    df2 = DataFrame([ {"pid": 99}
+                    , {"pid": 201}
+                    , {"pid": 205}
+                    ])
+    assert len(mapping) == 1
+    assert df2.equals(mapping[rets[1].id])

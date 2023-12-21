@@ -95,10 +95,12 @@ class IntermediateInstruction(Instruction):
     pass
 
 
+@dataclass(eq=False)
 class Return(TransformingInstruction):
     """The sink instruction that forces execution"""
 
-    pass
+    # the order/sequence of return instruction in huntflow (source code)
+    sequence: int = 0
 
 
 @dataclass(eq=False)

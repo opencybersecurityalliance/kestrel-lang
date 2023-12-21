@@ -326,7 +326,26 @@ class IRGraph(networkx.DiGraph):
         Returns:
             The list of return nodes
         """
-        return self.get_nodes_by_type(Return)
+        return sorted(self.get_nodes_by_type(Return), key=lambda x: x.sequence)
+
+    def get_max_return_sequence(self) -> int:
+        """Get all return nodes
+
+        Returns:
+            The largest sequence number of all Return instruction
+        """
+        return max(map(lambda x: x.sequence, self.get_returns()), default=-1)
+
+    def add_return(self, dependent_node: Instruction) -> Return:
+        """Create new Return instruction and add to IRGraph
+
+        Parameters:
+            dependent_node: the instruction to hold return
+
+        Returns:
+            The return node created/added
+        """
+        return self.add_node(Return(), dependent_node)
 
     def get_sink_nodes(self) -> Iterable[Instruction]:
         """Get all sink nodes (node with no successors)
@@ -353,6 +372,11 @@ class IRGraph(networkx.DiGraph):
         for nv in ng.get_nodes_by_type(Variable):
             if nv.name in original_variables:
                 nv.version += original_variables[nv.name].version + 1
+
+        # prepare return sequence from ng before merge
+        return_max_sequence = self.get_max_return_sequence()
+        for nr in ng.get_returns():
+            nr.sequence += return_max_sequence + 1
 
         # add refs first to deref correctly
         # if any reference exist, it should be derefed before adding any variable
@@ -478,7 +502,10 @@ class IRGraph(networkx.DiGraph):
     def _add_node(self, node: Instruction, deref: bool = True) -> Instruction:
         """Add just the node
 
-        Dependency (if exists) not handled.
+        Dependency (if exists) not handled. Variable version and Return
+        sequence intentionally not handled here (handled in
+        _add_node_with_dependent_node()) for plain adding node opeartion used
+        by update().
 
         Parameters:
             node: the node/instruction to add
@@ -545,6 +572,8 @@ class IRGraph(networkx.DiGraph):
     ) -> Instruction:
         """Add node to graph with a dependent node
 
+        Variable version and Return sequence are handled here.
+
         Parameters:
             node: the node/instruction to add
             dependent_node: the dependent node that should exist in the graph
@@ -562,6 +591,8 @@ class IRGraph(networkx.DiGraph):
                     node.version = 0
                 else:
                     node.version = ve.version + 1
+            if isinstance(node, Return):
+                node.sequence = self.get_max_return_sequence() + 1
             # add_edge will add node first
             self.add_edge(dependent_node, node)
         return node
@@ -607,6 +638,10 @@ class IRGraphEvaluable(IRGraph):
 
         # update() will call _add_node() internally to set self.interface
         self.update(graph)
+
+        # all source nodes are already cached (no SourceInstruction)
+        if not self.interface:
+            self.interface = CACHE_INTERFACE_IDENTIFIER
 
     def _add_node(self, node: Instruction, deref: bool = True) -> Instruction:
         if isinstance(node, IntermediateInstruction):
