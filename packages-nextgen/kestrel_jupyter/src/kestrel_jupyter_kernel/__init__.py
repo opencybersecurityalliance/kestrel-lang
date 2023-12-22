@@ -1,0 +1,1 @@
+from kestrel_jupyter_kernel.kernel import KestrelKernel
