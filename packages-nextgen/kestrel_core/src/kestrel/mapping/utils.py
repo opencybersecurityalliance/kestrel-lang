@@ -1,4 +1,3 @@
-from importlib import resources
 from kestrel.exceptions import MappingParseError
 from kestrel.utils import load_data_file, list_folder_files
 import os

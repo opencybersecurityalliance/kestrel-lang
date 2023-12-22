@@ -1,10 +1,12 @@
+import collections.abc
+from importlib import resources
 import os
 from pathlib import Path
 import pkg_resources
 from pkgutil import get_data
-from importlib import resources
 from typeguard import typechecked
-import pkgutil
+from typing import Union, Iterable, Mapping
+
 
 def load_data_file(package_name, file_name):
     try:
@@ -40,3 +42,14 @@ def unescape_quoted_string(s: str) -> str:
         return s[2:-1]
     else:
         return s[1:-1].encode("utf-8").decode("unicode_escape")
+
+
+@typechecked
+def update_nested_dict(dict_old: Mapping, dict_new: Union[Mapping, None]):
+    if dict_new:
+        for k, v in dict_new.items():
+            if isinstance(v, collections.abc.Mapping) and k in dict_old:
+                dict_old[k] = update_nested_dict(dict_old[k], v)
+            else:
+                dict_old[k] = v
+    return dict_old
