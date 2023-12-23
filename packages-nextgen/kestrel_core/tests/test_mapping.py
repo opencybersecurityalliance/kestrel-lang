@@ -21,7 +21,7 @@ def test_mapping_entity_names():
     res = mapping_utils.normalize_entity("i_dont_exist", "ecs", "ocsf")
     assert res == "i_dont_exist"
     res = mapping_utils.normalize_entity("network", "ecs", "ocsf")
-    assert res == ["network_connection_info", "network_traffic"]
+    assert res == "network_activity"
 
 
 def test_mapping_entity_attributes():
@@ -39,43 +39,40 @@ def test_mapping_entity_attributes():
     assert res == "file.hashes[?algorithm_id == 1].value"
 
 
-
 def test_from_ocsf_dicionaries():
     from_ocsf_names, from_ocsf_attrs = mapping_utils.generate_from_ocsf_dictionaries("ecs")
     res = from_ocsf_names.get("process")
-    assert res == "process"
-    res = from_ocsf_names.get("network_connection_info")
-    assert res == "network"
-    res = from_ocsf_names.get("network_traffic")
-    assert res == "network"
+    assert (len(res) == 1 and "process" in res)
     res = from_ocsf_names.get("network_endpoint")
-    assert res == ["client", "destination", "server", "source"]
-
+    assert (len(res) == 4 and "client" in res and "destination" in res and
+            "server" in res and "source" in res)
     res = from_ocsf_attrs.get("process.name")
-    assert res == "process.name"
+    assert (len(res) == 1 and "process.name" in res)
     res = from_ocsf_attrs.get("process.cmd_line")
-    assert res == "process.command_line"
+    assert (len(res) == 1 and "process.command_line" in res)
     res = from_ocsf_attrs.get("process.file.hashes[?algorithm_id == 1].value")
-    assert res == "process.hash.md5"
+    assert (len(res) == 1 and "process.hash.md5" in res)
     res = from_ocsf_attrs.get("process.file.path")
-    assert res == "process.executable"
+    assert (len(res) == 1 and "process.executable" in res)
     res = from_ocsf_attrs.get("process.parent_process.file.path")
-    assert res == "process.parent.executable"
+    assert (len(res) == 1 and "process.parent.executable" in res)
     res = from_ocsf_attrs.get("process.parent_process.tid")
-    assert res == "process.parent.thread.id"
+    assert (len(res) == 1 and "process.parent.thread.id" in res)
     res = from_ocsf_attrs.get("src_endpoint.domain")
-    assert len(res) == 2 and "client.domain" in res and "source.domain" in res
+    assert (len(res) == 2 and "client.domain" in res and
+            "source.domain" in res)
     res = from_ocsf_attrs.get("src_endpoint.location.city")
     assert (len(res) == 2 and "client.geo.city_name" in res and
             "source.geo.city_name" in res)
     res = from_ocsf_attrs.get("tls.certificate.created_time")
-    assert res == "file.x509.not_before"
+    assert (len(res) == 1 and "file.x509.not_before" in res)
     res = from_ocsf_attrs.get("tls.certificate.expiration_time")
-    assert res == "file.x509.not_after"
+    assert (len(res) == 1 and "file.x509.not_after" in res)
     res = from_ocsf_attrs.get("tls.certificate.fingerprints.algorithm")
-    assert res == "file.x509.signature_algorithm"
+    assert (len(res) == 1 and "file.x509.signature_algorithm" in res)
     res = from_ocsf_attrs.get("traffic.packets_in")
     assert (len(res) == 2 and "destination.packets" in res and
             "server.packets" in res)
     res = from_ocsf_attrs.get("file.hashes[?algorithm_id == 4].value")
-    assert (len(res) == 2 and "hash.sha512" in res and "file.hash.sha512" in res)
+    assert (len(res) == 2 and "hash.sha512" in res and
+            "file.hash.sha512" in res)

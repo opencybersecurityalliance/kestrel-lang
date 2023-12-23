@@ -5,7 +5,5 @@ client: network_endpoint
 destination: network_endpoint
 server: network_endpoint
 source: network_endpoint
-network:
-  - network_connection_info
-  - network_traffic
+network: network_activity
 user: user

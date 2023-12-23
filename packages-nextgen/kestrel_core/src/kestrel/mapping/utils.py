@@ -25,14 +25,16 @@ _entityattr_mapping = {}
 def load_standard_config(mapping_pkg: str):
     global _entityname_mapping
     global entityattr_mapping
-    if (len(_entityname_mapping) > 0 and len(_entityattr_mapping) > 0):
+    if len(_entityname_mapping) > 0 and len(_entityattr_mapping) > 0:
         return
-    entityname_mapping_files = list_folder_files(mapping_pkg, "entityname",
-                                                 suffix=".yaml")
+    entityname_mapping_files = list_folder_files(
+        mapping_pkg, "entityname", suffix=".yaml"
+    )
     for f in entityname_mapping_files:
         parse_entityname_mapping_file(mapping_pkg, f.name)
-    entityattr_mapping_files = list_folder_files(mapping_pkg, "entityattribute",
-                                                 suffix=".yaml")
+    entityattr_mapping_files = list_folder_files(
+        mapping_pkg, "entityattribute", suffix=".yaml"
+    )
     for f in entityattr_mapping_files:
         parse_entityattr_mapping_file(mapping_pkg, f.name)
 
@@ -64,7 +66,7 @@ def expand_referenced_field(mapping: dict, key: str, value: dict) -> dict:
     target_entity = value.get("target_entity")
     for k, v in mapping.items():
         if k.startswith(f"{ref}."):
-            k_no_ref = k[len(ref) + 1: ]
+            k_no_ref = k[len(ref) + 1 :]
             ref_key = ".".join([key, k_no_ref])
             if prefix is None:
                 ref_value = v
@@ -110,28 +112,33 @@ def load_custom_config():
 
 
 @typechecked
-def normalize_entity(entityname: str, src_lang: str, dst_lang: str) -> Union[str, Iterable[str]]:
-    return _entityname_mapping.get(src_lang, {}).get(dst_lang, {}).get(entityname, entityname)
+def normalize_entity(
+    entityname: str, src_lang: str, dst_lang: str
+) -> Union[str, Iterable[str]]:
+    return (
+        _entityname_mapping.get(src_lang, {})
+        .get(dst_lang, {})
+        .get(entityname, entityname)
+    )
 
 
 @typechecked
-def normalize_property(entityattr: str, src_lang: str, dst_lang: str) -> Union[str, Iterable[str]]:
-    return _entityattr_mapping.get(src_lang, {}).get(dst_lang, {}).get(entityattr, entityattr)
+def normalize_property(
+    entityattr: str, src_lang: str, dst_lang: str
+) -> Union[str, Iterable[str]]:
+    return (
+        _entityattr_mapping.get(src_lang, {})
+        .get(dst_lang, {})
+        .get(entityattr, entityattr)
+    )
 
 
 @typechecked
 def from_ocsf_key_value_pair(from_ocsf_dict: dict, key: str, value: str):
-    values = from_ocsf_dict.get(key)
-    if values is None:
-        from_ocsf_dict[key] = value
-    else:
-        if isinstance(values, list):
-            if value not in values:
-                values.append(value)
-        else:
-            if value != values:
-                values = list((values, value))
-        from_ocsf_dict[key] = values
+    values = from_ocsf_dict.get(key, [])
+    if value not in values:
+        values.append(value)
+    from_ocsf_dict[key] = values
 
 
 @typechecked

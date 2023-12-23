@@ -93,7 +93,9 @@ source.port: src_endpoint.port
 # source.registered_domain
 # source.subdomain
 # source.top_level_domain
-network.application: network_activity.app_name
+
+# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], Email Activity [4009]
+network.application: app_name
 network.bytes: traffic.bytes
 network.direction: connection_info.direction
 network.iana_number: connection_info.protocol_num
