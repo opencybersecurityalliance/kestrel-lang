@@ -1,4 +1,4 @@
-import kestrel.config.utils as cfg
+import kestrel.config as cfg
 import os
 
 
