@@ -4,6 +4,7 @@ from pandas import DataFrame
 from uuid import UUID
 from typing import (
     Mapping,
+    MutableMapping,
     Optional,
     Iterable,
 )
@@ -12,9 +13,8 @@ from kestrel.ir.instructions import (
     Reference,
     Instruction,
 )
-from kestrel.ir.graph import IRGraphSoleInterface
+from kestrel.ir.graph import IRGraphEvaluable
 from kestrel.exceptions import (
-    UnresolvedReference,
     InvalidSerializedDatasourceInterfaceCacheCatalog,
 )
 
@@ -37,13 +37,14 @@ class AbstractDataSourceInterface(ABC):
         cache_catalog: map a cached item (instruction.id) to datalake table/view name
     """
 
-    def __init__(self,
-                 serialized_cache_catalog: Optional[str] = None,
-                 session_id: Optional[UUID] = None,
+    def __init__(
+        self,
+        serialized_cache_catalog: Optional[str] = None,
+        session_id: Optional[UUID] = None,
     ):
         self.session_id = session_id
         self.datasources: Mapping[str, str] = {}
-        self.cache_catalog: Mapping[UUID, str] = {}
+        self.cache_catalog: MutableMapping[UUID, str] = {}
 
         if serialized_cache_catalog:
             try:
@@ -51,14 +52,14 @@ class AbstractDataSourceInterface(ABC):
             except:
                 raise InvalidSerializedDatasourceInterfaceCacheCatalog()
 
-    def __contains__(self, instruction_id: UUID) -> bool:
-        """Whether a datasource is in the interface
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """The name of the interface
 
-        Parameters:
-
-            instruction_id: id of the instruction
+        The name should be defined as ``("_"|LETTER) ("_"|LETTER|DIGIT)*``
         """
-        return instruction_id in self.cache_catalog
+        ...
 
     @abstractmethod
     def store(
@@ -89,7 +90,7 @@ class AbstractDataSourceInterface(ABC):
     @abstractmethod
     def evaluate_graph(
         self,
-        graph: IRGraphSoleInterface,
+        graph: IRGraphEvaluable,
         instructions_to_evaluate: Optional[Iterable[Instruction]] = None,
     ) -> Mapping[UUID, DataFrame]:
         """Evaluate the IRGraph
@@ -104,10 +105,7 @@ class AbstractDataSourceInterface(ABC):
 
             DataFrames for each instruction in instructions_to_evaluate.
         """
-        # requirement: graph should not have any Reference node
-        refs = self.get_nodes_by_type(Reference)
-        if refs:
-            raise UnresolvedReference(refs)
+        ...
 
     def cache_catalog_to_json(self) -> str:
         """Serialize the cache catalog to a JSON string"""

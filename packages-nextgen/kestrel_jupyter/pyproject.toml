@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools >= 68.2.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kestrel_jupyter"
+version = "2.0.0"
+description = "Kestrel Jupyter Kernel"
+readme = "README.rst"
+requires-python = ">=3.8"
+license = {text = "Apache 2.0 License"}
+maintainers = [
+    {name = "Xiaokui Shu", email = "xiaokui.shu@ibm.com"},
+    {name = "Paul Coccoli", email = "pcoccoli@us.ibm.com"},
+]
+keywords = [
+    "kestrel",
+    "Jupyter",
+    "kernel",
+]
+classifiers = [
+    "Topic :: Security",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+    "kestrel_core==2.0.0",
+    "jupyterlab-server",
+    "jupyterlab",
+    "jupyter_client",
+    "nbclassic",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+
+[project.urls]
+Homepage = "https://github.com/opencybersecurityalliance/kestrel-lang"
+Documentation = "https://kestrel.readthedocs.io/"
+Repository = "https://github.com/opencybersecurityalliance/kestrel-lang.git"
+
+[project.scripts]
+kestrel_jupyter_setup = "kestrel_jupyter_kernel.setup:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.js"]

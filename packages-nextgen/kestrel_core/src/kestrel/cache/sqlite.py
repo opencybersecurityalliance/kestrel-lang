@@ -8,9 +8,9 @@ from sqlalchemy import create_engine, table, text
 from sqlalchemy.dialects import sqlite
 from typeguard import typechecked
 
-from kestrel.cache.base import Cache
+from kestrel.cache.base import AbstractCache
 from kestrel.interface.datasource.codegen.sql import SqlTranslator
-from kestrel.ir.graph import IRGraphSoleInterface
+from kestrel.ir.graph import IRGraphEvaluable
 from kestrel.ir.instructions import (
     Construct,
     Instruction,
@@ -36,7 +36,7 @@ class SqliteTranslator(SqlTranslator):
 
 
 @typechecked
-class SqliteCache(Cache):
+class SqliteCache(AbstractCache):
     def __init__(
         self,
         initial_cache: Optional[Mapping[UUID, DataFrame]] = None,
@@ -54,7 +54,7 @@ class SqliteCache(Cache):
 
         if initial_cache:
             for instruction_id, data in initial_cache.items():
-                self.store(instruction_id, data)
+                self[instruction_id] = data
 
     def __del__(self):
         self.connection.close()
@@ -67,7 +67,7 @@ class SqliteCache(Cache):
         self.connection.execute(text(f'DROP TABLE "{table}"'))
         del self.cache_catalog[instruction_id]
 
-    def store(
+    def __setitem__(
         self,
         instruction_id: UUID,
         data: DataFrame,
@@ -79,7 +79,7 @@ class SqliteCache(Cache):
 
     def evaluate_graph(
         self,
-        graph: IRGraphSoleInterface,
+        graph: IRGraphEvaluable,
         instructions_to_evaluate: Optional[Iterable[Instruction]] = None,
     ) -> Mapping[UUID, DataFrame]:
         mapping = {}
@@ -98,7 +98,7 @@ class SqliteCache(Cache):
     def _evaluate_instruction_in_graph(
         self,
         instruction: Instruction,
-        graph: IRGraphSoleInterface,
+        graph: IRGraphEvaluable,
     ) -> SqliteTranslator:
         # TODO: handle multiple predecessors of a node
         _logger.debug("_eval: %s", instruction)
@@ -113,14 +113,14 @@ class SqliteCache(Cache):
                 _logger.debug("%s -> %s", instruction, stmt)
 
                 # TODO: more efficient/lightweight implementation using view creation
-                self.store(instruction.id, read_sql(stmt, self.connection))
+                self[instruction.id] = read_sql(stmt, self.connection)
 
             # finally init translator from cache for potential descendants use
             translator = SqliteTranslator(self.cache_catalog[instruction.id])
 
         elif isinstance(instruction, SourceInstruction):
             if isinstance(instruction, Construct):
-                self.store(instruction.id, DataFrame(instruction.data))
+                self[instruction.id] = DataFrame(instruction.data)
                 translator = SqliteTranslator(self.cache_catalog[instruction.id])
             else:
                 raise NotImplementedError(

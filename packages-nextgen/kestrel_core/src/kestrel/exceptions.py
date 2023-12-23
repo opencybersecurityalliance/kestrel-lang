@@ -54,13 +54,17 @@ class MultiInterfacesInGraph(KestrelError):
     pass
 
 
-class UnresolvedReference(KestrelError):
-    pass
-
-
 class InvalidSerializedDatasourceInterfaceCacheCatalog(KestrelError):
     pass
 
 
 class InevaluableInstruction(KestrelError):
+    pass
+
+
+class InterfaceNotFound(KestrelError):
+    pass
+
+
+class InterfaceNameCollision(KestrelError):
     pass

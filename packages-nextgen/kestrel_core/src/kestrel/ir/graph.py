@@ -1,9 +1,12 @@
 from __future__ import annotations
 from typeguard import typechecked
 from typing import (
+    Any,
+    Type,
     Iterable,
     Tuple,
     Mapping,
+    MutableMapping,
     Union,
     Optional,
 )
@@ -23,7 +26,6 @@ from kestrel.ir.instructions import (
     Return,
     instruction_from_dict,
 )
-from kestrel.cache.abc import AbstractCache
 from kestrel.exceptions import (
     InstructionNotFound,
     InvalidSeralizedGraph,
@@ -35,7 +37,9 @@ from kestrel.exceptions import (
     DuplicatedDataSource,
     DuplicatedSingletonInstruction,
     MultiInterfacesInGraph,
+    InevaluableInstruction,
 )
+from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
 
 
 @typechecked
@@ -322,7 +326,26 @@ class IRGraph(networkx.DiGraph):
         Returns:
             The list of return nodes
         """
-        return self.get_nodes_by_type(Return)
+        return sorted(self.get_nodes_by_type(Return), key=lambda x: x.sequence)
+
+    def get_max_return_sequence(self) -> int:
+        """Get all return nodes
+
+        Returns:
+            The largest sequence number of all Return instruction
+        """
+        return max(map(lambda x: x.sequence, self.get_returns()), default=-1)
+
+    def add_return(self, dependent_node: Instruction) -> Return:
+        """Create new Return instruction and add to IRGraph
+
+        Parameters:
+            dependent_node: the instruction to hold return
+
+        Returns:
+            The return node created/added
+        """
+        return self.add_node(Return(), dependent_node)
 
     def get_sink_nodes(self) -> Iterable[Instruction]:
         """Get all sink nodes (node with no successors)
@@ -349,6 +372,11 @@ class IRGraph(networkx.DiGraph):
         for nv in ng.get_nodes_by_type(Variable):
             if nv.name in original_variables:
                 nv.version += original_variables[nv.name].version + 1
+
+        # prepare return sequence from ng before merge
+        return_max_sequence = self.get_max_return_sequence()
+        for nr in ng.get_returns():
+            nr.sequence += return_max_sequence + 1
 
         # add refs first to deref correctly
         # if any reference exist, it should be derefed before adding any variable
@@ -378,99 +406,80 @@ class IRGraph(networkx.DiGraph):
         return self.subgraph(nodes).copy()
 
     def find_cached_dependent_subgraph_of_node(
-        self, node: Instruction, cache: AbstractCache
+        self, node: Instruction, cache: MutableMapping[UUID, Any]
     ) -> IRGraph:
         """Return the cached dependent graph of the a node
 
-        Discard nodes and subgraphs before any cached Variable nodes.
+        Discard nodes and subgraphs before any cached nodes, e.g., Variables.
+
+        Parameters:
+            node: instruction node to start
+            cache: any type of node cache, e.g., content, SQL statement
 
         Returns:
             The pruned IRGraph without nodes before cached Variable nodes
         """
         g = self.duplicate_dependent_subgraph_of_node(node)
-        in_edges = [g.in_edges(n) for n in g.get_variables() if n.id in cache]
+        in_edges = [g.in_edges(n) for n in g.nodes() if n.id in cache]
         g.remove_edges_from(set().union(*in_edges))
 
         # important last step to discard any unconnected nodes/subgraphs prior to the dropped edges
         return g.duplicate_dependent_subgraph_of_node(node)
 
-    def find_simple_dependent_subgraphs_of_node(
-        self, node: Return, cache: AbstractCache
-    ) -> Iterable[IRGraphSoleInterface]:
-        """Segment dependent graph of a node and return subgraphs that do not have further dependency
+    def find_dependent_subgraphs_of_node(
+        self,
+        node: Instruction,
+        cache: MutableMapping[UUID, Any],
+    ) -> Iterable[IRGraphEvaluable]:
+        """Find dependency subgraphs that do not have further dependency
 
         To evaluate a node, one needs to evaluate all nodes in its dependent
-        graph. However, not all nodes can be evaluated at once. Some require
-        more basic dependent subgraphs to be evaluated first. This method
-        segments the dependent graph of a node and return the subgraphs that
-        are IRGraphSoleInterface. One can evaluate the returns, cache them, and
-        call this function again. After iterations of return and evaluation of
-        the dependent subgraphs, the node can finally be evaluated in the last
-        return, which will just be a IRGraphSoleInterface at that time.
+        graph. However, not all nodes can be evaluated at once (e.g., impacted
+        by multiple interfaces). Some require more basic dependent subgraphs to
+        be evaluated first. This method segments the dependent graph of a node
+        and return the subgraphs that are IRGraphEvaluable. One can evaluate
+        the returns, cache them, and call this method again. After iterations
+        of return and evaluation of returned dependent subgraphs, the node can
+        finally be evaluated in the last return, which will just be a
+        IRGraphEvaluable at that time.
 
         TODO: analytics node support
 
         Parameters:
-            node: a Return instruction node
-            cache: Kestrel cache for the session
+            node: the instruction/node to generate dependent subgraphs for
+            cache: any type of node cache, e.g., content, SQL statement
 
         Returns:
-            List of simple subgraphs, each of which has zero or one interface
-
+            A list of subgraphs that do not have further dependency
         """
 
-        simple_dependent_subgraphs = []
-        cached_dependent_graph = self.find_cached_dependent_subgraph_of_node(
-            node, cache
+        # the base graph to segment
+        g = self.find_cached_dependent_subgraph_of_node(node, cache)
+
+        # Mapping: {grouping attribute: [impacted nodes]}
+        a2ns = defaultdict(set)
+        for n in g.get_nodes_by_type(SourceInstruction):
+            ns = networkx.descendants(g, n)
+            preds = set().union(*[set(g.predecessors(n)) for n in ns])
+            cached_predecessors = [n for n in preds if n.id in cache]
+            a2ns[n.interface].update(ns)
+            a2ns[n.interface].update(cached_predecessors)
+            a2ns[n.interface].add(n)
+
+        # add non-source nodes to cache as default execution environment
+        # e.g., a path starting from a cached Variable
+        a2ns[CACHE_INTERFACE_IDENTIFIER].update(g.nodes() - set().union(*a2ns.values()))
+
+        # find all nodes that are affected by two or more grouping attributes
+        shared_impacted_nodes = set().union(
+            *[a2ns[ix] & a2ns[iy] for ix, iy in combinations(a2ns.keys(), 2)]
         )
 
-        interface2source = defaultdict(list)
-        for source in cached_dependent_graph.get_nodes_by_type(SourceInstruction):
-            interface2source[source.interface].append(source)
+        # get the segmented subgraph for each grouping attribute
+        unshared_nodes = [ns - shared_impacted_nodes for ns in a2ns.values()]
+        dep_graphs = [IRGraphEvaluable(g.subgraph(ns)) for ns in unshared_nodes if ns]
 
-        # find nodes affected by each interface
-        affected_nodes_by_interface = defaultdict(set)
-        for interface, sources in interface2source.items():
-            for source in sources:
-                source_affected_nodes = networkx.descendants(
-                    cached_dependent_graph, source
-                )
-                source_affected_nodes.add(source)
-                affected_nodes_by_interface[interface].update(source_affected_nodes)
-
-        # find all nodes not affected by any interface
-        # put them (may not be fully connected) into one IRGraphSoleInterface
-        interface_affected_nodes = set().union(*affected_nodes_by_interface.values())
-        non_interface_nodes = cached_dependent_graph.nodes() - interface_affected_nodes
-        if non_interface_nodes:
-            simple_dependent_subgraphs.append(
-                cached_dependent_graph.subgraph(non_interface_nodes).copy()
-            )
-
-        # find all nodes that are affected by two or more interfaces
-        shared_affected_nodes = set().union(
-            *[
-                set.intersection(
-                    affected_nodes_by_interface[ix], affected_nodes_by_interface[iy]
-                )
-                for ix, iy in combinations(affected_nodes_by_interface.keys(), 2)
-            ]
-        )
-
-        # per interface:
-        # - find nodes affected only by each interface
-        # - get their subgraph
-        # - put such subgraph into IRGraphSoleInterface
-        for interface, affected_nodes in affected_nodes_by_interface.items():
-            unshared_nodes = affected_nodes - shared_affected_nodes
-            if len(unshared_nodes) > 1:
-                simple_dependent_subgraphs.append(
-                    IRGraphSoleInterface(
-                        cached_dependent_graph.subgraph(unshared_nodes).copy()
-                    )
-                )
-
-        return simple_dependent_subgraphs
+        return dep_graphs
 
     def to_dict(self) -> Mapping[str, Iterable[Mapping]]:
         """Serialize to a Python dictionary (D3 graph format)
@@ -493,7 +502,10 @@ class IRGraph(networkx.DiGraph):
     def _add_node(self, node: Instruction, deref: bool = True) -> Instruction:
         """Add just the node
 
-        Dependency (if exists) not handled.
+        Dependency (if exists) not handled. Variable version and Return
+        sequence intentionally not handled here (handled in
+        _add_node_with_dependent_node()) for plain adding node opeartion used
+        by update().
 
         Parameters:
             node: the node/instruction to add
@@ -560,6 +572,8 @@ class IRGraph(networkx.DiGraph):
     ) -> Instruction:
         """Add node to graph with a dependent node
 
+        Variable version and Return sequence are handled here.
+
         Parameters:
             node: the node/instruction to add
             dependent_node: the dependent node that should exist in the graph
@@ -577,6 +591,8 @@ class IRGraph(networkx.DiGraph):
                     node.version = 0
                 else:
                     node.version = ve.version + 1
+            if isinstance(node, Return):
+                node.sequence = self.get_max_return_sequence() + 1
             # add_edge will add node first
             self.add_edge(dependent_node, node)
         return node
@@ -604,10 +620,14 @@ class IRGraph(networkx.DiGraph):
 
 
 @typechecked
-class IRGraphSoleInterface(IRGraph):
-    """Sole-Interface IRGraph
+class IRGraphEvaluable(IRGraph):
+    """Evaluable IRGraph
 
-    Sole-interface IRGraph is an IRGraph that all its SourceInstruction has the same interface.
+    An evaluable IRGraph is an IRGraph that
+
+        1. Only has one interface
+
+        2. No IntermediateInstruction node
     """
 
     def __init__(self, graph: IRGraph):
@@ -616,15 +636,17 @@ class IRGraphSoleInterface(IRGraph):
         # need to initialize it before `self.update(graph)` below
         self.interface = None
 
-        interfaces = {s.interface for s in graph.get_nodes_by_type(SourceInstruction)}
-        if len(interfaces) > 1:
-            raise MultiInterfacesInGraph(interfaces)
-        else:
-            # update() will call _add_node() internally to set self.interface
-            self.update(graph)
+        # update() will call _add_node() internally to set self.interface
+        self.update(graph)
+
+        # all source nodes are already cached (no SourceInstruction)
+        if not self.interface:
+            self.interface = CACHE_INTERFACE_IDENTIFIER
 
     def _add_node(self, node: Instruction, deref: bool = True) -> Instruction:
-        if isinstance(node, SourceInstruction):
+        if isinstance(node, IntermediateInstruction):
+            raise InevaluableInstruction(node)
+        elif isinstance(node, SourceInstruction):
             if self.interface:
                 if node.interface != self.interface:
                     raise MultiInterfacesInGraph([self.interface, node.interface])

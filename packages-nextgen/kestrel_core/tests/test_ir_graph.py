@@ -1,5 +1,6 @@
 import pytest
 import networkx.utils
+from collections import Counter
 from pandas import DataFrame
 
 from kestrel.ir.instructions import (
@@ -7,11 +8,18 @@ from kestrel.ir.instructions import (
     DataSource,
     Reference,
     Return,
+    Filter,
+    Construct,
+    ProjectAttrs,
+    ProjectEntity,
     Instruction,
     TransformingInstruction,
+    CACHE_INTERFACE_IDENTIFIER,
 )
+from kestrel.ir.filter import StrComparison, StrCompOp
 from kestrel.ir.graph import IRGraph
-from kestrel.cache.inmemory import InMemoryCache
+from kestrel.frontend.parser import parse_kestrel
+from kestrel.cache import InMemoryCache
 
 
 def test_add_get_datasource():
@@ -57,10 +65,12 @@ def test_get_nodes_by_type_and_attributes():
 def test_get_returns():
     g = IRGraph()
     s = g.add_datasource("stixshifter://abc")
-    g.add_node(Return(), s)
-    g.add_node(Return(), s)
-    g.add_node(Return(), s)
-    assert len(g.get_returns()) == 3
+    g.add_return(s)
+    g.add_return(s)
+    g.add_return(s)
+    rets = g.get_returns()
+    assert len(rets) == 3
+    assert [ret.sequence for ret in rets] == [0, 1, 2]
     assert len(g.get_sink_nodes()) == 3
 
 
@@ -145,19 +155,23 @@ def test_update_graph():
     v1 = g.add_variable("asdf", s)
     v2 = g.add_variable("asdf", s)
     v3 = g.add_variable("asdf", s)
+    r1 = g.add_return(v3)
 
     g2 = IRGraph()
     s2 = g2.add_datasource("stixshifter://abc")
     v4 = g2.add_variable("asdf", g2.add_node(Reference("asdf")))
     v5 = g2.add_variable("asdf", g2.add_node(TransformingInstruction(), s2))
+    r2 = g2.add_return(v5)
 
     assert v1.version == 0
     assert v2.version == 1
     assert v3.version == 2
     assert v4.version == 0
     assert v5.version == 1
-    assert len(g) == 4
-    assert len(g2) == 5
+    assert r1.sequence == 0
+    assert r2.sequence == 0
+    assert len(g) == 5
+    assert len(g2) == 6
 
     g.update(g2)
     assert v1.version == 0
@@ -165,8 +179,12 @@ def test_update_graph():
     assert v3.version == 2
     assert v4.version == 3
     assert v5.version == 4
-    assert len(g) == 7
+    assert r1.sequence == 0
+    assert r2.sequence == 1
+    assert len(g) == 9
     assert s2 not in g
+    assert r1 in g
+    assert r2 in g
     assert not g.get_references()
     assert (v3, v4) in g.edges()
     assert g.in_degree(v4) == 1
@@ -213,3 +231,117 @@ def test_find_cached_dependent_subgraph_of_node():
     g.remove_node(a1)
     g.remove_node(b1)
     assert networkx.utils.graphs_equal(g, g3)
+
+
+def test_find_dependent_subgraphs_of_node_just_cache():
+    huntflow = """
+p1 = NEW process [ {"name": "cmd.exe", "pid": 123}
+                 , {"name": "explorer.exe", "pid": 99}
+                 , {"name": "firefox.exe", "pid": 201}
+                 , {"name": "chrome.exe", "pid": 205}
+                 ]
+
+browsers = p1 WHERE name = 'firefox.exe' OR name = 'chrome.exe'
+
+DISP browsers ATTR name
+"""
+    graph = parse_kestrel(huntflow)
+    c = InMemoryCache()
+    ret = graph.get_returns()[0]
+    gs = graph.find_dependent_subgraphs_of_node(ret, c)
+    assert len(gs) == 1
+    assert len(gs[0]) == 6
+    assert Counter(map(type, gs[0].nodes())) == Counter([Filter, Variable, Variable, Construct, ProjectAttrs, Return])
+    assert gs[0].interface == CACHE_INTERFACE_IDENTIFIER
+
+
+def test_find_dependent_subgraphs_of_node():
+    huntflow = """
+p1 = NEW process [ {"name": "cmd.exe", "pid": 123}
+                 , {"name": "explorer.exe", "pid": 99}
+                 , {"name": "firefox.exe", "pid": 201}
+                 , {"name": "chrome.exe", "pid": 205}
+                 ]
+
+browsers = p1 WHERE name = 'firefox.exe' OR name = 'chrome.exe'
+
+p2 = GET process FROM elastic://edr1
+     WHERE name = "cmd.exe"
+     LAST 5 DAYS
+
+p21 = p2 WHERE parent.name = "winword.exe"
+
+p3 = GET process FROM stixshifter://edr2
+     WHERE parent_ref.name = "powershell.exe"
+     LAST 24 HOURS
+
+p31 = p3 WHERE parent.name = "excel.exe"
+
+# not supported in parser yet, manually add nodes
+#p4 = p21 WHERE pid = p1.pid
+#p5 = p31 WHERE pid = p4.pid
+"""
+    graph = parse_kestrel(huntflow)
+
+    proj1 = ProjectAttrs(["pid"])
+    graph.add_node(proj1, graph.get_variable("p1"))
+    filt1 = Filter(StrComparison("pid", StrCompOp.EQ, "ref"))
+    graph.add_node(filt1, graph.get_variable("p21"))
+    graph.add_edge(proj1, filt1)
+    p4 = Variable("p4")
+    graph.add_node(p4, filt1)
+
+    proj2 = ProjectAttrs(["pid"])
+    graph.add_node(proj2, p4)
+    filt2 = Filter(StrComparison("pid", StrCompOp.EQ, "ref"))
+    graph.add_node(filt2, graph.get_variable("p31"))
+    graph.add_edge(proj2, filt2)
+    p5 = Variable("p5")
+    graph.add_node(p5, filt2)
+
+    stmt = "DISP p5 ATTR pid, name, cmd_line"
+    graph.update(parse_kestrel(stmt))
+
+    ret = graph.get_returns()[0]
+
+    c = InMemoryCache()
+    gs = graph.find_dependent_subgraphs_of_node(ret, c)
+    assert len(gs) == 3
+
+    assert len(gs[0]) == 3
+    assert set(map(type, gs[0].nodes())) == {Variable, ProjectAttrs, Construct}
+    assert proj1 == gs[0].get_nodes_by_type(ProjectAttrs)[0]
+
+    assert len(gs[1]) == 6
+    assert Counter(map(type, gs[1].nodes())) == Counter([Filter, Filter, Variable, Variable, ProjectEntity, DataSource])
+
+    assert len(gs[2]) == 6
+    assert Counter(map(type, gs[2].nodes())) == Counter([Filter, Filter, Variable, Variable, ProjectEntity, DataSource])
+
+    c.evaluate_graph(gs[0])
+    assert proj1.id in c
+    assert graph.get_variable("p1").id in c
+    assert len(c) == 2
+    gs = graph.find_dependent_subgraphs_of_node(ret, c)
+    assert len(gs) == 2
+
+    assert len(gs[0]) == 10
+    assert proj1 in gs[0]
+    assert proj2 in gs[0]
+    assert graph.get_variable("p2") in gs[0]
+    assert graph.get_variable("p21") in gs[0]
+    assert p4 in gs[0]
+
+    assert len(gs[1]) == 6
+    assert Counter(map(type, gs[1].nodes())) == Counter([Filter, Filter, Variable, Variable, ProjectEntity, DataSource])
+
+    c[proj2.id] = DataFrame()
+    gs = graph.find_dependent_subgraphs_of_node(ret, c)
+    assert len(gs) == 1
+
+    assert len(gs[0]) == 11
+    assert proj2.id in c
+    assert proj2 in gs[0]
+    assert graph.get_variable("p31") in gs[0]
+    assert p5 in gs[0]
+    assert ret in gs[0]

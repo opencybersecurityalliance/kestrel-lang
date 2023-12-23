@@ -1,1 +1,1 @@
-from kestrel.interface.datasource.abc import AbstractDataSourceInterface
+from kestrel.interface.datasource.base import AbstractDataSourceInterface
