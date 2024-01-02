@@ -61,5 +61,14 @@ class InvalidSerializedDatasourceInterfaceCacheCatalog(KestrelError):
 class InevaluableInstruction(KestrelError):
     pass
 
+
 class MappingParseError(KestrelError):
+    pass
+
+
+class InterfaceNotFound(KestrelError):
+    pass
+
+
+class InterfaceNameCollision(KestrelError):
     pass

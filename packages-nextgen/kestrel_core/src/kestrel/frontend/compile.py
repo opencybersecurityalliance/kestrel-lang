@@ -148,11 +148,13 @@ class _KestrelT(Transformer):
         # TODO: think about order of clauses when turning into nodes
         graph = IRGraph()
         reference = args[0]
+        root = reference
         graph.add_node(reference)
         if len(args) > 1:
             w = args[1]
             graph.add_node(w, reference)
-        return graph, w
+            root = w
+        return graph, root
 
     def vtrans(self, args):
         if len(args) == 1:

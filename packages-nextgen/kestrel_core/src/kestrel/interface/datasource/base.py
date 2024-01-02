@@ -52,6 +52,15 @@ class AbstractDataSourceInterface(ABC):
             except:
                 raise InvalidSerializedDatasourceInterfaceCacheCatalog()
 
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """The name of the interface
+
+        The name should be defined as ``("_"|LETTER) ("_"|LETTER|DIGIT)*``
+        """
+        ...
+
     @abstractmethod
     def store(
         self,

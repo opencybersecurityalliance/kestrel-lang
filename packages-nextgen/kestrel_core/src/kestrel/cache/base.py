@@ -3,6 +3,7 @@ from typing import MutableMapping
 from uuid import UUID
 from abc import abstractmethod
 
+from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
 from kestrel.interface.datasource import AbstractDataSourceInterface
 
 
@@ -11,10 +12,12 @@ class AbstractCache(AbstractDataSourceInterface, MutableMapping):
 
     Additional @abstractmethod from AbstractDataSourceInterface:
 
-        - __setitem__()
-
         - evaluate_graph()
     """
+
+    @property
+    def name(self):
+        return CACHE_INTERFACE_IDENTIFIER
 
     @abstractmethod
     def __del__(self):

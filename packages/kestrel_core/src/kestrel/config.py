@@ -16,7 +16,7 @@ _logger = logging.getLogger(__name__)
 def load_default_config():
     _logger.debug(f"Loading default config file...")
     default_config = load_data_file("kestrel", "config.yaml")
-    return yaml.safe_load(default_config)
+    return yaml.safe_load(os.path.expandvars(default_config))
 
 
 def load_user_config(config_path_env_var, config_path_default):
@@ -27,7 +27,7 @@ def load_user_config(config_path_env_var, config_path_default):
         try:
             with open(config_path, "r") as fp:
                 _logger.debug(f"User configuration file found: {config_path}")
-                config = yaml.safe_load(fp)
+                config = yaml.safe_load(os.path.expandvars(fp.read()))
         except FileNotFoundError:
             _logger.debug(f"User configuration file not exist.")
     return config
