@@ -136,7 +136,7 @@ def test_find_file_linked_to_process(set_empty_kestrel_config):
         assert len(files) == 3
 
 
-def test_find_file_linked_to_process_limit(set_empty_kestrel_config):
+def test_find_ips_linked_to_process_limit(set_empty_kestrel_config):
     stixshifter_data_url = "https://raw.githubusercontent.com/opencybersecurityalliance/stix-shifter/develop/data/cybox"
     bundle = f"{stixshifter_data_url}/carbon_black/cb_observed_156.json"
     with Session() as s:
