@@ -12,7 +12,19 @@ def test_default_prefetch_config(set_empty_kestrel_config):
     with Session() as s:
         assert (
             prefetch._is_prefetch_allowed_in_config(
-                s.config["prefetch"], "get", "process"
+                s.config["prefetch"], "get", "ipv4-addr"
+            )
+            == True
+        )
+        assert (
+            prefetch._is_prefetch_allowed_in_config(
+                s.config["prefetch"], "find", "network-traffic"
+            )
+            == True
+        )
+        assert (
+            prefetch._is_prefetch_allowed_in_config(
+                s.config["prefetch"], "find", "process"
             )
             == True
         )
@@ -20,7 +32,7 @@ def test_default_prefetch_config(set_empty_kestrel_config):
             prefetch._is_prefetch_allowed_in_config(
                 s.config["prefetch"], "find", "file"
             )
-            == True
+            == False
         )
 
 
@@ -28,7 +40,19 @@ def test_prefetch_disabled_config(set_no_prefetch_kestrel_config):
     with Session() as s:
         assert (
             prefetch._is_prefetch_allowed_in_config(
-                s.config["prefetch"], "get", "process"
+                s.config["prefetch"], "get", "ipv4-addr"
+            )
+            == False
+        )
+        assert (
+            prefetch._is_prefetch_allowed_in_config(
+                s.config["prefetch"], "find", "network-traffic"
+            )
+            == False
+        )
+        assert (
+            prefetch._is_prefetch_allowed_in_config(
+                s.config["prefetch"], "find", "process"
             )
             == False
         )
