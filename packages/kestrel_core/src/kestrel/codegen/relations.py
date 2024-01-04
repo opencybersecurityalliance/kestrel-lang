@@ -74,7 +74,12 @@ stix_2_0_identical_mapping = {
     "directory": ("path",),
     "domain-name": ("value",),
     "email-addr": ("value",),
-    "file": ("hashes.'SHA-256'", "hashes.'SHA-1'", "hashes.MD5", "name",),  # optional in STIX standard
+    "file": (
+        "hashes.'SHA-256'",
+        "hashes.'SHA-1'",
+        "hashes.MD5",
+        "name",
+    ),  # optional in STIX standard
     "ipv4-addr": ("value",),
     "ipv6-addr": ("value",),
     "mac-addr": ("value",),
