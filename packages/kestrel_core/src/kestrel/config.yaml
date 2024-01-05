@@ -37,10 +37,11 @@ prefetch:
   # millions records will likely result in a performance issue, thus the user
   # can put `file` in this list to disable prefetch for it.
   excluded_entities:
-    -
-    # - file
-    # - user-account
-    # - x-oca-asset
+    # By default, Kestrel disables prefetch for the 3 entities, which are
+    # shared by large amount of logs
+    - file
+    - user-account
+    - x-oca-asset
 
   # Detailed logic to identify the same process from different records is more
   # complex than many data source query language can express, so Kestrel

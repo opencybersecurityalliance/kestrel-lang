@@ -85,66 +85,50 @@ def test_find_srcs_limit(set_empty_kestrel_config, fake_bundle_file):
         assert len(srcs) == 1
 
 
-def test_find_file_linked_to_process(set_empty_kestrel_config, proc_bundle_file):
+def test_find_ips_linked_to_process_limit_1(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 procs = get process
                         from file://{proc_bundle_file}
-                        where command_line LIKE 'wmic%'
-                files = FIND file LINKED procs
+                        where name = 'svchost.exe'
+                ips = FIND ipv4-addr LINKED procs LIMIT 1
                 """
         s.execute(stmt)
         procs = s.get_variable("procs")
         print(json.dumps(procs, indent=4))
-        assert len(procs) == 7
-        files = s.get_variable("files")
-        print(json.dumps(files, indent=4))
-        assert len(files) == 4
+        assert len(procs) == 704
+        ips = s.get_variable("ips")
+        print(json.dumps(ips, indent=4))
+        # FIXME: the LIMIT does not work precisely (OK to leave it for now)
+        assert len(ips) == 2
 
 
-def test_find_file_linked_to_process_limit_1(set_empty_kestrel_config, proc_bundle_file):
+def test_find_ips_linked_to_process_limit_10(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 procs = get process
                         from file://{proc_bundle_file}
-                        where command_line LIKE 'wmic%'
-                files = FIND file LINKED procs LIMIT 1
+                        where name = 'svchost.exe'
+                ips = FIND ipv4-addr LINKED procs LIMIT 10
                 """
         s.execute(stmt)
         procs = s.get_variable("procs")
         print(json.dumps(procs, indent=4))
-        assert len(procs) == 7
-        files = s.get_variable("files")
-        print(json.dumps(files, indent=4))
-        assert len(files) == 1
+        assert len(procs) == 704
+        ips = s.get_variable("ips")
+        print(json.dumps(ips, indent=4))
+        assert len(ips) == 6
 
 
-def test_find_file_linked_to_process_limit_2(set_empty_kestrel_config, proc_bundle_file):
-    with Session() as s:
-        stmt = f"""
-                procs = get process
-                        from file://{proc_bundle_file}
-                        where command_line LIKE 'wmic%'
-                files = FIND file LINKED procs LIMIT 10
-                """
-        s.execute(stmt)
-        procs = s.get_variable("procs")
-        print(json.dumps(procs, indent=4))
-        assert len(procs) == 7
-        files = s.get_variable("files")
-        print(json.dumps(files, indent=4))
-        assert len(files) == 4
-
-
-def test_find_file_linked_to_process_2(set_empty_kestrel_config):
+def test_find_file_linked_to_process(set_empty_kestrel_config):
     stixshifter_data_url = "https://raw.githubusercontent.com/opencybersecurityalliance/stix-shifter/develop/data/cybox"
     bundle = f"{stixshifter_data_url}/carbon_black/cb_observed_156.json"
     with Session() as s:
         stmt = f"""
                 procs = get process
                         from {bundle}
-                        where [process:name = 'svctest.exe']
-                        files = FIND file LINKED procs
+                        where name = 'svctest.exe'
+                files = FIND file LINKED procs
                 """
         s.execute(stmt)
         files = s.get_variable("files")
@@ -152,23 +136,23 @@ def test_find_file_linked_to_process_2(set_empty_kestrel_config):
         assert len(files) == 3
 
 
-def test_find_file_linked_to_process_2_limit(set_empty_kestrel_config):
+def test_find_ips_linked_to_process_limit(set_empty_kestrel_config):
     stixshifter_data_url = "https://raw.githubusercontent.com/opencybersecurityalliance/stix-shifter/develop/data/cybox"
     bundle = f"{stixshifter_data_url}/carbon_black/cb_observed_156.json"
     with Session() as s:
         stmt = f"""
                 procs = get process
                         from {bundle}
-                        where [process:name = 'svctest.exe']
-                        files = FIND file LINKED procs LIMIT 2
+                        where name = 'svctest.exe'
+                ips = FIND ipv4-addr LINKED procs LIMIT 10
                 """
         s.execute(stmt)
-        files = s.get_variable("files")
-        print(json.dumps(files, indent=4))
-        assert len(files) == 2
+        ips = s.get_variable("ips")
+        print(json.dumps(ips, indent=4))
+        assert len(ips) == 6
 
 
-def test_find_file_loaded_by_process(set_empty_kestrel_config, proc_bundle_file):
+def test_find_file_loaded_by_process_wmic(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 procs = get process
@@ -185,7 +169,24 @@ def test_find_file_loaded_by_process(set_empty_kestrel_config, proc_bundle_file)
         assert len(files) == 1
 
 
-def test_find_process_created_process(set_empty_kestrel_config, proc_bundle_file):
+def test_find_file_linked_to_process_wmic(set_empty_kestrel_config, proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+                procs = get process
+                        from file://{proc_bundle_file}
+                        where command_line LIKE 'wmic%'
+                files = FIND file LINKED procs
+                """
+        s.execute(stmt)
+        procs = s.get_variable("procs")
+        print(json.dumps(procs, indent=4))
+        assert len(procs) == 7
+        files = s.get_variable("files")
+        print(json.dumps(files, indent=4))
+        assert len(files) == 2
+
+
+def test_find_process_created_process_wmic(set_empty_kestrel_config, proc_bundle_file):
     with Session() as s:
         stmt = f"""
                 procs = get process

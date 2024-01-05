@@ -74,7 +74,12 @@ stix_2_0_identical_mapping = {
     "directory": ("path",),
     "domain-name": ("value",),
     "email-addr": ("value",),
-    "file": ("name",),  # optional in STIX standard
+    "file": (
+        "hashes.'SHA-256'",
+        "hashes.'SHA-1'",
+        "hashes.MD5",
+        "name",
+    ),  # optional in STIX standard
     "ipv4-addr": ("value",),
     "ipv6-addr": ("value",),
     "mac-addr": ("value",),
@@ -91,17 +96,6 @@ stix_2_0_identical_mapping = {
     "user-account": ("user_id",),  # optional in STIX standard
     "windows-registry-key": ("key",),  # optional in STIX standard
     "x-oca-asset": ("device_id",),  # oca/stix-extension repo
-}
-
-stix_x_ibm_event_mapping = {
-    # entity-type to ref in x-oca-event
-    "process": "process_ref",
-    "domain-name": "domain_ref",
-    "file": "file_ref",
-    "user-account": "user_ref",
-    "windows-registry-key": "registry_ref",
-    "network-traffic": "nt_ref",
-    "x-oca-asset": "host_ref",
 }
 
 # no direction for generic relations
