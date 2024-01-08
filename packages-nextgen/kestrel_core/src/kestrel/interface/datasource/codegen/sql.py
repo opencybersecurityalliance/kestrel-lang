@@ -19,7 +19,6 @@ from kestrel.ir.filter import (
     StrCompOp,
 )
 from kestrel.ir.instructions import (
-    DataSource,
     Filter,
     Instruction,
     Limit,
@@ -144,6 +143,4 @@ class SqlTranslator:
         # If there was no projection, we need to add '*' explicitly
         if len(self.query.selected_columns) == 0:
             self.query = self.query.with_only_columns("*")
-        return self.query.compile(
-            dialect=self.dialect, compile_kwargs={"render_postcompile": True}
-        )
+        return self.query.compile(dialect=self.dialect)

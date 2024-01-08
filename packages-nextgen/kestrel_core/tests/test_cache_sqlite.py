@@ -129,3 +129,20 @@ DISP browsers ATTR pid
                     ])
     assert len(mapping) == 1
     assert df2.equals(mapping[rets[1].id])
+
+
+def test_issue_446():
+    """The `WHERE name IN ...` below was raising `sqlalchemy.exc.StatementError: (builtins.KeyError) 'name_1'`
+    https://github.com/opencybersecurityalliance/kestrel-lang/issues/446
+    """
+    stmt = """
+proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
+                       , {"name": "explorer.exe", "pid": 99}
+                       , {"name": "firefox.exe", "pid": 201}
+                       , {"name": "chrome.exe", "pid": 205}
+                       ]
+browsers = proclist WHERE name IN ("explorer.exe", "firefox.exe", "chrome.exe")
+"""
+    graph = IRGraphEvaluable(parse_kestrel(stmt))
+    c = SqliteCache()
+    _ = c.evaluate_graph(graph)
