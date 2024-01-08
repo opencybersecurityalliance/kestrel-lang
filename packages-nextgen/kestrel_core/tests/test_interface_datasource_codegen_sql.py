@@ -56,7 +56,7 @@ def _remove_nl(s):
         ([Filter(StrComparison('foo', StrCompOp.EQ, 'abc')), ProjectAttrs(['foo', 'bar', 'baz']), Limit(3)],
          "SELECT foo, bar, baz FROM my_table WHERE foo = ? LIMIT ? OFFSET ?"),
         ([Filter(ListComparison('foo', ListOp.NIN, ['abc', 'def']))],
-         "SELECT * FROM my_table WHERE (foo NOT IN (?, ?))"),
+         "SELECT * FROM my_table WHERE (foo NOT IN (__[POSTCOMPILE_foo_1]))"), # POSTCOMPILE is some SQLAlchemy-ism
         ([Filter(StrComparison('foo', StrCompOp.MATCHES, '.*abc.*'))],
          "SELECT * FROM my_table WHERE foo REGEXP ?"),
         ([Filter(StrComparison('foo', StrCompOp.NMATCHES, '.*abc.*'))],
