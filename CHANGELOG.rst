@@ -18,6 +18,7 @@ Fixed
 -----
 
 - Remove port checking in stix-shifter interface #452
+- Miss logging module in ``stix-shifter-diag``
 
 Changed
 -------
