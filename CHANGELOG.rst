@@ -9,6 +9,21 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+Added
+-----
+
+- Support use of environment variable in config files
+
+Fixed
+-----
+
+- Remove port checking in stix-shifter interface #452
+
+Changed
+-------
+
+- Disable (in default config) entity prefetch for ``file``, ``user-account``, ``x-oca-asset``
+
 1.8.1 (2023-10-23)
 ==================
 
