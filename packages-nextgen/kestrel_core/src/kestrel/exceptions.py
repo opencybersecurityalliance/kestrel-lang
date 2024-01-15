@@ -54,6 +54,10 @@ class MultiInterfacesInGraph(KestrelError):
     pass
 
 
+class MultiSourcesInGraph(KestrelError):
+    pass
+
+
 class InvalidSerializedDatasourceInterfaceCacheCatalog(KestrelError):
     pass
 

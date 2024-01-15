@@ -37,6 +37,7 @@ from kestrel.exceptions import (
     DuplicatedDataSource,
     DuplicatedSingletonInstruction,
     MultiInterfacesInGraph,
+    MultiSourcesInGraph,
     InevaluableInstruction,
 )
 from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
@@ -481,6 +482,41 @@ class IRGraph(networkx.DiGraph):
 
         return dep_graphs
 
+    def find_simple_query_subgraphs(self) -> Iterable[IRGraphSimpleQuery]:
+        """Find dependency subgraphs those are IRGraphSimpleQuery
+
+        Some interfaces, e.g., ELasticsearch/OpenSearch, do not support JOIN or
+        sub query/SELECT, so they can only evaluate a simple SQL query around
+        each source node. Use this method to prepare such tiny graph segments
+        for evaluation by the interface. The remaining of the graph can be
+        evaluated in cache.
+
+        Returns:
+            An iterator of simple-query subgraphs
+        """
+
+        # TODO: non-linear graph inclding referred nodes (need backtracking)
+
+        for n in self.get_nodes_by_type(SourceInstruction):
+            for g in self._find_paths_from_node_to_a_variable(n):
+                yield IRGraphSimpleQuery(g)
+            
+    def _find_paths_from_node_to_a_variable(self, node: Instruction) -> Iterable[IRGraph]:
+        """Find linear IRGraph (path) from the starting node to its closest variables
+
+        Parameters:
+            node: the node to start path search
+
+        Returns:
+            An iterator of linear IRGraphs
+        """
+        for succ in self.successors(node):
+            if isinstance(succ, Variable):
+                yield self.subgraph([succ, node])
+            else:
+                for succ_graph in self._find_paths_from_node_to_a_variable(succ):
+                    yield self.subgraph(list(succ_graph.nodes()) + [node])
+
     def to_dict(self) -> Mapping[str, Iterable[Mapping]]:
         """Serialize to a Python dictionary (D3 graph format)
 
@@ -653,3 +689,20 @@ class IRGraphEvaluable(IRGraph):
             else:
                 self.interface = node.interface
         return super()._add_node(node, deref)
+
+
+@typechecked
+class IRGraphSimpleQuery(IRGraphEvaluable):
+    """Simple Query IRGraph
+
+    A simple query IRGraph is an evaluatable IRGraph that
+
+        1. It contains one source node
+
+        2. It can be compiled into a simple (not nested/joined) SQL query
+    """
+
+    def __init__(self, graph: IRGraph):
+        if len(graph.get_nodes_by_type(SourceInstruction)) > 1:
+            raise MultiSourcesInGraph()
+        super().__init__(graph)

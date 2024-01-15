@@ -97,6 +97,8 @@ class IntermediateInstruction(Instruction):
 class Return(TransformingInstruction):
     """The sink instruction that forces execution"""
 
+    # TODO: why Return is a TransformingInstruction?
+
     # the order/sequence of return instruction in huntflow (source code)
     sequence: int = 0
 
