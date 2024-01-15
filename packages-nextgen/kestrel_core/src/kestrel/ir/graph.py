@@ -500,8 +500,10 @@ class IRGraph(networkx.DiGraph):
         for n in self.get_nodes_by_type(SourceInstruction):
             for g in self._find_paths_from_node_to_a_variable(n):
                 yield IRGraphSimpleQuery(g)
-            
-    def _find_paths_from_node_to_a_variable(self, node: Instruction) -> Iterable[IRGraph]:
+
+    def _find_paths_from_node_to_a_variable(
+        self, node: Instruction
+    ) -> Iterable[IRGraph]:
         """Find linear IRGraph (path) from the starting node to its closest variables
 
         Parameters:

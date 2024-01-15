@@ -95,9 +95,11 @@ class IntermediateInstruction(Instruction):
 
 @dataclass(eq=False)
 class Return(TransformingInstruction):
-    """The sink instruction that forces execution"""
+    """The sink instruction that forces execution
 
-    # TODO: why Return is a TransformingInstruction?
+    Return is implemented as a TransformingInstruction so it triggers
+    IRGraph._add_node_with_dependent_node() in IRGraph.add_node()
+    """
 
     # the order/sequence of return instruction in huntflow (source code)
     sequence: int = 0
