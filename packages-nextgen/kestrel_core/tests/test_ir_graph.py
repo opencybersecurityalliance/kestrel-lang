@@ -17,7 +17,7 @@ from kestrel.ir.instructions import (
     CACHE_INTERFACE_IDENTIFIER,
 )
 from kestrel.ir.filter import StrComparison, StrCompOp
-from kestrel.ir.graph import IRGraph
+from kestrel.ir.graph import IRGraph, IRGraphSimpleQuery
 from kestrel.frontend.parser import parse_kestrel
 from kestrel.cache import InMemoryCache
 
@@ -345,3 +345,41 @@ p31 = p3 WHERE parent.name = "excel.exe"
     assert graph.get_variable("p31") in gs[0]
     assert p5 in gs[0]
     assert ret in gs[0]
+
+
+def test_find_dependent_subgraphs_of_node():
+    huntflow = """
+p1 = GET process FROM elastic://edr1
+     WHERE name = "cmd.exe"
+     LAST 5 DAYS
+
+p2 = GET process FROM elastic://edr1
+     WHERE pid = 999
+     LAST 30 MINUTES
+
+p3 = GET process FROM stixshifter://edr2
+     WHERE parent_ref.name = "powershell.exe"
+     LAST 24 HOURS
+
+p4 = GET process FROM stixshifter://edr2
+     WHERE command_line LIKE "%powershell.exe%"
+     LAST 1 HOURS
+
+p11 = p1 WHERE pid = 999
+p12 = p1 WHERE pid = 888
+p21 = p2 WHERE name = "cmd.exe"
+p22 = p2 WHERE name = "powershell.exe"
+
+DISP p1 ATTR name
+DISP p12 ATTR name
+"""
+    graph = parse_kestrel(huntflow)
+    vs = set(["p1", "p2", "p3", "p4"])
+    for g in graph.find_simple_query_subgraphs():
+        assert isinstance(g, IRGraphSimpleQuery)
+        assert Counter(map(type, g.nodes())) == Counter([Variable, Filter, ProjectEntity, DataSource])
+        assert len(g.edges()) == 3
+        varname = g.get_variables()[0].name
+        assert varname in vs
+        vs.remove(varname)
+    assert vs == set()
