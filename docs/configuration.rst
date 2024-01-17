@@ -36,3 +36,7 @@ the following:
 Kestrel will then not proactively search for logs/records for entities
 extracted from the return of ``GET``/``FIND``, which will largely disable
 followup ``FIND`` commands/steps.
+
+Kestrel config supports expansion of environment variables, e.g., if a value in
+the YAML file is ``$ENVX``, then the value is fetched from environment variable
+``$ENVX`` Kestrel loads the config file.

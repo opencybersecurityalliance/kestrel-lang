@@ -68,6 +68,20 @@ will load profiles from 3 places (the later will override the former):
 
     - General fields shared across connectors: in `stix-shifter`_, go to `stix_shifter_modules/lang_en.json`_.
 
+    The stix-shifter YAML config supports expansion of environment variables,
+    e.g., ``$HOST101_ID`` and ``$HOST101_KEY`` will be replaced by values from
+    the environment variables when the following section of the config loads by
+    Kestrel:
+
+    .. code-block:: yaml
+
+        profiles:
+            host101:
+                config:
+                    auth:
+                        id: $HOST101_ID
+                        api_key: $HOST101_KEY
+
 #. environment variables (only when a Kestrel session starts):
 
     Three environment variables are required for each profile:
