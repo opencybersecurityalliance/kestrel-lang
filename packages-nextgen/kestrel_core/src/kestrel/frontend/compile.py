@@ -238,11 +238,11 @@ class _KestrelT(Transformer):
         filter_node.exp = _map_filter_exp(
             args[0].value, filter_node.exp, self.property_map
         )
-        
+
         # add basic Source and Filter nodes
         source_node = graph.add_node(args[1])
         filter_node = graph.add_node(filter_node, source_node)
-        
+
         # add reference nodes if used in Filter
         _add_reference_branches_for_filter(graph, filter_node)
 
