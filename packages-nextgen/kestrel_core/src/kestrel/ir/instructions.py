@@ -6,6 +6,7 @@ from typing import (
     Mapping,
     List,
     Optional,
+    Iterable,
 )
 from dataclasses import (
     dataclass,
@@ -24,6 +25,8 @@ from kestrel.__future__ import is_python_older_than_minor_version
 from kestrel.ir.filter import (
     FExpression,
     TimeRange,
+    ReferenceValue,
+    get_references_from_exp,
 )
 from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
 
@@ -109,6 +112,9 @@ class Return(TransformingInstruction):
 class Filter(TransformingInstruction):
     exp: FExpression
     timerange: TimeRange = field(default_factory=TimeRange)
+
+    def get_references(self) -> Iterable[ReferenceValue]:
+        return get_references_from_exp(self.exp)
 
 
 @dataclass(eq=False)
