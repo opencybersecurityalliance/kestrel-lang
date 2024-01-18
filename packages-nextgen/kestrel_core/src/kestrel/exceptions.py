@@ -76,3 +76,7 @@ class InterfaceNotFound(KestrelError):
 
 class InterfaceNameCollision(KestrelError):
     pass
+
+
+class IRGraphMissingNode(KestrelError):
+    pass

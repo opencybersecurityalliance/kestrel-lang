@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from kestrel.frontend.parser import parse_kestrel
 from kestrel.ir.graph import IRGraph
+from kestrel.ir.filter import ReferenceValue
 from kestrel.ir.instructions import (
     Filter,
     ProjectEntity,
@@ -200,3 +201,31 @@ DISP browsers ATTR name, pid
     assert (ft, browsers) in graph.edges
     assert (browsers, proj) in graph.edges
     assert (proj, ret) in graph.edges
+
+
+@pytest.mark.parametrize(
+    "stmt, node_cnt, expected", [
+        ("x = y WHERE foo = z.foo", 5, [ReferenceValue("z", "foo")]),
+        ("x = y WHERE foo > 1.5", 3, []),
+        ("x = y WHERE foo = 'bar' OR baz = z.baz", 5, [ReferenceValue("z", "baz")]),
+        ("x = y WHERE (foo = 'bar' OR baz = z.baz) AND (fox = w.fox AND bbb = z.bbb)", 8, [ReferenceValue("z", "baz"), ReferenceValue("w", "fox"), ReferenceValue("z", "bbb")]),
+        ("x = GET process FROM s://x WHERE foo = z.foo", 6, [ReferenceValue("z", "foo")]),
+        ("x = GET file FROM s://y WHERE foo > 1.5", 4, []),
+        ("x = GET file FROM c://x WHERE foo = 'bar' OR baz = z.baz", 6, [ReferenceValue("z", "baz")]),
+        ("x = GET user FROM s://x WHERE (foo = 'bar' OR baz = z.baz) AND (fox = w.fox AND bbb = z.bbb)", 9, [ReferenceValue("z", "baz"), ReferenceValue("w", "fox"), ReferenceValue("z", "bbb")]),
+    ]
+)
+def test_reference_branch(stmt, node_cnt, expected):
+    graph = parse_kestrel(stmt)
+    assert len(graph) == node_cnt
+    filter_nodes = graph.get_nodes_by_type(Filter)
+    assert len(filter_nodes) == 1
+    filter_node = filter_nodes[0]
+    for rv in expected:
+        r = graph.get_reference(rv.reference)
+        assert r
+        projs = [p for p in graph.successors(r) if isinstance(p, ProjectAttrs) and p.attrs == [rv.attribute]]
+        assert projs and len(projs) == 1
+        proj = projs[0]
+        assert proj
+        assert list(graph.successors(proj)) == [filter_node]

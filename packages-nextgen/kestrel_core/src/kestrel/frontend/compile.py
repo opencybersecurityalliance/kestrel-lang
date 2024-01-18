@@ -6,15 +6,17 @@ from functools import reduce
 from dateutil.parser import parse as to_datetime
 from lark import Transformer, Token
 from typeguard import typechecked
-from typing import Union
 
 from kestrel.utils import unescape_quoted_string
 from kestrel.ir.filter import (
     FExpression,
+    FComparison,
     IntComparison,
     FloatComparison,
     StrComparison,
     ListComparison,
+    RefComparison,
+    ReferenceValue,
     MultiComp,
     ListOp,
     NumCompOp,
@@ -38,6 +40,7 @@ from kestrel.ir.instructions import (
     ProjectAttrs,
     Return,
 )
+from kestrel.exceptions import IRGraphMissingNode
 
 
 DEFAULT_VARIABLE = "_"
@@ -53,22 +56,26 @@ def _unescape_quoted_string(s: str):
 
 
 @typechecked
-def _create_comp(
-    field: str, op: str, value
-) -> Union[IntComparison, FloatComparison, StrComparison, ListComparison]:
-    if op in (ListOp.IN, ListOp.NIN):
-        op = ListOp(op)
-        comp = ListComparison(field=field, op=op, value=value)
+def _create_comp(field: str, op_value: str, value) -> FComparison:
+    # TODO: implement MultiComp
+
+    if op_value in (ListOp.IN, ListOp.NIN):
+        op = ListOp
+        comp = RefComparison if isinstance(value, ReferenceValue) else ListComparison
     elif isinstance(value, int):
-        op = NumCompOp(op)
-        comp = IntComparison(field=field, op=op, value=value)
+        op = NumCompOp
+        comp = IntComparison
     elif isinstance(value, float):
-        op = NumCompOp(op)
-        comp = FloatComparison(field=field, op=op, value=value)
+        op = NumCompOp
+        comp = FloatComparison
+    elif isinstance(value, ReferenceValue):
+        op = ListOp
+        op_value = ListOp.IN if op_value in (ListOp.IN, StrCompOp.EQ) else ListOp.NIN
+        comp = RefComparison
     else:
-        op = StrCompOp(op)
-        comp = StrComparison(field=field, op=op, value=value)
-    return comp
+        op = StrCompOp
+        comp = StrComparison
+    return comp(field, op(op_value), value)
 
 
 @typechecked
@@ -76,7 +83,8 @@ def _map_filter_exp(
     entity_name: str, filter_exp: FExpression, property_map: dict
 ) -> FExpression:
     if isinstance(
-        filter_exp, (IntComparison, FloatComparison, StrComparison, ListComparison)
+        filter_exp,
+        (IntComparison, FloatComparison, StrComparison, ListComparison, RefComparison),
     ):
         # get the field
         field = filter_exp.field
@@ -94,6 +102,9 @@ def _map_filter_exp(
             )
         else:  # change the name of the field if it maps to a single value
             filter_exp.field = map_result
+
+        # TODO: for RefComparison, map the attribute in value (may not be possible here)
+
     elif isinstance(filter_exp, BoolExp):
         # recursively map boolean expressions
         filter_exp = BoolExp(
@@ -111,6 +122,17 @@ def _map_filter_exp(
             [_map_filter_exp(entity_name, x, property_map) for x in filter_exp.comps],
         )
     return filter_exp
+
+
+@typechecked
+def _add_reference_branches_for_filter(graph: IRGraph, filter_node: Filter):
+    if filter_node not in graph:
+        raise IRGraphMissingNode("Internal error: filter node expected")
+    else:
+        for refvalue in filter_node.get_references():
+            r = graph.add_node(Reference(refvalue.reference))
+            p = graph.add_node(ProjectAttrs([refvalue.attribute]), r)
+            graph.add_edge(p, filter_node)
 
 
 class _KestrelT(Transformer):
@@ -144,16 +166,18 @@ class _KestrelT(Transformer):
         return graph
 
     def expression(self, args):
-        # TODO: add more clauses than WHERE
+        # TODO: add more clauses than WHERE and ATTR
         # TODO: think about order of clauses when turning into nodes
         graph = IRGraph()
-        reference = args[0]
+        reference = graph.add_node(args[0])
         root = reference
-        graph.add_node(reference)
         if len(args) > 1:
-            w = args[1]
-            graph.add_node(w, reference)
-            root = w
+            clause = args[1]
+            graph.add_node(clause, reference)
+            root = clause
+            if isinstance(clause, Filter):
+                # this is where_clause
+                _add_reference_branches_for_filter(graph, clause)
         return graph, root
 
     def vtrans(self, args):
@@ -208,12 +232,20 @@ class _KestrelT(Transformer):
         graph = IRGraph()
         entity_name = args[0].value
         mapped_entity_name = self.entity_map.get(entity_name, entity_name)
-        filter_instruction = args[2]
-        mapped_filter_exp = _map_filter_exp(
-            args[0].value, filter_instruction.exp, self.property_map
+
+        # prepare Filter node
+        filter_node = args[2]
+        filter_node.exp = _map_filter_exp(
+            args[0].value, filter_node.exp, self.property_map
         )
+        
+        # add basic Source and Filter nodes
         source_node = graph.add_node(args[1])
-        filter_node = graph.add_node(Filter(mapped_filter_exp), source_node)
+        filter_node = graph.add_node(filter_node, source_node)
+        
+        # add reference nodes if used in Filter
+        _add_reference_branches_for_filter(graph, filter_node)
+
         projection_node = graph.add_node(ProjectEntity(mapped_entity_name), filter_node)
         root = projection_node
         if len(args) > 3:
@@ -259,6 +291,11 @@ class _KestrelT(Transformer):
     def advanced_string(self, args):
         value = _unescape_quoted_string(args[0].value)
         return value
+
+    def reference_or_simple_string(self, args):
+        vname = args[0].value
+        attr = args[1].value if len(args) > 1 else None
+        return ReferenceValue(vname, attr)
 
     def number(self, args):
         v = args[0].value
