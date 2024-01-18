@@ -1,5 +1,6 @@
 import json
 
+from kestrel.frontend.parser import parse_kestrel
 from kestrel.ir.filter import (IntComparison, FloatComparison,
                                StrComparison, ListComparison, ListOp,
                                NumCompOp, StrCompOp, ExpOp, BoolExp, MultiComp)
@@ -120,3 +121,12 @@ def test_filter_compound_exp():
     data = filt.to_json()
     filt2 = instruction_from_json(data)
     assert filt == filt2
+
+
+def test_filter_with_reference():
+    stmt = "x = y WHERE foo = 'bar' OR baz = z.baz"
+    graph = parse_kestrel(stmt)
+    filter_nodes = graph.get_nodes_by_type(Filter)
+    exp = filter_nodes[0].exp
+    exp_dict = exp.to_dict()
+    assert exp_dict == {'lhs': {'field': 'foo', 'op': '=', 'value': 'bar'}, 'op': 'OR', 'rhs': {'field': 'baz', 'op': 'IN', 'value': {'reference': 'z', 'attribute': 'baz'}}}

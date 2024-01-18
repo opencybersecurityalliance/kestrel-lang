@@ -113,6 +113,8 @@ class Filter(TransformingInstruction):
     exp: FExpression
     timerange: TimeRange = field(default_factory=TimeRange)
 
+    # TODO: from_json() for self.exp
+
     def get_references(self) -> Iterable[ReferenceValue]:
         return get_references_from_exp(self.exp)
 

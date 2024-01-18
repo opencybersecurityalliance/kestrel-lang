@@ -330,7 +330,7 @@ class IRGraph(networkx.DiGraph):
         return sorted(self.get_nodes_by_type(Return), key=lambda x: x.sequence)
 
     def get_max_return_sequence(self) -> int:
-        """Get all return nodes
+        """Get the largest sequence number of all Returns
 
         Returns:
             The largest sequence number of all Return instruction
