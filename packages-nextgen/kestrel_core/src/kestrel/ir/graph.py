@@ -497,42 +497,57 @@ class IRGraph(networkx.DiGraph):
 
         return dep_graphs
 
-    def find_simple_query_subgraphs(self) -> Iterable[IRGraphSimpleQuery]:
+    def find_simple_query_subgraphs(
+        self, cache: MutableMapping[UUID, Any]
+    ) -> Iterable[IRGraphSimpleQuery]:
         """Find dependency subgraphs those are IRGraphSimpleQuery
 
-        Some interfaces, e.g., ELasticsearch/OpenSearch, do not support JOIN or
-        sub query/SELECT, so they can only evaluate a simple SQL query around
-        each source node. Use this method to prepare such tiny graph segments
-        for evaluation by the interface. The remaining of the graph can be
-        evaluated in cache.
+        Some interfaces, e.g., stix-shifter, build stateless query and do not
+        support JOIN or sub query/SELECT, so they can only evaluate a simple
+        SQL query around each source node. Use this method to prepare such tiny
+        graph segments for evaluation by the interface. The remaining of the
+        graph can be evaluated in cache.
+
+        Parameters:
+            cache: any type of node cache, e.g., content, SQL statement
 
         Returns:
             An iterator of simple-query subgraphs
         """
-
-        # TODO: non-linear graph inclding referred nodes (need backtracking)
-
         for n in self.get_nodes_by_type(SourceInstruction):
-            for g in self._find_paths_from_node_to_a_variable(n):
+            for g in self._find_paths_from_node_to_a_variable(n, cache):
                 yield IRGraphSimpleQuery(g)
 
     def _find_paths_from_node_to_a_variable(
-        self, node: Instruction
+        self, node: Instruction, cache: MutableMapping[UUID, Any]
     ) -> Iterable[IRGraph]:
-        """Find linear IRGraph (path) from the starting node to its closest variables
+        """Find paths (linear IRGraph with directly attached cached nodes) from
+        the starting node to its closest variables
+
+        If the linear IRGraph has a dependent branch/path longer than a cached
+        node, this linear IRGraph cannot be used to build a IRGraphSimpleQuery;
+        it needs to generate a subquery for the branch.
 
         Parameters:
             node: the node to start path search
+            cache: any type of node cache, e.g., content, SQL statement
 
         Returns:
-            An iterator of linear IRGraphs
+            An iterator of paths
         """
-        for succ in self.successors(node):
-            if isinstance(succ, Variable):
-                yield self.subgraph([succ, node])
-            else:
-                for succ_graph in self._find_paths_from_node_to_a_variable(succ):
-                    yield self.subgraph(list(succ_graph.nodes()) + [node])
+        # check whether the node has other uncached incoming nodes
+        # if no, this path can be a IRGraphSimpleQuery
+        if len([n for n in self.predecessors(node) if n.id not in cache]) <= 1:
+            # pcns: predecessor cached nodes
+            pcns = [n for n in self.predecessors(node) if n.id in cache]
+            for succ in self.successors(node):
+                if isinstance(succ, Variable):
+                    yield self.subgraph([succ, node] + pcns)
+                else:
+                    for succ_graph in self._find_paths_from_node_to_a_variable(
+                        succ, cache
+                    ):
+                        yield self.subgraph(list(succ_graph.nodes()) + [node] + pcns)
 
     def to_dict(self) -> Mapping[str, Iterable[Mapping]]:
         """Serialize to a Python dictionary (D3 graph format)
@@ -683,14 +698,15 @@ class IRGraphEvaluable(IRGraph):
         2. No IntermediateInstruction node
     """
 
-    def __init__(self, graph: IRGraph):
+    def __init__(self, graph: Optional[IRGraph] = None):
         super().__init__()
 
         # need to initialize it before `self.update(graph)` below
         self.interface = None
 
         # update() will call _add_node() internally to set self.interface
-        self.update(graph)
+        if graph:
+            self.update(graph)
 
         # all source nodes are already cached (no SourceInstruction)
         if not self.interface:
@@ -719,7 +735,7 @@ class IRGraphSimpleQuery(IRGraphEvaluable):
         2. It can be compiled into a simple (not nested/joined) SQL query
     """
 
-    def __init__(self, graph: IRGraph):
-        if len(graph.get_nodes_by_type(SourceInstruction)) > 1:
+    def __init__(self, graph: Optional[IRGraph] = None):
+        if graph and len(graph.get_nodes_by_type(SourceInstruction)) > 1:
             raise MultiSourcesInGraph()
         super().__init__(graph)
