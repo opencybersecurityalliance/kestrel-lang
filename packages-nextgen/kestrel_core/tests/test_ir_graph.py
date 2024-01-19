@@ -277,77 +277,57 @@ p3 = GET process FROM stixshifter://edr2
 
 p31 = p3 WHERE parent.name = "excel.exe"
 
-# not supported in parser yet, manually add nodes
-#p4 = p21 WHERE pid = p1.pid
-#p5 = p31 WHERE pid = p4.pid
+p4 = p21 WHERE pid = p1.pid
+p5 = GET process FROM stixshifter://edr5 WHERE pid = p4.pid
+
+DISP p5 ATTR pid, name, cmd_line
 """
     graph = parse_kestrel(huntflow)
 
-    proj1 = ProjectAttrs(["pid"])
-    graph.add_node(proj1, graph.get_variable("p1"))
-    filt1 = Filter(StrComparison("pid", StrCompOp.EQ, "ref"))
-    graph.add_node(filt1, graph.get_variable("p21"))
-    graph.add_edge(proj1, filt1)
-    p4 = Variable("p4")
-    graph.add_node(p4, filt1)
-
-    proj2 = ProjectAttrs(["pid"])
-    graph.add_node(proj2, p4)
-    filt2 = Filter(StrComparison("pid", StrCompOp.EQ, "ref"))
-    graph.add_node(filt2, graph.get_variable("p31"))
-    graph.add_edge(proj2, filt2)
-    p5 = Variable("p5")
-    graph.add_node(p5, filt2)
-
-    stmt = "DISP p5 ATTR pid, name, cmd_line"
-    graph.update(parse_kestrel(stmt))
-
+    p1 = graph.get_variable("p1")
+    p2 = graph.get_variable("p2")
+    p3 = graph.get_variable("p3")
+    p21 = graph.get_variable("p21")
+    p31 = graph.get_variable("p31")
+    p4 = graph.get_variable("p4")
+    p5 = graph.get_variable("p5")
     ret = graph.get_returns()[0]
 
     c = InMemoryCache()
     gs = graph.find_dependent_subgraphs_of_node(ret, c)
-    assert len(gs) == 3
-
+    assert len(gs) == 2
+    p1_projattr = [n for n in graph.successors(p1) if isinstance(n, ProjectAttrs)][0]
     assert len(gs[0]) == 3
     assert set(map(type, gs[0].nodes())) == {Variable, ProjectAttrs, Construct}
-    assert proj1 == gs[0].get_nodes_by_type(ProjectAttrs)[0]
-
+    assert p1_projattr == gs[0].get_nodes_by_type(ProjectAttrs)[0]
     assert len(gs[1]) == 6
     assert Counter(map(type, gs[1].nodes())) == Counter([Filter, Filter, Variable, Variable, ProjectEntity, DataSource])
-
-    assert len(gs[2]) == 6
-    assert Counter(map(type, gs[2].nodes())) == Counter([Filter, Filter, Variable, Variable, ProjectEntity, DataSource])
 
     c.evaluate_graph(gs[0])
-    assert proj1.id in c
-    assert graph.get_variable("p1").id in c
+    assert p1_projattr.id in c
+    assert p1.id in c
     assert len(c) == 2
     gs = graph.find_dependent_subgraphs_of_node(ret, c)
-    assert len(gs) == 2
-
+    assert len(gs) == 1
     assert len(gs[0]) == 10
-    assert proj1 in gs[0]
-    assert proj2 in gs[0]
-    assert graph.get_variable("p2") in gs[0]
-    assert graph.get_variable("p21") in gs[0]
+    assert p2 in gs[0]
+    assert p21 in gs[0]
     assert p4 in gs[0]
+    assert Counter(map(type, gs[0].nodes())) == Counter([Filter, Filter, Filter, Variable, Variable, Variable, ProjectEntity, DataSource, ProjectAttrs, ProjectAttrs])
 
-    assert len(gs[1]) == 6
-    assert Counter(map(type, gs[1].nodes())) == Counter([Filter, Filter, Variable, Variable, ProjectEntity, DataSource])
-
-    c[proj2.id] = DataFrame()
+    p4_projattr = next(graph.successors(p4))
+    c[p4_projattr.id] = DataFrame()
     gs = graph.find_dependent_subgraphs_of_node(ret, c)
     assert len(gs) == 1
-
-    assert len(gs[0]) == 11
-    assert proj2.id in c
-    assert proj2 in gs[0]
-    assert graph.get_variable("p31") in gs[0]
+    assert len(gs[0]) == 7
+    assert p4_projattr.id in c
+    assert p4_projattr in gs[0]
     assert p5 in gs[0]
     assert ret in gs[0]
+    assert Counter(map(type, gs[0].nodes())) == Counter([Filter, Return, Variable, ProjectEntity, DataSource, ProjectAttrs, ProjectAttrs])
 
 
-def test_find_dependent_subgraphs_of_node():
+def test_find_simple_query_subgraphs():
     huntflow = """
 p1 = GET process FROM elastic://edr1
      WHERE name = "cmd.exe"

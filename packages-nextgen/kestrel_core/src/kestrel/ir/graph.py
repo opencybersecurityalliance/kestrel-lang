@@ -453,32 +453,47 @@ class IRGraph(networkx.DiGraph):
         Returns:
             A list of subgraphs that do not have further dependency
         """
+        _CII = CACHE_INTERFACE_IDENTIFIER
 
         # the base graph to segment
         g = self.find_cached_dependent_subgraph_of_node(node, cache)
 
-        # Mapping: {grouping attribute: [impacted nodes]}
+        # Mapping: {interface name: [impacted nodes]}
         a2ns = defaultdict(set)
         for n in g.get_nodes_by_type(SourceInstruction):
-            ns = networkx.descendants(g, n)
-            preds = set().union(*[set(g.predecessors(n)) for n in ns])
-            cached_predecessors = [n for n in preds if n.id in cache]
-            a2ns[n.interface].update(ns)
-            a2ns[n.interface].update(cached_predecessors)
             a2ns[n.interface].add(n)
+            a2ns[n.interface].update(networkx.descendants(g, n))
+
+        # all predecessor nodes to any interface impacted nodes
+        pns = set().union(*[set(g.predecessors(n)) for ns in a2ns.values() for n in ns])
 
         # add non-source nodes to cache as default execution environment
         # e.g., a path starting from a cached Variable
-        a2ns[CACHE_INTERFACE_IDENTIFIER].update(g.nodes() - set().union(*a2ns.values()))
+        # nodes directly preceeding an interface impacted node do not need evaluation
+        cached_nodes = set([n for n in g.nodes() if n.id in cache])
+        for n in cached_nodes - pns:
+            a2ns[_CII].add(n)
+            a2ns[_CII].update(networkx.descendants(g, n))
 
-        # find all nodes that are affected by two or more grouping attributes
+        # find all nodes that are affected by two or more interfaces
         shared_impacted_nodes = set().union(
             *[a2ns[ix] & a2ns[iy] for ix, iy in combinations(a2ns.keys(), 2)]
         )
 
-        # get the segmented subgraph for each grouping attribute
-        unshared_nodes = [ns - shared_impacted_nodes for ns in a2ns.values()]
-        dep_graphs = [IRGraphEvaluable(g.subgraph(ns)) for ns in unshared_nodes if ns]
+        # unshared nodes for each interface
+        a2uns = {k: v - shared_impacted_nodes for k, v in a2ns.items()}
+
+        # handle direct predecessor node cached
+        # such nodes are required in building dep graphs around interfaces
+        # such nodes could be shared by multiple interfaces; can only handle now
+        for interface in set(a2uns) - set([_CII]):
+            ps = set().union(*[set(g.predecessors(n)) for n in a2uns[interface]])
+            a2uns[interface].update(ps & cached_nodes)
+
+        # remove dep graphs with only one node
+        # e.g., `ds://a` in "y = GET file FROM ds://a WHERE x = v.x" when v.x not in cache
+        dep_nodes = [ns for ns in a2uns.values() if len(ns) > 1]
+        dep_graphs = [IRGraphEvaluable(g.subgraph(ns)) for ns in dep_nodes]
 
         return dep_graphs
 
