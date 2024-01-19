@@ -337,25 +337,20 @@ p2 = GET process FROM elastic://edr1
      WHERE pid = 999
      LAST 30 MINUTES
 
-p3 = GET process FROM stixshifter://edr2
-     WHERE parent_ref.name = "powershell.exe"
-     LAST 24 HOURS
+p3 = p1 WHERE pid = p2.pid
 
-p4 = GET process FROM stixshifter://edr2
-     WHERE command_line LIKE "%powershell.exe%"
-     LAST 1 HOURS
+p4 = GET process FROM elastic://edr2 WHERE name = p3.name
 
-p11 = p1 WHERE pid = 999
-p12 = p1 WHERE pid = 888
-p21 = p2 WHERE name = "cmd.exe"
-p22 = p2 WHERE name = "powershell.exe"
-
-DISP p1 ATTR name
-DISP p12 ATTR name
+DISP p4
 """
     graph = parse_kestrel(huntflow)
-    vs = set(["p1", "p2", "p3", "p4"])
-    for g in graph.find_simple_query_subgraphs():
+    c = InMemoryCache()
+    gs = graph.find_dependent_subgraphs_of_node(graph.get_returns()[0], c)
+    assert len(gs) == 1
+    assert networkx.utils.graphs_equal(graph, gs[0])
+
+    vs = set(["p1", "p2"])
+    for g in gs[0].find_simple_query_subgraphs(c):
         assert isinstance(g, IRGraphSimpleQuery)
         assert Counter(map(type, g.nodes())) == Counter([Variable, Filter, ProjectEntity, DataSource])
         assert len(g.edges()) == 3
@@ -363,3 +358,26 @@ DISP p12 ATTR name
         assert varname in vs
         vs.remove(varname)
     assert vs == set()
+
+    p1 = gs[0].get_variable("p1")
+    c[p1.id] = DataFrame()
+    p2 = gs[0].get_variable("p2")
+    c[p2.id] = DataFrame()
+
+    gs = graph.find_dependent_subgraphs_of_node(graph.get_returns()[0], c)
+    # just a dep graph in cache
+    assert len(gs) == 1
+    assert Counter(map(type, gs[0].nodes())) == Counter([Variable, Variable, Filter, ProjectAttrs, ProjectAttrs, Variable])
+    sinks = gs[0].get_sink_nodes()
+    assert len(sinks) == 1
+    sink = sinks[0]
+    assert isinstance(sink, ProjectAttrs) and sink.attrs == ['name']
+    c[sink.id] = DataFrame()
+
+    gs = graph.find_dependent_subgraphs_of_node(graph.get_returns()[0], c)
+    assert len(gs) == 1
+    assert sink in gs[0]
+    assert Counter(map(type, gs[0].nodes())) == Counter([Variable, Filter, ProjectAttrs, DataSource, Return, ProjectEntity])
+    for g in gs[0].find_simple_query_subgraphs(c):
+        assert Counter(map(type, g.nodes())) == Counter([ProjectAttrs, Variable, Filter, ProjectEntity, DataSource])
+        assert sink in g
