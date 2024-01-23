@@ -86,7 +86,6 @@ class InMemoryCache(AbstractCache):
             elif isinstance(instruction, Variable):
                 df = self._evaluate_instruction_in_graph(graph, trunk)
                 self[instruction.id] = df
-            # replace ReferenceValue in Filter with concrete value list
             else:
                 if isinstance(instruction, Filter):
                     instruction.fill_references(
