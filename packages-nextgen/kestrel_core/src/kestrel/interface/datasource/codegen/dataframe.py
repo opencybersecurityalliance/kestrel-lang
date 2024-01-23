@@ -140,4 +140,4 @@ def _eval_Filter_exp_Comparison(
     try:
         return dataframe[c.field].apply(functools.partial(comp2func[c.op], c.value))
     except KeyError:
-        raise NotImplementedError("unkown kestrel.ir.filter.*Op type")
+        raise NotImplementedError(f"unkown kestrel.ir.filter.*Op type: {c.op}")

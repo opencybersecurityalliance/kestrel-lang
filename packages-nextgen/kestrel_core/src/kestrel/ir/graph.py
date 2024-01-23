@@ -18,14 +18,18 @@ import json
 from kestrel.ir.instructions import (
     Instruction,
     TransformingInstruction,
+    SoleIndegreeTransformingInstruction,
     IntermediateInstruction,
     SourceInstruction,
     Variable,
     DataSource,
     Reference,
     Return,
+    Filter,
+    ProjectAttrs,
     instruction_from_dict,
 )
+from kestrel.ir.filter import ReferenceValue
 from kestrel.exceptions import (
     InstructionNotFound,
     InvalidSeralizedGraph,
@@ -39,6 +43,10 @@ from kestrel.exceptions import (
     MultiInterfacesInGraph,
     MultiSourcesInGraph,
     InevaluableInstruction,
+    LargerThanOneIndegreeInstruction,
+    DuplicatedReferenceInFilter,
+    DanglingReferenceInFilter,
+    DanglingFilter,
 )
 from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
 
@@ -355,6 +363,53 @@ class IRGraph(networkx.DiGraph):
             The list of sink nodes
         """
         return [n for n in self.nodes() if self.out_degree(n) == 0]
+
+    def get_trunk_n_branches(
+        self, node: TransformingInstruction
+    ) -> (Instruction, Mapping[ReferenceValue, Instruction]):
+        """Get the trunk and branches paths for instruction
+
+        For trunk path, return the tail node; for each branch, return the tail
+        node of the branchin mapping from reference to node.
+
+        Parameters:
+            node: the instruction node
+
+        Returns:
+            (tail node for trunk, ref to branch tail node mapping)
+        """
+        ps = list(self.predecessors(node))
+        pps = [(p, pp) for p in self.predecessors(node) for pp in self.predecessors(p)]
+
+        if isinstance(node, SoleIndegreeTransformingInstruction):
+            if len(ps) > 1:
+                raise LargerThanOneIndegreeInstruction()
+            else:
+                return ps[0], {}
+        elif isinstance(node, Filter):
+            r2n = {}
+            for rv in node.get_references():
+                ppfs = [
+                    (p, pp)
+                    for p, pp in pps
+                    if isinstance(p, ProjectAttrs)
+                    and isinstance(pp, (Variable, Reference))
+                    and p.attrs == [rv.attribute]
+                    and pp.name == rv.reference
+                ]
+                if len(ppfs) > 1:
+                    raise DuplicatedReferenceInFilter(ppfs)
+                else:
+                    p = ppfs[0][0]
+                    r2n[rv] = p
+                    ps.remove(p)
+            if len(ps) == 0:
+                raise DanglingFilter()
+            elif len(ps) > 1:
+                raise DanglingReferenceInFilter(ps)
+            return ps[0], r2n
+        else:
+            raise NotImplementedError(f"unknown instruction type: {node}")
 
     def update(self, ng: IRGraph):
         """Extend the current IRGraph with a new IRGraph

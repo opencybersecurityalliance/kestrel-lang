@@ -4,7 +4,7 @@ from typeguard import typechecked
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Union, Iterable
+from typing import List, Optional, Union, Iterable, Any, Mapping
 
 from mashumaro.mixins.json import DataClassJSONMixin
 
@@ -92,7 +92,8 @@ class ListComparison(DataClassJSONMixin):
     value: Union[List[int], List[str]]
 
 
-@dataclass
+# frozen=True for generating __hash__() method
+@dataclass(frozen=True)
 class ReferenceValue(DataClassJSONMixin):
     """Value for reference"""
 
@@ -179,3 +180,15 @@ def get_references_from_exp(exp: FExpression) -> Iterable[ReferenceValue]:
     elif isinstance(exp, MultiComp):
         for comp in exp.comps:
             yield from get_references_from_exp(comp)
+
+
+@typechecked
+def fill_references_in_exp(exp: FExpression, r2v: Mapping[ReferenceValue, Any]):
+    if isinstance(exp, RefComparison):
+        exp.value = r2v[exp.value]
+    elif isinstance(exp, BoolExp):
+        fill_references_in_exp(exp.lhs, r2v)
+        fill_references_in_exp(exp.rhs, r2v)
+    elif isinstance(exp, MultiComp):
+        for comp in exp.comps:
+            fill_references_in_exp(comp, r2v)

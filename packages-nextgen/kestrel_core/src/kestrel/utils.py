@@ -26,6 +26,7 @@ def list_folder_files(package_name, folder_name, prefix=None, suffix=None):
     except AttributeError:
         if is_python_older_than_minor_version(9):
             import pkg_resources
+
             file_names = pkg_resources.resource_listdir(package_name, folder_name)
             file_paths = [
                 Path(

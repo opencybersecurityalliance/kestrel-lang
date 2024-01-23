@@ -14,6 +14,8 @@ from kestrel.ir.instructions import (
     Instruction,
     Return,
     Variable,
+    ProjectAttrs,
+    Filter,
     SourceInstruction,
     TransformingInstruction,
 )
@@ -73,24 +75,30 @@ class InMemoryCache(AbstractCache):
     def _evaluate_instruction_in_graph(
         self, graph: IRGraphEvaluable, instruction: Instruction
     ) -> DataFrame:
-        # TODO: handle multiple predecessors of a node
-
-        if isinstance(instruction, Return):
-            df = self._evaluate_instruction_in_graph(
-                graph, next(graph.predecessors(instruction))
-            )
-        elif isinstance(instruction, Variable):
-            df = self._evaluate_instruction_in_graph(
-                graph, next(graph.predecessors(instruction))
-            )
-            self[instruction.id] = df
+        if instruction.id in self:
+            df = self[instruction.id]
         elif isinstance(instruction, SourceInstruction):
             df = evaluate_source_instruction(instruction)
         elif isinstance(instruction, TransformingInstruction):
-            df0 = self._evaluate_instruction_in_graph(
-                graph, next(graph.predecessors(instruction))
-            )
-            df = evaluate_transforming_instruction(instruction, df0)
+            trunk, r2n = graph.get_trunk_n_branches(instruction)
+            if isinstance(instruction, Return):
+                df = self._evaluate_instruction_in_graph(graph, trunk)
+            elif isinstance(instruction, Variable):
+                df = self._evaluate_instruction_in_graph(graph, trunk)
+                self[instruction.id] = df
+            # replace ReferenceValue in Filter with concrete value list
+            else:
+                if isinstance(instruction, Filter):
+                    instruction.fill_references(
+                        {
+                            r: list(
+                                self._evaluate_instruction_in_graph(graph, n).iloc[:, 0]
+                            )
+                            for r, n in r2n.items()
+                        }
+                    )
+                df0 = self._evaluate_instruction_in_graph(graph, trunk)
+                df = evaluate_transforming_instruction(instruction, df0)
         else:
             raise NotImplementedError(f"Unknown instruction type: {instruction}")
         return df

@@ -1,9 +1,11 @@
 import json
 
 from kestrel.frontend.parser import parse_kestrel
-from kestrel.ir.filter import (IntComparison, FloatComparison,
-                               StrComparison, ListComparison, ListOp,
-                               NumCompOp, StrCompOp, ExpOp, BoolExp, MultiComp)
+from kestrel.ir.filter import (
+    IntComparison, FloatComparison, StrComparison, ListComparison,
+    RefComparison, ReferenceValue, ListOp, NumCompOp, StrCompOp, ExpOp,
+    BoolExp, MultiComp, get_references_from_exp, fill_references_in_exp,
+)
 from kestrel.ir.instructions import (
     Filter,
     instruction_from_json,
@@ -130,3 +132,14 @@ def test_filter_with_reference():
     exp = filter_nodes[0].exp
     exp_dict = exp.to_dict()
     assert exp_dict == {'lhs': {'field': 'foo', 'op': '=', 'value': 'bar'}, 'op': 'OR', 'rhs': {'field': 'baz', 'op': 'IN', 'value': {'reference': 'z', 'attribute': 'baz'}}}
+
+
+def test_fill_references_in_exp():
+    lhs = StrComparison("foo", StrCompOp.EQ, "bar")
+    rhs = RefComparison("baz", "=", ReferenceValue("var", "attr"))
+    exp = BoolExp(lhs, ExpOp.AND, rhs)
+    rs = get_references_from_exp(exp)
+    r2v = {r: 5 for r in rs}
+    assert len(r2v) == 1
+    fill_references_in_exp(exp, r2v)
+    assert exp.rhs.value == 5
