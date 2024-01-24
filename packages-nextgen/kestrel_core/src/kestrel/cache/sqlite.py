@@ -2,10 +2,9 @@ import logging
 from typing import Iterable, List, Mapping, Optional
 from uuid import UUID
 
+import sqlalchemy
 from dateutil.parser import parse as dt_parser
 from pandas import DataFrame, read_sql
-from sqlalchemy import create_engine, table, text
-from sqlalchemy.dialects import sqlite
 from typeguard import typechecked
 
 from kestrel.cache.base import AbstractCache
@@ -31,9 +30,9 @@ _logger = logging.getLogger(__name__)
 
 @typechecked
 class SqliteTranslator(SqlTranslator):
-    def __init__(self, select_from: str):
+    def __init__(self, from_obj: sqlalchemy.FromClause):
         super().__init__(
-            sqlite.dialect(), dt_parser, "time", select_from
+            sqlalchemy.dialects.sqlite.dialect(), dt_parser, "time", from_obj
         )  # FIXME: need mapping for timestamp?
 
 
@@ -51,7 +50,7 @@ class SqliteCache(AbstractCache):
 
         # for an absolute file path, the three slashes are followed by the absolute path
         # for a relative path, it's also three slashes?
-        self.engine = create_engine(f"sqlite:///{path}")
+        self.engine = sqlalchemy.create_engine(f"sqlite:///{path}")
         self.connection = self.engine.connect()
 
         if initial_cache:
@@ -65,8 +64,8 @@ class SqliteCache(AbstractCache):
         return read_sql(self.cache_catalog[instruction_id], self.connection)
 
     def __delitem__(self, instruction_id: UUID):
-        table = self.cache_catalog[instruction_id]
-        self.connection.execute(text(f'DROP TABLE "{table}"'))
+        table_name = self.cache_catalog[instruction_id]
+        self.connection.execute(sqlalchemy.text(f'DROP TABLE "{table_name}"'))
         del self.cache_catalog[instruction_id]
 
     def __setitem__(
@@ -74,11 +73,9 @@ class SqliteCache(AbstractCache):
         instruction_id: UUID,
         data: DataFrame,
     ):
-        table = instruction_id.hex
-        self.cache_catalog[instruction_id] = table
-        data.to_sql(
-            table, con=self.connection, if_exists="replace", index=False
-        )
+        table_name = instruction_id.hex
+        self.cache_catalog[instruction_id] = table_name
+        data.to_sql(table_name, con=self.connection, if_exists="replace", index=False)
 
     def evaluate_graph(
         self,
@@ -103,22 +100,27 @@ class SqliteCache(AbstractCache):
         _logger.debug("_eval: %s", instruction)
 
         if instruction.id in self:
-            translator = SqliteTranslator(self.cache_catalog[instruction.id])
+            table_name = self.cache_catalog[instruction.id]
+            translator = SqliteTranslator(sqlalchemy.table(table_name))
 
         elif isinstance(instruction, SourceInstruction):
             if isinstance(instruction, Construct):
                 self[instruction.id] = DataFrame(instruction.data)
-                translator = SqliteTranslator(self.cache_catalog[instruction.id])
+                table_name = self.cache_catalog[instruction.id]
+                translator = SqliteTranslator(sqlalchemy.table(table_name))
             else:
                 raise NotImplementedError(f"Unknown instruction type: {instruction}")
 
         elif isinstance(instruction, TransformingInstruction):
-
             trunk, r2n = graph.get_trunk_n_branches(instruction)
             translator = self._evaluate_instruction_in_graph(graph, trunk)
 
             if isinstance(instruction, SolePredecessorTransformingInstruction):
-                if not isinstance(instruction, (Return, Variable)):
+                if isinstance(instruction, Return):
+                    pass
+                elif isinstance(instruction, Variable):
+                    pass
+                else:
                     translator.add_instruction(instruction)
 
             elif isinstance(instruction, Filter):

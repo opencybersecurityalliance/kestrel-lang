@@ -1,7 +1,7 @@
 from functools import reduce
 from typing import Callable
 
-from sqlalchemy import and_, column, or_, select, table
+from sqlalchemy import and_, column, or_, select, FromClause
 from sqlalchemy.engine import Compiled, default
 from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
 from sqlalchemy.sql.expression import ColumnClause, ColumnOperators
@@ -67,7 +67,7 @@ class SqlTranslator:
         dialect: default.DefaultDialect,
         timefmt: Callable,
         timestamp: str,
-        select_from: str,
+        from_obj: FromClause,
     ):
         # SQLAlchemy Dialect object (e.g. from sqlalchemy.dialects import sqlite; sqlite.dialect())
         self.dialect = dialect
@@ -79,7 +79,7 @@ class SqlTranslator:
         self.timestamp = timestamp
 
         # SQLAlchemy statement object
-        self.query: Select = select().select_from(table(select_from))
+        self.query: Select = select().select_from(from_obj)
 
     def _render_exp(self, exp: BoolExp) -> BooleanClauseList:
         if isinstance(exp.lhs, BoolExp):

@@ -24,7 +24,7 @@ from kestrel.ir.instructions import (
 )
 
 # Use sqlite3 for testing
-from sqlalchemy.dialects import sqlite
+import sqlalchemy
 
 import pytest
 
@@ -68,7 +68,7 @@ def _remove_nl(s):
     ]
 )
 def test_sql_translator(iseq, sql):
-    trans = SqlTranslator(sqlite.dialect(), _time2string, "timestamp", "my_table")
+    trans = SqlTranslator(sqlalchemy.dialects.sqlite.dialect(), _time2string, "timestamp", sqlalchemy.table("my_table"))
     for i in iseq:
         trans.add_instruction(i)
     result = trans.result()
