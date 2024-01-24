@@ -15,9 +15,11 @@ from kestrel.ir.instructions import (
     Construct,
     Instruction,
     Return,
+    Variable,
+    Filter,
     SourceInstruction,
     TransformingInstruction,
-    Variable,
+    SolePredecessorTransformingInstruction,
 )
 
 from kestrel.exceptions import (
@@ -72,9 +74,10 @@ class SqliteCache(AbstractCache):
         instruction_id: UUID,
         data: DataFrame,
     ):
-        self.cache_catalog[instruction_id] = instruction_id.hex
+        table = instruction_id.hex
+        self.cache_catalog[instruction_id] = table
         data.to_sql(
-            instruction_id.hex, con=self.connection, if_exists="replace", index=False
+            table, con=self.connection, if_exists="replace", index=False
         )
 
     def evaluate_graph(
@@ -86,36 +89,20 @@ class SqliteCache(AbstractCache):
         if not instructions_to_evaluate:
             instructions_to_evaluate = graph.get_sink_nodes()
         for instruction in instructions_to_evaluate:
-            self._evaluate_instruction_in_graph(instruction, graph)
-            if instruction.id not in self:
-                # e.g., the instruction is in the middle of a path (not full select stmt)
-                raise InevaluableInstruction(instruction)
-            else:
-                mapping[instruction.id] = self[instruction.id]
+            translator = self._evaluate_instruction_in_graph(graph, instruction)
+            # TODO: may catch error in case evaluation starts from incomplete SQL
+            mapping[instruction.id] = read_sql(translator.result(), self.connection)
         _logger.debug("mapping: %s", mapping)
         return mapping
 
     def _evaluate_instruction_in_graph(
         self,
-        instruction: Instruction,
         graph: IRGraphEvaluable,
+        instruction: Instruction,
     ) -> SqliteTranslator:
-        # TODO: handle multiple predecessors of a node
         _logger.debug("_eval: %s", instruction)
 
-        if isinstance(instruction, (Return, Variable)):
-            if instruction.id not in self:
-                # evaluate its ancestry path
-                _translator = self._evaluate_instruction_in_graph(
-                    next(graph.predecessors(instruction)), graph
-                )
-                stmt = _translator.result()
-                _logger.debug("%s -> %s", instruction, stmt)
-
-                # TODO: more efficient/lightweight implementation using view creation
-                self[instruction.id] = read_sql(stmt, self.connection)
-
-            # finally init translator from cache for potential descendants use
+        if instruction.id in self:
             translator = SqliteTranslator(self.cache_catalog[instruction.id])
 
         elif isinstance(instruction, SourceInstruction):
@@ -123,15 +110,23 @@ class SqliteCache(AbstractCache):
                 self[instruction.id] = DataFrame(instruction.data)
                 translator = SqliteTranslator(self.cache_catalog[instruction.id])
             else:
-                raise NotImplementedError(
-                    f"Unknown SourceInstruction {instruction} for Cache"
-                )
+                raise NotImplementedError(f"Unknown instruction type: {instruction}")
 
         elif isinstance(instruction, TransformingInstruction):
-            translator = self._evaluate_instruction_in_graph(
-                next(graph.predecessors(instruction)), graph
-            )
-            translator.add_instruction(instruction)
+
+            trunk, r2n = graph.get_trunk_n_branches(instruction)
+            translator = self._evaluate_instruction_in_graph(graph, trunk)
+
+            if isinstance(instruction, SolePredecessorTransformingInstruction):
+                if not isinstance(instruction, (Return, Variable)):
+                    translator.add_instruction(instruction)
+
+            elif isinstance(instruction, Filter):
+                translator = self._evaluate_instruction_in_graph(graph, trunk)
+                translator.add_instruction(instruction)
+
+            else:
+                raise NotImplementedError(f"Unknown instruction type: {instruction}")
 
         else:
             raise NotImplementedError(f"Unknown instruction type: {instruction}")

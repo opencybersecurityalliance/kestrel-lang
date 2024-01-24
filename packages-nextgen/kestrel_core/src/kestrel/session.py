@@ -51,14 +51,17 @@ class Session(AbstractContextManager):
         self.irgraph.update(irgraph_new)
 
         for ret in irgraph_new.get_returns():
-            while ret.id not in self.cache:
+            ret_df = None
+            while ret_df is None:
                 for g in self.irgraph.find_dependent_subgraphs_of_node(ret, self.cache):
                     interface = get_interface_by_name(g.interface, self.interfaces)
                     for iid, df in interface.evaluate_graph(g).items():
                         if g.interface != self.cache.name:
                             self.cache[iid] = df
+                        if iid == ret.id:
+                            ret_df = df
             else:
-                yield self.cache[ret.id]
+                yield ret_df
 
     def do_complete(self, huntflow_block: str, cursor_pos: int):
         """Kestrel code auto-completion.

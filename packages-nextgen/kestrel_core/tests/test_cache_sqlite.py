@@ -49,13 +49,6 @@ DISP proclist ATTR name
                                     , {"name": "firefox.exe"}
                                     , {"name": "chrome.exe"}
                                     ]
-    # check whether `proclist` is cached
-    proclist = graph.get_variable("proclist")
-    assert c[proclist.id].to_dict("records") == [ {"name": "cmd.exe", "pid": 123}
-                                                , {"name": "explorer.exe", "pid": 99}
-                                                , {"name": "firefox.exe", "pid": 201}
-                                                , {"name": "chrome.exe", "pid": 205}
-                                                ]
 
 
 def test_eval_new_filter_disp():
@@ -79,20 +72,8 @@ DISP browsers ATTR name, pid
     assert df.to_dict("records") == [ {"name": "firefox.exe", "pid": 201}
                                     , {"name": "chrome.exe", "pid": 205}
                                     ]
-    # check whether `proclist` is cached
-    proclist = graph.get_variable("proclist")
-    assert c[proclist.id].to_dict("records") == [ {"name": "cmd.exe", "pid": 123}
-                                                , {"name": "explorer.exe", "pid": 99}
-                                                , {"name": "firefox.exe", "pid": 201}
-                                                , {"name": "chrome.exe", "pid": 205}
-                                                ]
-    # check whether `browsers` is cached
-    browsers = graph.get_variable("browsers")
-    assert c[browsers.id].to_dict("records") == [ {"name": "firefox.exe", "pid": 201}
-                                                , {"name": "chrome.exe", "pid": 205}
-                                                ]
 
-
+    
 def test_eval_two_returns():
     stmt = """
 proclist = NEW process [ {"name": "cmd.exe", "pid": 123}

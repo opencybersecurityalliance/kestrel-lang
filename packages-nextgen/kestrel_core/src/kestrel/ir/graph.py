@@ -18,7 +18,7 @@ import json
 from kestrel.ir.instructions import (
     Instruction,
     TransformingInstruction,
-    SoleIndegreeTransformingInstruction,
+    SolePredecessorTransformingInstruction,
     IntermediateInstruction,
     SourceInstruction,
     Variable,
@@ -381,7 +381,7 @@ class IRGraph(networkx.DiGraph):
         ps = list(self.predecessors(node))
         pps = [(p, pp) for p in self.predecessors(node) for pp in self.predecessors(p)]
 
-        if isinstance(node, SoleIndegreeTransformingInstruction):
+        if isinstance(node, SolePredecessorTransformingInstruction):
             if len(ps) > 1:
                 raise LargerThanOneIndegreeInstruction()
             else:

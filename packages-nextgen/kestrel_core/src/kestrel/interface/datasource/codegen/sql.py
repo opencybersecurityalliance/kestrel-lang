@@ -140,6 +140,8 @@ class SqlTranslator:
         method(i)
 
     def result(self) -> Compiled:
+        # TODO: two projections, e.g., ProjectAttrs after ProjectEntity
+
         # If there was no projection, we need to add '*' explicitly
         if len(self.query.selected_columns) == 0:
             self.query = self.query.with_only_columns("*")

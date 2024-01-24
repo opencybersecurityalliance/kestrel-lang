@@ -86,7 +86,7 @@ class TransformingInstruction(Instruction):
     pass
 
 
-class SoleIndegreeTransformingInstruction(TransformingInstruction):
+class SolePredecessorTransformingInstruction(TransformingInstruction):
     """The translating instruction whose indegree==1"""
 
     pass
@@ -105,7 +105,7 @@ class IntermediateInstruction(Instruction):
 
 
 @dataclass(eq=False)
-class Return(SoleIndegreeTransformingInstruction):
+class Return(SolePredecessorTransformingInstruction):
     """The sink instruction that forces execution
 
     Return is implemented as a TransformingInstruction so it triggers
@@ -131,12 +131,12 @@ class Filter(TransformingInstruction):
 
 
 @dataclass(eq=False)
-class ProjectEntity(SoleIndegreeTransformingInstruction):
+class ProjectEntity(SolePredecessorTransformingInstruction):
     entity_type: str
 
 
 @dataclass(eq=False)
-class ProjectAttrs(SoleIndegreeTransformingInstruction):
+class ProjectAttrs(SolePredecessorTransformingInstruction):
     # mashumaro does not support typing.Iterable, only List
     attrs: List[str]
 
@@ -167,7 +167,7 @@ class DataSource(SourceInstruction):
 
 
 @dataclass(eq=False)
-class Variable(SoleIndegreeTransformingInstruction):
+class Variable(SolePredecessorTransformingInstruction):
     name: str
     # required to dereference a variable that has been created multiple times
     # the variable with the largest version will be used by dereference
@@ -182,7 +182,7 @@ class Reference(IntermediateInstruction):
 
 
 @dataclass(eq=False)
-class Limit(SoleIndegreeTransformingInstruction):
+class Limit(SolePredecessorTransformingInstruction):
     num: int
 
 
