@@ -255,6 +255,29 @@ DISP browsers ATTR name
     assert gs[0].interface == CACHE_INTERFACE_IDENTIFIER
 
 
+def test_get_trunk_n_branches_filter():
+    stmt = "y = x WHERE name = z.name AND pid = w.pid"
+    graph = parse_kestrel(stmt)
+    trunk, r2n = graph.get_trunk_n_branches(graph.get_nodes_by_type(Filter)[0])
+    assert trunk.name == "x"
+    for r,n in r2n.items():
+        assert next(graph.predecessors(n)).name == r.reference
+
+
+def test_get_trunk_n_branches_variable():
+    huntflow = """
+p1 = NEW process [ {"name": "cmd.exe", "pid": 123}
+                 , {"name": "explorer.exe", "pid": 99}
+                 , {"name": "firefox.exe", "pid": 201}
+                 , {"name": "chrome.exe", "pid": 205}
+                 ]
+"""
+    graph = parse_kestrel(huntflow)
+    trunk, r2n = graph.get_trunk_n_branches(graph.get_variable("p1"))
+    assert isinstance(trunk, Construct)
+    assert r2n == {}
+
+
 def test_find_dependent_subgraphs_of_node():
     huntflow = """
 p1 = NEW process [ {"name": "cmd.exe", "pid": 123}

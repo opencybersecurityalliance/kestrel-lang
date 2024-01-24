@@ -7,6 +7,7 @@ from typing import (
     List,
     Optional,
     Iterable,
+    Any,
 )
 from dataclasses import (
     dataclass,
@@ -27,6 +28,7 @@ from kestrel.ir.filter import (
     TimeRange,
     ReferenceValue,
     get_references_from_exp,
+    fill_references_in_exp,
 )
 from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
 
@@ -84,6 +86,12 @@ class TransformingInstruction(Instruction):
     pass
 
 
+class SoleIndegreeTransformingInstruction(TransformingInstruction):
+    """The translating instruction whose indegree==1"""
+
+    pass
+
+
 class SourceInstruction(Instruction):
     """The instruction that does not dependent on any instruction"""
 
@@ -97,7 +105,7 @@ class IntermediateInstruction(Instruction):
 
 
 @dataclass(eq=False)
-class Return(TransformingInstruction):
+class Return(SoleIndegreeTransformingInstruction):
     """The sink instruction that forces execution
 
     Return is implemented as a TransformingInstruction so it triggers
@@ -118,14 +126,17 @@ class Filter(TransformingInstruction):
     def get_references(self) -> Iterable[ReferenceValue]:
         return get_references_from_exp(self.exp)
 
+    def fill_references(self, r2v: Mapping[ReferenceValue, Any]):
+        fill_references_in_exp(self.exp, r2v)
+
 
 @dataclass(eq=False)
-class ProjectEntity(TransformingInstruction):
+class ProjectEntity(SoleIndegreeTransformingInstruction):
     entity_type: str
 
 
 @dataclass(eq=False)
-class ProjectAttrs(TransformingInstruction):
+class ProjectAttrs(SoleIndegreeTransformingInstruction):
     # mashumaro does not support typing.Iterable, only List
     attrs: List[str]
 
@@ -156,7 +167,7 @@ class DataSource(SourceInstruction):
 
 
 @dataclass(eq=False)
-class Variable(TransformingInstruction):
+class Variable(SoleIndegreeTransformingInstruction):
     name: str
     # required to dereference a variable that has been created multiple times
     # the variable with the largest version will be used by dereference
@@ -171,7 +182,7 @@ class Reference(IntermediateInstruction):
 
 
 @dataclass(eq=False)
-class Limit(TransformingInstruction):
+class Limit(SoleIndegreeTransformingInstruction):
     num: int
 
 

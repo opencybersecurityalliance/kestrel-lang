@@ -58,6 +58,22 @@ class MultiSourcesInGraph(KestrelError):
     pass
 
 
+class LargerThanOneIndegreeInstruction(KestrelError):
+    pass
+
+
+class DanglingReferenceInFilter(KestrelError):
+    pass
+
+
+class DanglingFilter(KestrelError):
+    pass
+
+
+class DuplicatedReferenceInFilter(KestrelError):
+    pass
+
+
 class InvalidSerializedDatasourceInterfaceCacheCatalog(KestrelError):
     pass
 
