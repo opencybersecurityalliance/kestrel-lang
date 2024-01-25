@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, List, Mapping, Optional
+from typing import Iterable, List, Mapping, Optional, Union
 from uuid import UUID
 
 import sqlalchemy
@@ -30,9 +30,13 @@ _logger = logging.getLogger(__name__)
 
 @typechecked
 class SqliteTranslator(SqlTranslator):
-    def __init__(self, from_obj: sqlalchemy.FromClause):
+    def __init__(self, from_obj: Union[SqlTranslator, str]):
+        if isinstance(from_obj, SqlTranslator):
+            fc = from_obj.query.subquery()
+        else:  # str to represent table name
+            fc = sqlalchemy.table(from_obj)
         super().__init__(
-            sqlalchemy.dialects.sqlite.dialect(), dt_parser, "time", from_obj
+            sqlalchemy.dialects.sqlite.dialect(), dt_parser, "time", fc
         )  # FIXME: need mapping for timestamp?
 
 
@@ -100,14 +104,17 @@ class SqliteCache(AbstractCache):
         _logger.debug("_eval: %s", instruction)
 
         if instruction.id in self:
+            # cached in sqlite
             table_name = self.cache_catalog[instruction.id]
-            translator = SqliteTranslator(sqlalchemy.table(table_name))
+            translator = SqliteTranslator(table_name)
 
         elif isinstance(instruction, SourceInstruction):
             if isinstance(instruction, Construct):
+                # cache the data
                 self[instruction.id] = DataFrame(instruction.data)
+                # pull the data to start a SqliteTranslator
                 table_name = self.cache_catalog[instruction.id]
-                translator = SqliteTranslator(sqlalchemy.table(table_name))
+                translator = SqliteTranslator(table_name)
             else:
                 raise NotImplementedError(f"Unknown instruction type: {instruction}")
 
@@ -119,12 +126,20 @@ class SqliteCache(AbstractCache):
                 if isinstance(instruction, Return):
                     pass
                 elif isinstance(instruction, Variable):
-                    pass
+                    # start a new translator and use previous one as subquery
+                    # this allows using the variable as a dependent node
+                    # if the variable is a sink, `SELECT * FROM (subquery)` also works
+                    translator = SqliteTranslator(translator)
                 else:
                     translator.add_instruction(instruction)
 
             elif isinstance(instruction, Filter):
-                translator = self._evaluate_instruction_in_graph(graph, trunk)
+                # replace each ReferenceValue with a subquery
+                instruction.resolve_references(
+                    lambda x: self._evaluate_instruction_in_graph(
+                        graph, r2n[x]
+                    ).query.subquery()
+                )
                 translator.add_instruction(instruction)
 
             else:

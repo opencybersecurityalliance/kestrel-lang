@@ -127,3 +127,26 @@ browsers = proclist WHERE name IN ("explorer.exe", "firefox.exe", "chrome.exe")
     graph = IRGraphEvaluable(parse_kestrel(stmt))
     c = SqliteCache()
     _ = c.evaluate_graph(graph)
+
+
+def test_eval_filter_with_ref():
+    stmt = """
+proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
+                       , {"name": "explorer.exe", "pid": 99}
+                       , {"name": "firefox.exe", "pid": 201}
+                       , {"name": "chrome.exe", "pid": 205}
+                       ]
+browsers = proclist WHERE name = 'firefox.exe' OR name = 'chrome.exe'
+specials = proclist WHERE pid IN [123, 201]
+p2 = proclist WHERE pid = browsers.pid and name = specials.name
+DISP p2 ATTR name, pid
+"""
+    graph = IRGraphEvaluable(parse_kestrel(stmt))
+    c = SqliteCache()
+    mapping = c.evaluate_graph(graph)
+
+    # check the return is correct
+    rets = graph.get_returns()
+    assert len(rets) == 1
+    df = mapping[rets[0].id]
+    assert df.to_dict("records") == [ {"name": "firefox.exe", "pid": 201} ]

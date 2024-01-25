@@ -28,7 +28,7 @@ from kestrel.ir.filter import (
     TimeRange,
     ReferenceValue,
     get_references_from_exp,
-    fill_references_in_exp,
+    resolve_reference_with_function,
 )
 from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
 
@@ -126,8 +126,8 @@ class Filter(TransformingInstruction):
     def get_references(self) -> Iterable[ReferenceValue]:
         return get_references_from_exp(self.exp)
 
-    def fill_references(self, r2v: Mapping[ReferenceValue, Any]):
-        fill_references_in_exp(self.exp, r2v)
+    def resolve_references(self, f: Callable[[ReferenceValue], Any]):
+        resolve_reference_with_function(self.exp, f)
 
 
 @dataclass(eq=False)

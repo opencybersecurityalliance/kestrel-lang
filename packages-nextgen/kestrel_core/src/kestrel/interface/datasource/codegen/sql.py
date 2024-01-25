@@ -79,7 +79,7 @@ class SqlTranslator:
         self.timestamp = timestamp
 
         # SQLAlchemy statement object
-        self.query: Select = select().select_from(from_obj)
+        self.query: Select = select("*").select_from(from_obj)
 
     def _render_exp(self, exp: BoolExp) -> BooleanClauseList:
         if isinstance(exp.lhs, BoolExp):
@@ -141,8 +141,4 @@ class SqlTranslator:
 
     def result(self) -> Compiled:
         # TODO: two projections, e.g., ProjectAttrs after ProjectEntity
-
-        # If there was no projection, we need to add '*' explicitly
-        if len(self.query.selected_columns) == 0:
-            self.query = self.query.with_only_columns("*")
         return self.query.compile(dialect=self.dialect)

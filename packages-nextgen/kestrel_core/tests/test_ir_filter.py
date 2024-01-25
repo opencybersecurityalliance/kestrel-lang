@@ -4,7 +4,7 @@ from kestrel.frontend.parser import parse_kestrel
 from kestrel.ir.filter import (
     IntComparison, FloatComparison, StrComparison, ListComparison,
     RefComparison, ReferenceValue, ListOp, NumCompOp, StrCompOp, ExpOp,
-    BoolExp, MultiComp, get_references_from_exp, fill_references_in_exp,
+    BoolExp, MultiComp, get_references_from_exp, resolve_reference_with_function,
 )
 from kestrel.ir.instructions import (
     Filter,
@@ -141,5 +141,5 @@ def test_fill_references_in_exp():
     rs = get_references_from_exp(exp)
     r2v = {r: 5 for r in rs}
     assert len(r2v) == 1
-    fill_references_in_exp(exp, r2v)
+    resolve_reference_with_function(exp, lambda x: r2v[x])
     assert exp.rhs.value == 5
