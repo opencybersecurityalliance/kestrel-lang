@@ -1,3 +1,4 @@
+import logging
 from functools import reduce
 from typing import Callable
 
@@ -26,6 +27,8 @@ from kestrel.ir.instructions import (
     ProjectEntity,
 )
 
+
+_logger = logging.getLogger(__name__)
 
 # SQLAlchemy comparison operator functions
 comp2func = {
@@ -142,3 +145,10 @@ class SqlTranslator:
     def result(self) -> Compiled:
         # TODO: two projections, e.g., ProjectAttrs after ProjectEntity
         return self.query.compile(dialect=self.dialect)
+
+    def result_w_literal_binds(self) -> Compiled:
+        # full SQL query with literal binds showing, i.e., IN [99, 51], not IN [?, ?]
+        # this is for debug display, not used by an sqlalchemy driver to execute
+        return self.query.compile(
+            dialect=self.dialect, compile_kwargs={"literal_binds": True}
+        )

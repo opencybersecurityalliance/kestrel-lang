@@ -90,10 +90,11 @@ class SqliteCache(AbstractCache):
         if not instructions_to_evaluate:
             instructions_to_evaluate = graph.get_sink_nodes()
         for instruction in instructions_to_evaluate:
+            _logger.debug(f"evaluate instruction: {instruction}")
             translator = self._evaluate_instruction_in_graph(graph, instruction)
             # TODO: may catch error in case evaluation starts from incomplete SQL
+            _logger.debug(f"SQL query generated: {translator.result_w_literal_binds()}")
             mapping[instruction.id] = read_sql(translator.result(), self.connection)
-        _logger.debug("mapping: %s", mapping)
         return mapping
 
     def _evaluate_instruction_in_graph(
@@ -101,8 +102,6 @@ class SqliteCache(AbstractCache):
         graph: IRGraphEvaluable,
         instruction: Instruction,
     ) -> SqliteTranslator:
-        _logger.debug("_eval: %s", instruction)
-
         if instruction.id in self:
             # cached in sqlite
             table_name = self.cache_catalog[instruction.id]
@@ -135,10 +134,15 @@ class SqliteCache(AbstractCache):
 
             elif isinstance(instruction, Filter):
                 # replace each ReferenceValue with a subquery
+                # note that this subquery will be used as a value for the .in_ operator
+                # we should not use .subquery() here but just `Select` class
+                # otherwise, will get warning:
+                #   SAWarning: Coercing Subquery object into a select() for use in IN();
+                #   please pass a select() construct explicitly
                 instruction.resolve_references(
                     lambda x: self._evaluate_instruction_in_graph(
                         graph, r2n[x]
-                    ).query.subquery()
+                    ).query
                 )
                 translator.add_instruction(instruction)
 
