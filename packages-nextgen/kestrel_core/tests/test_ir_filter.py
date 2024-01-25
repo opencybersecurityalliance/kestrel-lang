@@ -139,6 +139,6 @@ def test_fill_references_in_exp():
     rhs = RefComparison("baz", "=", ReferenceValue("var", "attr"))
     exp = BoolExp(lhs, ExpOp.AND, rhs)
     rs = get_references_from_exp(exp)
-    assert len(r2v) == 1
+    assert len(list(rs)) == 1
     resolve_reference_with_function(exp, lambda x: 5)
     assert exp.rhs.value == 5
