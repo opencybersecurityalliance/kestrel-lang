@@ -140,9 +140,7 @@ class SqliteCache(AbstractCache):
                 #   SAWarning: Coercing Subquery object into a select() for use in IN();
                 #   please pass a select() construct explicitly
                 instruction.resolve_references(
-                    lambda x: self._evaluate_instruction_in_graph(
-                        graph, r2n[x]
-                    ).query
+                    lambda x: self._evaluate_instruction_in_graph(graph, r2n[x]).query
                 )
                 translator.add_instruction(instruction)
 
