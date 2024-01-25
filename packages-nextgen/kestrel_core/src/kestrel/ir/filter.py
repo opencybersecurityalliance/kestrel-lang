@@ -4,7 +4,7 @@ from typeguard import typechecked
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Union, Iterable, Any, Mapping
+from typing import List, Optional, Union, Iterable, Any, Mapping, Callable
 
 from mashumaro.mixins.json import DataClassJSONMixin
 
@@ -183,12 +183,14 @@ def get_references_from_exp(exp: FExpression) -> Iterable[ReferenceValue]:
 
 
 @typechecked
-def fill_references_in_exp(exp: FExpression, r2v: Mapping[ReferenceValue, Any]):
+def resolve_reference_with_function(
+    exp: FExpression, f: Callable[[ReferenceValue], Any]
+):
     if isinstance(exp, RefComparison):
-        exp.value = r2v[exp.value]
+        exp.value = f(exp.value)
     elif isinstance(exp, BoolExp):
-        fill_references_in_exp(exp.lhs, r2v)
-        fill_references_in_exp(exp.rhs, r2v)
+        resolve_reference_with_function(exp.lhs, f)
+        resolve_reference_with_function(exp.rhs, f)
     elif isinstance(exp, MultiComp):
         for comp in exp.comps:
-            fill_references_in_exp(comp, r2v)
+            resolve_reference_with_function(comp, f)

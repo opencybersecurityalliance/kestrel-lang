@@ -1,11 +1,10 @@
 import logging
-from typing import Iterable, List, Mapping, Optional
+from typing import Iterable, List, Mapping, Optional, Union
 from uuid import UUID
 
+import sqlalchemy
 from dateutil.parser import parse as dt_parser
 from pandas import DataFrame, read_sql
-from sqlalchemy import create_engine, table, text
-from sqlalchemy.dialects import sqlite
 from typeguard import typechecked
 
 from kestrel.cache.base import AbstractCache
@@ -15,9 +14,11 @@ from kestrel.ir.instructions import (
     Construct,
     Instruction,
     Return,
+    Variable,
+    Filter,
     SourceInstruction,
     TransformingInstruction,
-    Variable,
+    SolePredecessorTransformingInstruction,
 )
 
 from kestrel.exceptions import (
@@ -29,9 +30,13 @@ _logger = logging.getLogger(__name__)
 
 @typechecked
 class SqliteTranslator(SqlTranslator):
-    def __init__(self, select_from: str):
+    def __init__(self, from_obj: Union[SqlTranslator, str]):
+        if isinstance(from_obj, SqlTranslator):
+            fc = from_obj.query.subquery()
+        else:  # str to represent table name
+            fc = sqlalchemy.table(from_obj)
         super().__init__(
-            sqlite.dialect(), dt_parser, "time", select_from
+            sqlalchemy.dialects.sqlite.dialect(), dt_parser, "time", fc
         )  # FIXME: need mapping for timestamp?
 
 
@@ -49,7 +54,7 @@ class SqliteCache(AbstractCache):
 
         # for an absolute file path, the three slashes are followed by the absolute path
         # for a relative path, it's also three slashes?
-        self.engine = create_engine(f"sqlite:///{path}")
+        self.engine = sqlalchemy.create_engine(f"sqlite:///{path}")
         self.connection = self.engine.connect()
 
         if initial_cache:
@@ -63,8 +68,8 @@ class SqliteCache(AbstractCache):
         return read_sql(self.cache_catalog[instruction_id], self.connection)
 
     def __delitem__(self, instruction_id: UUID):
-        table = self.cache_catalog[instruction_id]
-        self.connection.execute(text(f'DROP TABLE "{table}"'))
+        table_name = self.cache_catalog[instruction_id]
+        self.connection.execute(sqlalchemy.text(f'DROP TABLE "{table_name}"'))
         del self.cache_catalog[instruction_id]
 
     def __setitem__(
@@ -72,10 +77,9 @@ class SqliteCache(AbstractCache):
         instruction_id: UUID,
         data: DataFrame,
     ):
-        self.cache_catalog[instruction_id] = instruction_id.hex
-        data.to_sql(
-            instruction_id.hex, con=self.connection, if_exists="replace", index=False
-        )
+        table_name = instruction_id.hex
+        self.cache_catalog[instruction_id] = table_name
+        data.to_sql(table_name, con=self.connection, if_exists="replace", index=False)
 
     def evaluate_graph(
         self,
@@ -86,52 +90,62 @@ class SqliteCache(AbstractCache):
         if not instructions_to_evaluate:
             instructions_to_evaluate = graph.get_sink_nodes()
         for instruction in instructions_to_evaluate:
-            self._evaluate_instruction_in_graph(instruction, graph)
-            if instruction.id not in self:
-                # e.g., the instruction is in the middle of a path (not full select stmt)
-                raise InevaluableInstruction(instruction)
-            else:
-                mapping[instruction.id] = self[instruction.id]
-        _logger.debug("mapping: %s", mapping)
+            _logger.debug(f"evaluate instruction: {instruction}")
+            translator = self._evaluate_instruction_in_graph(graph, instruction)
+            # TODO: may catch error in case evaluation starts from incomplete SQL
+            _logger.debug(f"SQL query generated: {translator.result_w_literal_binds()}")
+            mapping[instruction.id] = read_sql(translator.result(), self.connection)
         return mapping
 
     def _evaluate_instruction_in_graph(
         self,
-        instruction: Instruction,
         graph: IRGraphEvaluable,
+        instruction: Instruction,
     ) -> SqliteTranslator:
-        # TODO: handle multiple predecessors of a node
-        _logger.debug("_eval: %s", instruction)
-
-        if isinstance(instruction, (Return, Variable)):
-            if instruction.id not in self:
-                # evaluate its ancestry path
-                _translator = self._evaluate_instruction_in_graph(
-                    next(graph.predecessors(instruction)), graph
-                )
-                stmt = _translator.result()
-                _logger.debug("%s -> %s", instruction, stmt)
-
-                # TODO: more efficient/lightweight implementation using view creation
-                self[instruction.id] = read_sql(stmt, self.connection)
-
-            # finally init translator from cache for potential descendants use
-            translator = SqliteTranslator(self.cache_catalog[instruction.id])
+        if instruction.id in self:
+            # cached in sqlite
+            table_name = self.cache_catalog[instruction.id]
+            translator = SqliteTranslator(table_name)
 
         elif isinstance(instruction, SourceInstruction):
             if isinstance(instruction, Construct):
+                # cache the data
                 self[instruction.id] = DataFrame(instruction.data)
-                translator = SqliteTranslator(self.cache_catalog[instruction.id])
+                # pull the data to start a SqliteTranslator
+                table_name = self.cache_catalog[instruction.id]
+                translator = SqliteTranslator(table_name)
             else:
-                raise NotImplementedError(
-                    f"Unknown SourceInstruction {instruction} for Cache"
-                )
+                raise NotImplementedError(f"Unknown instruction type: {instruction}")
 
         elif isinstance(instruction, TransformingInstruction):
-            translator = self._evaluate_instruction_in_graph(
-                next(graph.predecessors(instruction)), graph
-            )
-            translator.add_instruction(instruction)
+            trunk, r2n = graph.get_trunk_n_branches(instruction)
+            translator = self._evaluate_instruction_in_graph(graph, trunk)
+
+            if isinstance(instruction, SolePredecessorTransformingInstruction):
+                if isinstance(instruction, Return):
+                    pass
+                elif isinstance(instruction, Variable):
+                    # start a new translator and use previous one as subquery
+                    # this allows using the variable as a dependent node
+                    # if the variable is a sink, `SELECT * FROM (subquery)` also works
+                    translator = SqliteTranslator(translator)
+                else:
+                    translator.add_instruction(instruction)
+
+            elif isinstance(instruction, Filter):
+                # replace each ReferenceValue with a subquery
+                # note that this subquery will be used as a value for the .in_ operator
+                # we should not use .subquery() here but just `Select` class
+                # otherwise, will get warning:
+                #   SAWarning: Coercing Subquery object into a select() for use in IN();
+                #   please pass a select() construct explicitly
+                instruction.resolve_references(
+                    lambda x: self._evaluate_instruction_in_graph(graph, r2n[x]).query
+                )
+                translator.add_instruction(instruction)
+
+            else:
+                raise NotImplementedError(f"Unknown instruction type: {instruction}")
 
         else:
             raise NotImplementedError(f"Unknown instruction type: {instruction}")

@@ -81,23 +81,22 @@ class InMemoryCache(AbstractCache):
             df = evaluate_source_instruction(instruction)
         elif isinstance(instruction, TransformingInstruction):
             trunk, r2n = graph.get_trunk_n_branches(instruction)
+            df = self._evaluate_instruction_in_graph(graph, trunk)
             if isinstance(instruction, Return):
-                df = self._evaluate_instruction_in_graph(graph, trunk)
+                pass
             elif isinstance(instruction, Variable):
-                df = self._evaluate_instruction_in_graph(graph, trunk)
                 self[instruction.id] = df
             else:
                 if isinstance(instruction, Filter):
-                    instruction.fill_references(
-                        {
-                            r: list(
-                                self._evaluate_instruction_in_graph(graph, n).iloc[:, 0]
-                            )
-                            for r, n in r2n.items()
-                        }
+                    # replace each ReferenceValue with a list of values
+                    instruction.resolve_references(
+                        lambda x: list(
+                            self._evaluate_instruction_in_graph(graph, r2n[x]).iloc[
+                                :, 0
+                            ]
+                        )
                     )
-                df0 = self._evaluate_instruction_in_graph(graph, trunk)
-                df = evaluate_transforming_instruction(instruction, df0)
+                df = evaluate_transforming_instruction(instruction, df)
         else:
             raise NotImplementedError(f"Unknown instruction type: {instruction}")
         return df
