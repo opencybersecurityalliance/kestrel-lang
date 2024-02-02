@@ -376,3 +376,19 @@ def test_find_from_empty_input(set_empty_kestrel_config, proc_bundle_file):
 
         assert len(procs) == 0
         assert procs.records_count == 0
+
+
+def test_find_dir_contained_file(set_empty_kestrel_config, proc_bundle_file):
+    with Session() as s:
+        stmt = f"""
+                files = GET file
+                        FROM file://{proc_bundle_file}
+                        WHERE name = 'svchost.exe'
+                dirs = FIND directory CONTAINED files
+                """
+        s.execute(stmt)
+        files = s.get_variable("files")
+        print(json.dumps(files, indent=4))
+        dirs = s.get_variable("dirs")
+        print(json.dumps(dirs, indent=4))
+        assert len(dirs) == 1
