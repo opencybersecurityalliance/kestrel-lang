@@ -377,8 +377,13 @@ def find(stmt, session):
     if return_type in session.store.types():
         input_var_attrs = _get_all_entity_attrs(session.store, input_type)
         return_type_attrs = _get_all_entity_attrs(session.store, return_type)
-        _logger.debug("return_type=%s %s; input_type=%s %s",
-                      return_type, return_type_attrs, input_type, input_var_attrs)
+        _logger.debug(
+            "return_type=%s %s; input_type=%s %s",
+            return_type,
+            return_type_attrs,
+            input_type,
+            input_var_attrs,
+        )
 
         # First, get information from local store
         if stmt["relation"] in generic_relations:
@@ -388,7 +393,9 @@ def find(stmt, session):
             )
 
         else:
-            _logger.debug("Compiling query for specific relation '%s'", stmt["relation"])
+            _logger.debug(
+                "Compiling query for specific relation '%s'", stmt["relation"]
+            )
             rel_query = compile_specific_relation_to_query(
                 return_type,
                 stmt["relation"],

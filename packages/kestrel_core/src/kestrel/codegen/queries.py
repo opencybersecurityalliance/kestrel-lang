@@ -46,8 +46,12 @@ def compile_specific_relation_to_query(
 
         (var_attr, ret_attr) = (ref_name, "id") if var_is_source else ("id", ref_name)
 
-        _logger.debug("stix_src_refs: var_attr=%s, ret_attr=%s, ref_name=%s",
-                      var_attr, ret_attr, ref_name)
+        _logger.debug(
+            "stix_src_refs: var_attr=%s, ret_attr=%s, ref_name=%s",
+            var_attr,
+            ret_attr,
+            ref_name,
+        )
 
         # if there are multiple options, use first one found in DB
         if var_attr in input_var_attrs and ret_attr in return_type_attrs:
@@ -78,8 +82,12 @@ def compile_specific_relation_to_query(
 
         (var_attr, ret_attr) = (ref_name, "id") if var_is_source else ("id", ref_name)
 
-        _logger.debug("stix_tgt_refs: var_attr=%s, ret_attr=%s, ref_name=%s",
-                      var_attr, ret_attr, ref_name)
+        _logger.debug(
+            "stix_tgt_refs: var_attr=%s, ret_attr=%s, ref_name=%s",
+            var_attr,
+            ret_attr,
+            ref_name,
+        )
 
         # if there are multiple options, use first one found in DB
         if var_attr in input_var_attrs and ret_attr in return_type_attrs:
