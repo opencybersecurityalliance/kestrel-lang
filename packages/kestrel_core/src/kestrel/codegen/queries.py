@@ -1,3 +1,5 @@
+import logging
+
 from firepit.query import (
     Column,
     Filter,
@@ -10,6 +12,9 @@ from firepit.query import (
 )
 
 from kestrel.codegen.relations import stix_2_0_ref_mapping
+
+
+_logger = logging.getLogger(__name__)
 
 
 def compile_specific_relation_to_query(
@@ -41,17 +46,23 @@ def compile_specific_relation_to_query(
 
         (var_attr, ret_attr) = (ref_name, "id") if var_is_source else ("id", ref_name)
 
+        _logger.debug(
+            "stix_src_refs: var_attr=%s, ret_attr=%s, ref_name=%s",
+            var_attr,
+            ret_attr,
+            ref_name,
+        )
+
         # if there are multiple options, use first one found in DB
-        if ref_name.endswith("_refs"):
-            query = _generate_reflist_query(
-                input_var_name, var_is_source, ref_name, return_type
-            )
-
-        elif var_attr in input_var_attrs and ret_attr in return_type_attrs:
-            query = _generate_ref_query(
-                input_var_name, input_type, var_attr, return_type, ret_attr
-            )
-
+        if var_attr in input_var_attrs and ret_attr in return_type_attrs:
+            if ref_name.endswith("_refs"):
+                query = _generate_reflist_query(
+                    input_var_name, var_is_source, ref_name, return_type
+                )
+            else:
+                query = _generate_ref_query(
+                    input_var_name, input_type, var_attr, return_type, ret_attr
+                )
         else:
             continue
 
@@ -71,17 +82,23 @@ def compile_specific_relation_to_query(
 
         (var_attr, ret_attr) = (ref_name, "id") if var_is_source else ("id", ref_name)
 
+        _logger.debug(
+            "stix_tgt_refs: var_attr=%s, ret_attr=%s, ref_name=%s",
+            var_attr,
+            ret_attr,
+            ref_name,
+        )
+
         # if there are multiple options, use first one found in DB
-        if ref_name.endswith("_refs"):
-            query = _generate_reflist_query(
-                input_var_name, var_is_source, ref_name, return_type
-            )
-
-        elif var_attr in input_var_attrs and ret_attr in return_type_attrs:
-            query = _generate_ref_query(
-                input_var_name, input_type, var_attr, return_type, ret_attr
-            )
-
+        if var_attr in input_var_attrs and ret_attr in return_type_attrs:
+            if ref_name.endswith("_refs"):
+                query = _generate_reflist_query(
+                    input_var_name, var_is_source, ref_name, return_type
+                )
+            else:
+                query = _generate_ref_query(
+                    input_var_name, input_type, var_attr, return_type, ret_attr
+                )
         else:
             continue
 
