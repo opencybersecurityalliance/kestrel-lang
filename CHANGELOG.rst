@@ -18,8 +18,9 @@ Fixed
 -----
 
 - Remove port checking in stix-shifter interface #452
-- Miss logging module in ``stix-shifter-diag``
-- Miss delete operation in ``kestrel_datasource_stixshifter`` #458
+- Add missing logging module import in ``stix-shifter-diag``
+- Add missing delete operation in ``kestrel_datasource_stixshifter`` #458
+- Fix relations like ``CONTAINS`` #472
 
 Changed
 -------
