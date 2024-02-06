@@ -7,15 +7,15 @@ from kestrel.ir.filter import (
     BoolExp,
     ExpOp,
     FComparison,
-    IntComparison,
     ListComparison,
     ListOp,
     MultiComp,
     NumCompOp,
     StrComparison,
-    StrCompOp,
+    StrCompOp
 )
 from kestrel.ir.instructions import (
+    DataSource,
     Filter,
     Instruction,
     Limit,
@@ -96,6 +96,7 @@ class OpenSearchTranslator:
         self.timestamp = timestamp
 
         # Query clauses
+        self.datasource: str = None
         self.table: str = select_from
         self.where: str = ""
         self.project: list[str] = []
@@ -115,6 +116,10 @@ class OpenSearchTranslator:
         else:
             rhs = _render_comp(exp.rhs)
         return _and(lhs, rhs) if exp.op == ExpOp.AND else _or(lhs, rhs)
+
+    def add_DataSource(self, ds: DataSource) -> None:
+        self.interface = ds.interface  # TODO: raise exception if it's not "opensearch"?
+        self.datasource = ds.datasource
 
     def add_Filter(self, filt: Filter) -> None:
         if filt.timerange.start:
