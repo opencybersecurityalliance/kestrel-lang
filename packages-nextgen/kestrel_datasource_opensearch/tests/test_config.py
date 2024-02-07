@@ -4,6 +4,7 @@ import yaml
 
 from kestrel_datasource_opensearch.config import (
     PROFILE_PATH_ENV_VAR,
+    Connection,
     load_config,
 )
 
@@ -40,5 +41,7 @@ def test_load_config(tmp_path):
         yaml.dump(config, fp)
     os.environ[PROFILE_PATH_ENV_VAR] = str(config_file)
     read_config = load_config()
-    assert read_config["connections"]["localhost"]["url"] == config["connections"]["localhost"]["url"]
-    assert read_config["indexes"]["some_index"]["timestamp"] == config["indexes"]["some_index"]["timestamp"]
+    conn: Connection = read_config.connections["localhost"]
+    assert conn.url == config["connections"]["localhost"]["url"]
+    assert read_config.connections["localhost"].url == config["connections"]["localhost"]["url"]
+    assert read_config.indexes["some_index"].timestamp == config["indexes"]["some_index"]["timestamp"]

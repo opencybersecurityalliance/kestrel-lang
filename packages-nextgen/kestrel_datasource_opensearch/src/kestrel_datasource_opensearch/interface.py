@@ -16,7 +16,7 @@ from kestrel.ir.instructions import (
     Filter,
     SourceInstruction,
     TransformingInstruction,
-    SolePredecessorTransformingInstruction
+    SolePredecessorTransformingInstruction,
 )
 
 from kestrel_datasource_opensearch.config import load_config
@@ -74,12 +74,12 @@ class OpenSearchInterface(AbstractDataSourceInterface):
             translator = self._evaluate_instruction_in_graph(graph, instruction)
             # TODO: may catch error in case evaluation starts from incomplete SQL
             _logger.debug("SQL query generated: %s", translator.result())
-            ds = self.config["indexes"][translator.datasource]
-            conn = self.config["connections"][ds["connection"]]
+            ds = self.config.indexes[translator.datasource]
+            conn = self.config.connections[ds.connection]
             client = OpenSearch(
-                [conn["url"]],
-                http_auth=(conn["auth"]["username"], conn["auth"]["password"]),
-                verify_certs=conn["verify_certs"],
+                [conn.url],
+                http_auth=(conn.auth.username, conn.auth.password),
+                verify_certs=conn.verify_certs,
             )
             mapping[instruction.id] = read_sql(translator.result(), client)
         return mapping
@@ -111,9 +111,9 @@ class OpenSearchInterface(AbstractDataSourceInterface):
 
         elif isinstance(instruction, SourceInstruction):
             if isinstance(instruction, DataSource):
-                ds = self.config["indexes"][instruction.datasource]
+                ds = self.config.indexes[instruction.datasource]
                 translator = OpenSearchTranslator(
-                    _dt2ts, ds["timestamp"], instruction.datasource
+                    _dt2ts, ds.timestamp, instruction.datasource
                 )
                 translator.add_instruction(instruction)
             else:

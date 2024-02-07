@@ -12,7 +12,7 @@ from kestrel.ir.filter import (
     MultiComp,
     NumCompOp,
     StrComparison,
-    StrCompOp
+    StrCompOp,
 )
 from kestrel.ir.instructions import (
     DataSource,
