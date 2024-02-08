@@ -172,12 +172,12 @@ class _KestrelT(Transformer):
         reference = graph.add_node(args[0])
         root = reference
         if len(args) > 1:
-            clause = args[1]
-            graph.add_node(clause, reference)
-            root = clause
-            if isinstance(clause, Filter):
-                # this is where_clause
-                _add_reference_branches_for_filter(graph, clause)
+            for clause in args[1:]:
+                graph.add_node(clause, root)
+                root = clause
+                if isinstance(clause, Filter):
+                    # this is where_clause
+                    _add_reference_branches_for_filter(graph, clause)
         return graph, root
 
     def vtrans(self, args):
