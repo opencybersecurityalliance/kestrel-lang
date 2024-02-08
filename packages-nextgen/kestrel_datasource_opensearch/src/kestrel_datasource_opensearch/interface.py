@@ -52,7 +52,8 @@ class OpenSearchInterface(AbstractDataSourceInterface):
         super().__init__(serialized_cache_catalog, session_id)
         self.config = load_config()
 
-    def name(self) -> str:
+    @property
+    def name(self):
         return "opensearch"
 
     def store(

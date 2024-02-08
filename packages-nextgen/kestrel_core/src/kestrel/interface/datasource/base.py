@@ -19,6 +19,9 @@ from kestrel.exceptions import (
 )
 
 
+MODULE_PREFIX = "kestrel_datasource_"
+
+
 class AbstractDataSourceInterface(ABC):
     """Abstract class for datasource interface
 

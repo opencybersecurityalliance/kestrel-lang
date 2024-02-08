@@ -1,16 +1,16 @@
 import logging
-import atexit
-
-from typing import Iterable
-from typeguard import typechecked
 from contextlib import AbstractContextManager
+from typing import Iterable
 from uuid import UUID, uuid4
+
 from pandas import DataFrame
+from typeguard import typechecked
 
 from kestrel.ir.graph import IRGraph
 from kestrel.frontend.parser import parse_kestrel
 from kestrel.cache import AbstractCache, SqliteCache
 from kestrel.interface.datasource import AbstractDataSourceInterface
+from kestrel.interface.datasource.manager import DataSourceManager
 from kestrel.interface.datasource.utils import get_interface_by_name
 
 
@@ -28,8 +28,11 @@ class Session(AbstractContextManager):
 
         # Datasource interfaces in this session
         # Cache is a special datasource interface and should always be added
-        # TODO: other datasource interfaces to initialize/add if exist
         self.interfaces: Iterable[AbstractDataSourceInterface] = [self.cache]
+
+        # Load data sources and add to list
+        data_source_manager = DataSourceManager()
+        self.interfaces.extend(data_source_manager.interfaces())
 
     def execute(self, huntflow_block: str) -> Iterable[DataFrame]:
         """Execute a Kestrel huntflow block.

@@ -96,3 +96,15 @@ class InterfaceNameCollision(KestrelError):
 
 class IRGraphMissingNode(KestrelError):
     pass
+
+
+class DataSourceInterfaceNotFound(KestrelError):
+    pass
+
+
+class InvalidDataSourceInterfaceImplementation(KestrelError):
+    pass
+
+
+class ConflictingDataSourceInterfaceScheme(KestrelError):
+    pass
