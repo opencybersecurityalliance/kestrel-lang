@@ -241,7 +241,6 @@ proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
 DISP proclist ATTR name, pid LIMIT 10
 """
     graph = parse_kestrel(stmt)
-    print(graph.to_json(indent=4))
     assert len(graph) == 5
     c = graph.get_nodes_by_type(Construct)[0]
     assert {"proclist"} == {v.name for v in graph.get_variables()}
