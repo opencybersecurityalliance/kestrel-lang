@@ -149,7 +149,8 @@ class OpenSearchTranslator:
         self.project = cols
 
     def add_ProjectEntity(self, proj: ProjectEntity) -> None:
-        pass  # TODO
+        if not self.project:
+            self.project = [f"{proj.entity_type}.*"]
 
     def add_Limit(self, lim: Limit) -> None:
         self.limit = lim.num
