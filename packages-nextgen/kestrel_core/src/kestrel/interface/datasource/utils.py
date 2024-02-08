@@ -24,7 +24,6 @@ def get_interface_by_name(
     ifs = filter(lambda x: x.name == interface_name, interfaces)
     try:
         interface = next(ifs)
-        print(interface)
     except StopIteration:
         raise InterfaceNotFound(interface_name)
     else:
