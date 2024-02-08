@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime
 from typing import Iterable, Mapping, Optional
 from uuid import UUID
 
@@ -24,11 +23,6 @@ from kestrel_datasource_opensearch.ossql import OpenSearchTranslator
 
 
 _logger = logging.getLogger(__name__)
-
-
-def _dt2ts(ts: datetime) -> str:
-    """Convert a Python datetime to an ISO timestamp"""
-    return f"{ts}Z"
 
 
 def _os2df(result: dict) -> DataFrame:
@@ -114,7 +108,7 @@ class OpenSearchInterface(AbstractDataSourceInterface):
             if isinstance(instruction, DataSource):
                 ds = self.config.indexes[instruction.datasource]
                 translator = OpenSearchTranslator(
-                    _dt2ts, ds.timestamp, instruction.datasource
+                    ds.timestamp_format, ds.timestamp, instruction.datasource
                 )
                 translator.add_instruction(instruction)
             else:

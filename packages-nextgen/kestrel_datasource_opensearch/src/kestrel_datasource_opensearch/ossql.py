@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import Callable, Union
+from typing import Union
 
 from typeguard import typechecked
 
@@ -85,11 +85,11 @@ def _render_multi_comp(comps: MultiComp) -> str:
 class OpenSearchTranslator:
     def __init__(
         self,
-        timefmt: Callable,
+        timefmt: str,
         timestamp: str,
         select_from: str,
     ):
-        # Time formatting function for datasource
+        # Time format string for datasource
         self.timefmt = timefmt
 
         # Primary timestamp field in target table
@@ -125,10 +125,10 @@ class OpenSearchTranslator:
         if filt.timerange.start:
             # Convert the timerange to the appropriate pair of comparisons
             start_comp = StrComparison(
-                self.timestamp, ">=", self.timefmt(filt.timerange.start)
+                self.timestamp, ">=", filt.timerange.start.strftime(self.timefmt)
             )
             stop_comp = StrComparison(
-                self.timestamp, "<", self.timefmt(filt.timerange.stop)
+                self.timestamp, "<", filt.timerange.stop.strftime(self.timefmt)
             )
             # AND them together
             time_exp = BoolExp(start_comp, ExpOp.AND, stop_comp)

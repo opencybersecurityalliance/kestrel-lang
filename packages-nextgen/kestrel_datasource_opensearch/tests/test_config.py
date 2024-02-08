@@ -32,7 +32,8 @@ def test_load_config(tmp_path):
         "indexes": {
             "some_index": {
                 "connection": "some-cloud-thing",
-                "timestamp": "@timestamp"
+                "timestamp": "@timestamp",
+                "timestamp_format": "%Y-%m-%d %H:%M:%S.%f"
             }
         }
     }

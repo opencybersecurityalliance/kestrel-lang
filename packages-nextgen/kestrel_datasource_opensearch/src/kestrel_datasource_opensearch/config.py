@@ -35,6 +35,7 @@ class Connection(DataClassJSONMixin):
 class Index(DataClassJSONMixin):
     connection: str
     timestamp: str
+    timestamp_format: str
 
 
 @dataclass
