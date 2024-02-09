@@ -19,6 +19,7 @@ from kestrel.ir.instructions import (
     DataSource,
     Filter,
     Limit,
+    Offset,
     ProjectAttrs,
     ProjectEntity,
     Sort,
@@ -66,6 +67,8 @@ def _remove_nl(s):
          "SELECT * FROM my_table WHERE foo = 1 OR bar = 1"),
         ([Filter(MultiComp(ExpOp.AND, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
          "SELECT * FROM my_table WHERE foo = 1 AND bar = 1"),
+        ([Limit(1000), Offset(2000)],
+         "SELECT * FROM my_table LIMIT 2000, 1000"),
     ]
 )
 def test_opensearch_translator(iseq, sql):

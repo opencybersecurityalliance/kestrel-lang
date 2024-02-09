@@ -23,6 +23,7 @@ from kestrel.ir.instructions import (
     Filter,
     Instruction,
     Limit,
+    Offset,
     ProjectAttrs,
     ProjectEntity,
     Sort,
@@ -135,6 +136,9 @@ class SqlTranslator:
 
     def add_Limit(self, lim: Limit) -> None:
         self.query = self.query.limit(lim.num)
+
+    def add_Offset(self, offset: Offset) -> None:
+        self.query = self.query.offset(offset.num)
 
     def add_Sort(self, sort: Sort) -> None:
         col = column(sort.attribute)

@@ -1,15 +1,6 @@
 from __future__ import annotations
 from typeguard import typechecked
-from typing import (
-    Any,
-    Type,
-    Iterable,
-    Tuple,
-    Mapping,
-    MutableMapping,
-    Union,
-    Optional,
-)
+from typing import Any, Iterable, Tuple, Mapping, MutableMapping, Union, Optional
 from collections import defaultdict
 from itertools import combinations
 from uuid import UUID

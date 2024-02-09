@@ -19,6 +19,7 @@ from kestrel.ir.instructions import (
     Filter,
     Instruction,
     Limit,
+    Offset,
     ProjectAttrs,
     ProjectEntity,
     Sort,
@@ -103,6 +104,7 @@ class OpenSearchTranslator:
         self.where: str = ""
         self.project: list[str] = []
         self.limit: int = 0
+        self.offset: int = 0
         self.order_by: str = ""
         self.sort_dir = SortDirection.DESC
 
@@ -159,6 +161,9 @@ class OpenSearchTranslator:
     def add_Limit(self, lim: Limit) -> None:
         self.limit = lim.num
 
+    def add_Offset(self, offset: Offset) -> None:
+        self.offset = offset.num
+
     def add_Sort(self, sort: Sort) -> None:
         self.order_by = sort.attribute
         self.sort_dir = sort.direction
@@ -184,5 +189,9 @@ class OpenSearchTranslator:
         if self.order_by:
             stages.append(f"ORDER BY {self.order_by} {self.sort_dir}")
         if self.limit:
-            stages.append(f"LIMIT {self.limit}")
+            # https://opensearch.org/docs/latest/search-plugins/sql/sql/basic/#limit
+            if self.offset:
+                stages.append(f"LIMIT {self.offset}, {self.limit}")
+            else:
+                stages.append(f"LIMIT {self.limit}")
         return " ".join(stages)

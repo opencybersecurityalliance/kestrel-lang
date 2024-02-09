@@ -4,7 +4,7 @@ from typeguard import typechecked
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Union, Iterable, Any, Mapping, Callable
+from typing import List, Optional, Union, Iterable, Any, Callable
 
 from mashumaro.mixins.json import DataClassJSONMixin
 

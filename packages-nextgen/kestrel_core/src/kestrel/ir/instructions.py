@@ -174,6 +174,11 @@ class Limit(SolePredecessorTransformingInstruction):
 
 
 @dataclass(eq=False)
+class Offset(SolePredecessorTransformingInstruction):
+    num: int
+
+
+@dataclass(eq=False)
 class Construct(SourceInstruction):
     data: List[Mapping[str, Union[str, int, bool]]]
     interface: str = CACHE_INTERFACE_IDENTIFIER

@@ -30,16 +30,17 @@ from kestrel.ir.graph import (
     compose,
 )
 from kestrel.ir.instructions import (
-    Filter,
-    DataSource,
-    Limit,
-    ProjectEntity,
-    Variable,
     Construct,
-    Reference,
+    DataSource,
+    Filter,
+    Limit,
+    Offset,
     ProjectAttrs,
+    ProjectEntity,
+    Reference,
     Return,
     Sort,
+    Variable,
 )
 from kestrel.exceptions import IRGraphMissingNode
 
@@ -361,6 +362,10 @@ class _KestrelT(Transformer):
     def limit_clause(self, args):
         n = int(args[0])
         return Limit(n)
+
+    def offset_clause(self, args):
+        n = int(args[0])
+        return Offset(n)
 
     def disp(self, args):
         graph, root = args[0]

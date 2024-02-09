@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, List, Mapping, Optional, Union
+from typing import Iterable, Mapping, Optional, Union
 from uuid import UUID
 
 import sqlalchemy
@@ -19,10 +19,6 @@ from kestrel.ir.instructions import (
     SourceInstruction,
     TransformingInstruction,
     SolePredecessorTransformingInstruction,
-)
-
-from kestrel.exceptions import (
-    InevaluableInstruction,
 )
 
 _logger = logging.getLogger(__name__)
