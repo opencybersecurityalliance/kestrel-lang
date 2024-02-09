@@ -229,3 +229,29 @@ def test_reference_branch(stmt, node_cnt, expected):
         proj = projs[0]
         assert proj
         assert list(graph.successors(proj)) == [filter_node]
+
+
+def test_parser_disp_after_new():
+    stmt = """
+proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
+                       , {"name": "explorer.exe", "pid": 99}
+                       , {"name": "firefox.exe", "pid": 201}
+                       , {"name": "chrome.exe", "pid": 205}
+                       ]
+DISP proclist ATTR name, pid LIMIT 10
+"""
+    graph = parse_kestrel(stmt)
+    assert len(graph) == 5
+    c = graph.get_nodes_by_type(Construct)[0]
+    assert {"proclist"} == {v.name for v in graph.get_variables()}
+    proclist = graph.get_variable("proclist")
+    proj = graph.get_nodes_by_type(ProjectAttrs)[0]
+    assert proj.attrs == ['name', 'pid']
+    limit = graph.get_nodes_by_type(Limit)[0]
+    assert limit.num == 10
+    ret = graph.get_returns()[0]
+    assert len(graph.edges) == 4
+    assert (c, proclist) in graph.edges
+    assert (proclist, proj) in graph.edges
+    assert (proj, limit) in graph.edges
+    assert (limit, ret) in graph.edges

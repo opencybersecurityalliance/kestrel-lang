@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import Callable, Union
+from typing import Union
 
 from typeguard import typechecked
 
@@ -7,7 +7,6 @@ from kestrel.ir.filter import (
     BoolExp,
     ExpOp,
     FComparison,
-    IntComparison,
     ListComparison,
     ListOp,
     MultiComp,
@@ -16,6 +15,7 @@ from kestrel.ir.filter import (
     StrCompOp,
 )
 from kestrel.ir.instructions import (
+    DataSource,
     Filter,
     Instruction,
     Limit,
@@ -85,17 +85,18 @@ def _render_multi_comp(comps: MultiComp) -> str:
 class OpenSearchTranslator:
     def __init__(
         self,
-        timefmt: Callable,
+        timefmt: str,
         timestamp: str,
         select_from: str,
     ):
-        # Time formatting function for datasource
+        # Time format string for datasource
         self.timefmt = timefmt
 
         # Primary timestamp field in target table
         self.timestamp = timestamp
 
         # Query clauses
+        self.datasource: str = None
         self.table: str = select_from
         self.where: str = ""
         self.project: list[str] = []
@@ -116,14 +117,18 @@ class OpenSearchTranslator:
             rhs = _render_comp(exp.rhs)
         return _and(lhs, rhs) if exp.op == ExpOp.AND else _or(lhs, rhs)
 
+    def add_DataSource(self, ds: DataSource) -> None:
+        self.interface = ds.interface  # TODO: raise exception if it's not "opensearch"?
+        self.datasource = ds.datasource
+
     def add_Filter(self, filt: Filter) -> None:
         if filt.timerange.start:
             # Convert the timerange to the appropriate pair of comparisons
             start_comp = StrComparison(
-                self.timestamp, ">=", self.timefmt(filt.timerange.start)
+                self.timestamp, ">=", filt.timerange.start.strftime(self.timefmt)
             )
             stop_comp = StrComparison(
-                self.timestamp, "<", self.timefmt(filt.timerange.stop)
+                self.timestamp, "<", filt.timerange.stop.strftime(self.timefmt)
             )
             # AND them together
             time_exp = BoolExp(start_comp, ExpOp.AND, stop_comp)
@@ -144,7 +149,8 @@ class OpenSearchTranslator:
         self.project = cols
 
     def add_ProjectEntity(self, proj: ProjectEntity) -> None:
-        pass  # TODO
+        if not self.project:
+            self.project = [f"{proj.entity_type}.*"]
 
     def add_Limit(self, lim: Limit) -> None:
         self.limit = lim.num

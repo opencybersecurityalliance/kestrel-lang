@@ -26,13 +26,11 @@ from kestrel.ir.instructions import (
 import pytest
 
 
+TIMEFMT = '%Y-%m-%dT%H:%M:%S.%fZ'
+
+
 def _dt(timestr: str) -> datetime:
     return parser.parse(timestr)
-
-
-def _time2string(ts: datetime) -> str:
-    result = ts.strftime('%Y-%m-%dT%H:%M:%S.%f').strip("0").strip(".")
-    return f"{result}Z"
 
 
 def _remove_nl(s):
@@ -46,7 +44,7 @@ def _remove_nl(s):
          "SELECT * FROM my_table WHERE foo >= 0"),
         # Simple filter plus time range
         ([Filter(IntComparison('foo', NumCompOp.GE, 0), timerange=TimeRange(_dt('2023-12-06T08:17:00Z'), _dt('2023-12-07T08:17:00Z')))],
-         "SELECT * FROM my_table WHERE foo >= 0 AND timestamp >= '2023-12-06T08:17:00Z' AND timestamp < '2023-12-07T08:17:00Z'"),
+         "SELECT * FROM my_table WHERE foo >= 0 AND timestamp >= '2023-12-06T08:17:00.000000Z' AND timestamp < '2023-12-07T08:17:00.000000Z'"),
         # Add a limit and projection
         ([Limit(3), ProjectAttrs(['foo', 'bar', 'baz']), Filter(StrComparison('foo', StrCompOp.EQ, 'abc'))],
          "SELECT foo, bar, baz FROM my_table WHERE foo = 'abc' LIMIT 3"),
@@ -66,7 +64,7 @@ def _remove_nl(s):
     ]
 )
 def test_opensearch_translator(iseq, sql):
-    trans = OpenSearchTranslator(_time2string, "timestamp", "my_table")
+    trans = OpenSearchTranslator(TIMEFMT, "timestamp", "my_table")
     for i in iseq:
         trans.add_instruction(i)
     result = trans.result()
