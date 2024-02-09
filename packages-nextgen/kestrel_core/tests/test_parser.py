@@ -14,6 +14,7 @@ from kestrel.ir.instructions import (
     Construct,
     Reference,
     ProjectAttrs,
+    Sort,
 )
 
 
@@ -151,16 +152,17 @@ proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
 
 
 @pytest.mark.parametrize(
-    "stmt", [
-        "x = y WHERE foo = 'bar'",
-        "x = y WHERE foo > 1.5",
-        r"x = y WHERE foo = r'C:\TMP'",
-        "x = y WHERE foo = 'bar' OR baz != 42",
-        "x = y WHERE foo = 'bar' AND baz IN (1, 2, 3)",
-        "x = y WHERE foo = 'bar' AND baz IN (1)",
+    "stmt, node_cnt", [
+        ("x = y WHERE foo = 'bar'", 3),
+        ("x = y WHERE foo > 1.5", 3),
+        (r"x = y WHERE foo = r'C:\TMP'", 3),
+        ("x = y WHERE foo = 'bar' OR baz != 42", 3),
+        ("x = y WHERE foo = 'bar' AND baz IN (1, 2, 3)", 3),
+        ("x = y WHERE foo = 'bar' AND baz IN (1)", 3),
+        ("x = y WHERE foo = 'bar' SORT BY foo ASC LIMIT 3", 5),
     ]
 )
-def test_parser_expression(stmt):
+def test_parser_expression(stmt, node_cnt):
     """
     This test isn't meant to be comprehensive, but checks basic transformer functionality.
 
@@ -168,10 +170,12 @@ def test_parser_expression(stmt):
     """
 
     graph = parse_kestrel(stmt)
-    assert len(graph) == 3
+    assert len(graph) == node_cnt
     assert len(graph.get_nodes_by_type(Variable)) == 1
     assert len(graph.get_nodes_by_type(Reference)) == 1
     assert len(graph.get_nodes_by_type(Filter)) == 1
+    assert len(graph.get_nodes_by_type(Sort)) in (0, 1)
+    assert len(graph.get_nodes_by_type(Limit)) in (0, 1)
 
 
 def test_three_statements_in_a_line():

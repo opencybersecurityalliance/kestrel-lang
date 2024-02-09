@@ -39,6 +39,7 @@ from kestrel.ir.instructions import (
     Reference,
     ProjectAttrs,
     Return,
+    Sort,
 )
 from kestrel.exceptions import IRGraphMissingNode
 
@@ -264,6 +265,10 @@ class _KestrelT(Transformer):
         attrs = args[0].split(",")
         attrs = [attr.strip() for attr in attrs]
         return ProjectAttrs(attrs)
+
+    def sort_clause(self, args):
+        # args[0] is Token('BY', 'BY')
+        return Sort(*args[1:])
 
     def expression_or(self, args):
         return BoolExp(args[0], ExpOp.OR, args[1])

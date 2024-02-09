@@ -21,6 +21,7 @@ from kestrel.ir.instructions import (
     Limit,
     ProjectAttrs,
     ProjectEntity,
+    Sort,
 )
 
 # Use sqlite3 for testing
@@ -46,6 +47,9 @@ def _remove_nl(s):
         # Try a simple filter
         ([Filter(IntComparison('foo', NumCompOp.GE, 0))],
          "SELECT * FROM my_table WHERE foo >= ?"),
+        # Try a simple filter with sorting
+        ([Filter(IntComparison('foo', NumCompOp.GE, 0)), Sort('bar')],
+         "SELECT * FROM my_table WHERE foo >= ? ORDER BY bar DESC"),
         # Simple filter plus time range
         ([Filter(IntComparison('foo', NumCompOp.GE, 0), timerange=TimeRange(_dt('2023-12-06T08:17:00Z'), _dt('2023-12-07T08:17:00Z')))],
          "SELECT * FROM my_table WHERE foo >= ? AND timestamp >= ? AND timestamp < ?"),

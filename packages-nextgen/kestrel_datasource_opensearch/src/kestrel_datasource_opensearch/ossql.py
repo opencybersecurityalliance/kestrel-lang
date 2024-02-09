@@ -21,6 +21,8 @@ from kestrel.ir.instructions import (
     Limit,
     ProjectAttrs,
     ProjectEntity,
+    Sort,
+    SortDirection,
 )
 
 
@@ -101,6 +103,8 @@ class OpenSearchTranslator:
         self.where: str = ""
         self.project: list[str] = []
         self.limit: int = 0
+        self.order_by: str = ""
+        self.sort_dir = SortDirection.DESC
 
     def _render_exp(self, exp: BoolExp) -> str:
         if isinstance(exp.lhs, BoolExp):
@@ -155,6 +159,10 @@ class OpenSearchTranslator:
     def add_Limit(self, lim: Limit) -> None:
         self.limit = lim.num
 
+    def add_Sort(self, sort: Sort) -> None:
+        self.order_by = sort.attribute
+        self.sort_dir = sort.direction
+
     def add_instruction(self, i: Instruction) -> None:
         inst_name = i.instruction
         method_name = f"add_{inst_name}"
@@ -173,6 +181,8 @@ class OpenSearchTranslator:
         stages.append(f"FROM {self.table}")
         if self.where:
             stages.append(f"WHERE {self.where}")
+        if self.order_by:
+            stages.append(f"ORDER BY {self.order_by} {self.sort_dir}")
         if self.limit:
             stages.append(f"LIMIT {self.limit}")
         return " ".join(stages)

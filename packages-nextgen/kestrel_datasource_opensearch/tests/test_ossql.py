@@ -21,6 +21,8 @@ from kestrel.ir.instructions import (
     Limit,
     ProjectAttrs,
     ProjectEntity,
+    Sort,
+    SortDirection,
 )
 
 import pytest
@@ -42,6 +44,9 @@ def _remove_nl(s):
         # Try a simple filter
         ([Filter(IntComparison('foo', NumCompOp.GE, 0))],
          "SELECT * FROM my_table WHERE foo >= 0"),
+        # Try a simple filter with sorting
+        ([Filter(IntComparison('foo', NumCompOp.GE, 0)), Sort('bar')],
+         "SELECT * FROM my_table WHERE foo >= 0 ORDER BY bar DESC"),
         # Simple filter plus time range
         ([Filter(IntComparison('foo', NumCompOp.GE, 0), timerange=TimeRange(_dt('2023-12-06T08:17:00Z'), _dt('2023-12-07T08:17:00Z')))],
          "SELECT * FROM my_table WHERE foo >= 0 AND timestamp >= '2023-12-06T08:17:00.000000Z' AND timestamp < '2023-12-07T08:17:00.000000Z'"),
