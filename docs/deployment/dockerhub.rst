@@ -17,6 +17,25 @@ To launch the Kestrel container (opening Jupyter on host port 8888):
 
 To have Kestrel syntax highlighting support, use the Jupyter Notebook URL (``http://hostname:8888/tree``) instead of Jupyter Lab (``http://hostname:8888/lab``) for Kestrel huntbooks.
 
+if the token prompt is displayed when first browsing, then get the token by going to the command prompt on the container and copying the token. 
+Steps to retrieve the token:
+
+Step 1: List Containers
+.. code-block:: console
+
+    $ docker ps
+
+Step 2: Access the command line
+.. code-block:: console
+
+    $ docker exec -it <containerid> /bin/bash
+
+Step 3: Show URL with token
+.. code-block:: console
+
+    $ jupyter server list
+
+Step 4: Copy the token to the token field in the brower and then you will have the folders that include the tutorials.
 
 .. _kestrel-jupyter: https://github.com/opencybersecurityalliance/kestrel-jupyter
 .. _kestrel-analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
