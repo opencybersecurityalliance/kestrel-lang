@@ -15,27 +15,27 @@ To launch the Kestrel container (opening Jupyter on host port 8888):
 
     $ docker run -d -p 8888:8888 kpeeples/kaas-baseline:latest
 
-To have Kestrel syntax highlighting support, use the Jupyter Notebook URL (``http://hostname:8888/tree``) instead of Jupyter Lab (``http://hostname:8888/lab``) for Kestrel huntbooks.
+To have Kestrel syntax highlighting support, use the Jupyter Notebook URL
+(``http://hostname:8888/nbclassic``) instead of Jupyter Lab
+(``http://hostname:8888/lab``) for Kestrel huntbooks.
 
-if the token prompt is displayed when first browsing, then get the token by going to the command prompt on the container and copying the token. 
-Steps to retrieve the token:
+To find the token for the Jupyter server, you can either:
 
-Step 1: List Containers
-.. code-block:: console
+- Show it in the container log:
 
-    $ docker ps
+    .. code-block:: console
 
-Step 2: Access the command line
-.. code-block:: console
+        $ docker logs <containerid>
 
-    $ docker exec -it <containerid> /bin/bash
+- Go inside the container and print the token from Jupyter server:
 
-Step 3: Show URL with token
-.. code-block:: console
+    .. code-block:: console
 
-    $ jupyter server list
+        # on the host
+        $ docker exec -it <containerid> /bin/bash
 
-Step 4: Copy the token to the token field in the brower and then you will have the folders that include the tutorials.
+        # inside the container
+        $ jupyter server list
 
 .. _kestrel-jupyter: https://github.com/opencybersecurityalliance/kestrel-jupyter
 .. _kestrel-analytics repo: https://github.com/opencybersecurityalliance/kestrel-analytics
