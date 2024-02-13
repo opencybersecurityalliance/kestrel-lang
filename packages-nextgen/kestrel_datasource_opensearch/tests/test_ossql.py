@@ -76,9 +76,9 @@ def _remove_nl(s):
 )
 def test_opensearch_translator(iseq, sql):
     data_model_map = {
-        "CommandLine": "process.cmd_line",
-        "ProcessId": "process.pid",
-        "ParentProcessId": "actor.process.pid",
+        "process.cmd_line": "CommandLine",
+        "process.pid": "ProcessId",
+        "actor.process.pid": "ParentProcessId",
     }
     trans = OpenSearchTranslator(TIMEFMT, "timestamp", "my_table", data_model_map)
     for i in iseq:

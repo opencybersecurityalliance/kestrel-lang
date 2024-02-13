@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass, field
-from typing import Dict
+from typing import Dict, Optional
 
 import yaml
 from mashumaro.mixins.json import DataClassJSONMixin
@@ -9,6 +9,11 @@ from kestrel.config.utils import (
     CONFIG_DIR_DEFAULT,
     load_user_config,
 )
+from kestrel.mapping.utils import (
+    generate_from_ocsf_dictionaries,
+    load_standard_config,
+)
+
 
 PROFILE_PATH_DEFAULT = CONFIG_DIR_DEFAULT / "opensearch.yaml"
 PROFILE_PATH_ENV_VAR = "KESTREL_OPENSEARCH_CONFIG"
@@ -37,12 +42,21 @@ class Index(DataClassJSONMixin):
     connection: str
     timestamp: str
     timestamp_format: str
-    data_model_mapping: str
+    data_model_mapping: Optional[str] = None
     data_model_map: dict = field(default_factory=dict)
 
     def __post_init__(self):
-        with open(self.data_model_mapping, 'r') as fp:
-            self.data_model_map = yaml.safe_load(fp)
+        if self.data_model_mapping:
+            with open(self.data_model_mapping, "r") as fp:
+                data_model_map = yaml.safe_load(fp)
+            # Reverse it so it's ocsf -> native
+            self.data_model_map = {v: k for k, v in data_model_map.items() if isinstance(v, str)}
+        else:
+            # Default to the built-in ECS mapping
+            load_standard_config("kestrel.mapping")
+            _, data_model_map = generate_from_ocsf_dictionaries("ecs")
+            self.data_model_map = {k: v[0] for k, v in data_model_map.items()}
+        _logger.debug("Default from_ocsf_map: %s", self.data_model_map)
 
 
 @dataclass

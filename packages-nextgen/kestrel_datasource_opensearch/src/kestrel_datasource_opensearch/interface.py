@@ -43,7 +43,12 @@ def read_sql(sql: str, conn: OpenSearch) -> DataFrame:
     status = query_resp.get("status", 500)
     if status != 200:
         raise DataSourceError(f"OpenSearch query returned {status}")
-    _logger.debug("total=%d size=%d rows=%d", query_resp["total"], query_resp["size"], len(query_resp["datarows"]))
+    _logger.debug(
+        "total=%d size=%d rows=%d",
+        query_resp["total"],
+        query_resp["size"],
+        len(query_resp["datarows"]),
+    )
 
     # Only the first page contains the schema
     # https://opensearch.org/docs/latest/search-plugins/sql/sql-ppl-api/#paginating-results
@@ -55,7 +60,9 @@ def read_sql(sql: str, conn: OpenSearch) -> DataFrame:
         cursor = query_resp.get("cursor")
         if not cursor:
             break
-        query_resp = conn.http.post("/_plugins/_sql?format=jdbc", body={"cursor": cursor})
+        query_resp = conn.http.post(
+            "/_plugins/_sql?format=jdbc", body={"cursor": cursor}
+        )
 
     # Merge all pages together
     return concat(dfs)
@@ -132,7 +139,10 @@ class OpenSearchInterface(AbstractDataSourceInterface):
             if isinstance(instruction, DataSource):
                 ds = self.config.indexes[instruction.datasource]
                 translator = OpenSearchTranslator(
-                    ds.timestamp_format, ds.timestamp, instruction.datasource, ds.data_model_map
+                    ds.timestamp_format,
+                    ds.timestamp,
+                    instruction.datasource,
+                    ds.data_model_map,
                 )
             else:
                 raise NotImplementedError(f"Unhandled instruction type: {instruction}")

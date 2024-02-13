@@ -92,9 +92,8 @@ class OpenSearchTranslator:
         self.order_by: str = ""
         self.sort_dir = SortDirection.DESC
 
-        # Data model mapping - reverse it so it's ocsf -> native
-        self.to_ocsf_map = data_model_map
-        self.from_ocsf_map = {v: k for k, v in data_model_map.items()}
+        # Data model mapping: should be ocsf -> native
+        self.from_ocsf_map = data_model_map
 
     @typechecked
     def _render_comp(self, comp: FComparison) -> str:
@@ -102,7 +101,7 @@ class OpenSearchTranslator:
             # Need to quote string values
             value = f"'{comp.value}'"
         elif isinstance(comp, ListComparison):
-            # KQL uses parens for lists, like SQL
+            # SQL uses parens for lists
             value = tuple(comp.value)
         else:
             value = comp.value
@@ -172,8 +171,7 @@ class OpenSearchTranslator:
         fields = {self.from_ocsf_map.get(col, col): col for col in ocsf_cols}
         _logger.debug("Fields: %s", fields)
         self.project = [
-            f"`{k}` AS `{v.rpartition('.')[2]}`"
-            if '.' in v else v
+            f"`{k}` AS `{v.partition('.')[2]}`" if "." in v else v
             for k, v in fields.items()
         ]
         _logger.debug("Set projection to %s", self.project)
