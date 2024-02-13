@@ -13,6 +13,7 @@ Added
 -----
 
 - Support use of environment variable in config files
+- How to get Jupyter token in Docker deployment doc
 
 Fixed
 -----
