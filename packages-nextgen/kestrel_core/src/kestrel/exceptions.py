@@ -108,3 +108,7 @@ class InvalidDataSourceInterfaceImplementation(KestrelError):
 
 class ConflictingDataSourceInterfaceScheme(KestrelError):
     pass
+
+
+class DataSourceError(KestrelError):
+    pass

@@ -3,8 +3,9 @@ from typing import Iterable, Mapping, Optional
 from uuid import UUID
 
 from opensearchpy import OpenSearch
-from pandas import DataFrame, json_normalize
+from pandas import DataFrame, concat, json_normalize
 
+from kestrel.exceptions import DataSourceError
 from kestrel.interface.datasource.base import AbstractDataSourceInterface
 from kestrel.ir.graph import IRGraphEvaluable
 from kestrel.ir.instructions import (
@@ -25,16 +26,39 @@ from kestrel_datasource_opensearch.ossql import OpenSearchTranslator
 _logger = logging.getLogger(__name__)
 
 
-def _os2df(result: dict) -> DataFrame:
-    """Convert an OpenSearch SQL query result response to a DataFrame"""
-    rows = [i["_source"] for i in result["hits"]["hits"]]
-    return json_normalize(rows)
+def _jdbc2df(schema: dict, datarows: dict) -> DataFrame:
+    """Convert a JDBC query result response to a DataFrame"""
+    columns = [c.get("alias", c["name"]) for c in schema]
+    return DataFrame(datarows, columns=columns)
 
 
 def read_sql(sql: str, conn: OpenSearch) -> DataFrame:
     """Execute `sql` and return the results as a DataFrame, a la pandas.read_sql"""
-    query_resp = conn.http.post("/_plugins/_sql?format=json", body={"query": sql})
-    return _os2df(query_resp)
+    # https://opensearch.org/docs/latest/search-plugins/sql/sql-ppl-api/#query-api
+    body = {
+        "fetch_size": 10000,  # Should we make this configurable?
+        "query": sql,
+    }
+    query_resp = conn.http.post("/_plugins/_sql?format=jdbc", body=body)
+    status = query_resp.get("status", 500)
+    if status != 200:
+        raise DataSourceError(f"OpenSearch query returned {status}")
+    _logger.debug("total=%d size=%d rows=%d", query_resp["total"], query_resp["size"], len(query_resp["datarows"]))
+
+    # Only the first page contains the schema
+    # https://opensearch.org/docs/latest/search-plugins/sql/sql-ppl-api/#paginating-results
+    schema = query_resp["schema"]
+    dfs = []
+    done = False
+    while not done:
+        dfs.append(_jdbc2df(schema, query_resp["datarows"]))
+        cursor = query_resp.get("cursor")
+        if not cursor:
+            break
+        query_resp = conn.http.post("/_plugins/_sql?format=jdbc", body={"cursor": cursor})
+
+    # Merge all pages together
+    return concat(dfs)
 
 
 class OpenSearchInterface(AbstractDataSourceInterface):
@@ -69,7 +93,7 @@ class OpenSearchInterface(AbstractDataSourceInterface):
             translator = self._evaluate_instruction_in_graph(graph, instruction)
             # TODO: may catch error in case evaluation starts from incomplete SQL
             _logger.debug("SQL query generated: %s", translator.result())
-            ds = self.config.indexes[translator.datasource]
+            ds = self.config.indexes[translator.table]  # table == datasource
             conn = self.config.connections[ds.connection]
             client = OpenSearch(
                 [conn.url],
@@ -108,9 +132,8 @@ class OpenSearchInterface(AbstractDataSourceInterface):
             if isinstance(instruction, DataSource):
                 ds = self.config.indexes[instruction.datasource]
                 translator = OpenSearchTranslator(
-                    ds.timestamp_format, ds.timestamp, instruction.datasource
+                    ds.timestamp_format, ds.timestamp, instruction.datasource, ds.data_model_map
                 )
-                translator.add_instruction(instruction)
             else:
                 raise NotImplementedError(f"Unhandled instruction type: {instruction}")
 

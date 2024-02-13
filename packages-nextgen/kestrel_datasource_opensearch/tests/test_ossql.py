@@ -69,10 +69,18 @@ def _remove_nl(s):
          "SELECT * FROM my_table WHERE foo = 1 AND bar = 1"),
         ([Limit(1000), Offset(2000)],
          "SELECT * FROM my_table LIMIT 2000, 1000"),
+        # Test entity projection
+        ([Limit(3), Filter(StrComparison('cmd_line', StrCompOp.EQ, 'foo bar')), ProjectEntity('process')],
+         "SELECT * FROM my_table WHERE CommandLine = 'foo bar' LIMIT 3"),
     ]
 )
 def test_opensearch_translator(iseq, sql):
-    trans = OpenSearchTranslator(TIMEFMT, "timestamp", "my_table")
+    data_model_map = {
+        "CommandLine": "process.cmd_line",
+        "ProcessId": "process.pid",
+        "ParentProcessId": "actor.process.pid",
+    }
+    trans = OpenSearchTranslator(TIMEFMT, "timestamp", "my_table", data_model_map)
     for i in iseq:
         trans.add_instruction(i)
     result = trans.result()

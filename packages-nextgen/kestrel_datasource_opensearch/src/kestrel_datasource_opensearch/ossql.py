@@ -1,5 +1,6 @@
+import logging
 from functools import reduce
-from typing import Union
+from typing import Optional, Union
 
 from typeguard import typechecked
 
@@ -15,7 +16,6 @@ from kestrel.ir.filter import (
     StrCompOp,
 )
 from kestrel.ir.instructions import (
-    DataSource,
     Filter,
     Instruction,
     Limit,
@@ -25,6 +25,9 @@ from kestrel.ir.instructions import (
     Sort,
     SortDirection,
 )
+
+
+_logger = logging.getLogger(__name__)
 
 
 Value = Union[
@@ -65,32 +68,13 @@ comp2func = {
 
 
 @typechecked
-def _render_comp(comp: FComparison) -> str:
-    if isinstance(comp, StrComparison):
-        # Need to quote string values
-        value = f"'{comp.value}'"
-    elif isinstance(comp, ListComparison):
-        # KQL uses parens for lists, like SQL
-        value = tuple(comp.value)
-    else:
-        value = comp.value
-    result = f"{comp.field} {comp2func[comp.op]} {value}"
-    return result
-
-
-@typechecked
-def _render_multi_comp(comps: MultiComp) -> str:
-    op = _and if comps.op == ExpOp.AND else _or
-    return reduce(op, map(_render_comp, comps.comps))
-
-
-@typechecked
 class OpenSearchTranslator:
     def __init__(
         self,
         timefmt: str,
         timestamp: str,
         select_from: str,
+        data_model_map: dict,
     ):
         # Time format string for datasource
         self.timefmt = timefmt
@@ -99,64 +83,104 @@ class OpenSearchTranslator:
         self.timestamp = timestamp
 
         # Query clauses
-        self.datasource: str = None
         self.table: str = select_from
-        self.where: str = ""
+        self.filt: Optional[Filter] = None
+        self.entity: Optional[str] = None
         self.project: list[str] = []
         self.limit: int = 0
         self.offset: int = 0
         self.order_by: str = ""
         self.sort_dir = SortDirection.DESC
 
+        # Data model mapping - reverse it so it's ocsf -> native
+        self.to_ocsf_map = data_model_map
+        self.from_ocsf_map = {v: k for k, v in data_model_map.items()}
+
+    @typechecked
+    def _render_comp(self, comp: FComparison) -> str:
+        if isinstance(comp, StrComparison):
+            # Need to quote string values
+            value = f"'{comp.value}'"
+        elif isinstance(comp, ListComparison):
+            # KQL uses parens for lists, like SQL
+            value = tuple(comp.value)
+        else:
+            value = comp.value
+        # Need to map OCSF filter field to native
+        prefix = f"{self.entity}." if self.entity else ""
+        ocsf_field = f"{prefix}{comp.field}"
+        field = self.from_ocsf_map.get(ocsf_field, comp.field)
+        _logger.debug("Mapped field '%s' to '%s'", ocsf_field, field)
+        result = f"{field} {comp2func[comp.op]} {value}"
+        return result
+
+    @typechecked
+    def _render_multi_comp(self, comps: MultiComp) -> str:
+        op = _and if comps.op == ExpOp.AND else _or
+        return reduce(op, map(self._render_comp, comps.comps))
+
+    @typechecked
     def _render_exp(self, exp: BoolExp) -> str:
         if isinstance(exp.lhs, BoolExp):
             lhs = self._render_exp(exp.lhs)
         elif isinstance(exp.lhs, MultiComp):
-            lhs = _render_multi_comp(exp.lhs)
+            lhs = self._render_multi_comp(exp.lhs)
         else:
-            lhs = _render_comp(exp.lhs)
+            lhs = self._render_comp(exp.lhs)
         if isinstance(exp.rhs, BoolExp):
             rhs = self._render_exp(exp.rhs)
         elif isinstance(exp.rhs, MultiComp):
-            rhs = _render_multi_comp(exp.rhs)
+            rhs = self._render_multi_comp(exp.rhs)
         else:
-            rhs = _render_comp(exp.rhs)
+            rhs = self._render_comp(exp.rhs)
         return _and(lhs, rhs) if exp.op == ExpOp.AND else _or(lhs, rhs)
 
-    def add_DataSource(self, ds: DataSource) -> None:
-        self.interface = ds.interface  # TODO: raise exception if it's not "opensearch"?
-        self.datasource = ds.datasource
-
-    def add_Filter(self, filt: Filter) -> None:
-        if filt.timerange.start:
+    @typechecked
+    def _render_filter(self) -> Optional[str]:
+        if not self.filt:
+            return None
+        if self.filt.timerange.start:
             # Convert the timerange to the appropriate pair of comparisons
             start_comp = StrComparison(
-                self.timestamp, ">=", filt.timerange.start.strftime(self.timefmt)
+                self.timestamp, ">=", self.filt.timerange.start.strftime(self.timefmt)
             )
             stop_comp = StrComparison(
-                self.timestamp, "<", filt.timerange.stop.strftime(self.timefmt)
+                self.timestamp, "<", self.filt.timerange.stop.strftime(self.timefmt)
             )
             # AND them together
             time_exp = BoolExp(start_comp, ExpOp.AND, stop_comp)
             # AND that with any existing filter expression
-            exp = BoolExp(filt.exp, ExpOp.AND, time_exp)
+            exp = BoolExp(self.filt.exp, ExpOp.AND, time_exp)
         else:
-            exp = filt.exp
+            exp = self.filt.exp
         if isinstance(exp, BoolExp):
             comp = self._render_exp(exp)
         elif isinstance(exp, MultiComp):
-            comp = _render_multi_comp(exp)
+            comp = self._render_multi_comp(exp)
         else:
-            comp = _render_comp(exp)
-        self.where = comp
+            comp = self._render_comp(exp)
+        return comp
+
+    def add_Filter(self, filt: Filter) -> None:
+        # Just save filter and compile it later
+        # Probably need the entity projection set first
+        self.filt = filt
 
     def add_ProjectAttrs(self, proj: ProjectAttrs) -> None:
-        cols = [str(col) for col in proj.attrs]
-        self.project = cols
+        prefix = f"{self.entity}." if self.entity else ""
+        ocsf_cols = [f"{prefix}{col}" for col in proj.attrs]
+        fields = {self.from_ocsf_map.get(col, col): col for col in ocsf_cols}
+        _logger.debug("Fields: %s", fields)
+        self.project = [
+            f"`{k}` AS `{v.rpartition('.')[2]}`"
+            if '.' in v else v
+            for k, v in fields.items()
+        ]
+        _logger.debug("Set projection to %s", self.project)
 
     def add_ProjectEntity(self, proj: ProjectEntity) -> None:
-        if not self.project:
-            self.project = [f"{proj.entity_type}.*"]
+        self.entity = proj.entity_type
+        _logger.debug("Set base entity to '%s'", self.entity)
 
     def add_Limit(self, lim: Limit) -> None:
         self.limit = lim.num
@@ -171,8 +195,9 @@ class OpenSearchTranslator:
     def add_instruction(self, i: Instruction) -> None:
         inst_name = i.instruction
         method_name = f"add_{inst_name}"
-        method = getattr(self, method_name)
-        if not method:
+        try:
+            method = getattr(self, method_name)
+        except AttributeError as e:
             raise NotImplementedError(f"OpenSearchTranslator.{method_name}")
         method(i)
 
@@ -184,8 +209,9 @@ class OpenSearchTranslator:
         else:
             stages.append("*")
         stages.append(f"FROM {self.table}")
-        if self.where:
-            stages.append(f"WHERE {self.where}")
+        where = self._render_filter()
+        if where:
+            stages.append(f"WHERE {where}")
         if self.order_by:
             stages.append(f"ORDER BY {self.order_by} {self.sort_dir}")
         if self.limit:
@@ -194,4 +220,6 @@ class OpenSearchTranslator:
                 stages.append(f"LIMIT {self.offset}, {self.limit}")
             else:
                 stages.append(f"LIMIT {self.limit}")
-        return " ".join(stages)
+        sql = " ".join(stages)
+        _logger.debug("SQL: %s", sql)
+        return sql

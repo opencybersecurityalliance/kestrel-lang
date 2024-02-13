@@ -1,7 +1,8 @@
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict
 
+import yaml
 from mashumaro.mixins.json import DataClassJSONMixin
 
 from kestrel.config.utils import (
@@ -36,6 +37,12 @@ class Index(DataClassJSONMixin):
     connection: str
     timestamp: str
     timestamp_format: str
+    data_model_mapping: str
+    data_model_map: dict = field(default_factory=dict)
+
+    def __post_init__(self):
+        with open(self.data_model_mapping, 'r') as fp:
+            self.data_model_map = yaml.safe_load(fp)
 
 
 @dataclass
