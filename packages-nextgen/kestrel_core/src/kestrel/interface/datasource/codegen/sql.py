@@ -2,7 +2,7 @@ import logging
 from functools import reduce
 from typing import Callable
 
-from sqlalchemy import and_, column, or_, select, FromClause
+from sqlalchemy import and_, column, or_, select, FromClause, asc, desc
 from sqlalchemy.engine import Compiled, default
 from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
 from sqlalchemy.sql.expression import ColumnClause, ColumnOperators
@@ -23,8 +23,11 @@ from kestrel.ir.instructions import (
     Filter,
     Instruction,
     Limit,
+    Offset,
     ProjectAttrs,
     ProjectEntity,
+    Sort,
+    SortDirection,
 )
 
 
@@ -133,6 +136,14 @@ class SqlTranslator:
 
     def add_Limit(self, lim: Limit) -> None:
         self.query = self.query.limit(lim.num)
+
+    def add_Offset(self, offset: Offset) -> None:
+        self.query = self.query.offset(offset.num)
+
+    def add_Sort(self, sort: Sort) -> None:
+        col = column(sort.attribute)
+        order = asc(col) if sort.direction == SortDirection.ASC else desc(col)
+        self.query = self.query.order_by(order)
 
     def add_instruction(self, i: Instruction) -> None:
         inst_name = i.instruction

@@ -6,14 +6,16 @@ from kestrel.frontend.parser import parse_kestrel
 from kestrel.ir.graph import IRGraph
 from kestrel.ir.filter import ReferenceValue
 from kestrel.ir.instructions import (
-    Filter,
-    ProjectEntity,
-    DataSource,
-    Variable,
-    Limit,
     Construct,
-    Reference,
+    DataSource,
+    Filter,
+    Limit,
+    Offset,
     ProjectAttrs,
+    ProjectEntity,
+    Reference,
+    Sort,
+    Variable,
 )
 
 
@@ -151,16 +153,18 @@ proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
 
 
 @pytest.mark.parametrize(
-    "stmt", [
-        "x = y WHERE foo = 'bar'",
-        "x = y WHERE foo > 1.5",
-        r"x = y WHERE foo = r'C:\TMP'",
-        "x = y WHERE foo = 'bar' OR baz != 42",
-        "x = y WHERE foo = 'bar' AND baz IN (1, 2, 3)",
-        "x = y WHERE foo = 'bar' AND baz IN (1)",
+    "stmt, node_cnt", [
+        ("x = y WHERE foo = 'bar'", 3),
+        ("x = y WHERE foo > 1.5", 3),
+        (r"x = y WHERE foo = r'C:\TMP'", 3),
+        ("x = y WHERE foo = 'bar' OR baz != 42", 3),
+        ("x = y WHERE foo = 'bar' AND baz IN (1, 2, 3)", 3),
+        ("x = y WHERE foo = 'bar' AND baz IN (1)", 3),
+        ("x = y WHERE foo = 'bar' SORT BY foo ASC LIMIT 3", 5),
+        ("x = y WHERE foo = 'bar' SORT BY foo ASC LIMIT 3 OFFSET 9", 6),
     ]
 )
-def test_parser_expression(stmt):
+def test_parser_expression(stmt, node_cnt):
     """
     This test isn't meant to be comprehensive, but checks basic transformer functionality.
 
@@ -168,10 +172,13 @@ def test_parser_expression(stmt):
     """
 
     graph = parse_kestrel(stmt)
-    assert len(graph) == 3
+    assert len(graph) == node_cnt
     assert len(graph.get_nodes_by_type(Variable)) == 1
     assert len(graph.get_nodes_by_type(Reference)) == 1
     assert len(graph.get_nodes_by_type(Filter)) == 1
+    assert len(graph.get_nodes_by_type(Sort)) in (0, 1)
+    assert len(graph.get_nodes_by_type(Limit)) in (0, 1)
+    assert len(graph.get_nodes_by_type(Offset)) in (0, 1)
 
 
 def test_three_statements_in_a_line():
@@ -238,20 +245,23 @@ proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
                        , {"name": "firefox.exe", "pid": 201}
                        , {"name": "chrome.exe", "pid": 205}
                        ]
-DISP proclist ATTR name, pid LIMIT 10
+DISP proclist ATTR name, pid LIMIT 2 OFFSET 3
 """
     graph = parse_kestrel(stmt)
-    assert len(graph) == 5
+    assert len(graph) == 6
     c = graph.get_nodes_by_type(Construct)[0]
     assert {"proclist"} == {v.name for v in graph.get_variables()}
     proclist = graph.get_variable("proclist")
     proj = graph.get_nodes_by_type(ProjectAttrs)[0]
     assert proj.attrs == ['name', 'pid']
     limit = graph.get_nodes_by_type(Limit)[0]
-    assert limit.num == 10
+    assert limit.num == 2
+    offset = graph.get_nodes_by_type(Offset)[0]
+    assert offset.num == 3
     ret = graph.get_returns()[0]
-    assert len(graph.edges) == 4
+    assert len(graph.edges) == 5
     assert (c, proclist) in graph.edges
     assert (proclist, proj) in graph.edges
     assert (proj, limit) in graph.edges
-    assert (limit, ret) in graph.edges
+    assert (limit, offset) in graph.edges
+    assert (offset, ret) in graph.edges

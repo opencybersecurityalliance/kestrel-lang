@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from pkgutil import get_data
 from typeguard import typechecked
-from typing import Union, Iterable, Mapping
+from typing import Union, Mapping
 
 
 def load_data_file(package_name, file_name):

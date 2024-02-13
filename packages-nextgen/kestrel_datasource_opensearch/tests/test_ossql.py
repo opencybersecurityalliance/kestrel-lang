@@ -19,8 +19,11 @@ from kestrel.ir.instructions import (
     DataSource,
     Filter,
     Limit,
+    Offset,
     ProjectAttrs,
     ProjectEntity,
+    Sort,
+    SortDirection,
 )
 
 import pytest
@@ -42,6 +45,9 @@ def _remove_nl(s):
         # Try a simple filter
         ([Filter(IntComparison('foo', NumCompOp.GE, 0))],
          "SELECT * FROM my_table WHERE foo >= 0"),
+        # Try a simple filter with sorting
+        ([Filter(IntComparison('foo', NumCompOp.GE, 0)), Sort('bar')],
+         "SELECT * FROM my_table WHERE foo >= 0 ORDER BY bar DESC"),
         # Simple filter plus time range
         ([Filter(IntComparison('foo', NumCompOp.GE, 0), timerange=TimeRange(_dt('2023-12-06T08:17:00Z'), _dt('2023-12-07T08:17:00Z')))],
          "SELECT * FROM my_table WHERE foo >= 0 AND timestamp >= '2023-12-06T08:17:00.000000Z' AND timestamp < '2023-12-07T08:17:00.000000Z'"),
@@ -61,6 +67,8 @@ def _remove_nl(s):
          "SELECT * FROM my_table WHERE foo = 1 OR bar = 1"),
         ([Filter(MultiComp(ExpOp.AND, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
          "SELECT * FROM my_table WHERE foo = 1 AND bar = 1"),
+        ([Limit(1000), Offset(2000)],
+         "SELECT * FROM my_table LIMIT 2000, 1000"),
     ]
 )
 def test_opensearch_translator(iseq, sql):

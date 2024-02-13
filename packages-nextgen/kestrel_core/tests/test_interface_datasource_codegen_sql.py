@@ -19,8 +19,10 @@ from kestrel.ir.instructions import (
     DataSource,
     Filter,
     Limit,
+    Offset,
     ProjectAttrs,
     ProjectEntity,
+    Sort,
 )
 
 # Use sqlite3 for testing
@@ -46,6 +48,9 @@ def _remove_nl(s):
         # Try a simple filter
         ([Filter(IntComparison('foo', NumCompOp.GE, 0))],
          "SELECT * FROM my_table WHERE foo >= ?"),
+        # Try a simple filter with sorting
+        ([Filter(IntComparison('foo', NumCompOp.GE, 0)), Sort('bar')],
+         "SELECT * FROM my_table WHERE foo >= ? ORDER BY bar DESC"),
         # Simple filter plus time range
         ([Filter(IntComparison('foo', NumCompOp.GE, 0), timerange=TimeRange(_dt('2023-12-06T08:17:00Z'), _dt('2023-12-07T08:17:00Z')))],
          "SELECT * FROM my_table WHERE foo >= ? AND timestamp >= ? AND timestamp < ?"),
@@ -65,6 +70,8 @@ def _remove_nl(s):
          "SELECT * FROM my_table WHERE foo = ? OR bar = ?"),
         ([Filter(MultiComp(ExpOp.AND, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
          "SELECT * FROM my_table WHERE foo = ? AND bar = ?"),
+        ([Limit(1000), Offset(2000)],
+         "SELECT * FROM my_table LIMIT ? OFFSET ?"),
     ]
 )
 def test_sql_translator(iseq, sql):

@@ -14,7 +14,6 @@ from kestrel.ir.instructions import (
     Instruction,
     Return,
     Variable,
-    ProjectAttrs,
     Filter,
     SourceInstruction,
     TransformingInstruction,

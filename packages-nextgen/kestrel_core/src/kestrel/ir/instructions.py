@@ -1,43 +1,30 @@
 from __future__ import annotations
-from typeguard import typechecked
-from typing import (
-    Type,
-    Union,
-    Mapping,
-    List,
-    Optional,
-    Iterable,
-    Any,
-)
-from dataclasses import (
-    dataclass,
-    field,
-    fields,
-    InitVar,
-)
-from mashumaro.mixins.json import DataClassJSONMixin
-import sys
-import inspect
-import uuid
-import json
+
 import copy
+import inspect
+import json
+import sys
+import uuid
+from dataclasses import InitVar, dataclass, field, fields
+from enum import Enum
+from typing import Any, Iterable, List, Mapping, Optional, Type, Union
 
 from kestrel.__future__ import is_python_older_than_minor_version
+from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
+from kestrel.exceptions import (
+    InvalidDataSource,
+    InvalidInstruction,
+    InvalidSeralizedInstruction,
+)
 from kestrel.ir.filter import (
     FExpression,
-    TimeRange,
     ReferenceValue,
+    TimeRange,
     get_references_from_exp,
     resolve_reference_with_function,
 )
-from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
-
-from kestrel.exceptions import (
-    InvalidInstruction,
-    InvalidSeralizedInstruction,
-    InvalidDataSource,
-)
-
+from mashumaro.mixins.json import DataClassJSONMixin
+from typeguard import typechecked
 
 # https://stackoverflow.com/questions/70400639/how-do-i-get-python-dataclass-initvar-fields-to-work-with-typing-get-type-hints
 if is_python_older_than_minor_version(11):
@@ -187,9 +174,25 @@ class Limit(SolePredecessorTransformingInstruction):
 
 
 @dataclass(eq=False)
+class Offset(SolePredecessorTransformingInstruction):
+    num: int
+
+
+@dataclass(eq=False)
 class Construct(SourceInstruction):
     data: List[Mapping[str, Union[str, int, bool]]]
     interface: str = CACHE_INTERFACE_IDENTIFIER
+
+
+class SortDirection(str, Enum):
+    ASC = "ASC"
+    DESC = "DESC"
+
+
+@dataclass(eq=False)
+class Sort(SolePredecessorTransformingInstruction):
+    attribute: str
+    direction: SortDirection = SortDirection.DESC
 
 
 @typechecked
