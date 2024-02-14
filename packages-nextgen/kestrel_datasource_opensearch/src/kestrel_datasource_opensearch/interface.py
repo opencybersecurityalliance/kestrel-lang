@@ -3,7 +3,7 @@ from typing import Iterable, Mapping, Optional
 from uuid import UUID
 
 from opensearchpy import OpenSearch
-from pandas import DataFrame, concat, json_normalize
+from pandas import DataFrame, Series, concat
 
 from kestrel.exceptions import DataSourceError
 from kestrel.interface.datasource.base import AbstractDataSourceInterface
@@ -76,6 +76,18 @@ class OpenSearchInterface(AbstractDataSourceInterface):
     ):
         super().__init__(serialized_cache_catalog, session_id)
         self.config = load_config()
+        self.schemas: dict = {}  # Schema per table (index)
+        self.conns: dict = {}  # Map of conn name -> connection
+        for info in self.config.indexes.values():
+            name = info.connection
+            if name not in self.conns:
+                conn = self.config.connections[name]
+                client = OpenSearch(
+                    [conn.url],
+                    http_auth=(conn.auth.username, conn.auth.password),
+                    verify_certs=conn.verify_certs,
+                )
+                self.conns[name] = client
 
     @property
     def name(self):
@@ -108,6 +120,7 @@ class OpenSearchInterface(AbstractDataSourceInterface):
                 verify_certs=conn.verify_certs,
             )
             mapping[instruction.id] = read_sql(translator.result(), client)
+            client.close()
         return mapping
 
     def _evaluate_instruction_in_graph(
@@ -138,13 +151,31 @@ class OpenSearchInterface(AbstractDataSourceInterface):
         elif isinstance(instruction, SourceInstruction):
             if isinstance(instruction, DataSource):
                 ds = self.config.indexes[instruction.datasource]
+                schema = self.get_schema(instruction.datasource)
                 translator = OpenSearchTranslator(
                     ds.timestamp_format,
                     ds.timestamp,
                     instruction.datasource,
                     ds.data_model_map,
+                    schema,
                 )
             else:
                 raise NotImplementedError(f"Unhandled instruction type: {instruction}")
 
         return translator
+
+    def _get_client_for_index(self, index: str) -> OpenSearch:
+        conn = self.config.indexes[index].connection
+        _logger.debug(
+            "Fetching schema for %s from %s", index, self.config.connections[conn].url
+        )
+        return self.conns[conn]
+
+    def get_schema(self, index: str) -> dict:
+        client = self._get_client_for_index(index)
+        if index not in self.schemas:
+            df = read_sql(f"DESCRIBE TABLES LIKE {index}", client)
+            self.schemas[index] = Series(
+                df["TYPE_NAME"], index=df["COLUMN_NAME"]
+            ).to_dict()
+        return self.schemas[index]

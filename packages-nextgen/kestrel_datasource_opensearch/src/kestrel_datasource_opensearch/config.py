@@ -50,13 +50,14 @@ class Index(DataClassJSONMixin):
             with open(self.data_model_mapping, "r") as fp:
                 data_model_map = yaml.safe_load(fp)
             # Reverse it so it's ocsf -> native
-            self.data_model_map = {v: k for k, v in data_model_map.items() if isinstance(v, str)}
+            self.data_model_map = {
+                v: k for k, v in data_model_map.items() if isinstance(v, str)
+            }
         else:
             # Default to the built-in ECS mapping
             load_standard_config("kestrel.mapping")
             _, data_model_map = generate_from_ocsf_dictionaries("ecs")
             self.data_model_map = {k: v[0] for k, v in data_model_map.items()}
-        _logger.debug("Default from_ocsf_map: %s", self.data_model_map)
 
 
 @dataclass

@@ -75,6 +75,7 @@ class OpenSearchTranslator:
         timestamp: str,
         select_from: str,
         data_model_map: dict,
+        schema: dict,
     ):
         # Time format string for datasource
         self.timefmt = timefmt
@@ -86,7 +87,7 @@ class OpenSearchTranslator:
         self.table: str = select_from
         self.filt: Optional[Filter] = None
         self.entity: Optional[str] = None
-        self.project: list[str] = []
+        self.project: Optional[ProjectAttrs] = None
         self.limit: int = 0
         self.offset: int = 0
         self.order_by: str = ""
@@ -94,6 +95,9 @@ class OpenSearchTranslator:
 
         # Data model mapping: should be ocsf -> native
         self.from_ocsf_map = data_model_map
+
+        # Index "schema" (field name -> type)
+        self.schema = schema
 
     @typechecked
     def _render_comp(self, comp: FComparison) -> str:
@@ -166,15 +170,29 @@ class OpenSearchTranslator:
         self.filt = filt
 
     def add_ProjectAttrs(self, proj: ProjectAttrs) -> None:
+        # Just save projection and compile it later
+        self.project = proj
+
+    def _get_ocsf_cols(self):
         prefix = f"{self.entity}." if self.entity else ""
-        ocsf_cols = [f"{prefix}{col}" for col in proj.attrs]
-        fields = {self.from_ocsf_map.get(col, col): col for col in ocsf_cols}
+        if not self.project:
+            ocsf_cols = [k for k in self.from_ocsf_map.keys() if k.startswith(prefix)]
+        else:
+            ocsf_cols = [f"{prefix}{col}" for col in self.project.attrs]
+        _logger.debug("OCSF fields: %s", ocsf_cols)
+        return ocsf_cols
+
+    def _render_proj(self):
+        fields = {
+            self.from_ocsf_map.get(col, col): col for col in self._get_ocsf_cols()
+        }
         _logger.debug("Fields: %s", fields)
-        self.project = [
+        proj = [
             f"`{k}` AS `{v.partition('.')[2]}`" if "." in v else v
             for k, v in fields.items()
         ]
-        _logger.debug("Set projection to %s", self.project)
+        _logger.debug("Set projection to %s", proj)
+        return proj
 
     def add_ProjectEntity(self, proj: ProjectEntity) -> None:
         self.entity = proj.entity_type
@@ -201,11 +219,8 @@ class OpenSearchTranslator:
 
     def result(self) -> str:
         stages = ["SELECT"]
-        if self.project:
-            cols = ", ".join(self.project)
-            stages.append(f"{cols}")
-        else:
-            stages.append("*")
+        cols = ", ".join(self._render_proj())
+        stages.append(f"{cols}")
         stages.append(f"FROM {self.table}")
         where = self._render_filter()
         if where:
