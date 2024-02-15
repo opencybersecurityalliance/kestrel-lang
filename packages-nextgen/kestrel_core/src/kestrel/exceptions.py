@@ -112,3 +112,9 @@ class ConflictingDataSourceInterfaceScheme(KestrelError):
 
 class DataSourceError(KestrelError):
     pass
+
+
+class UnsupportedOperatorError(KestrelError):
+    """The data source doesn't support this operator"""
+
+    pass

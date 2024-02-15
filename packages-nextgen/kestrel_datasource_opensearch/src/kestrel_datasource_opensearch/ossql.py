@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 from typeguard import typechecked
 
+from kestrel.exceptions import UnsupportedOperatorError
 from kestrel.ir.filter import (
     BoolExp,
     ExpOp,
@@ -60,8 +61,8 @@ comp2func = {
     StrCompOp.NEQ: "<>",
     StrCompOp.LIKE: "LIKE",
     StrCompOp.NLIKE: "NOT LIKE",
-    StrCompOp.MATCHES: "REGEXP",
-    StrCompOp.NMATCHES: "NOT REGEXP",
+    # UNSUPPORTED BY OpenSearch SQL: StrCompOp.MATCHES: "REGEXP",
+    # UNSUPPORTED BY OpenSearch SQL: StrCompOp.NMATCHES: "NOT REGEXP",
     ListOp.IN: "IN",
     ListOp.NIN: "NOT IN",
 }
@@ -114,7 +115,10 @@ class OpenSearchTranslator:
         ocsf_field = f"{prefix}{comp.field}"
         field = self.from_ocsf_map.get(ocsf_field, comp.field)
         _logger.debug("Mapped field '%s' to '%s'", ocsf_field, field)
-        result = f"{field} {comp2func[comp.op]} {value}"
+        try:
+            result = f"{field} {comp2func[comp.op]} {value}"
+        except KeyError:
+            raise UnsupportedOperatorError(comp.op.value)
         return result
 
     @typechecked

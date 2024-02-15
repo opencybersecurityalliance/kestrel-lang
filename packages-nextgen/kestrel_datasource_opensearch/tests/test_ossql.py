@@ -2,6 +2,7 @@ from datetime import datetime
 from dateutil import parser
 
 from kestrel_datasource_opensearch.ossql import OpenSearchTranslator
+from kestrel.exceptions import UnsupportedOperatorError
 from kestrel.ir.filter import (
     BoolExp,
     ExpOp,
@@ -32,6 +33,20 @@ import pytest
 TIMEFMT = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
+data_model_map = {
+    "process.cmd_line": "CommandLine",
+    "process.file.path": "Image",
+    "process.pid": "ProcessId",
+    "actor.process.pid": "ParentProcessId",
+}
+schema = {
+    "CommandLine": "text",
+    "Image": "text",
+    "ProcessId": "text",
+    "ParentProcessId": "text",
+}
+
+
 def _dt(timestr: str) -> datetime:
     return parser.parse(timestr)
 
@@ -59,10 +74,6 @@ def _remove_nl(s):
          "SELECT foo, bar, baz FROM my_table WHERE foo = 'abc' LIMIT 3"),
         ([Filter(ListComparison('foo', ListOp.NIN, ['abc', 'def']))],
          "SELECT {} FROM my_table WHERE foo NOT IN ('abc', 'def')"),
-        ([Filter(StrComparison('foo', StrCompOp.MATCHES, '.*abc.*'))],
-         "SELECT {} FROM my_table WHERE foo REGEXP '.*abc.*'"),
-        ([Filter(StrComparison('foo', StrCompOp.NMATCHES, '.*abc.*'))],
-         "SELECT {} FROM my_table WHERE foo NOT REGEXP '.*abc.*'"),
         ([Filter(MultiComp(ExpOp.OR, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
          "SELECT {} FROM my_table WHERE foo = 1 OR bar = 1"),
         ([Filter(MultiComp(ExpOp.AND, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
@@ -75,18 +86,6 @@ def _remove_nl(s):
     ]
 )
 def test_opensearch_translator(iseq, sql):
-    data_model_map = {
-        "process.cmd_line": "CommandLine",
-        "process.file.path": "Image",
-        "process.pid": "ProcessId",
-        "actor.process.pid": "ParentProcessId",
-    }
-    schema = {
-        "CommandLine": "text",
-        "Image": "text",
-        "ProcessId": "text",
-        "ParentProcessId": "text",
-    }
     cols = '`CommandLine` AS `cmd_line`, `Image` AS `file.path`, `ProcessId` AS `pid`'
     if ProjectEntity not in {type(i) for i in iseq}:
         cols += ', `ParentProcessId` AS `process.pid`'
@@ -95,3 +94,16 @@ def test_opensearch_translator(iseq, sql):
         trans.add_instruction(i)
     result = trans.result()
     assert _remove_nl(str(result)) == sql.format(cols)
+
+
+@pytest.mark.parametrize(
+    "instruction", [
+        Filter(StrComparison('foo', StrCompOp.MATCHES, '.*abc.*')),
+        Filter(StrComparison('foo', StrCompOp.NMATCHES, '.*abc.*')),
+    ]
+)
+def test_opensearch_translator_unsupported(instruction):
+    trans = OpenSearchTranslator(TIMEFMT, "timestamp", "my_table", data_model_map, schema)
+    with pytest.raises(UnsupportedOperatorError):
+        trans.add_instruction(instruction)
+        _ = trans.result()
