@@ -49,7 +49,7 @@ def _or(lhs: str, rhs: Value) -> str:
     return " OR ".join((lhs, rhs))
 
 
-# Kusto comparison operator functions
+# SQL comparison operator functions
 comp2func = {
     NumCompOp.EQ: "=",
     NumCompOp.NEQ: "<>",
