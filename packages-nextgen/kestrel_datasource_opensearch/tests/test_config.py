@@ -33,10 +33,14 @@ def test_load_config(tmp_path):
             "some_index": {
                 "connection": "some-cloud-thing",
                 "timestamp": "@timestamp",
-                "timestamp_format": "%Y-%m-%d %H:%M:%S.%f"
+                "timestamp_format": "%Y-%m-%d %H:%M:%S.%f",
+                "data_model_mapping": str(tmp_path / "mapping.yaml")
             }
         }
     }
+    map_file = tmp_path / "mapping.yaml"
+    with open(map_file, 'w') as fp:
+        fp.write("some.field: other.field\n")
     config_file = tmp_path / "opensearch.yaml"
     with open(config_file, 'w') as fp:
         yaml.dump(config, fp)
