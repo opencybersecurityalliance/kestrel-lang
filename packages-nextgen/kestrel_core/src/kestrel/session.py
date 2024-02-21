@@ -45,9 +45,21 @@ class Session(AbstractContextManager):
         Parameters:
             huntflow_block: the new huntflow block to be executed
 
-        Yields:
-            Evaluated result per Return instruction in the huntflow block
+        Returns:
+            Evaluated result per Return instruction
         """
+        return list(self.execute_to_generate(huntflow_block))
+
+    def execute_to_generate(self, huntflow_block: str) -> Iterable[DataFrame]:
+        """Execute a Kestrel huntflow and put results in a generator.
+
+        Parameters:
+            huntflow_block: the new huntflow block to be executed
+
+        Yields:
+            Evaluated result per Return instruction
+        """
+
         # TODO: return type generalization
 
         irgraph_new = parse_kestrel(huntflow_block)
