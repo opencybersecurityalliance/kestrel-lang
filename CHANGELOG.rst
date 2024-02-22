@@ -9,6 +9,9 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.8.2 (2024-02-20)
+==================
+
 Added
 -----
 
