@@ -21,7 +21,7 @@ DISP cmd ATTR pid
                    ])
     b2 = DataFrame([ {"pid": 123} ])
     with Session() as session:
-        res = session.execute(hf)
+        res = session.execute_to_generate(hf)
         assert b1.equals(next(res))
         assert b2.equals(next(res))
         with pytest.raises(StopIteration):

@@ -34,7 +34,7 @@ class KestrelKernel(Kernel):
     ):
         if not silent:
             try:
-                for result in self.kestrel_session.execute(code):
+                for result in self.kestrel_session.execute_to_generate(code):
                     self.send_response(
                         self.iopub_socket,
                         "display_data",
