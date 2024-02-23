@@ -19,12 +19,14 @@ from kestrel.ir.instructions import (
     DataSource,
     Filter,
     Limit,
+    Offset,
     ProjectAttrs,
     ProjectEntity,
+    Sort,
 )
 
 # Use sqlite3 for testing
-from sqlalchemy.dialects import sqlite
+import sqlalchemy
 
 import pytest
 
@@ -46,6 +48,9 @@ def _remove_nl(s):
         # Try a simple filter
         ([Filter(IntComparison('foo', NumCompOp.GE, 0))],
          "SELECT * FROM my_table WHERE foo >= ?"),
+        # Try a simple filter with sorting
+        ([Filter(IntComparison('foo', NumCompOp.GE, 0)), Sort('bar')],
+         "SELECT * FROM my_table WHERE foo >= ? ORDER BY bar DESC"),
         # Simple filter plus time range
         ([Filter(IntComparison('foo', NumCompOp.GE, 0), timerange=TimeRange(_dt('2023-12-06T08:17:00Z'), _dt('2023-12-07T08:17:00Z')))],
          "SELECT * FROM my_table WHERE foo >= ? AND timestamp >= ? AND timestamp < ?"),
@@ -56,7 +61,7 @@ def _remove_nl(s):
         ([Filter(StrComparison('foo', StrCompOp.EQ, 'abc')), ProjectAttrs(['foo', 'bar', 'baz']), Limit(3)],
          "SELECT foo, bar, baz FROM my_table WHERE foo = ? LIMIT ? OFFSET ?"),
         ([Filter(ListComparison('foo', ListOp.NIN, ['abc', 'def']))],
-         "SELECT * FROM my_table WHERE (foo NOT IN (?, ?))"),
+         "SELECT * FROM my_table WHERE (foo NOT IN (__[POSTCOMPILE_foo_1]))"), # POSTCOMPILE is some SQLAlchemy-ism
         ([Filter(StrComparison('foo', StrCompOp.MATCHES, '.*abc.*'))],
          "SELECT * FROM my_table WHERE foo REGEXP ?"),
         ([Filter(StrComparison('foo', StrCompOp.NMATCHES, '.*abc.*'))],
@@ -65,10 +70,12 @@ def _remove_nl(s):
          "SELECT * FROM my_table WHERE foo = ? OR bar = ?"),
         ([Filter(MultiComp(ExpOp.AND, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
          "SELECT * FROM my_table WHERE foo = ? AND bar = ?"),
+        ([Limit(1000), Offset(2000)],
+         "SELECT * FROM my_table LIMIT ? OFFSET ?"),
     ]
 )
 def test_sql_translator(iseq, sql):
-    trans = SqlTranslator(sqlite.dialect(), _time2string, "timestamp", "my_table")
+    trans = SqlTranslator(sqlalchemy.dialects.sqlite.dialect(), _time2string, "timestamp", sqlalchemy.table("my_table"))
     for i in iseq:
         trans.add_instruction(i)
     result = trans.result()

@@ -1,15 +1,6 @@
 from __future__ import annotations
 from typeguard import typechecked
-from typing import (
-    Any,
-    Type,
-    Iterable,
-    Tuple,
-    Mapping,
-    MutableMapping,
-    Union,
-    Optional,
-)
+from typing import Any, Iterable, Tuple, Mapping, MutableMapping, Union, Optional
 from collections import defaultdict
 from itertools import combinations
 from uuid import UUID
@@ -18,14 +9,18 @@ import json
 from kestrel.ir.instructions import (
     Instruction,
     TransformingInstruction,
+    SolePredecessorTransformingInstruction,
     IntermediateInstruction,
     SourceInstruction,
     Variable,
     DataSource,
     Reference,
     Return,
+    Filter,
+    ProjectAttrs,
     instruction_from_dict,
 )
+from kestrel.ir.filter import ReferenceValue
 from kestrel.exceptions import (
     InstructionNotFound,
     InvalidSeralizedGraph,
@@ -37,7 +32,12 @@ from kestrel.exceptions import (
     DuplicatedDataSource,
     DuplicatedSingletonInstruction,
     MultiInterfacesInGraph,
+    MultiSourcesInGraph,
     InevaluableInstruction,
+    LargerThanOneIndegreeInstruction,
+    DuplicatedReferenceInFilter,
+    DanglingReferenceInFilter,
+    DanglingFilter,
 )
 from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
 
@@ -329,7 +329,7 @@ class IRGraph(networkx.DiGraph):
         return sorted(self.get_nodes_by_type(Return), key=lambda x: x.sequence)
 
     def get_max_return_sequence(self) -> int:
-        """Get all return nodes
+        """Get the largest sequence number of all Returns
 
         Returns:
             The largest sequence number of all Return instruction
@@ -354,6 +354,53 @@ class IRGraph(networkx.DiGraph):
             The list of sink nodes
         """
         return [n for n in self.nodes() if self.out_degree(n) == 0]
+
+    def get_trunk_n_branches(
+        self, node: TransformingInstruction
+    ) -> (Instruction, Mapping[ReferenceValue, Instruction]):
+        """Get the trunk and branches paths for instruction
+
+        For trunk path, return the tail node; for each branch, return the tail
+        node of the branchin mapping from reference to node.
+
+        Parameters:
+            node: the instruction node
+
+        Returns:
+            (tail node for trunk, ref to branch tail node mapping)
+        """
+        ps = list(self.predecessors(node))
+        pps = [(p, pp) for p in self.predecessors(node) for pp in self.predecessors(p)]
+
+        if isinstance(node, SolePredecessorTransformingInstruction):
+            if len(ps) > 1:
+                raise LargerThanOneIndegreeInstruction()
+            else:
+                return ps[0], {}
+        elif isinstance(node, Filter):
+            r2n = {}
+            for rv in node.get_references():
+                ppfs = [
+                    (p, pp)
+                    for p, pp in pps
+                    if isinstance(p, ProjectAttrs)
+                    and isinstance(pp, (Variable, Reference))
+                    and p.attrs == [rv.attribute]
+                    and pp.name == rv.reference
+                ]
+                if len(ppfs) > 1:
+                    raise DuplicatedReferenceInFilter(ppfs)
+                else:
+                    p = ppfs[0][0]
+                    r2n[rv] = p
+                    ps.remove(p)
+            if len(ps) == 0:
+                raise DanglingFilter()
+            elif len(ps) > 1:
+                raise DanglingReferenceInFilter(ps)
+            return ps[0], r2n
+        else:
+            raise NotImplementedError(f"unknown instruction type: {node}")
 
     def update(self, ng: IRGraph):
         """Extend the current IRGraph with a new IRGraph
@@ -452,34 +499,101 @@ class IRGraph(networkx.DiGraph):
         Returns:
             A list of subgraphs that do not have further dependency
         """
+        _CII = CACHE_INTERFACE_IDENTIFIER
 
         # the base graph to segment
         g = self.find_cached_dependent_subgraph_of_node(node, cache)
 
-        # Mapping: {grouping attribute: [impacted nodes]}
+        # Mapping: {interface name: [impacted nodes]}
         a2ns = defaultdict(set)
         for n in g.get_nodes_by_type(SourceInstruction):
-            ns = networkx.descendants(g, n)
-            preds = set().union(*[set(g.predecessors(n)) for n in ns])
-            cached_predecessors = [n for n in preds if n.id in cache]
-            a2ns[n.interface].update(ns)
-            a2ns[n.interface].update(cached_predecessors)
             a2ns[n.interface].add(n)
+            a2ns[n.interface].update(networkx.descendants(g, n))
+
+        # all predecessor nodes to any interface impacted nodes
+        pns = set().union(*[set(g.predecessors(n)) for ns in a2ns.values() for n in ns])
 
         # add non-source nodes to cache as default execution environment
         # e.g., a path starting from a cached Variable
-        a2ns[CACHE_INTERFACE_IDENTIFIER].update(g.nodes() - set().union(*a2ns.values()))
+        # nodes directly preceeding an interface impacted node do not need evaluation
+        cached_nodes = set([n for n in g.nodes() if n.id in cache])
+        for n in cached_nodes - pns:
+            a2ns[_CII].add(n)
+            a2ns[_CII].update(networkx.descendants(g, n))
 
-        # find all nodes that are affected by two or more grouping attributes
+        # find all nodes that are affected by two or more interfaces
         shared_impacted_nodes = set().union(
             *[a2ns[ix] & a2ns[iy] for ix, iy in combinations(a2ns.keys(), 2)]
         )
 
-        # get the segmented subgraph for each grouping attribute
-        unshared_nodes = [ns - shared_impacted_nodes for ns in a2ns.values()]
-        dep_graphs = [IRGraphEvaluable(g.subgraph(ns)) for ns in unshared_nodes if ns]
+        # unshared nodes for each interface
+        a2uns = {k: v - shared_impacted_nodes for k, v in a2ns.items()}
+
+        # handle direct predecessor node cached
+        # such nodes are required in building dep graphs around interfaces
+        # such nodes could be shared by multiple interfaces; can only handle now
+        for interface in set(a2uns) - set([_CII]):
+            ps = set().union(*[set(g.predecessors(n)) for n in a2uns[interface]])
+            a2uns[interface].update(ps & cached_nodes)
+
+        # remove dep graphs with only one node
+        # e.g., `ds://a` in "y = GET file FROM ds://a WHERE x = v.x" when v.x not in cache
+        dep_nodes = [ns for ns in a2uns.values() if len(ns) > 1]
+        dep_graphs = [IRGraphEvaluable(g.subgraph(ns)) for ns in dep_nodes]
 
         return dep_graphs
+
+    def find_simple_query_subgraphs(
+        self, cache: MutableMapping[UUID, Any]
+    ) -> Iterable[IRGraphSimpleQuery]:
+        """Find dependency subgraphs those are IRGraphSimpleQuery
+
+        Some interfaces, e.g., stix-shifter, build stateless query and do not
+        support JOIN or sub query/SELECT, so they can only evaluate a simple
+        SQL query around each source node. Use this method to prepare such tiny
+        graph segments for evaluation by the interface. The remaining of the
+        graph can be evaluated in cache.
+
+        Parameters:
+            cache: any type of node cache, e.g., content, SQL statement
+
+        Returns:
+            An iterator of simple-query subgraphs
+        """
+        for n in self.get_nodes_by_type(SourceInstruction):
+            for g in self._find_paths_from_node_to_a_variable(n, cache):
+                yield IRGraphSimpleQuery(g)
+
+    def _find_paths_from_node_to_a_variable(
+        self, node: Instruction, cache: MutableMapping[UUID, Any]
+    ) -> Iterable[IRGraph]:
+        """Find paths (linear IRGraph with directly attached cached nodes) from
+        the starting node to its closest variables
+
+        If the linear IRGraph has a dependent branch/path longer than a cached
+        node, this linear IRGraph cannot be used to build a IRGraphSimpleQuery;
+        it needs to generate a subquery for the branch.
+
+        Parameters:
+            node: the node to start path search
+            cache: any type of node cache, e.g., content, SQL statement
+
+        Returns:
+            An iterator of paths
+        """
+        # check whether the node has other uncached incoming nodes
+        # if no, this path can be a IRGraphSimpleQuery
+        if len([n for n in self.predecessors(node) if n.id not in cache]) <= 1:
+            # pcns: predecessor cached nodes
+            pcns = [n for n in self.predecessors(node) if n.id in cache]
+            for succ in self.successors(node):
+                if isinstance(succ, Variable):
+                    yield self.subgraph([succ, node] + pcns)
+                else:
+                    for succ_graph in self._find_paths_from_node_to_a_variable(
+                        succ, cache
+                    ):
+                        yield self.subgraph(list(succ_graph.nodes()) + [node] + pcns)
 
     def to_dict(self) -> Mapping[str, Iterable[Mapping]]:
         """Serialize to a Python dictionary (D3 graph format)
@@ -630,14 +744,15 @@ class IRGraphEvaluable(IRGraph):
         2. No IntermediateInstruction node
     """
 
-    def __init__(self, graph: IRGraph):
+    def __init__(self, graph: Optional[IRGraph] = None):
         super().__init__()
 
         # need to initialize it before `self.update(graph)` below
         self.interface = None
 
         # update() will call _add_node() internally to set self.interface
-        self.update(graph)
+        if graph:
+            self.update(graph)
 
         # all source nodes are already cached (no SourceInstruction)
         if not self.interface:
@@ -653,3 +768,20 @@ class IRGraphEvaluable(IRGraph):
             else:
                 self.interface = node.interface
         return super()._add_node(node, deref)
+
+
+@typechecked
+class IRGraphSimpleQuery(IRGraphEvaluable):
+    """Simple Query IRGraph
+
+    A simple query IRGraph is an evaluatable IRGraph that
+
+        1. It contains one source node
+
+        2. It can be compiled into a simple (not nested/joined) SQL query
+    """
+
+    def __init__(self, graph: Optional[IRGraph] = None):
+        if graph and len(graph.get_nodes_by_type(SourceInstruction)) > 1:
+            raise MultiSourcesInGraph()
+        super().__init__(graph)

@@ -1,38 +1,30 @@
 from __future__ import annotations
-from typeguard import typechecked
-from typing import (
-    Type,
-    Union,
-    Mapping,
-    List,
-    Optional,
-)
-from dataclasses import (
-    dataclass,
-    field,
-    fields,
-    InitVar,
-)
-from mashumaro.mixins.json import DataClassJSONMixin
-import sys
-import inspect
-import uuid
-import json
+
 import copy
+import inspect
+import json
+import sys
+import uuid
+from dataclasses import InitVar, dataclass, field, fields
+from enum import Enum
+from typing import Any, Iterable, List, Mapping, Optional, Type, Union
 
 from kestrel.__future__ import is_python_older_than_minor_version
-from kestrel.ir.filter import (
-    FExpression,
-    TimeRange,
-)
 from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
-
 from kestrel.exceptions import (
+    InvalidDataSource,
     InvalidInstruction,
     InvalidSeralizedInstruction,
-    InvalidDataSource,
 )
-
+from kestrel.ir.filter import (
+    FExpression,
+    ReferenceValue,
+    TimeRange,
+    get_references_from_exp,
+    resolve_reference_with_function,
+)
+from mashumaro.mixins.json import DataClassJSONMixin
+from typeguard import typechecked
 
 # https://stackoverflow.com/questions/70400639/how-do-i-get-python-dataclass-initvar-fields-to-work-with-typing-get-type-hints
 if is_python_older_than_minor_version(11):
@@ -81,6 +73,12 @@ class TransformingInstruction(Instruction):
     pass
 
 
+class SolePredecessorTransformingInstruction(TransformingInstruction):
+    """The translating instruction whose indegree==1"""
+
+    pass
+
+
 class SourceInstruction(Instruction):
     """The instruction that does not dependent on any instruction"""
 
@@ -94,8 +92,12 @@ class IntermediateInstruction(Instruction):
 
 
 @dataclass(eq=False)
-class Return(TransformingInstruction):
-    """The sink instruction that forces execution"""
+class Return(SolePredecessorTransformingInstruction):
+    """The sink instruction that forces execution
+
+    Return is implemented as a TransformingInstruction so it triggers
+    IRGraph._add_node_with_dependent_node() in IRGraph.add_node()
+    """
 
     # the order/sequence of return instruction in huntflow (source code)
     sequence: int = 0
@@ -106,14 +108,22 @@ class Filter(TransformingInstruction):
     exp: FExpression
     timerange: TimeRange = field(default_factory=TimeRange)
 
+    # TODO: from_json() for self.exp
+
+    def get_references(self) -> Iterable[ReferenceValue]:
+        return get_references_from_exp(self.exp)
+
+    def resolve_references(self, f: Callable[[ReferenceValue], Any]):
+        resolve_reference_with_function(self.exp, f)
+
 
 @dataclass(eq=False)
-class ProjectEntity(TransformingInstruction):
+class ProjectEntity(SolePredecessorTransformingInstruction):
     entity_type: str
 
 
 @dataclass(eq=False)
-class ProjectAttrs(TransformingInstruction):
+class ProjectAttrs(SolePredecessorTransformingInstruction):
     # mashumaro does not support typing.Iterable, only List
     attrs: List[str]
 
@@ -144,7 +154,7 @@ class DataSource(SourceInstruction):
 
 
 @dataclass(eq=False)
-class Variable(TransformingInstruction):
+class Variable(SolePredecessorTransformingInstruction):
     name: str
     # required to dereference a variable that has been created multiple times
     # the variable with the largest version will be used by dereference
@@ -159,7 +169,12 @@ class Reference(IntermediateInstruction):
 
 
 @dataclass(eq=False)
-class Limit(TransformingInstruction):
+class Limit(SolePredecessorTransformingInstruction):
+    num: int
+
+
+@dataclass(eq=False)
+class Offset(SolePredecessorTransformingInstruction):
     num: int
 
 
@@ -167,6 +182,17 @@ class Limit(TransformingInstruction):
 class Construct(SourceInstruction):
     data: List[Mapping[str, Union[str, int, bool]]]
     interface: str = CACHE_INTERFACE_IDENTIFIER
+
+
+class SortDirection(str, Enum):
+    ASC = "ASC"
+    DESC = "DESC"
+
+
+@dataclass(eq=False)
+class Sort(SolePredecessorTransformingInstruction):
+    attribute: str
+    direction: SortDirection = SortDirection.DESC
 
 
 @typechecked

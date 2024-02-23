@@ -3,10 +3,9 @@ from importlib import resources
 from kestrel.__future__ import is_python_older_than_minor_version
 import os
 from pathlib import Path
-import pkg_resources
 from pkgutil import get_data
 from typeguard import typechecked
-from typing import Union, Iterable, Mapping
+from typing import Union, Mapping
 
 
 def load_data_file(package_name, file_name):
@@ -26,6 +25,8 @@ def list_folder_files(package_name, folder_name, prefix=None, suffix=None):
         file_paths = resources.files(package_name).joinpath(folder_name).iterdir()
     except AttributeError:
         if is_python_older_than_minor_version(9):
+            import pkg_resources
+
             file_names = pkg_resources.resource_listdir(package_name, folder_name)
             file_paths = [
                 Path(

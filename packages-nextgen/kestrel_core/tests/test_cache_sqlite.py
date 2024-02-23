@@ -49,13 +49,6 @@ DISP proclist ATTR name
                                     , {"name": "firefox.exe"}
                                     , {"name": "chrome.exe"}
                                     ]
-    # check whether `proclist` is cached
-    proclist = graph.get_variable("proclist")
-    assert c[proclist.id].to_dict("records") == [ {"name": "cmd.exe", "pid": 123}
-                                                , {"name": "explorer.exe", "pid": 99}
-                                                , {"name": "firefox.exe", "pid": 201}
-                                                , {"name": "chrome.exe", "pid": 205}
-                                                ]
 
 
 def test_eval_new_filter_disp():
@@ -79,20 +72,8 @@ DISP browsers ATTR name, pid
     assert df.to_dict("records") == [ {"name": "firefox.exe", "pid": 201}
                                     , {"name": "chrome.exe", "pid": 205}
                                     ]
-    # check whether `proclist` is cached
-    proclist = graph.get_variable("proclist")
-    assert c[proclist.id].to_dict("records") == [ {"name": "cmd.exe", "pid": 123}
-                                                , {"name": "explorer.exe", "pid": 99}
-                                                , {"name": "firefox.exe", "pid": 201}
-                                                , {"name": "chrome.exe", "pid": 205}
-                                                ]
-    # check whether `browsers` is cached
-    browsers = graph.get_variable("browsers")
-    assert c[browsers.id].to_dict("records") == [ {"name": "firefox.exe", "pid": 201}
-                                                , {"name": "chrome.exe", "pid": 205}
-                                                ]
 
-
+    
 def test_eval_two_returns():
     stmt = """
 proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
@@ -129,3 +110,43 @@ DISP browsers ATTR pid
                     ])
     assert len(mapping) == 1
     assert df2.equals(mapping[rets[1].id])
+
+
+def test_issue_446():
+    """The `WHERE name IN ...` below was raising `sqlalchemy.exc.StatementError: (builtins.KeyError) 'name_1'`
+    https://github.com/opencybersecurityalliance/kestrel-lang/issues/446
+    """
+    stmt = """
+proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
+                       , {"name": "explorer.exe", "pid": 99}
+                       , {"name": "firefox.exe", "pid": 201}
+                       , {"name": "chrome.exe", "pid": 205}
+                       ]
+browsers = proclist WHERE name IN ("explorer.exe", "firefox.exe", "chrome.exe")
+"""
+    graph = IRGraphEvaluable(parse_kestrel(stmt))
+    c = SqliteCache()
+    _ = c.evaluate_graph(graph)
+
+
+def test_eval_filter_with_ref():
+    stmt = """
+proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
+                       , {"name": "explorer.exe", "pid": 99}
+                       , {"name": "firefox.exe", "pid": 201}
+                       , {"name": "chrome.exe", "pid": 205}
+                       ]
+browsers = proclist WHERE name = 'firefox.exe' OR name = 'chrome.exe'
+specials = proclist WHERE pid IN [123, 201]
+p2 = proclist WHERE pid = browsers.pid and name = specials.name
+DISP p2 ATTR name, pid
+"""
+    graph = IRGraphEvaluable(parse_kestrel(stmt))
+    c = SqliteCache()
+    mapping = c.evaluate_graph(graph)
+
+    # check the return is correct
+    rets = graph.get_returns()
+    assert len(rets) == 1
+    df = mapping[rets[0].id]
+    assert df.to_dict("records") == [ {"name": "firefox.exe", "pid": 201} ]

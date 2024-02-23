@@ -3,9 +3,9 @@ requires = ["setuptools >= 68.2.2", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kestrel_core"
-version = "1.8.1"
-description = "Kestrel Threat Hunting Language"
+name = "kestrel_datasource_opensearch"
+version = "2.0.0"
+description = "Kestrel OpenSearch Datasource Interface"
 readme = "README.rst"
 requires-python = ">=3.8"
 license = {text = "Apache 2.0 License"}
@@ -15,12 +15,8 @@ maintainers = [
 ]
 keywords = [
     "kestrel",
-    "language",
-    "DSL",
     "cybersecurity",
     "threat hunting",
-    "huntflow",
-    "entity",
 ]
 classifiers = [
     "Topic :: Security",
@@ -30,33 +26,11 @@ classifiers = [
 ]
 
 dependencies = [
-    "typeguard>=4.1.5",
-    "pyyaml>=6.0.1",
-    "lark>=1.1.8",
-    "pandas>=2.0.3",
-    "pyarrow>=14.0.2",
-    "tabulate>=0.9.0",
-    "firepit>=2.3.32",
-]
-
-[project.optional-dependencies]
-test = [
-    "pytest",
-    "kestrel_datasource_stixbundle",
-    "kestrel_analytics_python",
+    "kestrel_core>=2.0.0",
+    "opensearch-py>=2.4.2",
 ]
 
 [project.urls]
 Homepage = "https://github.com/opencybersecurityalliance/kestrel-lang"
 Documentation = "https://kestrel.readthedocs.io/"
 Repository = "https://github.com/opencybersecurityalliance/kestrel-lang.git"
-
-[project.scripts]
-kestrel = "kestrel.cli:kestrel"
-ikestrel = "kestrel.cli:ikestrel"
-
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-"*" = ["*.lark", "*.yaml"]

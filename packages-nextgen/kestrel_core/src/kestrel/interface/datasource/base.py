@@ -9,14 +9,14 @@ from typing import (
     Iterable,
 )
 
-from kestrel.ir.instructions import (
-    Reference,
-    Instruction,
-)
+from kestrel.ir.instructions import Instruction
 from kestrel.ir.graph import IRGraphEvaluable
 from kestrel.exceptions import (
     InvalidSerializedDatasourceInterfaceCacheCatalog,
 )
+
+
+MODULE_PREFIX = "kestrel_datasource_"
 
 
 class AbstractDataSourceInterface(ABC):

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from typeguard import typechecked
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Iterable, Any, Callable
 
 from mashumaro.mixins.json import DataClassJSONMixin
 
@@ -91,6 +92,24 @@ class ListComparison(DataClassJSONMixin):
     value: Union[List[int], List[str]]
 
 
+# frozen=True for generating __hash__() method
+@dataclass(frozen=True)
+class ReferenceValue(DataClassJSONMixin):
+    """Value for reference"""
+
+    reference: str
+    attribute: Optional[str]
+
+
+@dataclass
+class RefComparison(DataClassJSONMixin):
+    """Referred variable comparison"""
+
+    field: str
+    op: ListOp
+    value: ReferenceValue
+
+
 class ExpOp(str, Enum):
     """Boolean expression operator"""
 
@@ -106,7 +125,11 @@ class MultiComp(DataClassJSONMixin):
     """
 
     op: ExpOp
-    comps: List[Union[IntComparison, FloatComparison, StrComparison, ListComparison]]
+    comps: List[
+        Union[
+            IntComparison, FloatComparison, StrComparison, ListComparison, RefComparison
+        ]
+    ]
 
 
 @dataclass
@@ -131,6 +154,7 @@ FExpression = Union[
     FloatComparison,
     StrComparison,
     ListComparison,
+    RefComparison,
     MultiComp,
     BoolExp,
 ]
@@ -141,5 +165,32 @@ FComparison = Union[
     FloatComparison,
     StrComparison,
     ListComparison,
+    RefComparison,
     MultiComp,
 ]
+
+
+@typechecked
+def get_references_from_exp(exp: FExpression) -> Iterable[ReferenceValue]:
+    if isinstance(exp, RefComparison):
+        yield exp.value
+    elif isinstance(exp, BoolExp):
+        yield from get_references_from_exp(exp.lhs)
+        yield from get_references_from_exp(exp.rhs)
+    elif isinstance(exp, MultiComp):
+        for comp in exp.comps:
+            yield from get_references_from_exp(comp)
+
+
+@typechecked
+def resolve_reference_with_function(
+    exp: FExpression, f: Callable[[ReferenceValue], Any]
+):
+    if isinstance(exp, RefComparison):
+        exp.value = f(exp.value)
+    elif isinstance(exp, BoolExp):
+        resolve_reference_with_function(exp.lhs, f)
+        resolve_reference_with_function(exp.rhs, f)
+    elif isinstance(exp, MultiComp):
+        for comp in exp.comps:
+            resolve_reference_with_function(comp, f)

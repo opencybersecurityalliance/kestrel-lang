@@ -54,6 +54,26 @@ class MultiInterfacesInGraph(KestrelError):
     pass
 
 
+class MultiSourcesInGraph(KestrelError):
+    pass
+
+
+class LargerThanOneIndegreeInstruction(KestrelError):
+    pass
+
+
+class DanglingReferenceInFilter(KestrelError):
+    pass
+
+
+class DanglingFilter(KestrelError):
+    pass
+
+
+class DuplicatedReferenceInFilter(KestrelError):
+    pass
+
+
 class InvalidSerializedDatasourceInterfaceCacheCatalog(KestrelError):
     pass
 
@@ -71,4 +91,30 @@ class InterfaceNotFound(KestrelError):
 
 
 class InterfaceNameCollision(KestrelError):
+    pass
+
+
+class IRGraphMissingNode(KestrelError):
+    pass
+
+
+class DataSourceInterfaceNotFound(KestrelError):
+    pass
+
+
+class InvalidDataSourceInterfaceImplementation(KestrelError):
+    pass
+
+
+class ConflictingDataSourceInterfaceScheme(KestrelError):
+    pass
+
+
+class DataSourceError(KestrelError):
+    pass
+
+
+class UnsupportedOperatorError(KestrelError):
+    """The data source doesn't support this operator"""
+
     pass

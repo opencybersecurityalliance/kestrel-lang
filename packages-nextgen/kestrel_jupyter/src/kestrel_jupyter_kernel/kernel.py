@@ -34,12 +34,14 @@ class KestrelKernel(Kernel):
     ):
         if not silent:
             try:
-                for result in self.kestrel_session.execute(code):
+                for result in self.kestrel_session.execute_to_generate(code):
                     self.send_response(
                         self.iopub_socket,
                         "display_data",
                         {"data": {"text/html": result.to_html()}, "metadata": {}},
                     )
+                    # how to clear output (if needed in the future):
+                    # self.send_response(self.iopub_socket, "clear_output")
 
             except Exception as e:
                 _logger.error("Exception occurred", exc_info=True)

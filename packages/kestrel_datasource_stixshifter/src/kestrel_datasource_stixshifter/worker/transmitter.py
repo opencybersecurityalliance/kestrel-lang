@@ -94,6 +94,10 @@ class Transmitter(Process):
             if self.wait_datasource_search():
                 # no error so far
                 self.retrieve_data()
+
+                # some connector needs to delete the query in the datasource,
+                # e.g., chronicle, discard the return (successful or not)
+                self.transmission.delete(self.search_id)
         else:
             err_msg = (
                 search_meta_result["error"]

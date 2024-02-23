@@ -25,11 +25,12 @@ import itertools
 from collections import OrderedDict
 
 from firepit.deref import auto_deref
-from firepit.exceptions import InvalidAttr
+from firepit.exceptions import InvalidAttr, UnknownViewname
 from firepit.query import (
     Aggregation,
     Column,
     Limit,
+    Filter,
     Group,
     Offset,
     Order,
@@ -37,6 +38,7 @@ from firepit.query import (
     Projection,
     Query,
     Table,
+    Unique,
 )
 from firepit.stix20 import summarize_pattern
 
@@ -373,16 +375,27 @@ def find(stmt, session):
     return_var_table = None
 
     if return_type in session.store.types():
-        input_var_attrs = session.store.columns(input_type)
-        return_type_attrs = session.store.columns(return_type)
+        input_var_attrs = _get_all_entity_attrs(session.store, input_type)
+        return_type_attrs = _get_all_entity_attrs(session.store, return_type)
+        _logger.debug(
+            "return_type=%s %s; input_type=%s %s",
+            return_type,
+            return_type_attrs,
+            input_type,
+            input_var_attrs,
+        )
 
         # First, get information from local store
         if stmt["relation"] in generic_relations:
+            _logger.debug("Compiling query for generic relation '%s'", stmt["relation"])
             rel_query = compile_generic_relation_to_query(
                 return_type, input_type, session.symtable[stmt["input"]].entity_table
             )
 
         else:
+            _logger.debug(
+                "Compiling query for specific relation '%s'", stmt["relation"]
+            )
             rel_query = compile_specific_relation_to_query(
                 return_type,
                 stmt["relation"],
@@ -392,6 +405,7 @@ def find(stmt, session):
                 input_var_attrs,
                 return_type_attrs,
             )
+        _logger.debug("Compiled rel_query: %s", rel_query)
 
         # `session.store.assign_query` will generate new entity_table named `local_var_table`
         if rel_query:
@@ -402,6 +416,8 @@ def find(stmt, session):
             return_var_table = do_prefetch(
                 local_var_table, local_stage_varstruct, session, stmt
             )
+    else:
+        _logger.debug("return_type '%s' not in store", return_type)
 
     output = new_var(session.store, return_var_table, [], stmt, session.symtable)
     return output, None
@@ -566,3 +582,20 @@ def _transform_query(store, entity_table, transform):
     else:
         qry = Query(entity_table)
     return qry
+
+
+def _get_all_entity_attrs(store, entity_type):
+    attrs = store.columns(entity_type)
+    qry = Query(
+        [
+            Table("__reflist"),
+            Filter([Predicate("source_ref", "LIKE", f"{entity_type}--%")]),
+            Projection([Column("ref_name")]),
+            Unique(),
+        ]
+    )
+    try:
+        attrs.extend([i["ref_name"] for i in store.run_query(qry)])
+    except UnknownViewname:
+        pass
+    return attrs

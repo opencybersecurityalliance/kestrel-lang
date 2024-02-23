@@ -1,8 +1,11 @@
 import json
 
-from kestrel.ir.filter import (IntComparison, FloatComparison,
-                               StrComparison, ListComparison, ListOp,
-                               NumCompOp, StrCompOp, ExpOp, BoolExp, MultiComp)
+from kestrel.frontend.parser import parse_kestrel
+from kestrel.ir.filter import (
+    IntComparison, FloatComparison, StrComparison, ListComparison,
+    RefComparison, ReferenceValue, ListOp, NumCompOp, StrCompOp, ExpOp,
+    BoolExp, MultiComp, get_references_from_exp, resolve_reference_with_function,
+)
 from kestrel.ir.instructions import (
     Filter,
     instruction_from_json,
@@ -120,3 +123,22 @@ def test_filter_compound_exp():
     data = filt.to_json()
     filt2 = instruction_from_json(data)
     assert filt == filt2
+
+
+def test_filter_with_reference():
+    stmt = "x = y WHERE foo = 'bar' OR baz = z.baz"
+    graph = parse_kestrel(stmt)
+    filter_nodes = graph.get_nodes_by_type(Filter)
+    exp = filter_nodes[0].exp
+    exp_dict = exp.to_dict()
+    assert exp_dict == {'lhs': {'field': 'foo', 'op': '=', 'value': 'bar'}, 'op': 'OR', 'rhs': {'field': 'baz', 'op': 'IN', 'value': {'reference': 'z', 'attribute': 'baz'}}}
+
+
+def test_fill_references_in_exp():
+    lhs = StrComparison("foo", StrCompOp.EQ, "bar")
+    rhs = RefComparison("baz", "=", ReferenceValue("var", "attr"))
+    exp = BoolExp(lhs, ExpOp.AND, rhs)
+    rs = get_references_from_exp(exp)
+    assert len(list(rs)) == 1
+    resolve_reference_with_function(exp, lambda x: 5)
+    assert exp.rhs.value == 5

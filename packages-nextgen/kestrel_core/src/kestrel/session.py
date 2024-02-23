@@ -1,16 +1,16 @@
 import logging
-import atexit
-
-from typing import Iterable
-from typeguard import typechecked
 from contextlib import AbstractContextManager
+from typing import Iterable
 from uuid import UUID, uuid4
+
 from pandas import DataFrame
+from typeguard import typechecked
 
 from kestrel.ir.graph import IRGraph
 from kestrel.frontend.parser import parse_kestrel
 from kestrel.cache import AbstractCache, SqliteCache
 from kestrel.interface.datasource import AbstractDataSourceInterface
+from kestrel.interface.datasource.manager import DataSourceManager
 from kestrel.interface.datasource.utils import get_interface_by_name
 
 
@@ -28,8 +28,11 @@ class Session(AbstractContextManager):
 
         # Datasource interfaces in this session
         # Cache is a special datasource interface and should always be added
-        # TODO: other datasource interfaces to initialize/add if exist
         self.interfaces: Iterable[AbstractDataSourceInterface] = [self.cache]
+
+        # Load data sources and add to list
+        data_source_manager = DataSourceManager()
+        self.interfaces.extend(data_source_manager.interfaces())
 
     def execute(self, huntflow_block: str) -> Iterable[DataFrame]:
         """Execute a Kestrel huntflow block.
@@ -42,23 +45,38 @@ class Session(AbstractContextManager):
         Parameters:
             huntflow_block: the new huntflow block to be executed
 
-        Yields:
-            Evaluated result per Return instruction in the huntflow block
+        Returns:
+            Evaluated result per Return instruction
         """
+        return list(self.execute_to_generate(huntflow_block))
+
+    def execute_to_generate(self, huntflow_block: str) -> Iterable[DataFrame]:
+        """Execute a Kestrel huntflow and put results in a generator.
+
+        Parameters:
+            huntflow_block: the new huntflow block to be executed
+
+        Yields:
+            Evaluated result per Return instruction
+        """
+
         # TODO: return type generalization
 
         irgraph_new = parse_kestrel(huntflow_block)
         self.irgraph.update(irgraph_new)
 
         for ret in irgraph_new.get_returns():
-            while ret.id not in self.cache:
+            ret_df = None
+            while ret_df is None:
                 for g in self.irgraph.find_dependent_subgraphs_of_node(ret, self.cache):
                     interface = get_interface_by_name(g.interface, self.interfaces)
                     for iid, df in interface.evaluate_graph(g).items():
                         if g.interface != self.cache.name:
                             self.cache[iid] = df
+                        if iid == ret.id:
+                            ret_df = df
             else:
-                yield self.cache[ret.id]
+                yield ret_df
 
     def do_complete(self, huntflow_block: str, cursor_pos: int):
         """Kestrel code auto-completion.

@@ -4,15 +4,18 @@ from datetime import datetime, timedelta, timezone
 
 from kestrel.frontend.parser import parse_kestrel
 from kestrel.ir.graph import IRGraph
+from kestrel.ir.filter import ReferenceValue
 from kestrel.ir.instructions import (
-    Filter,
-    ProjectEntity,
-    DataSource,
-    Variable,
-    Limit,
     Construct,
-    Reference,
+    DataSource,
+    Filter,
+    Limit,
+    Offset,
     ProjectAttrs,
+    ProjectEntity,
+    Reference,
+    Sort,
+    Variable,
 )
 
 
@@ -150,16 +153,18 @@ proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
 
 
 @pytest.mark.parametrize(
-    "stmt", [
-        "x = y WHERE foo = 'bar'",
-        "x = y WHERE foo > 1.5",
-        r"x = y WHERE foo = r'C:\TMP'",
-        "x = y WHERE foo = 'bar' OR baz != 42",
-        "x = y WHERE foo = 'bar' AND baz IN (1, 2, 3)",
-        "x = y WHERE foo = 'bar' AND baz IN (1)",
+    "stmt, node_cnt", [
+        ("x = y WHERE foo = 'bar'", 3),
+        ("x = y WHERE foo > 1.5", 3),
+        (r"x = y WHERE foo = r'C:\TMP'", 3),
+        ("x = y WHERE foo = 'bar' OR baz != 42", 3),
+        ("x = y WHERE foo = 'bar' AND baz IN (1, 2, 3)", 3),
+        ("x = y WHERE foo = 'bar' AND baz IN (1)", 3),
+        ("x = y WHERE foo = 'bar' SORT BY foo ASC LIMIT 3", 5),
+        ("x = y WHERE foo = 'bar' SORT BY foo ASC LIMIT 3 OFFSET 9", 6),
     ]
 )
-def test_parser_expression(stmt):
+def test_parser_expression(stmt, node_cnt):
     """
     This test isn't meant to be comprehensive, but checks basic transformer functionality.
 
@@ -167,10 +172,13 @@ def test_parser_expression(stmt):
     """
 
     graph = parse_kestrel(stmt)
-    assert len(graph) == 3
+    assert len(graph) == node_cnt
     assert len(graph.get_nodes_by_type(Variable)) == 1
     assert len(graph.get_nodes_by_type(Reference)) == 1
     assert len(graph.get_nodes_by_type(Filter)) == 1
+    assert len(graph.get_nodes_by_type(Sort)) in (0, 1)
+    assert len(graph.get_nodes_by_type(Limit)) in (0, 1)
+    assert len(graph.get_nodes_by_type(Offset)) in (0, 1)
 
 
 def test_three_statements_in_a_line():
@@ -200,3 +208,60 @@ DISP browsers ATTR name, pid
     assert (ft, browsers) in graph.edges
     assert (browsers, proj) in graph.edges
     assert (proj, ret) in graph.edges
+
+
+@pytest.mark.parametrize(
+    "stmt, node_cnt, expected", [
+        ("x = y WHERE foo = z.foo", 5, [ReferenceValue("z", "foo")]),
+        ("x = y WHERE foo > 1.5", 3, []),
+        ("x = y WHERE foo = 'bar' OR baz = z.baz", 5, [ReferenceValue("z", "baz")]),
+        ("x = y WHERE (foo = 'bar' OR baz = z.baz) AND (fox = w.fox AND bbb = z.bbb)", 8, [ReferenceValue("z", "baz"), ReferenceValue("w", "fox"), ReferenceValue("z", "bbb")]),
+        ("x = GET process FROM s://x WHERE foo = z.foo", 6, [ReferenceValue("z", "foo")]),
+        ("x = GET file FROM s://y WHERE foo > 1.5", 4, []),
+        ("x = GET file FROM c://x WHERE foo = 'bar' OR baz = z.baz", 6, [ReferenceValue("z", "baz")]),
+        ("x = GET user FROM s://x WHERE (foo = 'bar' OR baz = z.baz) AND (fox = w.fox AND bbb = z.bbb)", 9, [ReferenceValue("z", "baz"), ReferenceValue("w", "fox"), ReferenceValue("z", "bbb")]),
+    ]
+)
+def test_reference_branch(stmt, node_cnt, expected):
+    graph = parse_kestrel(stmt)
+    assert len(graph) == node_cnt
+    filter_nodes = graph.get_nodes_by_type(Filter)
+    assert len(filter_nodes) == 1
+    filter_node = filter_nodes[0]
+    for rv in expected:
+        r = graph.get_reference(rv.reference)
+        assert r
+        projs = [p for p in graph.successors(r) if isinstance(p, ProjectAttrs) and p.attrs == [rv.attribute]]
+        assert projs and len(projs) == 1
+        proj = projs[0]
+        assert proj
+        assert list(graph.successors(proj)) == [filter_node]
+
+
+def test_parser_disp_after_new():
+    stmt = """
+proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
+                       , {"name": "explorer.exe", "pid": 99}
+                       , {"name": "firefox.exe", "pid": 201}
+                       , {"name": "chrome.exe", "pid": 205}
+                       ]
+DISP proclist ATTR name, pid LIMIT 2 OFFSET 3
+"""
+    graph = parse_kestrel(stmt)
+    assert len(graph) == 6
+    c = graph.get_nodes_by_type(Construct)[0]
+    assert {"proclist"} == {v.name for v in graph.get_variables()}
+    proclist = graph.get_variable("proclist")
+    proj = graph.get_nodes_by_type(ProjectAttrs)[0]
+    assert proj.attrs == ['name', 'pid']
+    limit = graph.get_nodes_by_type(Limit)[0]
+    assert limit.num == 2
+    offset = graph.get_nodes_by_type(Offset)[0]
+    assert offset.num == 3
+    ret = graph.get_returns()[0]
+    assert len(graph.edges) == 5
+    assert (c, proclist) in graph.edges
+    assert (proclist, proj) in graph.edges
+    assert (proj, limit) in graph.edges
+    assert (limit, offset) in graph.edges
+    assert (offset, ret) in graph.edges

@@ -1,7 +1,8 @@
+import logging
 from functools import reduce
 from typing import Callable
 
-from sqlalchemy import and_, column, or_, select, table
+from sqlalchemy import and_, column, or_, select, FromClause, asc, desc
 from sqlalchemy.engine import Compiled, default
 from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
 from sqlalchemy.sql.expression import ColumnClause, ColumnOperators
@@ -19,14 +20,18 @@ from kestrel.ir.filter import (
     StrCompOp,
 )
 from kestrel.ir.instructions import (
-    DataSource,
     Filter,
     Instruction,
     Limit,
+    Offset,
     ProjectAttrs,
     ProjectEntity,
+    Sort,
+    SortDirection,
 )
 
+
+_logger = logging.getLogger(__name__)
 
 # SQLAlchemy comparison operator functions
 comp2func = {
@@ -68,7 +73,7 @@ class SqlTranslator:
         dialect: default.DefaultDialect,
         timefmt: Callable,
         timestamp: str,
-        select_from: str,
+        from_obj: FromClause,
     ):
         # SQLAlchemy Dialect object (e.g. from sqlalchemy.dialects import sqlite; sqlite.dialect())
         self.dialect = dialect
@@ -80,7 +85,7 @@ class SqlTranslator:
         self.timestamp = timestamp
 
         # SQLAlchemy statement object
-        self.query: Select = select().select_from(table(select_from))
+        self.query: Select = select("*").select_from(from_obj)
 
     def _render_exp(self, exp: BoolExp) -> BooleanClauseList:
         if isinstance(exp.lhs, BoolExp):
@@ -132,6 +137,14 @@ class SqlTranslator:
     def add_Limit(self, lim: Limit) -> None:
         self.query = self.query.limit(lim.num)
 
+    def add_Offset(self, offset: Offset) -> None:
+        self.query = self.query.offset(offset.num)
+
+    def add_Sort(self, sort: Sort) -> None:
+        col = column(sort.attribute)
+        order = asc(col) if sort.direction == SortDirection.ASC else desc(col)
+        self.query = self.query.order_by(order)
+
     def add_instruction(self, i: Instruction) -> None:
         inst_name = i.instruction
         method_name = f"add_{inst_name}"
@@ -141,9 +154,12 @@ class SqlTranslator:
         method(i)
 
     def result(self) -> Compiled:
-        # If there was no projection, we need to add '*' explicitly
-        if len(self.query.selected_columns) == 0:
-            self.query = self.query.with_only_columns("*")
+        # TODO: two projections, e.g., ProjectAttrs after ProjectEntity
+        return self.query.compile(dialect=self.dialect)
+
+    def result_w_literal_binds(self) -> Compiled:
+        # full SQL query with literal binds showing, i.e., IN [99, 51], not IN [?, ?]
+        # this is for debug display, not used by an sqlalchemy driver to execute
         return self.query.compile(
-            dialect=self.dialect, compile_kwargs={"render_postcompile": True}
+            dialect=self.dialect, compile_kwargs={"literal_binds": True}
         )
