@@ -20,15 +20,17 @@
 
 import functools
 import logging
+import re
 import itertools
 from collections import OrderedDict
 
 from firepit.deref import auto_deref
-from firepit.exceptions import InvalidAttr
+from firepit.exceptions import InvalidAttr, UnknownViewname
 from firepit.query import (
     Aggregation,
     Column,
     Limit,
+    Filter,
     Group,
     Offset,
     Order,
@@ -36,6 +38,7 @@ from firepit.query import (
     Projection,
     Query,
     Table,
+    Unique,
 )
 from firepit.stix20 import summarize_pattern
 
@@ -372,16 +375,27 @@ def find(stmt, session):
     return_var_table = None
 
     if return_type in session.store.types():
-        input_var_attrs = session.store.columns(input_type)
-        return_type_attrs = session.store.columns(return_type)
+        input_var_attrs = _get_all_entity_attrs(session.store, input_type)
+        return_type_attrs = _get_all_entity_attrs(session.store, return_type)
+        _logger.debug(
+            "return_type=%s %s; input_type=%s %s",
+            return_type,
+            return_type_attrs,
+            input_type,
+            input_var_attrs,
+        )
 
         # First, get information from local store
         if stmt["relation"] in generic_relations:
+            _logger.debug("Compiling query for generic relation '%s'", stmt["relation"])
             rel_query = compile_generic_relation_to_query(
                 return_type, input_type, session.symtable[stmt["input"]].entity_table
             )
 
         else:
+            _logger.debug(
+                "Compiling query for specific relation '%s'", stmt["relation"]
+            )
             rel_query = compile_specific_relation_to_query(
                 return_type,
                 stmt["relation"],
@@ -391,6 +405,7 @@ def find(stmt, session):
                 input_var_attrs,
                 return_type_attrs,
             )
+        _logger.debug("Compiled rel_query: %s", rel_query)
 
         # `session.store.assign_query` will generate new entity_table named `local_var_table`
         if rel_query:
@@ -401,6 +416,8 @@ def find(stmt, session):
             return_var_table = do_prefetch(
                 local_var_table, local_stage_varstruct, session, stmt
             )
+    else:
+        _logger.debug("return_type '%s' not in store", return_type)
 
     output = new_var(session.store, return_var_table, [], stmt, session.symtable)
     return output, None
@@ -439,13 +456,9 @@ def group(stmt, session):
 @_default_output
 @_skip_command_if_empty_input
 def sort(stmt, session):
-    session.store.assign(
-        stmt["output"],
-        session.symtable[stmt["input"]].entity_table,
-        op="sort",
-        by=stmt["attribute"],
-        ascending=stmt["ascending"],
-    )
+    entity_table = session.symtable[stmt["input"]].entity_table
+    qry = _build_query(session.store, entity_table, Query(entity_table), stmt, [])
+    session.store.assign_query(stmt["output"], qry)
 
 
 @_debug_logger
@@ -532,6 +545,13 @@ def _build_query(store, entity_table, qry, stmt, paths=None):
     if sort_by:
         direction = "ASC" if stmt["ascending"] else "DESC"
         qry.append(Order([(sort_by, direction)]))
+    else:
+        # Check if we need to preserve original sort order
+        # This is kind of a hack, copied from firepit.
+        viewdef = store._get_view_def(entity_table)
+        match = re.search(r"ORDER BY \"([a-z0-9:'\._\-]*)\" (ASC|DESC)$", viewdef)
+        if match:
+            qry.append(Order([(match.group(1), match.group(2))]))
     limit = stmt.get("limit")
     if limit:
         qry.append(Limit(limit))
@@ -562,3 +582,20 @@ def _transform_query(store, entity_table, transform):
     else:
         qry = Query(entity_table)
     return qry
+
+
+def _get_all_entity_attrs(store, entity_type):
+    attrs = store.columns(entity_type)
+    qry = Query(
+        [
+            Table("__reflist"),
+            Filter([Predicate("source_ref", "LIKE", f"{entity_type}--%")]),
+            Projection([Column("ref_name")]),
+            Unique(),
+        ]
+    )
+    try:
+        attrs.extend([i["ref_name"] for i in store.run_query(qry)])
+    except UnknownViewname:
+        pass
+    return attrs

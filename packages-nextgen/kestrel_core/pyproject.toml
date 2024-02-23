@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools >= 68.2.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kestrel_core"
+version = "2.0.0"
+description = "Kestrel Threat Hunting Language"
+readme = "README.rst"
+requires-python = ">=3.8"
+license = {text = "Apache 2.0 License"}
+maintainers = [
+    {name = "Xiaokui Shu", email = "xiaokui.shu@ibm.com"},
+    {name = "Paul Coccoli", email = "pcoccoli@us.ibm.com"},
+]
+keywords = [
+    "kestrel",
+    "language",
+    "DSL",
+    "cybersecurity",
+    "threat hunting",
+    "huntflow",
+    "entity",
+]
+classifiers = [
+    "Topic :: Security",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+]
+
+dependencies = [
+    "typeguard>=4.1.5",
+    "pyyaml>=6.0.1",
+    "lark>=1.1.7",
+    "pandas>=2.0.3",
+    "pyarrow>=13.0.0",
+    "mashumaro>=3.10",
+    "networkx>=3.1", # networkx==3.2.1 only for Python>=3.9
+    "SQLAlchemy>=2.0.23",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+]
+test = [
+    "pytest",
+]
+
+[project.urls]
+Homepage = "https://github.com/opencybersecurityalliance/kestrel-lang"
+Documentation = "https://kestrel.readthedocs.io/"
+Repository = "https://github.com/opencybersecurityalliance/kestrel-lang.git"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.lark", "*.yaml"]

@@ -96,3 +96,15 @@ DISP v2
         s.execute(stmt)
         out = s.execute("DISP v2")
         assert out == []
+
+
+def test_disp_sorted_indirect_attr(proc_bundle_file):
+    with Session() as s:
+        s.execute("p = GET process"
+                  f"   FROM file://{proc_bundle_file}"
+                  "    WHERE name in ('conhost.exe', 'services.exe', 'taskhost.exe')")
+        s.execute("sp = SORT p BY binary_ref.name DESC")
+        out = s.execute("DISP sp")
+        data = out[0].to_dict()["data"]
+        names = [d["binary_ref.name"] for d in data]
+        assert names == sorted(names, reverse=True)

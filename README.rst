@@ -6,8 +6,8 @@
         :target: https://kestrel.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://img.shields.io/pypi/v/kestrel-core
-        :target: https://pypi.python.org/pypi/kestrel-core
+.. image:: https://img.shields.io/pypi/v/kestrel-jupyter
+        :target: https://pypi.python.org/pypi/kestrel-jupyter
         :alt: Latest Version
 
 .. image:: https://img.shields.io/pypi/dm/kestrel-core
@@ -47,7 +47,7 @@ hunt-flow is to hunts as control-flow is to ordinary programs.
 
 What does it mean by *hunt fast*?
 
-- Do NOT write the same TTP pattern in different data source queries.
+- Do NOT write the same IoB pattern in different data source queries.
 - Do NOT write one-time-use adapaters to connect hunt steps.
 - Do NOT waste your existing analytic scripts/programs in future hunts.
 - Do construct your hunt-flow from smaller reuseable hunt-flow.

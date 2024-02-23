@@ -129,13 +129,6 @@ def get_datasource_from_profiles(profile_name, profiles):
                 f'invalid {profile_name} connection section: no "host" field',
             )
 
-        if "port" not in connection and connector_name != "stix_bundle":
-            raise InvalidDataSource(
-                profile_name,
-                "stixshifter",
-                f'invalid {profile_name} connection section: no "port" field',
-            )
-
         if "auth" not in configuration:
             raise InvalidDataSource(
                 profile_name,

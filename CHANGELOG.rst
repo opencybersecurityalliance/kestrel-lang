@@ -9,6 +9,28 @@ The format is based on `Keep a Changelog`_.
 Unreleased
 ==========
 
+1.8.2 (2024-02-20)
+==================
+
+Added
+-----
+
+- Support use of environment variable in config files
+- How to get Jupyter token in Docker deployment doc
+
+Fixed
+-----
+
+- Remove port checking in stix-shifter interface #452
+- Add missing logging module import in ``stix-shifter-diag``
+- Add missing delete operation in ``kestrel_datasource_stixshifter`` #458
+- Fix relations like ``CONTAINS`` #472
+
+Changed
+-------
+
+- Disable (in default config) entity prefetch for ``file``, ``user-account``, ``x-oca-asset``
+
 1.8.1 (2023-10-23)
 ==================
 

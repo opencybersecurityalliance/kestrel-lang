@@ -1,0 +1,9 @@
+process: process
+file: file
+group: group
+client: network_endpoint
+destination: network_endpoint
+server: network_endpoint
+source: network_endpoint
+network: network_activity
+user: user
