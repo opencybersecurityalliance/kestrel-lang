@@ -169,6 +169,11 @@ class Reference(IntermediateInstruction):
 
 
 @dataclass(eq=False)
+class Explain(SolePredecessorTransformingInstruction):
+    pass
+
+
+@dataclass(eq=False)
 class Limit(SolePredecessorTransformingInstruction):
     num: int
 
