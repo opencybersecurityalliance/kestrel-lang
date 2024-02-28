@@ -8,6 +8,7 @@ from pandas import DataFrame, Series, concat
 from kestrel.exceptions import DataSourceError
 from kestrel.interface.datasource.base import AbstractDataSourceInterface
 from kestrel.ir.graph import IRGraphEvaluable
+from kestrel.display import GraphletExplanation
 from kestrel.ir.instructions import (
     DataSource,
     Instruction,
@@ -121,6 +122,22 @@ class OpenSearchInterface(AbstractDataSourceInterface):
             )
             mapping[instruction.id] = read_sql(translator.result(), client)
             client.close()
+        return mapping
+
+    def explain_graph(
+        self,
+        graph: IRGraphEvaluable,
+        instructions_to_explain: Optional[Iterable[Instruction]] = None,
+    ) -> Mapping[UUID, GraphletExplanation]:
+        mapping = {}
+        if not instructions_to_explain:
+            instructions_to_explain = graph.get_sink_nodes()
+        for instruction in instructions_to_explain:
+            translator = self._evaluate_instruction_in_graph(graph, instruction)
+            dep_graph = graph.duplicate_dependent_subgraph_of_node(instruction)
+            graph_dict = dep_graph.to_dict()
+            query_stmt = translator.result()
+            mapping[instruction.id] = GraphletExplanation(graph_dict, query_stmt)
         return mapping
 
     def _evaluate_instruction_in_graph(

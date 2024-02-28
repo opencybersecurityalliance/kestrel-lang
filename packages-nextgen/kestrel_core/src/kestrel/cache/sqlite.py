@@ -1,5 +1,6 @@
 import logging
-from typing import Iterable, Mapping, Optional, Union
+from copy import copy
+from typing import Iterable, Mapping, Optional, Union, Any
 from uuid import UUID
 
 import sqlalchemy
@@ -10,10 +11,12 @@ from typeguard import typechecked
 from kestrel.cache.base import AbstractCache
 from kestrel.interface.datasource.codegen.sql import SqlTranslator
 from kestrel.ir.graph import IRGraphEvaluable
+from kestrel.display import GraphletExplanation
 from kestrel.ir.instructions import (
     Construct,
     Instruction,
     Return,
+    Explain,
     Variable,
     Filter,
     SourceInstruction,
@@ -77,6 +80,12 @@ class SqliteCache(AbstractCache):
         self.cache_catalog[instruction_id] = table_name
         data.to_sql(table_name, con=self.connection, if_exists="replace", index=False)
 
+    def get_virtual_copy(self) -> AbstractCache:
+        v = copy(self)
+        v.cache_catalog = copy(self.cache_catalog)
+        v.__class__ = SqliteCacheVirtual
+        return v
+
     def evaluate_graph(
         self,
         graph: IRGraphEvaluable,
@@ -91,6 +100,22 @@ class SqliteCache(AbstractCache):
             # TODO: may catch error in case evaluation starts from incomplete SQL
             _logger.debug(f"SQL query generated: {translator.result_w_literal_binds()}")
             mapping[instruction.id] = read_sql(translator.result(), self.connection)
+        return mapping
+
+    def explain_graph(
+        self,
+        graph: IRGraphEvaluable,
+        instructions_to_explain: Optional[Iterable[Instruction]] = None,
+    ) -> Mapping[UUID, GraphletExplanation]:
+        mapping = {}
+        if not instructions_to_explain:
+            instructions_to_explain = graph.get_sink_nodes()
+        for instruction in instructions_to_explain:
+            translator = self._evaluate_instruction_in_graph(graph, instruction)
+            dep_graph = graph.duplicate_dependent_subgraph_of_node(instruction)
+            graph_dict = dep_graph.to_dict()
+            query_stmt = str(translator.result_w_literal_binds())
+            mapping[instruction.id] = GraphletExplanation(graph_dict, query_stmt)
         return mapping
 
     def _evaluate_instruction_in_graph(
@@ -118,7 +143,7 @@ class SqliteCache(AbstractCache):
             translator = self._evaluate_instruction_in_graph(graph, trunk)
 
             if isinstance(instruction, SolePredecessorTransformingInstruction):
-                if isinstance(instruction, Return):
+                if isinstance(instruction, (Return, Explain)):
                     pass
                 elif isinstance(instruction, Variable):
                     # start a new translator and use previous one as subquery
@@ -147,3 +172,15 @@ class SqliteCache(AbstractCache):
             raise NotImplementedError(f"Unknown instruction type: {instruction}")
 
         return translator
+
+
+@typechecked
+class SqliteCacheVirtual(SqliteCache):
+    def __getitem__(self, instruction_id: UUID) -> Any:
+        return self.cache_catalog[instruction_id]
+
+    def __delitem__(self, instruction_id: UUID):
+        del self.cache_catalog[instruction_id]
+
+    def __setitem__(self, instruction_id: UUID, data: Any):
+        self.cache_catalog[instruction_id] = "virtual" + instruction_id.hex

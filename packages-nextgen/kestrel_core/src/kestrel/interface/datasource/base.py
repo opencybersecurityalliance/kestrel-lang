@@ -9,6 +9,7 @@ from typing import (
     Iterable,
 )
 
+from kestrel.display import GraphletExplanation
 from kestrel.ir.instructions import Instruction
 from kestrel.ir.graph import IRGraphEvaluable
 from kestrel.exceptions import (
@@ -97,13 +98,33 @@ class AbstractDataSourceInterface(ABC):
 
         Parameters:
 
-            graph: The IRGraph with zero or one interface
+            graph: The evaluate IRGraph
 
             instructions_to_evaluate: instructions to evaluate and return; by default, it will be all Return instructions in the graph
 
         Returns:
 
             DataFrames for each instruction in instructions_to_evaluate.
+        """
+        ...
+
+    @abstractmethod
+    def explain_graph(
+        self,
+        graph: IRGraphEvaluable,
+        instructions_to_explain: Optional[Iterable[Instruction]] = None,
+    ) -> Mapping[UUID, GraphletExplanation]:
+        """Explain how to evaluate the IRGraph
+
+        Parameters:
+
+            graph: The evaluable IRGraph
+
+            instructions_to_explain: instructions to explain and return; by default, it will be all Return instructions in the graph
+
+        Returns:
+
+            GraphletExplanation (a Kestrel Display object) for each instruction in instructions_to_explain.
         """
         ...
 

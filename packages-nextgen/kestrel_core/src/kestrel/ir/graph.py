@@ -774,7 +774,7 @@ class IRGraphEvaluable(IRGraph):
 class IRGraphSimpleQuery(IRGraphEvaluable):
     """Simple Query IRGraph
 
-    A simple query IRGraph is an evaluatable IRGraph that
+    A simple query IRGraph is an evaluable IRGraph that
 
         1. It contains one source node
 
