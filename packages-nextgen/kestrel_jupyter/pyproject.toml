@@ -31,6 +31,9 @@ dependencies = [
     "jupyterlab",
     "jupyter_client",
     "nbclassic",
+    "sqlparse==0.4.4",
+    "pygments==2.17.2",
+    "matplotlib==3.8.3",
 ]
 
 [project.optional-dependencies]
