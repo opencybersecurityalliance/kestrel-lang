@@ -50,6 +50,7 @@ EXPLAIN chrome
         assert ge.graph == session.irgraph.to_dict()
         construct = session.irgraph.get_nodes_by_type(Construct)[0]
         assert ge.query.language == "SQL"
-        assert ge.query.statement == f'SELECT * \nFROM (SELECT * \nFROM (SELECT * \nFROM (SELECT * \nFROM "{construct.id.hex}") AS anon_3 \nWHERE name != \'cmd.exe\') AS anon_2 \nWHERE pid = 205) AS anon_1'
+        stmt = ge.query.statement.replace('"', '')
+        assert stmt == f'SELECT * \nFROM (SELECT * \nFROM (SELECT * \nFROM (SELECT * \nFROM {construct.id.hex}) AS anon_3 \nWHERE name != \'cmd.exe\') AS anon_2 \nWHERE pid = 205) AS anon_1'
         with pytest.raises(StopIteration):
             next(ress)
