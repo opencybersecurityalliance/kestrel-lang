@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 from kestrel.display import Display, GraphExplanation
 from kestrel.ir.graph import IRGraph
-from kestrel.ir.instructions import Instruction, DataSource, Variable
+from kestrel.ir.instructions import Instruction, DataSource, Variable, Construct
 
 
 def gen_label_mapping(g: IRGraph) -> Mapping[Instruction, str]:
@@ -21,6 +21,8 @@ def gen_label_mapping(g: IRGraph) -> Mapping[Instruction, str]:
     for n in g:
         if isinstance(n, Variable):
             d[n] = n.name
+        elif isinstance(n, Construct):
+            d[n] = n.id.hex[:4]
         elif isinstance(n, DataSource):
             d[n] = n.datasource
         else:
@@ -36,7 +38,12 @@ def to_html_blocks(d: Display) -> Iterable[str]:
             graph = IRGraph(graphlet.graph)
             plt.figure(figsize=(4, 2))
             nx.draw(
-                graph, with_labels=True, labels=gen_label_mapping(graph), font_size=8
+                graph,
+                with_labels=True,
+                labels=gen_label_mapping(graph),
+                font_size=8,
+                node_size=260,
+                node_color="#bfdff5",
             )
             with tempfile.NamedTemporaryFile(delete_on_close=False) as tf:
                 tf.close()

@@ -31,12 +31,13 @@ _logger = logging.getLogger(__name__)
 class SqliteTranslator(SqlTranslator):
     def __init__(self, from_obj: Union[SqlTranslator, str]):
         if isinstance(from_obj, SqlTranslator):
-            fc = from_obj.query.subquery()
+            fc = from_obj.query.subquery(name=from_obj.associated_variable)
         else:  # str to represent table name
             fc = sqlalchemy.table(from_obj)
         super().__init__(
             sqlalchemy.dialects.sqlite.dialect(), dt_parser, "time", fc
         )  # FIXME: need mapping for timestamp?
+        self.associated_variable = None
 
 
 @typechecked
@@ -149,6 +150,7 @@ class SqliteCache(AbstractCache):
                     # start a new translator and use previous one as subquery
                     # this allows using the variable as a dependent node
                     # if the variable is a sink, `SELECT * FROM (subquery)` also works
+                    translator.associated_variable = instruction.name
                     translator = SqliteTranslator(translator)
                 else:
                     translator.add_instruction(instruction)
