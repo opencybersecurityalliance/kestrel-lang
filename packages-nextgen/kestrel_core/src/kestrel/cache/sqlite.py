@@ -11,7 +11,7 @@ from typeguard import typechecked
 from kestrel.cache.base import AbstractCache
 from kestrel.interface.datasource.codegen.sql import SqlTranslator
 from kestrel.ir.graph import IRGraphEvaluable
-from kestrel.display import GraphletExplanation
+from kestrel.display import GraphletExplanation, NativeQuery
 from kestrel.ir.instructions import (
     Construct,
     Instruction,
@@ -114,8 +114,8 @@ class SqliteCache(AbstractCache):
             translator = self._evaluate_instruction_in_graph(graph, instruction)
             dep_graph = graph.duplicate_dependent_subgraph_of_node(instruction)
             graph_dict = dep_graph.to_dict()
-            query_stmt = str(translator.result_w_literal_binds())
-            mapping[instruction.id] = GraphletExplanation(graph_dict, query_stmt)
+            query = NativeQuery("SQL", str(translator.result_w_literal_binds()))
+            mapping[instruction.id] = GraphletExplanation(graph_dict, query)
         return mapping
 
     def _evaluate_instruction_in_graph(

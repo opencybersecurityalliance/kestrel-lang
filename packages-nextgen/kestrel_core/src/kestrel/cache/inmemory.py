@@ -12,7 +12,7 @@ from typing import (
 
 from kestrel.cache.base import AbstractCache
 from kestrel.ir.graph import IRGraphEvaluable
-from kestrel.display import GraphletExplanation
+from kestrel.display import GraphletExplanation, NativeQuery
 from kestrel.ir.instructions import (
     Instruction,
     Return,
@@ -90,7 +90,8 @@ class InMemoryCache(AbstractCache):
         for instruction in instructions_to_evaluate:
             dep_graph = graph.duplicate_dependent_subgraph_of_node(instruction)
             graph_dict = dep_graph.to_dict()
-            mapping[instruction.id] = GraphletExplanation(graph_dict, "")
+            query = NativeQuery("DataFrame", "")
+            mapping[instruction.id] = GraphletExplanation(graph_dict, query)
         return mapping
 
     def _evaluate_instruction_in_graph(
