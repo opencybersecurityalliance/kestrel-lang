@@ -22,7 +22,7 @@ from kestrel.ir.instructions import (
 @pytest.mark.parametrize(
     "stmt", [
         "x = GET thing FROM if://ds WHERE foo = 'bar'",
-        "x = GET thing FROM if://ds WHERE foo > 1.5",
+        "x = GET thing FROM if://ds WHERE foo > 0",
         r"x = GET thing FROM if://ds WHERE foo = r'C:\TMP'",
         "x = GET thing FROM if://ds WHERE foo = 'bar' OR baz != 42",
         "x = GET thing FROM if://ds WHERE foo = 'bar' AND baz IN (1, 2, 3)",
@@ -49,7 +49,7 @@ def test_parser_get_statements(stmt):
 
 
 def test_parser_get_timespan_relative():
-    stmt = "x = GET url FROM if://ds WHERE url = 'http://example.com/' LAST 5h"
+    stmt = "x = GET url FROM if://ds WHERE value = 'http://example.com/' LAST 5h"
     graph = parse_kestrel(stmt)
     filt_list = graph.get_nodes_by_type(Filter)
     assert len(filt_list) == 1
@@ -59,7 +59,7 @@ def test_parser_get_timespan_relative():
 
 
 def test_parser_get_timespan_absolute():
-    stmt = ("x = GET url FROM if://ds WHERE url = 'http://example.com/'"
+    stmt = ("x = GET url FROM if://ds WHERE value = 'http://example.com/'"
             " START '2023-11-29T00:00:00Z' STOP '2023-11-29T05:00:00Z'")
     graph = parse_kestrel(stmt)
     filt_list = graph.get_nodes_by_type(Filter)
@@ -73,9 +73,9 @@ def test_parser_get_timespan_absolute():
 
 @pytest.mark.parametrize(
     "stmt, expected", [
-        ("x = GET url FROM if://ds WHERE url = 'http://example.com/' LIMIT 1", 1),
-        ("x = GET url FROM if://ds WHERE url = 'http://example.com/' LAST 3d LIMIT 2", 2),
-        (("x = GET url FROM if://ds WHERE url = 'http://example.com/'"
+        ("x = GET url FROM if://ds WHERE value = 'http://example.com/' LIMIT 1", 1),
+        ("x = GET url FROM if://ds WHERE value = 'http://example.com/' LAST 3d LIMIT 2", 2),
+        (("x = GET url FROM if://ds WHERE value = 'http://example.com/'"
           " START '2023-11-29T00:00:00Z' STOP '2023-11-29T05:00:00Z' LIMIT 3"), 3),
     ]
 )
@@ -95,38 +95,37 @@ def get_parsed_filter_exp(stmt):
 
 def test_parser_mapping_single_comparison_to_single_value():
     # test for attributes in the form entity_name:property_name
-    stmt = "x = GET process FROM if://ds WHERE process:binary_ref.name = 'foo'"
+    stmt = "x = GET process FROM if://ds WHERE process:pid = 123"
     parse_filter = get_parsed_filter_exp(stmt)
-    assert parse_filter.field == 'file.name'
+    assert parse_filter.field == 'process.pid'
     # test when entity name is not included in the attributes
-    stmt = "x = GET process FROM if://ds WHERE binary_ref.name = 'foo'"
+    stmt = "x = GET process FROM if://ds WHERE pid = 123"
     parse_filter = get_parsed_filter_exp(stmt)
-    assert parse_filter.field == 'file.name'
+    assert parse_filter.field == 'process.pid'
 
 
 def test_parser_mapping_single_comparison_to_multiple_values():
-    stmt = "x = GET ipv4-addr FROM if://ds WHERE value = '192.168.22.3'"
+    stmt = "x = GET process FROM if://ds WHERE binary_ref.name = 'cmd.exe'"
     parse_filter = get_parsed_filter_exp(stmt)
     comps = parse_filter.comps
-    assert isinstance(comps, list) and len(comps) == 3
+    assert isinstance(comps, list) and len(comps) == 2
     fields = [x.field for x in comps]
-    assert ("dst_endpoint.ip" in fields and "src_endpoint.ip" in fields and
-            "device.ip" in fields)
+    assert ("process.file.name" in fields and "process.file.path" in fields)
 
 
 def test_parser_mapping_multiple_comparison_to_multiple_values():
-    stmt = "x = GET process FROM if://ds WHERE binary_ref.name = 'foo' "\
-        "OR name = 'bam' AND parent_ref.name = 'boom'"
+    stmt = ("x = GET process FROM if://ds"
+            " WHERE binary_ref.name = 'name' OR name = 'bam' AND parent_ref.name = 'boom'")
     parse_filter = get_parsed_filter_exp(stmt)
-    field1 = parse_filter.lhs.field
-    assert field1 == 'file.name'
+    comps1 = parse_filter.lhs.comps
+    assert isinstance(comps1, list) and len(comps1) == 2
+    fields1 = [x.field for x in comps1]
+    assert ("process.file.name" in fields1 and
+            "process.file.path" in fields1)
     field2 = parse_filter.rhs.lhs.field
     assert field2 == 'process.name'
-    comps3 = parse_filter.rhs.rhs.comps
-    assert isinstance(comps3, list) and len(comps3) == 2
-    fields3 = [x.field for x in comps3]
-    assert ("actor.process.name" in fields3 and
-            "process.parent_process.name" in fields3)
+    field3 = parse_filter.rhs.rhs.field
+    assert field3 == 'process.parent_process.name'
 
 
 def test_parser_new_json():
@@ -154,14 +153,14 @@ proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
 
 @pytest.mark.parametrize(
     "stmt, node_cnt", [
-        ("x = y WHERE foo = 'bar'", 3),
-        ("x = y WHERE foo > 1.5", 3),
-        (r"x = y WHERE foo = r'C:\TMP'", 3),
-        ("x = y WHERE foo = 'bar' OR baz != 42", 3),
-        ("x = y WHERE foo = 'bar' AND baz IN (1, 2, 3)", 3),
-        ("x = y WHERE foo = 'bar' AND baz IN (1)", 3),
-        ("x = y WHERE foo = 'bar' SORT BY foo ASC LIMIT 3", 5),
-        ("x = y WHERE foo = 'bar' SORT BY foo ASC LIMIT 3 OFFSET 9", 6),
+        ("x = y WHERE name = 'bar'", 3),
+        ("x = y WHERE name > 1.5", 3),
+        (r"x = y WHERE name = r'C:\TMP'", 3),
+        ("x = y WHERE name = 'bar' OR pid != 42", 3),
+        ("x = y WHERE name = 'bar' AND pid IN (1, 2, 3)", 3),
+        ("x = y WHERE name = 'bar' AND pid IN (1)", 3),
+        ("x = y WHERE name = 'bar' SORT BY name ASC LIMIT 3", 5),
+        ("x = y WHERE name = 'bar' SORT BY name ASC LIMIT 3 OFFSET 9", 6),
     ]
 )
 def test_parser_expression(stmt, node_cnt):

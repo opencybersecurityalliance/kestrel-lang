@@ -7,6 +7,11 @@ from dateutil.parser import parse as to_datetime
 from lark import Transformer, Token
 from typeguard import typechecked
 
+from kestrel.mapping.data_model import (
+    reverse_mapping,
+    translate_comparison_to_native,
+    translate_comparison_to_ocsf,
+)
 from kestrel.utils import unescape_quoted_string
 from kestrel.ir.filter import (
     FExpression,
@@ -59,8 +64,6 @@ def _unescape_quoted_string(s: str):
 
 @typechecked
 def _create_comp(field: str, op_value: str, value) -> FComparison:
-    # TODO: implement MultiComp
-
     if op_value in (ListOp.IN, ListOp.NIN):
         op = ListOp
         comp = RefComparison if isinstance(value, ReferenceValue) else ListComparison
@@ -94,17 +97,20 @@ def _map_filter_exp(
         if ":" not in field:
             field = f"{entity_name}:{field}"
         # map field to new syntax (e.g. STIX to OCSF)
-        map_result = property_map.get(field, filter_exp.field)
+        dmm = reverse_mapping(property_map)   #TEMP: do this once, right after loading
+        map_result = translate_comparison_to_ocsf(dmm, field, filter_exp.op, filter_exp.value)
         # Build a MultiComp if field maps to several values
-        if isinstance(map_result, (list, tuple)):
-            op = filter_exp.op
-            value = filter_exp.value
+        if len(map_result) > 1:
             filter_exp = MultiComp(
-                ExpOp.OR, [_create_comp(field, op, value) for field in map_result]
+                ExpOp.OR, [_create_comp(field, op, value) for field, op, value in map_result]
             )
-        else:  # change the name of the field if it maps to a single value
-            filter_exp.field = map_result
-
+        elif len(map_result) == 1:  # it maps to a single value
+            mapping = map_result[0]
+            filter_exp.field = mapping[0]
+            filter_exp.op = mapping[1]
+            filter_exp.value = mapping[2]
+        else:  # pass-through
+            pass
         # TODO: for RefComparison, map the attribute in value (may not be possible here)
 
     elif isinstance(filter_exp, BoolExp):
