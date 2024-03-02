@@ -49,12 +49,12 @@ class SqliteCache(AbstractCache):
     ):
         super().__init__()
 
-        basename = self.session_id or "cache"
-        path = f"{basename}.db"
+        basename = session_id or "cache"
+        self.db_path = f"{basename}.db"
 
         # for an absolute file path, the three slashes are followed by the absolute path
         # for a relative path, it's also three slashes?
-        self.engine = sqlalchemy.create_engine(f"sqlite:///{path}")
+        self.engine = sqlalchemy.create_engine(f"sqlite:///{self.db_path}")
         self.connection = self.engine.connect()
 
         if initial_cache:
@@ -112,9 +112,9 @@ class SqliteCache(AbstractCache):
         if not instructions_to_explain:
             instructions_to_explain = graph.get_sink_nodes()
         for instruction in instructions_to_explain:
-            translator = self._evaluate_instruction_in_graph(graph, instruction)
             dep_graph = graph.duplicate_dependent_subgraph_of_node(instruction)
             graph_dict = dep_graph.to_dict()
+            translator = self._evaluate_instruction_in_graph(graph, instruction)
             query = NativeQuery("SQL", str(translator.result_w_literal_binds()))
             mapping[instruction.id] = GraphletExplanation(graph_dict, query)
         return mapping
@@ -185,4 +185,4 @@ class SqliteCacheVirtual(SqliteCache):
         del self.cache_catalog[instruction_id]
 
     def __setitem__(self, instruction_id: UUID, data: Any):
-        self.cache_catalog[instruction_id] = "virtual" + instruction_id.hex
+        self.cache_catalog[instruction_id] = instruction_id.hex + "v"

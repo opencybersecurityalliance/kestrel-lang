@@ -170,7 +170,7 @@ browsers = proclist WHERE name = 'firefox.exe' OR name = 'chrome.exe'
 
     # v[new_entry] calls the right method
     assert isinstance(v, SqliteCacheVirtual)
-    assert v[new_entry].startswith("virtual")
+    assert v[new_entry].endswith("v")
 
     # the two cache_catalog are different
     assert new_entry not in c

@@ -74,6 +74,10 @@ class DuplicatedReferenceInFilter(KestrelError):
     pass
 
 
+class MissingReferenceInFilter(KestrelError):
+    pass
+
+
 class InvalidSerializedDatasourceInterfaceCacheCatalog(KestrelError):
     pass
 

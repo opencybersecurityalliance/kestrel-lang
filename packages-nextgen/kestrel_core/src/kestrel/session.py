@@ -63,27 +63,38 @@ class Session(AbstractContextManager):
         irgraph_new = parse_kestrel(huntflow_block)
         self.irgraph.update(irgraph_new)
 
+        # The current logic leads to caching results from non-cache and lastly
+        # evaluate in cache.
+        # TODO: may evaluate cache first, then push dependent variables to the
+        # last interface to eval; this requires priority of interfaces
         for ret in irgraph_new.get_returns():
-            is_explain = isinstance(irgraph_new.get_trunk_n_branches(ret)[0], Explain)
+            pred = irgraph_new.get_trunk_n_branches(ret)[0]
+            is_explain = isinstance(pred, Explain)
             is_complete = False
             display = GraphExplanation([])
             cache = self.cache.get_virtual_copy() if is_explain else self.cache
+            interfaces = (
+                [
+                    cache if interface is self.cache else interface
+                    for interface in self.interfaces
+                ]
+                if is_explain
+                else self.interfaces
+            )
             while not is_complete:
                 for g in self.irgraph.find_dependent_subgraphs_of_node(ret, cache):
-                    interface = get_interface_by_name(g.interface, self.interfaces)
-                    # intermediate result dictionary
-                    ird = (
+                    interface = get_interface_by_name(g.interface, interfaces)
+                    for iid, _display in (
                         interface.explain_graph(g)
                         if is_explain
                         else interface.evaluate_graph(g)
-                    )
-                    for iid, _display in ird.items():
+                    ).items():
                         if is_explain:
                             display.graphlets.append(_display)
                         else:
                             display = _display
-                        if g.interface != cache.name:
-                            cache[iid] = True
+                        if interface is not cache:
+                            cache[iid] = display
                         if iid == ret.id:
                             is_complete = True
             else:
