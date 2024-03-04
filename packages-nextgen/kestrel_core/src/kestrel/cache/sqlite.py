@@ -3,9 +3,6 @@ from copy import copy
 from typing import Iterable, Mapping, Optional, Union, Any
 from uuid import UUID
 
-import traceback
-import sys
-
 import sqlalchemy
 from dateutil.parser import parse as dt_parser
 from pandas import DataFrame, read_sql
