@@ -21,6 +21,7 @@ def get_interface_by_name(
     Returns:
         The interface found
     """
+
     ifs = filter(lambda x: x.name == interface_name, interfaces)
     try:
         interface = next(ifs)

@@ -186,3 +186,6 @@ class SqliteCacheVirtual(SqliteCache):
 
     def __setitem__(self, instruction_id: UUID, data: Any):
         self.cache_catalog[instruction_id] = instruction_id.hex + "v"
+
+    def __del__(self):
+        pass
