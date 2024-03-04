@@ -3,6 +3,9 @@ from copy import copy
 from typing import Iterable, Mapping, Optional, Union, Any
 from uuid import UUID
 
+import traceback
+import sys
+
 import sqlalchemy
 from dateutil.parser import parse as dt_parser
 from pandas import DataFrame, read_sql
@@ -186,3 +189,6 @@ class SqliteCacheVirtual(SqliteCache):
 
     def __setitem__(self, instruction_id: UUID, data: Any):
         self.cache_catalog[instruction_id] = instruction_id.hex + "v"
+
+    def __del__(self):
+        pass

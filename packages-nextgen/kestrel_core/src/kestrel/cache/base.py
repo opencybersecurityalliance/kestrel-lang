@@ -64,8 +64,8 @@ class AbstractCache(AbstractDataSourceInterface, MutableMapping):
     def get_virtual_copy(self) -> AbstractCache:
         """Create a virtual cache object from this cache
 
-        This method needs to reimplement __getitem__, __setitem__, __delitem__
-        to not actually hit the store media of the cache, e.g., SQLite.
+        This method needs to reimplement __del__, __getitem__, __setitem__,
+        __delitem__ to not actually hit the store media, e.g., SQLite.
 
         The virtual cache is useful for the implementation of the Explain()
         instruction, pretending the dependent graphs are evaluated, so the
@@ -77,6 +77,10 @@ class AbstractCache(AbstractDataSourceInterface, MutableMapping):
         object to the subclass to correctly invoke the new set of __xitem___.
 
         https://docs.python.org/3/reference/datamodel.html#special-lookup
+
+        And Python garbage collector could clean up the virtual cache when
+        not in use, so the __del__ method should be reimplemented to make
+        sure the store media is not closed.
         """
         ...
 

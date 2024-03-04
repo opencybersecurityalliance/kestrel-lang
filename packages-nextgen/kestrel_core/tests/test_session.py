@@ -139,9 +139,12 @@ p2 = procs WHERE name IN ("firefox.exe", "chrome.exe")
 ntx = nt WHERE pid IN p2.pid
 d2 = domain WHERE ip IN ntx.destination
 EXPLAIN d2
+DISP d2
 """
         ress = session.execute_to_generate(stmt)
         disp = next(ress)
+        df_res = next(ress)
+
         with pytest.raises(StopIteration):
             next(ress)
 
@@ -174,6 +177,9 @@ EXPLAIN d2
         p2 = session.irgraph.get_variable("p2")
         p2pa = next(session.irgraph.successors(p2))
         assert query == f"SELECT * \nFROM (SELECT * \nFROM (SELECT * \nFROM {c3.id.hex}) AS domain \nWHERE ip IN (SELECT destination \nFROM (SELECT * \nFROM {nt.id.hex}v \nWHERE pid IN (SELECT * \nFROM {p2pa.id.hex}v)) AS ntx)) AS d2"
+
+        df_ref = DataFrame([{"ip": "1.1.1.2", "domain": "xyz.cloudflare.com"}])
+        assert df_ref.equals(df_res)
 
     for db_file in extra_db:
         os.remove(db_file)
