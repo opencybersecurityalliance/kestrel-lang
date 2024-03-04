@@ -1,5 +1,6 @@
 import json
 import pytest
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 from kestrel.frontend.parser import parse_kestrel
@@ -16,6 +17,8 @@ from kestrel.ir.instructions import (
     Reference,
     Sort,
     Variable,
+    Explain,
+    Return,
 )
 
 
@@ -265,3 +268,26 @@ DISP proclist ATTR name, pid LIMIT 2 OFFSET 3
     assert (proj, limit) in graph.edges
     assert (limit, offset) in graph.edges
     assert (offset, ret) in graph.edges
+
+
+def test_parser_explain_alone():
+    stmt = "EXPLAIN abc"
+    graph = parse_kestrel(stmt)
+    assert len(graph) == 3
+    assert len(graph.edges) == 2
+    assert Counter(map(type, graph.nodes())) == Counter([Reference, Explain, Return])
+
+
+def test_parser_explain_dereferred():
+    stmt = """
+proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
+                       , {"name": "explorer.exe", "pid": 99}
+                       , {"name": "firefox.exe", "pid": 201}
+                       , {"name": "chrome.exe", "pid": 205}
+                       ]
+EXPLAIN proclist
+"""
+    graph = parse_kestrel(stmt)
+    assert len(graph) == 4
+    assert len(graph.edges) == 3
+    assert Counter(map(type, graph.nodes())) == Counter([Construct, Variable, Explain, Return])

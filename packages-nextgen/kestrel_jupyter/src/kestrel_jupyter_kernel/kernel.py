@@ -1,7 +1,9 @@
 from ipykernel.kernelbase import Kernel
 import logging
+import networkx as nx
 
 from kestrel.session import Session
+from kestrel_jupyter_kernel.display import to_html_blocks
 
 
 _logger = logging.getLogger(__name__)
@@ -35,11 +37,12 @@ class KestrelKernel(Kernel):
         if not silent:
             try:
                 for result in self.kestrel_session.execute_to_generate(code):
-                    self.send_response(
-                        self.iopub_socket,
-                        "display_data",
-                        {"data": {"text/html": result.to_html()}, "metadata": {}},
-                    )
+                    for html in to_html_blocks(result):
+                        self.send_response(
+                            self.iopub_socket,
+                            "display_data",
+                            {"data": {"text/html": html}, "metadata": {}},
+                        )
                     # how to clear output (if needed in the future):
                     # self.send_response(self.iopub_socket, "clear_output")
 

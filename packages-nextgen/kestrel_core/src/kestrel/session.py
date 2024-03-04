@@ -1,12 +1,12 @@
 import logging
 from contextlib import AbstractContextManager
-from typing import Iterable
 from uuid import UUID, uuid4
-
-from pandas import DataFrame
+from typing import Iterable
 from typeguard import typechecked
 
+from kestrel.display import Display, GraphExplanation
 from kestrel.ir.graph import IRGraph
+from kestrel.ir.instructions import Explain
 from kestrel.frontend.parser import parse_kestrel
 from kestrel.cache import AbstractCache, SqliteCache
 from kestrel.interface.datasource import AbstractDataSourceInterface
@@ -34,7 +34,7 @@ class Session(AbstractContextManager):
         data_source_manager = DataSourceManager()
         self.interfaces.extend(data_source_manager.interfaces())
 
-    def execute(self, huntflow_block: str) -> Iterable[DataFrame]:
+    def execute(self, huntflow_block: str) -> Iterable[Display]:
         """Execute a Kestrel huntflow block.
 
         Execute a Kestrel statement or multiple consecutive statements (a
@@ -50,7 +50,7 @@ class Session(AbstractContextManager):
         """
         return list(self.execute_to_generate(huntflow_block))
 
-    def execute_to_generate(self, huntflow_block: str) -> Iterable[DataFrame]:
+    def execute_to_generate(self, huntflow_block: str) -> Iterable[Display]:
         """Execute a Kestrel huntflow and put results in a generator.
 
         Parameters:
@@ -60,23 +60,45 @@ class Session(AbstractContextManager):
             Evaluated result per Return instruction
         """
 
-        # TODO: return type generalization
-
         irgraph_new = parse_kestrel(huntflow_block)
         self.irgraph.update(irgraph_new)
 
+        # The current logic leads to caching results from non-cache and lastly
+        # evaluate in cache.
+        # TODO: may evaluate cache first, then push dependent variables to the
+        # last interface to eval; this requires priority of interfaces
         for ret in irgraph_new.get_returns():
-            ret_df = None
-            while ret_df is None:
-                for g in self.irgraph.find_dependent_subgraphs_of_node(ret, self.cache):
-                    interface = get_interface_by_name(g.interface, self.interfaces)
-                    for iid, df in interface.evaluate_graph(g).items():
-                        if g.interface != self.cache.name:
-                            self.cache[iid] = df
+            pred = irgraph_new.get_trunk_n_branches(ret)[0]
+            is_explain = isinstance(pred, Explain)
+            is_complete = False
+            display = GraphExplanation([])
+            cache = self.cache.get_virtual_copy() if is_explain else self.cache
+            interfaces = (
+                [
+                    cache if interface is self.cache else interface
+                    for interface in self.interfaces
+                ]
+                if is_explain
+                else self.interfaces
+            )
+            while not is_complete:
+                for g in self.irgraph.find_dependent_subgraphs_of_node(ret, cache):
+                    interface = get_interface_by_name(g.interface, interfaces)
+                    for iid, _display in (
+                        interface.explain_graph(g)
+                        if is_explain
+                        else interface.evaluate_graph(g)
+                    ).items():
+                        if is_explain:
+                            display.graphlets.append(_display)
+                        else:
+                            display = _display
+                        if interface is not cache:
+                            cache[iid] = display
                         if iid == ret.id:
-                            ret_df = df
+                            is_complete = True
             else:
-                yield ret_df
+                yield display
 
     def do_complete(self, huntflow_block: str, cursor_pos: int):
         """Kestrel code auto-completion.

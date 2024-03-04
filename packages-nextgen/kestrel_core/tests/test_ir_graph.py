@@ -332,22 +332,22 @@ DISP p5 ATTR pid, name, cmd_line
     assert len(c) == 2
     gs = graph.find_dependent_subgraphs_of_node(ret, c)
     assert len(gs) == 1
-    assert len(gs[0]) == 10
+    assert len(gs[0]) == 11
     assert p2 in gs[0]
     assert p21 in gs[0]
     assert p4 in gs[0]
-    assert Counter(map(type, gs[0].nodes())) == Counter([Filter, Filter, Filter, Variable, Variable, Variable, ProjectEntity, DataSource, ProjectAttrs, ProjectAttrs])
+    assert Counter(map(type, gs[0].nodes())) == Counter([Filter, Filter, Filter, Variable, Variable, Variable, Variable, ProjectEntity, DataSource, ProjectAttrs, ProjectAttrs])
 
     p4_projattr = next(graph.successors(p4))
     c[p4_projattr.id] = DataFrame()
     gs = graph.find_dependent_subgraphs_of_node(ret, c)
     assert len(gs) == 1
-    assert len(gs[0]) == 7
+    assert len(gs[0]) == 8
     assert p4_projattr.id in c
     assert p4_projattr in gs[0]
     assert p5 in gs[0]
     assert ret in gs[0]
-    assert Counter(map(type, gs[0].nodes())) == Counter([Filter, Return, Variable, ProjectEntity, DataSource, ProjectAttrs, ProjectAttrs])
+    assert Counter(map(type, gs[0].nodes())) == Counter([Filter, Return, Variable, Variable, ProjectEntity, DataSource, ProjectAttrs, ProjectAttrs])
 
 
 def test_find_simple_query_subgraphs():
@@ -400,7 +400,7 @@ DISP p4
     gs = graph.find_dependent_subgraphs_of_node(graph.get_returns()[0], c)
     assert len(gs) == 1
     assert sink in gs[0]
-    assert Counter(map(type, gs[0].nodes())) == Counter([Variable, Filter, ProjectAttrs, DataSource, Return, ProjectEntity])
+    assert Counter(map(type, gs[0].nodes())) == Counter([Variable, Filter, ProjectAttrs, DataSource, Return, ProjectEntity, Variable])
     for g in gs[0].find_simple_query_subgraphs(c):
         assert Counter(map(type, g.nodes())) == Counter([ProjectAttrs, Variable, Filter, ProjectEntity, DataSource])
         assert sink in g

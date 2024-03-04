@@ -28,10 +28,11 @@ assignment: VARIABLE "=" expression
                     | sort
 
 ?command_no_result: apply
+                  | explain
+                  | describe
                   | disp
                   | info
                   | save
-                  | describe
 
 //
 // All commands
@@ -60,6 +61,8 @@ info: "INFO"i VARIABLE
 save: "SAVE"i VARIABLE "TO"i stdpath
 
 describe: "DESCRIBE"i var_attr
+
+explain: "EXPLAIN"i VARIABLE
 
 //
 // Variable definition

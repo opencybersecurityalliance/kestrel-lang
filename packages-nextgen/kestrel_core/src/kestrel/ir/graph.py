@@ -36,6 +36,7 @@ from kestrel.exceptions import (
     InevaluableInstruction,
     LargerThanOneIndegreeInstruction,
     DuplicatedReferenceInFilter,
+    MissingReferenceInFilter,
     DanglingReferenceInFilter,
     DanglingFilter,
 )
@@ -124,18 +125,34 @@ class IRGraph(networkx.DiGraph):
             self.add_edge(u, v, deref)
 
     def copy(self):
-        """Copy the IRGraph with all nodes as reference (not deepcopy)"""
+        """Copy the IRGraph with all nodes as reference (not deepcopy)
+
+        Support subclass of IRGraph to be copied.
+        """
         g = IRGraph()
         g.update(self)
+
+        # subclass support
+        if type(g) != type(self):
+            g = type(self)(g)
+
         return g
 
     def deepcopy(self):
-        """Copy the IRGraph with all nodes copied as new objects"""
+        """Copy the IRGraph with all nodes copied as new objects
+
+        Support subclass of IRGraph to be deep copied.
+        """
         g = IRGraph()
         o2n = {n: n.deepcopy() for n in self.nodes()}
         for u, v in self.edges():
             g.add_edge(o2n[u], o2n[v])
         g.add_nodes_from([o2n[n] for n in self.nodes() if self.degree(n) == 0])
+
+        # subclass support
+        if type(g) != type(self):
+            g = type(self)(g)
+
         return g
 
     def get_node_by_id(self, ux: Union[UUID, str]) -> Instruction:
@@ -372,6 +389,8 @@ class IRGraph(networkx.DiGraph):
         ps = list(self.predecessors(node))
         pps = [(p, pp) for p in self.predecessors(node) for pp in self.predecessors(p)]
 
+        # may need to add a patch in find_dependent_subgraphs_of_node()
+        # for each new case added in the if/elif, e.g., FIlter
         if isinstance(node, SolePredecessorTransformingInstruction):
             if len(ps) > 1:
                 raise LargerThanOneIndegreeInstruction()
@@ -388,8 +407,10 @@ class IRGraph(networkx.DiGraph):
                     and p.attrs == [rv.attribute]
                     and pp.name == rv.reference
                 ]
-                if len(ppfs) > 1:
-                    raise DuplicatedReferenceInFilter(ppfs)
+                if not ppfs:
+                    raise MissingReferenceInFilter(rv, node, pps)
+                elif len(ppfs) > 1:
+                    raise DuplicatedReferenceInFilter(rv, node, pps)
                 else:
                     p = ppfs[0][0]
                     r2n[rv] = p
@@ -536,10 +557,34 @@ class IRGraph(networkx.DiGraph):
             ps = set().union(*[set(g.predecessors(n)) for n in a2uns[interface]])
             a2uns[interface].update(ps & cached_nodes)
 
+        # a patch (corner case handling) for get_trunk_n_branches()
+        # add Variable/Reference node if succeeded by ProjectAttrs and Filter,
+        # which are in the dependent graph; the Variable is only needed by
+        # get_trunk_n_branches() as an auxiliary node
+        for interface in a2uns:
+            auxs = []
+            for n in a2uns[interface]:
+                if isinstance(n, ProjectAttrs):
+                    # need to search in `self`, not `g`, since the boundry of
+                    # `g` is cut by the cache
+                    p = next(self.predecessors(n))
+                    s = next(g.successors(n))
+                    if (
+                        isinstance(s, Filter)
+                        and isinstance(p, (Variable, Reference))
+                        and s in a2uns[interface]
+                    ):
+                        auxs.append(p)
+            a2uns[interface].update(auxs)
+
         # remove dep graphs with only one node
-        # e.g., `ds://a` in "y = GET file FROM ds://a WHERE x = v.x" when v.x not in cache
+        # e.g., `ds://a` in "y = GET file FROM ds://a WHERE x = v.x"
+        # when v.x not in cache
         dep_nodes = [ns for ns in a2uns.values() if len(ns) > 1]
-        dep_graphs = [IRGraphEvaluable(g.subgraph(ns)) for ns in dep_nodes]
+        # need to search in `self` due to the patch for get_trunk_n_branches()
+        dep_graphs = [
+            IRGraphEvaluable(self.subgraph(ns)).deepcopy() for ns in dep_nodes
+        ]
 
         return dep_graphs
 
@@ -774,7 +819,7 @@ class IRGraphEvaluable(IRGraph):
 class IRGraphSimpleQuery(IRGraphEvaluable):
     """Simple Query IRGraph
 
-    A simple query IRGraph is an evaluatable IRGraph that
+    A simple query IRGraph is an evaluable IRGraph that
 
         1. It contains one source node
 

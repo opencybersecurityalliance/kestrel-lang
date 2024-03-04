@@ -41,6 +41,7 @@ from kestrel.ir.instructions import (
     Return,
     Sort,
     Variable,
+    Explain,
 )
 from kestrel.exceptions import IRGraphMissingNode
 
@@ -370,4 +371,11 @@ class _KestrelT(Transformer):
     def disp(self, args):
         graph, root = args[0]
         graph.add_node(Return(), root)
+        return graph
+
+    def explain(self, args):
+        graph = IRGraph()
+        reference = graph.add_node(Reference(args[0].value))
+        explain = graph.add_node(Explain(), reference)
+        graph.add_node(Return(), explain)
         return graph

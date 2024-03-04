@@ -1,7 +1,8 @@
 from uuid import uuid4
 from pandas import DataFrame
 
-from kestrel.cache.sqlite import SqliteCache
+from kestrel.cache import SqliteCache
+from kestrel.cache.sqlite import SqliteCacheVirtual
 from kestrel.ir.graph import IRGraphEvaluable
 from kestrel.frontend.parser import parse_kestrel
 
@@ -150,3 +151,33 @@ DISP p2 ATTR name, pid
     assert len(rets) == 1
     df = mapping[rets[0].id]
     assert df.to_dict("records") == [ {"name": "firefox.exe", "pid": 201} ]
+
+def test_get_virtual_copy():
+    stmt = """
+proclist = NEW process [ {"name": "cmd.exe", "pid": 123}
+                       , {"name": "explorer.exe", "pid": 99}
+                       , {"name": "firefox.exe", "pid": 201}
+                       , {"name": "chrome.exe", "pid": 205}
+                       ]
+browsers = proclist WHERE name = 'firefox.exe' OR name = 'chrome.exe'
+"""
+    graph = IRGraphEvaluable(parse_kestrel(stmt))
+    c = SqliteCache()
+    mapping = c.evaluate_graph(graph)
+    v = c.get_virtual_copy()
+    new_entry = uuid4()
+    v[new_entry] = True
+
+    # v[new_entry] calls the right method
+    assert isinstance(v, SqliteCacheVirtual)
+    assert v[new_entry].endswith("v")
+
+    # the two cache_catalog are different
+    assert new_entry not in c
+    assert new_entry in v
+    del v[new_entry]
+    assert new_entry not in v
+    for u in c:
+        del v[u]
+    assert len(v) == 0
+    assert len(c) == 1
