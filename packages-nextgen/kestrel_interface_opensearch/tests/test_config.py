@@ -2,7 +2,7 @@ import os
 
 import yaml
 
-from kestrel_datasource_opensearch.config import (
+from kestrel_interface_opensearch.config import (
     PROFILE_PATH_ENV_VAR,
     Connection,
     load_config,

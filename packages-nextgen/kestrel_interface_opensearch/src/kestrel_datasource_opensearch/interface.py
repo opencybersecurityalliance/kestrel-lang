@@ -20,8 +20,8 @@ from kestrel.ir.instructions import (
     SolePredecessorTransformingInstruction,
 )
 
-from kestrel_datasource_opensearch.config import load_config
-from kestrel_datasource_opensearch.ossql import OpenSearchTranslator
+from kestrel_interface_opensearch.config import load_config
+from kestrel_interface_opensearch.ossql import OpenSearchTranslator
 
 
 _logger = logging.getLogger(__name__)

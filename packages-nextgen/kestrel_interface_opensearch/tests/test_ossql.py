@@ -1,7 +1,7 @@
 from datetime import datetime
 from dateutil import parser
 
-from kestrel_datasource_opensearch.ossql import OpenSearchTranslator
+from kestrel_interface_opensearch.ossql import OpenSearchTranslator
 from kestrel.exceptions import UnsupportedOperatorError
 from kestrel.ir.filter import (
     BoolExp,
