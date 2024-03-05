@@ -54,7 +54,6 @@ class Session(AbstractContextManager):
         Yields:
             Evaluated result per Return instruction
         """
-
         irgraph_new = parse_kestrel(huntflow_block)
         self.irgraph.update(irgraph_new)
 
@@ -62,6 +61,14 @@ class Session(AbstractContextManager):
             yield self.evaluate_instruction(ret)
 
     def evaluate_instruction(self, ins: Instruction) -> Display:
+        """Evaluate a single Instruction.
+
+        Parameters:
+            ins: the instruction to evaluate
+
+        Returns:
+            Evaluated result (Kestrel Display object)
+        """
         if ins not in self.irgraph:
             raise InstructionNotFound(ins.to_dict())
 
