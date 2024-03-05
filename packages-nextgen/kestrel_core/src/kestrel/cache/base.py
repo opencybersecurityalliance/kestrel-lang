@@ -5,20 +5,20 @@ from uuid import UUID
 from abc import abstractmethod
 
 from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
-from kestrel.interface.datasource import AbstractDataSourceInterface
+from kestrel.interface import AbstractInterface
 
 
-class AbstractCache(AbstractDataSourceInterface, MutableMapping):
+class AbstractCache(AbstractInterface, MutableMapping):
     """Base class for Kestrel cache
 
-    Additional @abstractmethod from AbstractDataSourceInterface:
+    Additional @abstractmethod from AbstractInterface:
 
         - evaluate_graph()
     """
 
     @property
-    def name(self):
-        return CACHE_INTERFACE_IDENTIFIER
+    def schemes(self):
+        return [CACHE_INTERFACE_IDENTIFIER]
 
     @abstractmethod
     def __del__(self):

@@ -9,9 +9,8 @@ from kestrel.ir.graph import IRGraph
 from kestrel.ir.instructions import Explain
 from kestrel.frontend.parser import parse_kestrel
 from kestrel.cache import AbstractCache, SqliteCache
-from kestrel.interface.datasource import AbstractDataSourceInterface
-from kestrel.interface.datasource.manager import DataSourceManager
-from kestrel.interface.datasource.utils import get_interface_by_name
+from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
+from kestrel.interface import AbstractInterface, InterfaceManager
 
 
 _logger = logging.getLogger(__name__)
@@ -22,17 +21,12 @@ class Session(AbstractContextManager):
     """Kestrel huntflow execution session"""
 
     def __init__(self):
-        self.session_id: UUID = uuid4()
-        self.irgraph: IRGraph = IRGraph()
-        self.cache: AbstractCache = SqliteCache()
+        self.session_id = uuid4()
+        self.irgraph = IRGraph()
 
-        # Datasource interfaces in this session
-        # Cache is a special datasource interface and should always be added
-        self.interfaces: Iterable[AbstractDataSourceInterface] = [self.cache]
-
-        # Load data sources and add to list
-        data_source_manager = DataSourceManager()
-        self.interfaces.extend(data_source_manager.interfaces())
+        # load all interfaces; cache is a special interface
+        cache = SqliteCache()
+        self.interface_manager = InterfaceManager([cache])
 
     def execute(self, huntflow_block: str) -> Iterable[Display]:
         """Execute a Kestrel huntflow block.
@@ -72,18 +66,15 @@ class Session(AbstractContextManager):
             is_explain = isinstance(pred, Explain)
             is_complete = False
             display = GraphExplanation([])
-            cache = self.cache.get_virtual_copy() if is_explain else self.cache
-            interfaces = (
-                [
-                    cache if interface is self.cache else interface
-                    for interface in self.interfaces
-                ]
+            interface_manager = (
+                self.interface_manager.copy_with_virtual_cache()
                 if is_explain
-                else self.interfaces
+                else self.interface_manager
             )
+            cache = interface_manager[CACHE_INTERFACE_IDENTIFIER]
             while not is_complete:
                 for g in self.irgraph.find_dependent_subgraphs_of_node(ret, cache):
-                    interface = get_interface_by_name(g.interface, interfaces)
+                    interface = interface_manager[g.interface]
                     for iid, _display in (
                         interface.explain_graph(g)
                         if is_explain
@@ -119,9 +110,8 @@ class Session(AbstractContextManager):
         """
         # Note there are two conditions that trigger this function, so it is probably executed twice
         # Be careful to write the logic in this function to avoid deleting nonexist files/dirs
-        if self.cache:
-            del self.cache
-            self.cache = None
+        if CACHE_INTERFACE_IDENTIFIER in self.interface_manager:
+            self.interface_manager.del_cache()
 
     def __exit__(self, exception_type, exception_value, traceback):
         self.close()
