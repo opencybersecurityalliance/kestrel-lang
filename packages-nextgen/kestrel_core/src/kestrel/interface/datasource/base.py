@@ -55,10 +55,10 @@ class AbstractDataSourceInterface(ABC):
 
     @property
     @abstractmethod
-    def name(self) -> str:
-        """The name of the interface
+    def schemes(self) -> Iterable[str]:
+        """The schemes to specify the interface
 
-        The name should be defined as ``("_"|LETTER) ("_"|LETTER|DIGIT)*``
+        Each scheme should be defined as ``("_"|LETTER) ("_"|LETTER|DIGIT)*``
         """
         ...
 
