@@ -9,7 +9,7 @@ from pandas import DataFrame, read_sql
 from typeguard import typechecked
 
 from kestrel.cache.base import AbstractCache
-from kestrel.interface.datasource.codegen.sql import SqlTranslator
+from kestrel.interface.codegen.sql import SqlTranslator
 from kestrel.ir.graph import IRGraphEvaluable
 from kestrel.display import GraphletExplanation, NativeQuery
 from kestrel.ir.instructions import (
