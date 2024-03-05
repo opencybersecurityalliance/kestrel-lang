@@ -37,8 +37,7 @@ class InterfaceManager(Mapping):
             if scheme in interface.schemes:
                 return interface
         else:
-            x = [i.__class__ for i in self.interfaces]
-            raise InterfaceNotFound(f"no interface loaded for scheme {scheme}; {x}")
+            raise InterfaceNotFound(f"no interface loaded for scheme {scheme}")
 
     def __iter__(self) -> Iterable[str]:
         return itertools.chain(*[i.schemes for i in self.interfaces])
