@@ -1,7 +1,7 @@
 from datetime import datetime
 from dateutil import parser
 
-from kestrel.interface.datasource.codegen.sql import SqlTranslator
+from kestrel.interface.codegen.sql import SqlTranslator
 from kestrel.ir.filter import (
     BoolExp,
     ExpOp,

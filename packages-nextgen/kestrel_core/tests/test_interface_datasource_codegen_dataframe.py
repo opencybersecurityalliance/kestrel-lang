@@ -1,7 +1,7 @@
 import pytest
 from pandas import DataFrame
 
-from kestrel.interface.datasource.codegen.dataframe import (
+from kestrel.interface.codegen.dataframe import (
     evaluate_source_instruction,
     evaluate_transforming_instruction,
 )
