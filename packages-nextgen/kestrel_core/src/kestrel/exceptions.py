@@ -94,23 +94,19 @@ class InterfaceNotFound(KestrelError):
     pass
 
 
-class InterfaceNameCollision(KestrelError):
-    pass
-
-
 class IRGraphMissingNode(KestrelError):
     pass
 
 
-class DataSourceInterfaceNotFound(KestrelError):
+class InterfaceNotFound(KestrelError):
     pass
 
 
-class InvalidDataSourceInterfaceImplementation(KestrelError):
+class InvalidInterfaceImplementation(KestrelError):
     pass
 
 
-class ConflictingDataSourceInterfaceScheme(KestrelError):
+class ConflictingInterfaceScheme(KestrelError):
     pass
 
 

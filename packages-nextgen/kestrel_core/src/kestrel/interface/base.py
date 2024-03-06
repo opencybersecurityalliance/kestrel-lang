@@ -17,11 +17,11 @@ from kestrel.exceptions import (
 )
 
 
-MODULE_PREFIX = "kestrel_datasource_"
+MODULE_PREFIX = "kestrel_interface_"
 
 
-class AbstractDataSourceInterface(ABC):
-    """Abstract class for datasource interface
+class AbstractInterface(ABC):
+    """Abstract class for datasource/analytics interface
 
     Concepts:
 
@@ -44,7 +44,6 @@ class AbstractDataSourceInterface(ABC):
         session_id: Optional[UUID] = None,
     ):
         self.session_id = session_id
-        self.datasources: Mapping[str, str] = {}
         self.cache_catalog: MutableMapping[UUID, str] = {}
 
         if serialized_cache_catalog:
@@ -55,10 +54,10 @@ class AbstractDataSourceInterface(ABC):
 
     @property
     @abstractmethod
-    def name(self) -> str:
-        """The name of the interface
+    def schemes(self) -> Iterable[str]:
+        """The schemes to specify the interface
 
-        The name should be defined as ``("_"|LETTER) ("_"|LETTER|DIGIT)*``
+        Each scheme should be defined as ``("_"|LETTER) ("_"|LETTER|DIGIT)*``
         """
         ...
 

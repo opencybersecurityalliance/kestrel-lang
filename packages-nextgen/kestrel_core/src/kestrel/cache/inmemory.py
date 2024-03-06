@@ -22,7 +22,7 @@ from kestrel.ir.instructions import (
     SourceInstruction,
     TransformingInstruction,
 )
-from kestrel.interface.datasource.codegen.dataframe import (
+from kestrel.interface.codegen.dataframe import (
     evaluate_source_instruction,
     evaluate_transforming_instruction,
 )

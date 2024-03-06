@@ -1,0 +1,1 @@
+from kestrel_interface_opensearch.interface import OpenSearchInterface

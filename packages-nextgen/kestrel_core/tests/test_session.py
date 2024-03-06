@@ -86,6 +86,17 @@ EXPLAIN chrome
 
 
 def test_multi_interface_explain():
+
+    class DataLake(SqliteCache):
+        @property
+        def schemes(self):
+            return ["datalake"]
+
+    class Gateway(SqliteCache):
+        @property
+        def schemes(self):
+            return ["gateway"]
+
     extra_db = []
     with Session() as session:
         stmt1 = """
@@ -97,17 +108,12 @@ procs = NEW process [ {"name": "cmd.exe", "pid": 123}
 DISP procs
 """
         session.execute(stmt1)
-        class DataLake(SqliteCache):
-            @property
-            def name(self):
-                return "datalake"
-        session.interfaces[0].__class__ = DataLake
+        session.interface_manager[CACHE_INTERFACE_IDENTIFIER].__class__ = DataLake
         session.irgraph.get_nodes_by_type_and_attributes(Construct, {"interface": CACHE_INTERFACE_IDENTIFIER})[0].interface = "datalake"
 
         new_cache = SqliteCache(session_id = uuid4())
         extra_db.append(new_cache.db_path)
-        session.cache = new_cache
-        session.interfaces.append(new_cache)
+        session.interface_manager.interfaces.append(new_cache)
         stmt2 = """
 nt = NEW network [ {"pid": 123, "source": "192.168.1.1", "destination": "1.1.1.1"}
                  , {"pid": 205, "source": "192.168.1.1", "destination": "1.1.1.2"}
@@ -115,17 +121,12 @@ nt = NEW network [ {"pid": 123, "source": "192.168.1.1", "destination": "1.1.1.1
 DISP nt
 """
         session.execute(stmt2)
-        class Gateway(SqliteCache):
-            @property
-            def name(self):
-                return "gateway"
-        session.interfaces[1].__class__ = Gateway
+        session.interface_manager[CACHE_INTERFACE_IDENTIFIER].__class__ = Gateway
         session.irgraph.get_nodes_by_type_and_attributes(Construct, {"interface": CACHE_INTERFACE_IDENTIFIER})[0].interface = "gateway"
 
         new_cache = SqliteCache(session_id = uuid4())
         extra_db.append(new_cache.db_path)
-        session.cache = new_cache
-        session.interfaces.append(new_cache)
+        session.interface_manager.interfaces.append(new_cache)
         stmt3 = """
 domain = NEW domain [ {"ip": "1.1.1.1", "domain": "cloudflare.com"}
                     , {"ip": "1.1.1.2", "domain": "xyz.cloudflare.com"}

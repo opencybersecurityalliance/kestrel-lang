@@ -6,12 +6,12 @@ from typeguard import typechecked
 
 from kestrel.display import Display, GraphExplanation
 from kestrel.ir.graph import IRGraph
-from kestrel.ir.instructions import Explain
+from kestrel.ir.instructions import Instruction, Explain
 from kestrel.frontend.parser import parse_kestrel
 from kestrel.cache import AbstractCache, SqliteCache
-from kestrel.interface.datasource import AbstractDataSourceInterface
-from kestrel.interface.datasource.manager import DataSourceManager
-from kestrel.interface.datasource.utils import get_interface_by_name
+from kestrel.config.internal import CACHE_INTERFACE_IDENTIFIER
+from kestrel.interface import AbstractInterface, InterfaceManager
+from kestrel.exceptions import InstructionNotFound
 
 
 _logger = logging.getLogger(__name__)
@@ -22,17 +22,12 @@ class Session(AbstractContextManager):
     """Kestrel huntflow execution session"""
 
     def __init__(self):
-        self.session_id: UUID = uuid4()
-        self.irgraph: IRGraph = IRGraph()
-        self.cache: AbstractCache = SqliteCache()
+        self.session_id = uuid4()
+        self.irgraph = IRGraph()
 
-        # Datasource interfaces in this session
-        # Cache is a special datasource interface and should always be added
-        self.interfaces: Iterable[AbstractDataSourceInterface] = [self.cache]
-
-        # Load data sources and add to list
-        data_source_manager = DataSourceManager()
-        self.interfaces.extend(data_source_manager.interfaces())
+        # load all interfaces; cache is a special interface
+        cache = SqliteCache()
+        self.interface_manager = InterfaceManager([cache])
 
     def execute(self, huntflow_block: str) -> Iterable[Display]:
         """Execute a Kestrel huntflow block.
@@ -59,46 +54,55 @@ class Session(AbstractContextManager):
         Yields:
             Evaluated result per Return instruction
         """
-
         irgraph_new = parse_kestrel(huntflow_block)
         self.irgraph.update(irgraph_new)
+
+        for ret in irgraph_new.get_returns():
+            yield self.evaluate_instruction(ret)
+
+    def evaluate_instruction(self, ins: Instruction) -> Display:
+        """Evaluate a single Instruction.
+
+        Parameters:
+            ins: the instruction to evaluate
+
+        Returns:
+            Evaluated result (Kestrel Display object)
+        """
+        if ins not in self.irgraph:
+            raise InstructionNotFound(ins.to_dict())
+
+        pred = self.irgraph.get_trunk_n_branches(ins)[0]
+        is_explain = isinstance(pred, Explain)
+        display = GraphExplanation([])
+
+        _interface_manager = (
+            self.interface_manager.copy_with_virtual_cache()
+            if is_explain
+            else self.interface_manager
+        )
+        _cache = _interface_manager[CACHE_INTERFACE_IDENTIFIER]
 
         # The current logic leads to caching results from non-cache and lastly
         # evaluate in cache.
         # TODO: may evaluate cache first, then push dependent variables to the
         # last interface to eval; this requires priority of interfaces
-        for ret in irgraph_new.get_returns():
-            pred = irgraph_new.get_trunk_n_branches(ret)[0]
-            is_explain = isinstance(pred, Explain)
-            is_complete = False
-            display = GraphExplanation([])
-            cache = self.cache.get_virtual_copy() if is_explain else self.cache
-            interfaces = (
-                [
-                    cache if interface is self.cache else interface
-                    for interface in self.interfaces
-                ]
-                if is_explain
-                else self.interfaces
-            )
-            while not is_complete:
-                for g in self.irgraph.find_dependent_subgraphs_of_node(ret, cache):
-                    interface = get_interface_by_name(g.interface, interfaces)
-                    for iid, _display in (
-                        interface.explain_graph(g)
-                        if is_explain
-                        else interface.evaluate_graph(g)
-                    ).items():
-                        if is_explain:
-                            display.graphlets.append(_display)
-                        else:
-                            display = _display
-                        if interface is not cache:
-                            cache[iid] = display
-                        if iid == ret.id:
-                            is_complete = True
-            else:
-                yield display
+        while True:
+            for g in self.irgraph.find_dependent_subgraphs_of_node(ins, _cache):
+                interface = _interface_manager[g.interface]
+                for iid, _display in (
+                    interface.explain_graph(g)
+                    if is_explain
+                    else interface.evaluate_graph(g)
+                ).items():
+                    if is_explain:
+                        display.graphlets.append(_display)
+                    else:
+                        display = _display
+                    if interface is not _cache:
+                        _cache[iid] = display
+                    if iid == ins.id:
+                        return display
 
     def do_complete(self, huntflow_block: str, cursor_pos: int):
         """Kestrel code auto-completion.
@@ -119,9 +123,8 @@ class Session(AbstractContextManager):
         """
         # Note there are two conditions that trigger this function, so it is probably executed twice
         # Be careful to write the logic in this function to avoid deleting nonexist files/dirs
-        if self.cache:
-            del self.cache
-            self.cache = None
+        if CACHE_INTERFACE_IDENTIFIER in self.interface_manager:
+            self.interface_manager.del_cache()
 
     def __exit__(self, exception_type, exception_value, traceback):
         self.close()

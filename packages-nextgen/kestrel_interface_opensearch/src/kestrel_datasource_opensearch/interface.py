@@ -6,7 +6,7 @@ from opensearchpy import OpenSearch
 from pandas import DataFrame, Series, concat
 
 from kestrel.exceptions import DataSourceError
-from kestrel.interface.datasource.base import AbstractDataSourceInterface
+from kestrel.interface import AbstractInterface
 from kestrel.ir.graph import IRGraphEvaluable
 from kestrel.display import GraphletExplanation
 from kestrel.ir.instructions import (
@@ -20,8 +20,8 @@ from kestrel.ir.instructions import (
     SolePredecessorTransformingInstruction,
 )
 
-from kestrel_datasource_opensearch.config import load_config
-from kestrel_datasource_opensearch.ossql import OpenSearchTranslator
+from kestrel_interface_opensearch.config import load_config
+from kestrel_interface_opensearch.ossql import OpenSearchTranslator
 
 
 _logger = logging.getLogger(__name__)
@@ -69,7 +69,7 @@ def read_sql(sql: str, conn: OpenSearch) -> DataFrame:
     return concat(dfs)
 
 
-class OpenSearchInterface(AbstractDataSourceInterface):
+class OpenSearchInterface(AbstractInterface):
     def __init__(
         self,
         serialized_cache_catalog: Optional[str] = None,
@@ -91,8 +91,8 @@ class OpenSearchInterface(AbstractDataSourceInterface):
                 self.conns[name] = client
 
     @property
-    def name(self):
-        return "opensearch"
+    def schemes(self):
+        return ["opensearch"]
 
     def store(
         self,
