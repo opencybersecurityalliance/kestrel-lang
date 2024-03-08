@@ -6,13 +6,12 @@ from kestrel_datasource_stixshifter.connector import setup_connector_module
 from firepit.timestamp import timefmt
 
 
-def default_patterns(use_now_as_stop_time: bool):
-    start_time = "START t'2000-01-01T00:00:00.000Z'"
-    stop_time = (
-        f"STOP t'{timefmt(datetime.datetime.utcnow())}'"
-        if use_now_as_stop_time
-        else "STOP t'3000-01-01T00:00:00.000Z'"
-    )
+def default_patterns(_use_now_as_stop_time: bool):
+    to_time = datetime.datetime.utcnow()
+    from_time = (to_time - datetime.timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    to_time = to_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    start_time = f"START t'{from_time}'"
+    stop_time = f"STOP t'{to_time}'"
     patterns = [
         "[ipv4-addr:value != '255.255.255.255']",
         "[process:pid > 0]",
@@ -45,7 +44,7 @@ def stix_shifter_diag():
     )
     parser.add_argument(
         "--stop-at-now",
-        help="use the current timestamp as the STOP time instead of default year 3000 for default patterns",
+        help="ignored (retained for backwards compatibility)",
         action="store_true",
     )
     parser.add_argument(
