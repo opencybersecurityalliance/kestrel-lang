@@ -1,17 +1,22 @@
 import argparse
 import datetime
 import logging
+import sys
 from kestrel_datasource_stixshifter.diagnosis import Diagnosis
 from kestrel_datasource_stixshifter.connector import setup_connector_module
 from firepit.timestamp import timefmt
 
 
-def default_patterns(_use_now_as_stop_time: bool):
-    to_time = datetime.datetime.utcnow()
-    from_time = timefmt(to_time - datetime.timedelta(minutes=5))
-    to_time = timefmt(to_time)
-    start_time = f"START t'{from_time}'"
-    stop_time = f"STOP t'{to_time}'"
+def default_patterns(start=None, stop=None, last_minutes=0):
+    if start:
+        start_time = f"START t'{start}'"
+        stop_time = f"STOP t'{stop}'"
+    else:
+        to_time = datetime.datetime.utcnow()
+        from_time = timefmt(to_time - datetime.timedelta(minutes=last_minutes))
+        to_time = timefmt(to_time)
+        start_time = f"START t'{from_time}'"
+        stop_time = f"STOP t'{to_time}'"
     patterns = [
         "[ipv4-addr:value != '255.255.255.255']",
         "[process:pid > 0]",
@@ -48,6 +53,20 @@ def stix_shifter_diag():
         action="store_true",
     )
     parser.add_argument(
+        "--start",
+        help="start time for default pattern search (%Y-%m-%dT%H:%M:%S.%fZ)",
+    )
+    parser.add_argument(
+        "--stop",
+        help="stop time for default pattern search (%Y-%m-%dT%H:%M:%S.%fZ)",
+    )
+    parser.add_argument(
+        "--last-minutes",
+        help="relative timespan for default pattern searches in minutes",
+        default=5,
+        type=int,
+    )
+    parser.add_argument(
         "-t",
         "--translate-only",
         help="Only translate pattern; don't transmit",
@@ -67,13 +86,18 @@ def stix_shifter_diag():
         ch.setFormatter(formatter)
         logger.addHandler(ch)
 
+    if (args.start and not args.stop) or (args.stop and not args.start):
+        print("Must specify both --start and --stop for absolute time range; else use --last-minutes", file=sys.stderr)
+        parser.print_usage(sys.stderr)
+        sys.exit(1)
+
     if args.stix_pattern:
         patterns = [args.stix_pattern]
     elif args.pattern_file:
         with open(args.pattern_file) as pf:
             patterns = [pf.read()]
     else:
-        patterns = default_patterns(args.stop_at_now)
+        patterns = default_patterns(args.start, args.stop, args.last_minutes)
 
     diag = Diagnosis(args.datasource)
 
