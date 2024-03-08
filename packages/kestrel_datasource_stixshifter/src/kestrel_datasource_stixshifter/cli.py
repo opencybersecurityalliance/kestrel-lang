@@ -87,7 +87,10 @@ def stix_shifter_diag():
         logger.addHandler(ch)
 
     if (args.start and not args.stop) or (args.stop and not args.start):
-        print("Must specify both --start and --stop for absolute time range; else use --last-minutes", file=sys.stderr)
+        print(
+            "Must specify both --start and --stop for absolute time range; else use --last-minutes",
+            file=sys.stderr,
+        )
         parser.print_usage(sys.stderr)
         sys.exit(1)
 
