@@ -8,8 +8,8 @@ from firepit.timestamp import timefmt
 
 def default_patterns(_use_now_as_stop_time: bool):
     to_time = datetime.datetime.utcnow()
-    from_time = (to_time - datetime.timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-    to_time = to_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    from_time = timefmt(to_time - datetime.timedelta(minutes=5))
+    to_time = timefmt(to_time)
     start_time = f"START t'{from_time}'"
     stop_time = f"STOP t'{to_time}'"
     patterns = [
