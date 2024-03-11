@@ -78,7 +78,7 @@ one batch retrieved: 533 entries
 """
 
     result = subprocess.run(
-        args=[STIX_SHIFTER_DIAG, "lab101"],
+        args=[STIX_SHIFTER_DIAG, "--start=2000-01-01T00:00:00.000Z", "--stop=3000-01-01T00:00:00.000Z", "lab101"],
         universal_newlines=True,
         stdout=subprocess.PIPE,
     )
