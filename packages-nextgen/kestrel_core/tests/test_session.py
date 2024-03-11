@@ -88,13 +88,13 @@ EXPLAIN chrome
 def test_multi_interface_explain():
 
     class DataLake(SqliteCache):
-        @property
-        def schemes(self):
+        @staticmethod
+        def schemes():
             return ["datalake"]
 
     class Gateway(SqliteCache):
-        @property
-        def schemes(self):
+        @staticmethod
+        def schemes():
             return ["gateway"]
 
     extra_db = []

@@ -52,9 +52,11 @@ class AbstractInterface(ABC):
             except:
                 raise InvalidSerializedDatasourceInterfaceCacheCatalog()
 
-    @property
+    # Python 3.13 will drop chain of @classmethod and @property
+    # use @staticmethod instead (cannot make it a property)
+    @staticmethod
     @abstractmethod
-    def schemes(self) -> Iterable[str]:
+    def schemes() -> Iterable[str]:
         """The schemes to specify the interface
 
         Each scheme should be defined as ``("_"|LETTER) ("_"|LETTER|DIGIT)*``

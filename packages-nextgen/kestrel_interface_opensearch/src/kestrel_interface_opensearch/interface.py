@@ -90,8 +90,8 @@ class OpenSearchInterface(AbstractInterface):
                 )
                 self.conns[name] = client
 
-    @property
-    def schemes(self):
+    @staticmethod
+    def schemes() -> Iterable[str]:
         return ["opensearch"]
 
     def store(
