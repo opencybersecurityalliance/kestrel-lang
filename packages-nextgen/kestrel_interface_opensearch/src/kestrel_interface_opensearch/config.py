@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Dict, Mapping, Optional
 
 import yaml
 from mashumaro.mixins.json import DataClassJSONMixin
@@ -43,7 +43,7 @@ class Index(DataClassJSONMixin):
     timestamp: str
     timestamp_format: str
     data_model_mapping: Optional[str] = None
-    data_model_map: dict = field(default_factory=dict)
+    data_model_map: Mapping = field(default_factory=dict)
 
     def __post_init__(self):
         if self.data_model_mapping:
