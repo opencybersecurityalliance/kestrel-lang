@@ -230,7 +230,7 @@ class OpenSearchTranslator:
         if where:
             stages.append(f"WHERE {where}")
         if self.order_by:
-            stages.append(f"ORDER BY {self.order_by} {self.sort_dir}")
+            stages.append(f"ORDER BY {self.order_by} {self.sort_dir.value}")
         if self.limit:
             # https://opensearch.org/docs/latest/search-plugins/sql/sql/basic/#limit
             if self.offset:
