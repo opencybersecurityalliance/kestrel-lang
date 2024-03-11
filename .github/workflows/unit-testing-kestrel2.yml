@@ -60,6 +60,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Python Tools
         run: pip install --upgrade pip setuptools wheel pytest
+      - name: Install kestrel_core
+        working-directory: ./packages-nextgen/kestrel_core
+        run: pip install .
       - name: Install kestrel_interface_opensearch
         run: pip install .
       - name: Unit testing
