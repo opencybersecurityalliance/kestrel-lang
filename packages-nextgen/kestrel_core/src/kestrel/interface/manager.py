@@ -7,7 +7,7 @@ import sys
 import itertools
 from copy import copy
 from typeguard import typechecked
-from typing import Mapping, Iterable
+from typing import Mapping, Iterable, Type
 
 from kestrel.exceptions import (
     InterfaceNotFound,
@@ -26,7 +26,7 @@ _logger = logging.getLogger(__name__)
 class InterfaceManager(Mapping):
     def __init__(self, init_interfaces: Iterable[AbstractInterface] = []):
         interface_classes = _load_interface_classes()
-        self.interfaces = list(init_interfaces) # copy/recreate the list
+        self.interfaces = list(init_interfaces)  # copy/recreate the list
         for iface_cls in interface_classes:
             iface = iface_cls()
             _logger.debug(f"Initialize interface {iface.__name__}")
@@ -34,13 +34,13 @@ class InterfaceManager(Mapping):
 
     def __getitem__(self, scheme: str) -> AbstractInterface:
         for interface in self.interfaces:
-            if scheme in interface.schemes:
+            if scheme in interface.schemes():
                 return interface
         else:
             raise InterfaceNotFound(f"no interface loaded for scheme {scheme}")
 
     def __iter__(self) -> Iterable[str]:
-        return itertools.chain(*[i.schemes for i in self.interfaces])
+        return itertools.chain(*[i.schemes() for i in self.interfaces])
 
     def __len__(self) -> int:
         return sum(1 for _ in iter(self))
@@ -96,7 +96,8 @@ def _is_class(cls):
 
 @typechecked
 def _guard_scheme_conflict(
-    new_interface: AbstractInterface, interfaces: Iterable[AbstractInterface]
+    new_interface: Type[AbstractInterface],
+    interfaces: Iterable[Type[AbstractInterface]],
 ):
     for interface in interfaces:
         for scheme_new in new_interface.schemes():

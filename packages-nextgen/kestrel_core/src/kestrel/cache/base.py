@@ -16,8 +16,8 @@ class AbstractCache(AbstractInterface, MutableMapping):
         - evaluate_graph()
     """
 
-    @property
-    def schemes(self):
+    @staticmethod
+    def schemes() -> Iterable[str]:
         return [CACHE_INTERFACE_IDENTIFIER]
 
     @abstractmethod
