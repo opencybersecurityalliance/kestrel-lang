@@ -112,7 +112,8 @@ class OpenSearchInterface(AbstractInterface):
         for instruction in instructions_to_evaluate:
             translator = self._evaluate_instruction_in_graph(graph, instruction)
             # TODO: may catch error in case evaluation starts from incomplete SQL
-            _logger.debug("SQL query generated: %s", translator.result())
+            sql = translator.result()
+            _logger.debug("SQL query generated: %s", sql)
             ds = self.config.indexes[translator.table]  # table == datasource
             conn = self.config.connections[ds.connection]
             client = OpenSearch(
@@ -120,7 +121,9 @@ class OpenSearchInterface(AbstractInterface):
                 http_auth=(conn.auth.username, conn.auth.password),
                 verify_certs=conn.verify_certs,
             )
-            mapping[instruction.id] = read_sql(translator.result(), client)
+            mapping[instruction.id] = read_sql(
+                sql, client
+            )  # TODO: results data mapping!  Need to create any columns that don't already exist.
             client.close()
         return mapping
 

@@ -26,6 +26,11 @@ from kestrel.ir.instructions import (
     Sort,
     SortDirection,
 )
+from kestrel.mapping.data_model import (
+    flatten_mapping,
+    translate_comparison_to_native,
+    reverse_mapping,
+)
 
 
 _logger = logging.getLogger(__name__)
@@ -68,6 +73,16 @@ comp2func = {
 }
 
 
+def _format_value(value):
+    if isinstance(value, str):
+        # Need to quote string values
+        value = f"'{value}'"
+    elif isinstance(value, list):
+        # SQL uses parens for lists
+        value = tuple(value)
+    return value
+
+
 @typechecked
 class OpenSearchTranslator:
     def __init__(
@@ -102,23 +117,21 @@ class OpenSearchTranslator:
 
     @typechecked
     def _render_comp(self, comp: FComparison) -> str:
-        if isinstance(comp, StrComparison):
-            # Need to quote string values
-            value = f"'{comp.value}'"
-        elif isinstance(comp, ListComparison):
-            # SQL uses parens for lists
-            value = tuple(comp.value)
-        else:
-            value = comp.value
-        # Need to map OCSF filter field to native
-        prefix = f"{self.entity}." if self.entity else ""
+        prefix = (
+            f"{self.entity}." if (self.entity and comp.field != self.timestamp) else ""
+        )
         ocsf_field = f"{prefix}{comp.field}"
-        field = self.from_ocsf_map.get(ocsf_field, comp.field)
-        _logger.debug("Mapped field '%s' to '%s'", ocsf_field, field)
+        comps = translate_comparison_to_native(
+            self.from_ocsf_map, ocsf_field, comp.op, comp.value
+        )
         try:
-            result = f"{field} {comp2func[comp.op]} {value}"
+            comps = [f"{f} {comp2func[o]} {_format_value(v)}" for f, o, v in comps]
+            conj = " OR ".join(comps)
+            result = conj if len(comps) == 1 else f"({conj})"
         except KeyError:
-            raise UnsupportedOperatorError(comp.op.value)
+            raise UnsupportedOperatorError(
+                comp.op.value
+            )  # FIXME: need to report the mapped op, not the original
         return result
 
     @typechecked
@@ -177,24 +190,49 @@ class OpenSearchTranslator:
         # Just save projection and compile it later
         self.project = proj
 
-    def _get_ocsf_cols(self):
-        prefix = f"{self.entity}." if self.entity else ""
-        if not self.project:
-            ocsf_cols = [k for k in self.from_ocsf_map.keys() if k.startswith(prefix)]
-        else:
-            ocsf_cols = [f"{prefix}{col}" for col in self.project.attrs]
-        _logger.debug("OCSF fields: %s", ocsf_cols)
-        return ocsf_cols
+    def _get_fields(self) -> dict:  # TODO: rename
+        # prefix = f"{self.entity}." if self.entity else ""
+        entity_map = (
+            self.from_ocsf_map[self.entity] if self.entity else self.from_ocsf_map
+        )
+        flat_map = flatten_mapping(reverse_mapping(entity_map))
+        fields = {}
+        for k, v in flat_map.items():
+            # FIXME: ProjectAttrs in compile.py aren't mapped to OCSF, so if you use STIX it doesn't work at all
+            # Check for 1:N mappings
+            if isinstance(v, list):
+                one_to_ones = [i for i in v if isinstance(i, str)]
+                if len(one_to_ones) == 0:
+                    _logger.warning("No suitable mapping for %s", k)
+                    continue  # FIXME: we need to do something here
+                if len(one_to_ones) > 1:
+                    _logger.warning("Ambiguous mapping for %s", k)
+                v = one_to_ones[0]  # TODO: how else can we choose?
+            elif isinstance(v, str):
+                pass  # Nothing to do?
+            if self.project and not (
+                v in self.project.attrs or k in self.project.attrs
+            ):  # FIXME: v might be dict!!!
+                # It's not in the projection, so skip it
+                _logger.debug("skipping %s -> %s since it's not in projection", k, v)
+                continue
+            fields[k] = v
+
+        if not fields:
+            # If this is still empty, then the attr projection must be for attrs "outside" to entity projection?
+            fields = {attr: attr for attr in self.project.attrs}
+
+        _logger.debug("OCSF fields: %s", fields)
+        return fields
 
     def _render_proj(self):
-        fields = {
-            self.from_ocsf_map.get(col, col): col for col in self._get_ocsf_cols()
-        }
-        _logger.debug("Fields: %s", fields)
-        proj = [
-            f"`{k}` AS `{v.partition('.')[2]}`" if "." in v else v
-            for k, v in fields.items()
-        ]
+        """Get a list of native cols to project with their OCSF equivalents as SQL aliases"""
+        # input is either (flat) OCSF, ECS, or STIX fields and we need to create (native, OCSF) alias mapping
+        # - this may be a common capability?  Need a func to produce native:ocsf dict
+        # - how to handle collisions?
+        # Need access to schema to prune to fields that are actually available?
+        fields = self._get_fields()
+        proj = [f"`{k}` AS `{v}`" if k != v else k for k, v in fields.items()]
         _logger.debug("Set projection to %s", proj)
         return proj
 

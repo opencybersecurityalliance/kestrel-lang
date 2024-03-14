@@ -1,5 +1,6 @@
 # Lark Transformer
 
+import logging
 from datetime import datetime, timedelta
 from functools import reduce
 
@@ -7,6 +8,7 @@ from dateutil.parser import parse as to_datetime
 from lark import Transformer, Token
 from typeguard import typechecked
 
+from kestrel.mapping.data_model import translate_comparison_to_ocsf
 from kestrel.utils import unescape_quoted_string
 from kestrel.ir.filter import (
     FExpression,
@@ -44,6 +46,9 @@ from kestrel.ir.instructions import (
     Explain,
 )
 from kestrel.exceptions import IRGraphMissingNode
+
+
+_logger = logging.getLogger(__name__)
 
 
 DEFAULT_VARIABLE = "_"
@@ -95,17 +100,29 @@ def _map_filter_exp(
         if ":" not in field:
             field = f"{entity_name}:{field}"
         # map field to new syntax (e.g. STIX to OCSF)
-        map_result = property_map.get(field, filter_exp.field)
+        # TODO: ECS to OCSF?  Would need to merge STIX and ECS data model maps.
+        map_result = translate_comparison_to_ocsf(
+            property_map, field, filter_exp.op, filter_exp.value
+        )
         # Build a MultiComp if field maps to several values
-        if isinstance(map_result, (list, tuple)):
-            op = filter_exp.op
-            value = filter_exp.value
+        if len(map_result) > 1:
             filter_exp = MultiComp(
-                ExpOp.OR, [_create_comp(field, op, value) for field in map_result]
+                ExpOp.OR,
+                [_create_comp(field, op, value) for field, op, value in map_result],
             )
-        else:  # change the name of the field if it maps to a single value
-            filter_exp.field = map_result
-
+        elif len(map_result) == 1:  # it maps to a single value
+            mapping = map_result[0]
+            _logger.debug("mapping = %s", mapping)
+            field = mapping[0]
+            prefix = f"{entity_name}."
+            if field.startswith(prefix):
+                # Need to prune the entity name
+                field = field[len(prefix) :]
+            filter_exp.field = field
+            filter_exp.op = mapping[1]
+            filter_exp.value = mapping[2]
+        else:  # pass-through
+            pass
         # TODO: for RefComparison, map the attribute in value (may not be possible here)
 
     elif isinstance(filter_exp, BoolExp):
@@ -152,7 +169,7 @@ class _KestrelT(Transformer):
         self.default_sort_order = default_sort_order
         self.token_prefix = token_prefix
         self.entity_map = entity_map
-        self.property_map = property_map
+        self.property_map = property_map  # TODO: rename to data_model_map?
         super().__init__()
 
     def start(self, args):

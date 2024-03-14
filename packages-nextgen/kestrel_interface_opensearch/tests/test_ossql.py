@@ -33,12 +33,28 @@ import pytest
 TIMEFMT = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
+# A much-simplified test mapping
 data_model_map = {
-    "process.cmd_line": "CommandLine",
-    "process.file.path": "Image",
-    "process.pid": "ProcessId",
-    "actor.process.pid": "ParentProcessId",
+    "process": {
+        "cmd_line": "CommandLine",
+        "file": {
+            "path": "Image",
+            # "name": [
+            #     {
+            #         "native_field": "Image",
+            #         "native_value": "basename",
+            #         "ocsf_op": "LIKE",
+            #         "ocsf_value": "endswith"
+            #     }
+            # ]
+        },
+        "pid": "ProcessId",
+        "parent_process": {
+            "pid": "ParentProcessId",
+        },
+    },
 }
+
 schema = {
     "CommandLine": "text",
     "Image": "text",
@@ -86,9 +102,11 @@ def _remove_nl(s):
     ]
 )
 def test_opensearch_translator(iseq, sql):
-    cols = '`CommandLine` AS `cmd_line`, `Image` AS `file.path`, `ProcessId` AS `pid`'
-    if ProjectEntity not in {type(i) for i in iseq}:
-        cols += ', `ParentProcessId` AS `process.pid`'
+    cols = '`CommandLine` AS `cmd_line`, `Image` AS `file.path`, `ProcessId` AS `pid`, `ParentProcessId` AS `parent_process.pid`'
+    if ProjectEntity in {type(i) for i in iseq}:
+        cols = '`CommandLine` AS `cmd_line`, `Image` AS `file.path`, `ProcessId` AS `pid`, `ParentProcessId` AS `parent_process.pid`'
+    else:
+        cols = '`CommandLine` AS `process.cmd_line`, `Image` AS `process.file.path`, `ProcessId` AS `process.pid`, `ParentProcessId` AS `process.parent_process.pid`'
     trans = OpenSearchTranslator(TIMEFMT, "timestamp", "my_table", data_model_map, schema)
     for i in iseq:
         trans.add_instruction(i)

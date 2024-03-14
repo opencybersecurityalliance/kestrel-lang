@@ -29,7 +29,7 @@ class InterfaceManager(Mapping):
         self.interfaces = list(init_interfaces)  # copy/recreate the list
         for iface_cls in interface_classes:
             iface = iface_cls()
-            _logger.debug(f"Initialize interface {iface.__name__}")
+            _logger.debug(f"Initialize interface {iface_cls.__name__}")
             self.interfaces.append(iface)
 
     def __getitem__(self, scheme: str) -> AbstractInterface:

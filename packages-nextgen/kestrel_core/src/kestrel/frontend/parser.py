@@ -1,13 +1,19 @@
 # parse Kestrel syntax, apply frontend mapping, transform to IR
 
+import logging
+import os
 from itertools import chain
 
 from kestrel.frontend.compile import _KestrelT
+from kestrel.mapping.data_model import reverse_mapping
 from kestrel.utils import load_data_file
 from lark import Lark
-import os
 from typeguard import typechecked
 import yaml
+
+
+_logger = logging.getLogger(__name__)
+
 
 frontend_mapping = {}
 
@@ -21,9 +27,13 @@ def get_mapping(mapping_type: str, mapping_package: str, mapping_filepath: str) 
     try:
         mapping_str = load_data_file(mapping_package, mapping_filepath)
         mapping = yaml.safe_load(mapping_str)
+        if mapping_type == "property":
+            # New data model map is always OCSF->native
+            mapping = reverse_mapping(mapping)
         frontend_mapping[mapping_type] = mapping
     except Exception as ex:
-        mapping = None
+        _logger.error("Failed to load %s", mapping_str, exc_info=ex)
+        mapping = None  # FIXME: this is not a dict
     return mapping
 
 
