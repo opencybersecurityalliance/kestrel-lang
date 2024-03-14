@@ -28,7 +28,7 @@ classifiers = [
 
 dependencies = [
     "kestrel_core>=1.8.1",
-    "lxml>=4.9.3",
+    "lxml>=5.0.0",
     "requests>=2.31.0",
     "nest-asyncio>=1.5.8",
     "stix-shifter==6.2.2",
