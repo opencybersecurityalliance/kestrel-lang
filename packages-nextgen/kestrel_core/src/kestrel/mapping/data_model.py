@@ -106,16 +106,11 @@ def get_simple_property_mapping(
     return attribute_map
 
 
-def _map_op(op: str, mapped_op: str) -> str:
-    # TODO: does native_value matter?
-    return mapped_op if mapped_op else op
-
-
 def _get_map_triple(d: dict, prefix: str, op: str, value) -> tuple:
-    mapped_op = d.get(f"{prefix}_op")  # to_native_op?
-    transform = d.get(f"{prefix}_value")  # to_native_value?
+    mapped_op = d.get(f"{prefix}_op")
+    transform = d.get(f"{prefix}_value")
     new_value = run_transformer(transform, value)
-    new_op = _map_op(op, mapped_op)
+    new_op = mapped_op if mapped_op else op
     return (d[f"{prefix}_field"], new_op, new_value)
 
 
@@ -161,18 +156,14 @@ def translate_comparison_to_native(
         tmp = dmm
         for part in parts:
             if isinstance(tmp, dict):
-                tmp = tmp.get(part, {})  # tmp[part]
+                tmp = tmp.get(part, {})
             else:
                 break
         if tmp:
             if isinstance(tmp, list):
                 for i in tmp:
                     if isinstance(i, dict):
-                        mapped_op = i.get("native_op")  # to_native_op?
-                        transform = i.get("native_value")  # to_native_value?
-                        new_value = run_transformer(transform, value)
-                        new_op = _map_op(op, mapped_op)
-                        result.append((i["native_field"], new_op, new_value))
+                        result.append(_get_map_triple(i, "native", op, value))
                     else:
                         result.append((i, op, value))
             elif isinstance(tmp, dict):
@@ -224,11 +215,6 @@ def translate_comparison_to_ocsf(
     elif isinstance(mapping, list):
         for i in mapping:
             if isinstance(i, dict):
-                # mapped_op = i.get("ocsf_op")  # to_ocsf_op?
-                # transform = i.get("ocst_value")  # to_ocsf_value?
-                # new_value = run_transformer(transform, value) if transform else value
-                # new_op = _map_op(op, mapped_op)
-                # result.append((i["ocsf_field"], new_op, new_value))
                 result.append(_get_map_triple(i, "ocsf", op, value))
             else:
                 result.append((i, op, value))
