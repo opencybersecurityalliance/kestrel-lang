@@ -221,32 +221,6 @@ def translate_comparison_to_ocsf(
     return result
 
 
-def flatten_mapping(dmm: dict, key: str = None) -> dict:
-    """Flatten the nested `dmm` so that the keys are dotted "paths", optionally starting at `key`
-
-    Parameters:
-        dmm: A dictionary that maps fields from one data model to another.
-        key: starting point in `dmm` (optional)
-
-    Returns:
-        A dict with dotted path keys
-    """
-    root = dmm[key] if key else dmm
-    return _flatten(root)
-
-
-def _flatten(root: dict, result: dict = None, prefix: str = "") -> dict:
-    if result is None:
-        result = {}
-    for k, v in root.items():
-        key = prefix + "." + k if prefix else k
-        if isinstance(v, dict):
-            _flatten(v, result, key)
-        else:
-            result[key] = v
-    return result
-
-
 @typechecked
 def load_mapping(
     data_model_name: str,

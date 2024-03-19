@@ -27,7 +27,6 @@ from kestrel.ir.instructions import (
     SortDirection,
 )
 from kestrel.mapping.data_model import (
-    flatten_mapping,
     translate_comparison_to_native,
     reverse_mapping,
 )
@@ -195,7 +194,7 @@ class OpenSearchTranslator:
         entity_map = (
             self.from_ocsf_map[self.entity] if self.entity else self.from_ocsf_map
         )
-        flat_map = flatten_mapping(reverse_mapping(entity_map))
+        flat_map = reverse_mapping(entity_map)
         fields = {}
         for k, v in flat_map.items():
             # FIXME: ProjectAttrs in compile.py aren't mapped to OCSF, so if you use STIX it doesn't work at all
