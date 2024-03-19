@@ -74,38 +74,6 @@ def reverse_mapping(obj: dict, prefix: str = None, result: dict = None) -> dict:
     return result
 
 
-def get_simple_property_mapping(
-    obj: dict, prefix: str = None
-) -> dict:  # TODO: remove?  Not really needed
-    """Parse the data model map `obj` and return a simple "native -> OCSF" attribute name map"""
-    attribute_map = {}
-    for k, v in obj.items():
-        k = ".".join((prefix, k)) if prefix else k
-        # Recurse if necessary
-        if isinstance(v, str):
-            _add_attr(attribute_map, v, k)
-        elif isinstance(v, list):
-            for i in v:
-                if isinstance(i, str):
-                    _add_attr(attribute_map, i, k)
-                else:
-                    native_field = i.get("native_field")
-                    if native_field:
-                        _add_attr(attribute_map, native_field, k)
-                    else:
-                        # Need to "deep" merge with current results
-                        attribute_map.update(get_simple_property_mapping(i, k))
-        elif isinstance(v, dict):
-            # First determine if this is a complex mapping or just another level
-            native_field = v.get("native_field")
-            if native_field:
-                _add_attr(attribute_map, native_field, k)
-            else:
-                # Need to "deep" merge with current results
-                attribute_map.update(get_simple_property_mapping(v, k))
-    return attribute_map
-
-
 def _get_map_triple(d: dict, prefix: str, op: str, value) -> tuple:
     mapped_op = d.get(f"{prefix}_op")
     transform = d.get(f"{prefix}_value")
