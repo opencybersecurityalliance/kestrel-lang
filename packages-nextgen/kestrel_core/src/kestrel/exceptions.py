@@ -98,7 +98,7 @@ class IRGraphMissingNode(KestrelError):
     pass
 
 
-class InterfaceNotFound(KestrelError):
+class InterfaceNotConfigured(KestrelError):
     pass
 
 

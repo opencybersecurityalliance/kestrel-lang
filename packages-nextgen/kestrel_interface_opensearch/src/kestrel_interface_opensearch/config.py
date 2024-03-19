@@ -9,6 +9,7 @@ from kestrel.config.utils import (
     CONFIG_DIR_DEFAULT,
     load_user_config,
 )
+from kestrel.exceptions import InterfaceNotConfigured
 from kestrel.mapping.data_model import load_mapping
 
 
@@ -62,4 +63,7 @@ class Config(DataClassJSONMixin):
 
 
 def load_config():
-    return Config(**load_user_config(PROFILE_PATH_ENV_VAR, PROFILE_PATH_DEFAULT))
+    try:
+        return Config(**load_user_config(PROFILE_PATH_ENV_VAR, PROFILE_PATH_DEFAULT))
+    except TypeError:
+        raise InterfaceNotConfigured()
