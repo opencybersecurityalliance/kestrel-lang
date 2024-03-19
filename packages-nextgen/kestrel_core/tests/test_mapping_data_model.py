@@ -138,18 +138,6 @@ def test_translate_comparison_to_native(dmm, field, op, value, expected_result):
 @pytest.mark.parametrize(
     "dmm, field, op, value, expected_result",
     [
-        # (WINLOGBEAT_MAPPING, "winlog.event_data.Image", "=", "C:\\TMP\\foo.exe",  #TODO: don't need this test case
-        #  [
-        #     ("process.file.path", "=", "C:\\TMP\\foo.exe"),
-        #     ("process.file.name", "=", "foo.exe"),
-        #     ("process.file.parent_folder", "=", "C:\\TMP"),
-        #  ]),
-        # (WINLOGBEAT_MAPPING, "winlog.event_data.Image", "LIKE", "%\\foo.exe",  #TODO: don't need this test case
-        #  [
-        #     ("process.file.path", "LIKE", "%\\foo.exe"),
-        #     ("process.file.name", "LIKE", "foo.exe"),
-        #     ("process.file.parent_folder", "LIKE", "%"),
-        #  ]),
         (ECS_MAPPING, "process.executable", "=", "C:\\TMP\\foo.exe",
          [
             ("process.file.path", "=", "C:\\TMP\\foo.exe"),
