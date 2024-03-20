@@ -2,6 +2,8 @@
 
 from typing import Callable
 
+from pandas import Series
+
 
 # Dict of "registered" transformers
 _transformers = {}
@@ -81,6 +83,16 @@ def run_transformer(transformer_name: str, value):
     func = _transformers.get(transformer_name)
     if func:
         result = func(value)
+    else:
+        raise NameError(transformer_name)
+    return result
+
+
+def run_transformer_on_series(transformer_name: str, value: Series):
+    """Run the registered transformer with name `transformer_name` on `value`"""
+    func = _transformers.get(transformer_name)
+    if func:
+        result = value.apply(func)
     else:
         raise NameError(transformer_name)
     return result

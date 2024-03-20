@@ -2,13 +2,15 @@ import logging
 from typing import Iterable, Mapping, Optional
 from uuid import UUID
 
+import dpath
+import numpy as np
 from opensearchpy import OpenSearch
 from pandas import DataFrame, Series, concat
 
+from kestrel.display import GraphletExplanation
 from kestrel.exceptions import DataSourceError
 from kestrel.interface import AbstractInterface
 from kestrel.ir.graph import IRGraphEvaluable
-from kestrel.display import GraphletExplanation
 from kestrel.ir.instructions import (
     DataSource,
     Instruction,
@@ -19,6 +21,7 @@ from kestrel.ir.instructions import (
     TransformingInstruction,
     SolePredecessorTransformingInstruction,
 )
+from kestrel.mapping.transformers import run_transformer_on_series
 
 from kestrel_interface_opensearch.config import load_config
 from kestrel_interface_opensearch.ossql import OpenSearchTranslator
@@ -33,11 +36,25 @@ def _jdbc2df(schema: dict, datarows: dict) -> DataFrame:
     return DataFrame(datarows, columns=columns)
 
 
-def read_sql(sql: str, conn: OpenSearch) -> DataFrame:
+def _translate_df(df: DataFrame, dmm: dict) -> DataFrame:
+    # Translate results into Kestrel OCSF data model
+    # The column names of df are already mapped
+    df = df.replace({np.nan: None})
+    for col in df.columns:
+        mapping = dpath.get(dmm, col, separator=".")
+        if isinstance(mapping, dict):
+            transformer_name = mapping.get("ocsf_value")
+            df[col] = run_transformer_on_series(transformer_name, df[col])
+
+    return df
+
+
+def read_sql(sql: str, conn: OpenSearch, dmm: Optional[dict] = None) -> DataFrame:
     """Execute `sql` and return the results as a DataFrame, a la pandas.read_sql"""
     # https://opensearch.org/docs/latest/search-plugins/sql/sql-ppl-api/#query-api
     body = {
-        "fetch_size": 10000,  # Should we make this configurable?
+        # Temporarily comment out fetch_size due to https://github.com/opensearch-project/sql/issues/2579
+        # FIXME: "fetch_size": 10000,  # Should we make this configurable?
         "query": sql,
     }
     query_resp = conn.http.post("/_plugins/_sql?format=jdbc", body=body)
@@ -57,7 +74,12 @@ def read_sql(sql: str, conn: OpenSearch) -> DataFrame:
     dfs = []
     done = False
     while not done:
-        dfs.append(_jdbc2df(schema, query_resp["datarows"]))
+        df = _jdbc2df(schema, query_resp["datarows"])
+        if dmm is not None:
+            # Need to use Data Model Map to do results translation
+            dfs.append(_translate_df(df, dmm))
+        else:
+            dfs.append(df)
         cursor = query_resp.get("cursor")
         if not cursor:
             break
@@ -122,8 +144,8 @@ class OpenSearchInterface(AbstractInterface):
                 verify_certs=conn.verify_certs,
             )
             mapping[instruction.id] = read_sql(
-                sql, client
-            )  # TODO: results data mapping!  Need to create any columns that don't already exist.
+                sql, client, translator.from_ocsf_map[translator.entity]
+            )
             client.close()
         return mapping
 

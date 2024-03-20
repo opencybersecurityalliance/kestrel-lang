@@ -1,7 +1,9 @@
+import pandas as pd
 import pytest
 
 from kestrel.mapping.transformers import (
     run_transformer,
+    run_transformer_on_series,
 )
 
 
@@ -21,3 +23,9 @@ from kestrel.mapping.transformers import (
 )
 def test_run_transformer(transform, value, expected):
     assert run_transformer(transform, value) == expected
+
+
+def test_run_series_basename():
+    data = pd.Series([r"C:\Windows\System32\cmd.exe", r"C:\TMP"])
+    result = list(run_transformer_on_series("basename", data))
+    assert result == ["cmd.exe", "TMP"]

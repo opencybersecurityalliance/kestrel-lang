@@ -2,6 +2,7 @@ import logging
 from functools import reduce
 from typing import Optional, Union
 
+import dpath
 from typeguard import typechecked
 
 from kestrel.exceptions import UnsupportedOperatorError
@@ -189,49 +190,63 @@ class OpenSearchTranslator:
         # Just save projection and compile it later
         self.project = proj
 
-    def _get_fields(self) -> dict:  # TODO: rename
-        # prefix = f"{self.entity}." if self.entity else ""
+    def _get_fields(self) -> list:
+        """This method produces a subset of that Data Model Map.  That subset
+        is used to generate the SQL projection (SELECT columns), with
+        each native column aliased to its relative OCSF name.
+
+        """
+        prefix = f"{self.entity}." if self.entity else ""
         entity_map = (
             self.from_ocsf_map[self.entity] if self.entity else self.from_ocsf_map
         )
+        # Use the reverse map since we want native->ocsf.  We could
+        # instead flatten the normal map, but reversed is naturally
+        # flat.
         flat_map = reverse_mapping(entity_map)
-        fields = {}
+        fields = []  # Collect the needed field mappings
         for k, v in flat_map.items():
             # FIXME: ProjectAttrs in compile.py aren't mapped to OCSF, so if you use STIX it doesn't work at all
             # Check for 1:N mappings
             if isinstance(v, list):
-                one_to_ones = [i for i in v if isinstance(i, str)]
-                if len(one_to_ones) == 0:
-                    _logger.warning("No suitable mapping for %s", k)
-                    continue  # FIXME: we need to do something here
-                if len(one_to_ones) > 1:
-                    _logger.warning("Ambiguous mapping for %s", k)
-                v = one_to_ones[0]  # TODO: how else can we choose?
+                for i in v:
+                    if isinstance(i, str):
+                        fields.append((k, i))
+                    elif isinstance(i, dict):
+                        fields.append((k, i["ocsf_field"]))
+                    else:
+                        _logger.debug("Unhandled mapping: %s", i)
+            elif isinstance(v, dict):
+                fields.append((k, v["ocsf_field"]))
             elif isinstance(v, str):
-                pass  # Nothing to do?
-            if self.project and not (
-                v in self.project.attrs or k in self.project.attrs
-            ):  # FIXME: v might be dict!!!
-                # It's not in the projection, so skip it
-                _logger.debug("skipping %s -> %s since it's not in projection", k, v)
-                continue
-            fields[k] = v
+                fields.append((k, v))
 
         if not fields:
             # If this is still empty, then the attr projection must be for attrs "outside" to entity projection?
-            fields = {attr: attr for attr in self.project.attrs}
+            fields = [(attr, attr) for attr in self.project.attrs]
 
-        _logger.debug("OCSF fields: %s", fields)
+        _logger.debug("Field mappings: %s", fields)
         return fields
 
     def _render_proj(self):
         """Get a list of native cols to project with their OCSF equivalents as SQL aliases"""
-        # input is either (flat) OCSF, ECS, or STIX fields and we need to create (native, OCSF) alias mapping
-        # - this may be a common capability?  Need a func to produce native:ocsf dict
-        # - how to handle collisions?
-        # Need access to schema to prune to fields that are actually available?
         fields = self._get_fields()
-        proj = [f"`{k}` AS `{v}`" if k != v else k for k, v in fields.items()]
+        name_pairs = []
+        for pair in fields:
+            native_field, tmp = pair
+            ocsf_field = tmp["ocsf_field"] if isinstance(tmp, dict) else tmp
+            if self.project and not (
+                ocsf_field in self.project.attrs or native_field in self.project.attrs
+            ):
+                # It's not in the projection, so skip it
+                _logger.debug(
+                    "skipping %s -> %s since it's not in projection",
+                    native_field,
+                    ocsf_field,
+                )
+                continue
+            name_pairs.append((native_field, ocsf_field))
+        proj = [f"`{k}` AS `{v}`" if k != v else k for k, v in name_pairs]
         _logger.debug("Set projection to %s", proj)
         return proj
 
