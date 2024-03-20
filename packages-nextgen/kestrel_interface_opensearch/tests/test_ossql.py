@@ -84,10 +84,10 @@ def _remove_nl(s):
          "SELECT {} FROM my_table WHERE foo >= 0 AND timestamp >= '2023-12-06T08:17:00.000000Z' AND timestamp < '2023-12-07T08:17:00.000000Z'"),
         # Add a limit and projection
         ([Limit(3), ProjectAttrs(['foo', 'bar', 'baz']), Filter(StrComparison('foo', StrCompOp.EQ, 'abc'))],
-         "SELECT foo, bar, baz FROM my_table WHERE foo = 'abc' LIMIT 3"),
+         "SELECT `foo`, `bar`, `baz` FROM my_table WHERE foo = 'abc' LIMIT 3"),
         # Same as above but reverse order
         ([Filter(StrComparison('foo', StrCompOp.EQ, 'abc')), ProjectAttrs(['foo', 'bar', 'baz']), Limit(3)],
-         "SELECT foo, bar, baz FROM my_table WHERE foo = 'abc' LIMIT 3"),
+         "SELECT `foo`, `bar`, `baz` FROM my_table WHERE foo = 'abc' LIMIT 3"),
         ([Filter(ListComparison('foo', ListOp.NIN, ['abc', 'def']))],
          "SELECT {} FROM my_table WHERE foo NOT IN ('abc', 'def')"),
         ([Filter(MultiComp(ExpOp.OR, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],

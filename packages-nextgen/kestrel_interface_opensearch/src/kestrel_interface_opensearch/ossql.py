@@ -221,10 +221,6 @@ class OpenSearchTranslator:
             elif isinstance(v, str):
                 fields.append((k, v))
 
-        if not fields:
-            # If this is still empty, then the attr projection must be for attrs "outside" to entity projection?
-            fields = [(attr, attr) for attr in self.project.attrs]
-
         _logger.debug("Field mappings: %s", fields)
         return fields
 
@@ -247,6 +243,9 @@ class OpenSearchTranslator:
                 continue
             name_pairs.append((native_field, ocsf_field))
         proj = [f"`{k}` AS `{v}`" if k != v else k for k, v in name_pairs]
+        if not proj:
+            # If this is still empty, then the attr projection must be for attrs "outside" to entity projection?
+            proj = [f"`{attr}`" for attr in self.project.attrs]
         _logger.debug("Set projection to %s", proj)
         return proj
 
