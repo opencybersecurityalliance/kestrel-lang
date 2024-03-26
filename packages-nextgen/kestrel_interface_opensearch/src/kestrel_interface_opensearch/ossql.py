@@ -28,8 +28,9 @@ from kestrel.ir.instructions import (
     SortDirection,
 )
 from kestrel.mapping.data_model import (
-    translate_comparison_to_native,
     reverse_mapping,
+    translate_comparison_to_native,
+    translate_projection_to_native,
 )
 
 
@@ -190,59 +191,13 @@ class OpenSearchTranslator:
         # Just save projection and compile it later
         self.project = proj
 
-    def _get_fields(self) -> list:
-        """This method produces a subset of that Data Model Map.  That subset
-        is used to generate the SQL projection (SELECT columns), with
-        each native column aliased to its relative OCSF name.
-
-        """
-        prefix = f"{self.entity}." if self.entity else ""
-        entity_map = (
-            self.from_ocsf_map[self.entity] if self.entity else self.from_ocsf_map
-        )
-        # Use the reverse map since we want native->ocsf.  We could
-        # instead flatten the normal map, but reversed is naturally
-        # flat.
-        flat_map = reverse_mapping(entity_map)
-        fields = []  # Collect the needed field mappings
-        for k, v in flat_map.items():
-            # FIXME: ProjectAttrs in compile.py aren't mapped to OCSF, so if you use STIX it doesn't work at all
-            # Check for 1:N mappings
-            if isinstance(v, list):
-                for i in v:
-                    if isinstance(i, str):
-                        fields.append((k, i))
-                    elif isinstance(i, dict):
-                        fields.append((k, i["ocsf_field"]))
-                    else:
-                        _logger.debug("Unhandled mapping: %s", i)
-            elif isinstance(v, dict):
-                fields.append((k, v["ocsf_field"]))
-            elif isinstance(v, str):
-                fields.append((k, v))
-
-        _logger.debug("Field mappings: %s", fields)
-        return fields
-
     def _render_proj(self):
         """Get a list of native cols to project with their OCSF equivalents as SQL aliases"""
-        fields = self._get_fields()
-        name_pairs = []
-        for pair in fields:
-            native_field, tmp = pair
-            ocsf_field = tmp["ocsf_field"] if isinstance(tmp, dict) else tmp
-            if self.project and not (
-                ocsf_field in self.project.attrs or native_field in self.project.attrs
-            ):
-                # It's not in the projection, so skip it
-                _logger.debug(
-                    "skipping %s -> %s since it's not in projection",
-                    native_field,
-                    ocsf_field,
-                )
-                continue
-            name_pairs.append((native_field, ocsf_field))
-        proj = [f"`{k}` AS `{v}`" if k != v else k for k, v in name_pairs]
+        projection = self.project.attrs if self.project else None
+        name_pairs = translate_projection_to_native(
+            self.from_ocsf_map, self.entity, projection
+        )
+        proj = [f"`{k}` AS `{v}`" if k != v else f"`{k}`" for k, v in name_pairs]
         if not proj:
             # If this is still empty, then the attr projection must be for attrs "outside" to entity projection?
             proj = [f"`{attr}`" for attr in self.project.attrs]

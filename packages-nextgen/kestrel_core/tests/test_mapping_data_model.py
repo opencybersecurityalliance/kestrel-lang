@@ -5,6 +5,7 @@ from kestrel.mapping.data_model import (
     reverse_mapping,
     translate_comparison_to_native,
     translate_comparison_to_ocsf,
+    translate_projection_to_native,
 )
 
 
@@ -18,7 +19,7 @@ WINLOGBEAT_MAPPING = {
     "process": {
         "cmd_line": "winlog.event_data.CommandLine",
         "pid": {
-            "native_field": "process.pid",
+            "native_field": "winlog.event_data.ProcessId",
             "native_value": "to_str",
             "ocsf_value": "to_int"
         },
@@ -161,3 +162,28 @@ def test_translate_comparison_to_ocsf(dmm, field, op, value, expected_result):
     """Test the translate function."""
     reverse_dmm = reverse_mapping(dmm)  # Make the dmms fixtures?
     assert set(translate_comparison_to_ocsf(reverse_dmm, field, op, value)) == set(expected_result)
+
+
+@pytest.mark.parametrize(
+    "dmm, entity, field, expected_result",
+    [
+        (WINLOGBEAT_MAPPING, "process", ["file.name", "pid"],
+         [("winlog.event_data.Image", "file.name"), ("winlog.event_data.ProcessId", "pid")]),
+        (WINLOGBEAT_MAPPING, "process", None,
+         [("winlog.event_data.CommandLine", "cmd_line"),
+          ("winlog.event_data.ProcessId", "pid"),
+          ("winlog.event_data.ProcessGuid", "uid"),
+          ("winlog.event_data.Image", "file.path"),
+          ("winlog.event_data.Image", "file.name"),
+          ("winlog.event_data.Image", "file.parent_folder"),
+          ("winlog.event_data.ParentCommandLine", "parent_process.cmd_line"),
+          ("winlog.event_data.ParentProcessId", "parent_process.pid"),
+          ("winlog.event_data.ParentProcessGuid", "parent_process.uid"),
+          ("winlog.event_data.ParentImage", "parent_process.file.path"),
+          ("winlog.event_data.ParentImage", "parent_process.file.name"),
+          ("winlog.event_data.ParentImage", "parent_process.file.parent_folder"),
+         ]),
+    ],
+)
+def test_translate_projection_to_native(dmm, entity, field, expected_result):
+    assert translate_projection_to_native(dmm, entity, field) == expected_result

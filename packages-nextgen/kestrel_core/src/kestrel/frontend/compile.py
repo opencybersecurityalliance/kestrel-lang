@@ -117,7 +117,7 @@ def _map_filter_exp(
             prefix = f"{entity_name}."
             if field.startswith(prefix):
                 # Need to prune the entity name
-                field = field[len(prefix):]
+                field = field[len(prefix) :]
             filter_exp.field = field
             filter_exp.op = mapping[1]
             filter_exp.value = mapping[2]

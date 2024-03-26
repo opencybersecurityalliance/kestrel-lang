@@ -1,5 +1,5 @@
 import logging
-from typing import Union
+from typing import Optional, Union
 
 import yaml
 from typeguard import typechecked
@@ -202,4 +202,59 @@ def load_mapping(
     for f in entityattr_mapping_files:
         with open(f, "r") as fp:
             result.update(yaml.safe_load(fp))
+    return result
+
+
+@typechecked
+def _get_from_mapping(mapping: Union[str, list, dict], key) -> list[str]:
+    result = []
+    if isinstance(mapping, list):
+        for i in mapping:
+            if isinstance(i, dict):
+                result.append(i[key])
+            else:
+                result.append(i)
+    elif isinstance(mapping, dict):
+        result.append(mapping[key])
+    elif isinstance(mapping, str):
+        result.append(mapping)
+    return result
+
+
+@typechecked
+def translate_projection_to_native(
+    dmm: dict,
+    entity_type: Optional[str],
+    attrs: Optional[list],
+    # TODO: optional str or callable for joining entity_type and attr?
+) -> list:
+    result = []
+    if entity_type:
+        dmm = dmm[entity_type]
+    if not attrs:
+        for native_field, mapping in reverse_mapping(dmm).items():
+            result.extend(
+                [(native_field, i) for i in _get_from_mapping(mapping, "ocsf_field")]
+            )
+        attrs = []
+    for attr in attrs:
+        mapping = dmm.get(attr)
+        if not mapping:
+            parts = attr.split(".")
+            tmp = dmm
+            for part in parts:
+                if isinstance(tmp, dict):
+                    tmp = tmp.get(part, {})
+                else:
+                    break
+            if tmp:
+                mapping = tmp
+        if mapping:
+            result.extend(
+                [(i, attr) for i in _get_from_mapping(mapping, "native_field")]
+            )
+        else:
+            # Pass-through?
+            result.append((attr, attr))  # FIXME: raise exception instead?
+    _logger.debug("proj_to_native: return %s", result)
     return result
