@@ -206,7 +206,7 @@ def load_mapping(
 
 
 @typechecked
-def _get_from_mapping(mapping: Union[str, list, dict], key) -> list[str]:
+def _get_from_mapping(mapping: Union[str, list, dict], key) -> list:
     result = []
     if isinstance(mapping, list):
         for i in mapping:
