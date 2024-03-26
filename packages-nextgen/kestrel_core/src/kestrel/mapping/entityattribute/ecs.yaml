@@ -121,6 +121,29 @@ src_endpoint:
         - client.mac
         - source.mac
 
+# endpoint: see https://schema.ocsf.io/1.1.0/objects/endpoint
+endpoint:
+    domain:
+        - client.domain
+        - source.domain
+        - server.domain
+        - destination.domain
+    hostname:
+        - client.domain
+        - source.domain
+        - server.domain
+        - destination.domain
+    ip:
+        - client.ip
+        - source.ip
+        - server.ip
+        - destination.ip
+    mac:
+        - client.mac
+        - source.mac
+        - server.mac
+        - destination.mac
+
 # dst_endpoint: see https://schema.ocsf.io/1.1.0/objects/endpoint
 dst_endpoint:
     domain:
