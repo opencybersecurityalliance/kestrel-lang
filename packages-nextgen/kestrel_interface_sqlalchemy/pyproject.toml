@@ -26,7 +26,6 @@ classifiers = [
 ]
 
 dependencies = [
-    "dpath>=2.1.6",
     "kestrel_core>=2.0.0",
 ]
 

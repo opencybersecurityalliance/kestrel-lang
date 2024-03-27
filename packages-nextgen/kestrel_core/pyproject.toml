@@ -38,6 +38,7 @@ dependencies = [
     "mashumaro>=3.10",
     "networkx>=3.1", # networkx==3.2.1 only for Python>=3.9
     "SQLAlchemy>=2.0.23",
+    "dpath>=2.1.6",
 ]
 
 [project.optional-dependencies]
