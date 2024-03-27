@@ -1,10 +1,16 @@
 import logging
 from typing import Optional, Union
 
+import dpath
+import numpy as np
 import yaml
+from pandas import DataFrame
 from typeguard import typechecked
 
-from kestrel.mapping.transformers import run_transformer
+from kestrel.mapping.transformers import (
+    run_transformer,
+    run_transformer_on_series,
+)
 from kestrel.utils import list_folder_files
 
 _logger = logging.getLogger(__name__)
@@ -258,3 +264,16 @@ def translate_projection_to_native(
             result.append((attr, attr))  # FIXME: raise exception instead?
     _logger.debug("proj_to_native: return %s", result)
     return result
+
+
+@typechecked
+def translate_dataframe(df: DataFrame, dmm: dict) -> DataFrame:
+    # Translate results into Kestrel OCSF data model
+    # The column names of df are already mapped
+    df = df.replace({np.nan: None})
+    for col in df.columns:
+        mapping = dpath.get(dmm, col, separator=".")
+        if isinstance(mapping, dict):
+            transformer_name = mapping.get("ocsf_value")
+            df[col] = run_transformer_on_series(transformer_name, df[col])
+    return df

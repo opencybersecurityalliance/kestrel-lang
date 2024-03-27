@@ -2,7 +2,6 @@ import logging
 from functools import reduce
 from typing import Optional, Union
 
-import dpath
 from typeguard import typechecked
 
 from kestrel.exceptions import UnsupportedOperatorError
@@ -10,7 +9,6 @@ from kestrel.ir.filter import (
     BoolExp,
     ExpOp,
     FComparison,
-    ListComparison,
     ListOp,
     MultiComp,
     NumCompOp,
@@ -28,7 +26,6 @@ from kestrel.ir.instructions import (
     SortDirection,
 )
 from kestrel.mapping.data_model import (
-    reverse_mapping,
     translate_comparison_to_native,
     translate_projection_to_native,
 )

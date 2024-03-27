@@ -2,8 +2,6 @@ import logging
 from typing import Iterable, Mapping, Optional
 from uuid import UUID
 
-import dpath
-import numpy as np
 from opensearchpy import OpenSearch
 from pandas import DataFrame, Series, concat
 
@@ -21,7 +19,7 @@ from kestrel.ir.instructions import (
     TransformingInstruction,
     SolePredecessorTransformingInstruction,
 )
-from kestrel.mapping.transformers import run_transformer_on_series
+from kestrel.mapping.data_model import translate_dataframe
 
 from kestrel_interface_opensearch.config import load_config
 from kestrel_interface_opensearch.ossql import OpenSearchTranslator
@@ -34,19 +32,6 @@ def _jdbc2df(schema: dict, datarows: dict) -> DataFrame:
     """Convert a JDBC query result response to a DataFrame"""
     columns = [c.get("alias", c["name"]) for c in schema]
     return DataFrame(datarows, columns=columns)
-
-
-def _translate_df(df: DataFrame, dmm: dict) -> DataFrame:
-    # Translate results into Kestrel OCSF data model
-    # The column names of df are already mapped
-    df = df.replace({np.nan: None})
-    for col in df.columns:
-        mapping = dpath.get(dmm, col, separator=".")
-        if isinstance(mapping, dict):
-            transformer_name = mapping.get("ocsf_value")
-            df[col] = run_transformer_on_series(transformer_name, df[col])
-
-    return df
 
 
 def read_sql(sql: str, conn: OpenSearch, dmm: Optional[dict] = None) -> DataFrame:
@@ -77,7 +62,7 @@ def read_sql(sql: str, conn: OpenSearch, dmm: Optional[dict] = None) -> DataFram
         df = _jdbc2df(schema, query_resp["datarows"])
         if dmm is not None:
             # Need to use Data Model Map to do results translation
-            dfs.append(_translate_df(df, dmm))
+            dfs.append(translate_dataframe(df, dmm))
         else:
             dfs.append(df)
         cursor = query_resp.get("cursor")

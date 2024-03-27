@@ -1,33 +1,23 @@
-import json
 import logging
 from functools import reduce
-import re
 from typing import Callable, Iterable, Mapping, Optional
 from uuid import UUID
 
-# import numpy as np
-import dpath
-import numpy as np
 from pandas import DataFrame, read_sql
 import sqlalchemy
-from sqlalchemy import and_, column, or_, select, FromClause, asc, desc
-from sqlalchemy.engine import Compiled, default
-from sqlalchemy.sql.elements import BinaryExpression, BooleanClauseList
-from sqlalchemy.sql.expression import ColumnClause, ColumnOperators
-from sqlalchemy.sql.selectable import Select
+from sqlalchemy import and_, column, or_
+from sqlalchemy.sql.elements import BooleanClauseList
+from sqlalchemy.sql.expression import ColumnClause
 from typeguard import typechecked
 
 from kestrel.display import GraphletExplanation
-from kestrel.exceptions import DataSourceError
 from kestrel.interface import AbstractInterface
 from kestrel.interface.codegen.sql import SqlTranslator, comp2func
 from kestrel.ir.filter import (
     BoolExp,
     ExpOp,
     FComparison,
-    ListOp,
     MultiComp,
-    NumCompOp,
     StrComparison,
     StrCompOp,
 )
@@ -45,30 +35,15 @@ from kestrel.ir.instructions import (
     Variable,
 )
 from kestrel.mapping.data_model import (
-    reverse_mapping,
     translate_comparison_to_native,
+    translate_dataframe,
     translate_projection_to_native,
 )
-from kestrel.mapping.transformers import run_transformer_on_series
 
 from kestrel_interface_sqlalchemy.config import load_config
 
 
 _logger = logging.getLogger(__name__)
-
-
-# TODO: move this someplace common?
-def _translate_df(df: DataFrame, dmm: dict) -> DataFrame:
-    # Translate results into Kestrel OCSF data model
-    # The column names of df are already mapped
-    df = df.replace({np.nan: None})
-    for col in df.columns:
-        mapping = dpath.get(dmm, col, separator=".")
-        if isinstance(mapping, dict):
-            transformer_name = mapping.get("ocsf_value")
-            df[col] = run_transformer_on_series(transformer_name, df[col])
-
-    return df
 
 
 @typechecked
@@ -232,7 +207,7 @@ class SQLAlchemyInterface(AbstractInterface):
             dmm = translator.dmm[
                 translator.entity_type
             ]  # TODO: need a method for this?
-            mapping[instruction.id] = _translate_df(df, dmm)
+            mapping[instruction.id] = translate_dataframe(df, dmm)
         return mapping
 
     def explain_graph(
