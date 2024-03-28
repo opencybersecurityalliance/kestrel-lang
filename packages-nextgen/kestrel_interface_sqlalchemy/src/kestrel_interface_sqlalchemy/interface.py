@@ -69,7 +69,6 @@ class SQLAlchemyTranslator(SqlTranslator):
             else ""
         )
         ocsf_field = f"{prefix}{comp.field}"
-        _logger.debug("PC: ent=%s ocsf_field=%s", self.entity_type, ocsf_field)
         comps = translate_comparison_to_native(
             self.dmm, ocsf_field, comp.op, comp.value
         )
@@ -86,7 +85,7 @@ class SQLAlchemyTranslator(SqlTranslator):
 
     @typechecked
     def _render_multi_comp(self, comps: MultiComp):
-        op = _and if comps.op == ExpOp.AND else _or
+        op = and_ if comps.op == ExpOp.AND else or_
         return reduce(op, map(self._render_comp, comps.comps))
 
     # This is copied verbatim from sql.py but we need to supply our own _render_comp
