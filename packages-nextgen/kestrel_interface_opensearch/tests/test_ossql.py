@@ -33,12 +33,28 @@ import pytest
 TIMEFMT = '%Y-%m-%dT%H:%M:%S.%fZ'
 
 
+# A much-simplified test mapping
 data_model_map = {
-    "process.cmd_line": "CommandLine",
-    "process.file.path": "Image",
-    "process.pid": "ProcessId",
-    "actor.process.pid": "ParentProcessId",
+    "process": {
+        "cmd_line": "CommandLine",
+        "file": {
+            "path": "Image",
+            # "name": [
+            #     {
+            #         "native_field": "Image",
+            #         "native_value": "basename",
+            #         "ocsf_op": "LIKE",
+            #         "ocsf_value": "endswith"
+            #     }
+            # ]
+        },
+        "pid": "ProcessId",
+        "parent_process": {
+            "pid": "ParentProcessId",
+        },
+    },
 }
+
 schema = {
     "CommandLine": "text",
     "Image": "text",
@@ -68,10 +84,10 @@ def _remove_nl(s):
          "SELECT {} FROM my_table WHERE foo >= 0 AND timestamp >= '2023-12-06T08:17:00.000000Z' AND timestamp < '2023-12-07T08:17:00.000000Z'"),
         # Add a limit and projection
         ([Limit(3), ProjectAttrs(['foo', 'bar', 'baz']), Filter(StrComparison('foo', StrCompOp.EQ, 'abc'))],
-         "SELECT foo, bar, baz FROM my_table WHERE foo = 'abc' LIMIT 3"),
+         "SELECT `foo`, `bar`, `baz` FROM my_table WHERE foo = 'abc' LIMIT 3"),
         # Same as above but reverse order
         ([Filter(StrComparison('foo', StrCompOp.EQ, 'abc')), ProjectAttrs(['foo', 'bar', 'baz']), Limit(3)],
-         "SELECT foo, bar, baz FROM my_table WHERE foo = 'abc' LIMIT 3"),
+         "SELECT `foo`, `bar`, `baz` FROM my_table WHERE foo = 'abc' LIMIT 3"),
         ([Filter(ListComparison('foo', ListOp.NIN, ['abc', 'def']))],
          "SELECT {} FROM my_table WHERE foo NOT IN ('abc', 'def')"),
         ([Filter(MultiComp(ExpOp.OR, [IntComparison('foo', NumCompOp.EQ, 1), IntComparison('bar', NumCompOp.EQ, 1)]))],
@@ -86,9 +102,11 @@ def _remove_nl(s):
     ]
 )
 def test_opensearch_translator(iseq, sql):
-    cols = '`CommandLine` AS `cmd_line`, `Image` AS `file.path`, `ProcessId` AS `pid`'
-    if ProjectEntity not in {type(i) for i in iseq}:
-        cols += ', `ParentProcessId` AS `process.pid`'
+    cols = '`CommandLine` AS `cmd_line`, `Image` AS `file.path`, `ProcessId` AS `pid`, `ParentProcessId` AS `parent_process.pid`'
+    if ProjectEntity in {type(i) for i in iseq}:
+        cols = '`CommandLine` AS `cmd_line`, `Image` AS `file.path`, `ProcessId` AS `pid`, `ParentProcessId` AS `parent_process.pid`'
+    else:
+        cols = '`CommandLine` AS `process.cmd_line`, `Image` AS `process.file.path`, `ProcessId` AS `process.pid`, `ParentProcessId` AS `process.parent_process.pid`'
     trans = OpenSearchTranslator(TIMEFMT, "timestamp", "my_table", data_model_map, schema)
     for i in iseq:
         trans.add_instruction(i)

@@ -1,237 +1,233 @@
-process.command_line: process.cmd_line
-process.end: process.end_time
-process.entity_id: process.uid
-process.executable: process.file.path
-process.exit_code: process.exit_code
-process.name: process.name
-process.pid: process.pid
-process.start: process.start_time
-process.thread.id: process.tid
-# process.args
-# process.args_count
-# process.entry_meta.type
-# process.env_vars
-# process.interactive
-# process.same_as_process
-# process.thread.capabilities.effective
-# process.thread.capabilities.permitted
-# process.thread.name
-# process.title
-# process.tty
-# process.uptime
-# process.vpid
-# process.working_directory
-file.accessed: file.accessed_time
-file.attributes: file.attributes
-file.created: file.created_time
-file.ctime: file.modified_time
-file.directory: file.parent_folder
-file.gid: file.xattributes.primary_group
-file.mime_type: file.mime_type
-file.mode: file.mode
-file.mtime: file.modified_time
-file.name: file.name
-file.owner: file.owner
-file.path: file.path
-file.size: file.size
-file.target_path: file.xattributes.link_name
-file.type: file.type
-# file.device
-# file.drive_letter
-# file.extension
-# file.fork_name
-# file.inode
-# file.uid
-group.name: group.name
-group.id: group.uid
-# group.domain
-client.bytes: traffic.bytes_out
-client.domain: src_endpoint.domain
-client.ip: src_endpoint.ip
-client.mac: src_endpoint.mac
-client.packets: traffic.packets_out
-client.port: src_endpoint.port
-# client.address
-# client.nat.ip
-# client.nat.port
-# client.registered_domain
-# client.subdomain
-# client.top_level_domain
-destination.bytes: traffic.bytes_in
-destination.domain: dst_endpoint.domain
-destination.ip: dst_endpoint.ip
-destination.mac: dst_endpoint.mac
-destination.packets: traffic.packets_in
-destination.port: dst_endpoint.port
-# destination.address
-# destination.nat.ip
-# destination.nat.port
-# destination.registered_domain
-# destination.subdomain
-# destination.top_level_domain
-server.bytes: traffic.bytes_in
-server.domain: dst_endpoint.domain
-server.ip: dst_endpoint.ip
-server.mac: dst_endpoint.mac
-server.packets: traffic.packets_in
-server.port: dst_endpoint.port
-# server.address
-# server.nat.ip
-# server.nat.port
-# server.registered_domain
-# server.subdomain
-# server.top_level_domain
-source.bytes: traffic.bytes_out
-source.domain: src_endpoint.domain
-source.ip: src_endpoint.ip
-source.mac: src_endpoint.mac
-source.packets: traffic.packets_out
-source.port: src_endpoint.port
-# source.address
-# source.nat.ip
-# source.nat.port
-# source.registered_domain
-# source.subdomain
-# source.top_level_domain
+# https://schema.ocsf.io/1.1.0/objects/file
+file:
+    accessed_time: file.accessed
+    attributes: file.attributes
+    created_time: file.created
+    # This "hashes" notation comes from jmespath (filter projection)
+    # It's much easier to use the ECS notation in this case
+    hashes[?algorithm_id == 1]:
+        value: hash.md5
+    hashes[?algorithm_id == 2]:
+        value: hash.sha1
+    hashes[?algorithm_id == 3]:
+        value: hash.sha256
+    hashes[?algorithm_id == 4]:
+        value: hash.sha512
+    hashes[?algorithm_id == 5]:
+        value: hash.ssdeep
+    hashes[?algorithm_id == 6]:
+        value: hash.tlsh
+    hashes[*]:
+        value:
+          - hash.md5
+          - hash.sha1
+          - hash.sha256
+          - hash.sha512
+          - hash.ssdeep
+          - hash.tlsh
+    modified_time: file.ctime
+    mime_type: file.mime_type
+    mode: file.mode
+    modified_time: file.mtime
+    name: file.name
+    owner: file.owner
+    parent_folder: file.directory
+    path: file.path
+    size: file.size
+    type: file.type
+    xattributes:
+        primary_group: file.gid
+        link_name: file.target_path
 
-# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], Email Activity [4009]
-network.application: app_name
-network.bytes: traffic.bytes
-network.direction: connection_info.direction
-network.iana_number: connection_info.protocol_num
-network.packets: traffic.packets
-network.protocol: connection_info.protocol_name
-network.type: connection_info.protocol_ver_id
-# network.community_id
-# network.forwarded_ip
-# network.inner
-# network.name
-# network.transport: 
-hash.md5: file.hashes[?algorithm_id == 1].value
-hash.sha1: file.hashes[?algorithm_id == 2].value
-hash.sha256: file.hashes[?algorithm_id == 3].value
-hash.sha512: file.hashes[?algorithm_id == 4].value
-hash.ssdeep: file.hashes[?algorithm_id == 5].value
-hash.tlsh: file.hashes[?algorithm_id == 6].value
-# hash.sha384
-x509.not_after: certificate.expiration_time
-x509.not_before: certificate.created_time
-x509.serial_number: certificate.serial_number
-x509.signature_algorithm: certificate.fingerprints.algorithm
-x509.version_number: certificate.version
-# x509.alternative_names
-# x509.issuer.common_name: certificate.issuer
-# x509.issuer.country: certificate.issuer
-# x509.issuer.distinguished_name: certificate.issuer
-# x509.issuer.locality: certificate.issuer
-# x509.issuer.organization: certificate.issuer
-# x509.issuer.organizational_unit: certificate.issuer
-# x509.issuer.state_or_province: certificate.issuer
-# x509.public_key_algorithm
-# x509.public_key_curve
-# x509.public_key_exponent
-# x509.public_key_size
-# x509.subject.common_name: certificate.subject
-# x509.subject.country: certificate.subject
-# x509.subject.distinguished_name: certificate.subject
-# x509.subject.locality: certificate.subject
-# x509.subject.organization: certificate.subject
-# x509.subject.organizational_unit: certificate.subject
-# x509.subject.state_or_province: certificate.subject
-as.number: device.org.number
-as.organization.name: device.org.name
-geo.city_name: location.city
-geo.continent_name: location.continent
-geo.country_iso_code: location.county
-geo.location: location.coordinates
-geo.postal_code: location.postal_code
-geo.region_iso_code: location.region
-# geo.continent_code
-# geo.country_name
-# geo.name
-# geo.region_name
-# geo.timezone
-user.domain: user.domain
-user.email: user.email_addr
-user.full_name: user.full_name
-user.id: user.uid
-user.name: user.name
-# user.roles
-# user.hash:
 
-referenced_fields:
-  process.group:
-    ref: group
-    prefix: process
-  process.hash:
-    ref: hash
-    prefix: process
-  process.parent:
-    ref: process    # ECS entity used for attribute mapping
-    prefix: process # OCSF Prefix
-    target_entity: parent_process # Updated OCSF entity name 
-  process.user:
-    ref: user
-    prefix: process
-  #  process.code_signature: code_signature
-  #  process.entry_leader: process
-  #  process.entry_leader.parent: process
-  #  process.entry_leader.parent.session_leader: process
-  #  process.entry_meta.source: source
-  #  process.group_leader: process
-  #  process.macho: macho
-  #  process.parent.group_leader: process
-  #  process.pe: pe
-  #  process.previous: process
-  #  process.real_group: group
-  #  process.real_user: user
-  #  process.saved_group: group
-  #  process.saved_user: user
-  #  process.session_leader: process
-  #  process.session_leader.parent: process
-  #  process.session_leader.parent.session_leader: process
-  #  process.supplemental_groups: group
-  file.hash:
-    ref: hash
-    prefix: null
-  file.x509:
-    ref: x509
-    prefix: tls
-  # file.code_signature.*
-  # file.pe.*
-  client.as:
-    ref: as
-    prefix: null
-  client.geo:
-    ref: geo
-    prefix: src_endpoint
-  # client.user:
-  #   ref: user
-  #   prefix: src_endpoint
-  destination.as:
-    ref: as
-    prefix: null
-  destination.geo:
-    ref: geo
-    prefix: dst_endpoint
-  # destination.user:
-  #   ref: user
-  #   prefix: dst_endpoint
-  server.as:
-    ref: as
-    prefix: null
-  server.geo:
-    ref: geo
-    prefix: dst_endpoint
-  # server.user:
-  #   ref: user
-  #   prefix: dst_endpoint
-  source.as:
-    ref: as
-    prefix: null
-  source.geo:
-    ref: geo
-    prefix: src_endpoint
-  # source.user:
-  #   ref: user
-  #   prefix: src_endpoint
+# https://schema.ocsf.io/1.1.0/objects/group
+group:
+    domain: group.domain
+    name: group.name
+    uid: group.id
+
+
+# https://schema.ocsf.io/1.1.0/objects/process
+process:
+    cmd_line: process.command_line
+    name: process.name
+    pid: process.pid
+    uid: process.entity_id
+    file:
+        name:
+            native_field: process.executable
+            native_op: LIKE
+            native_value: endswith
+            ocsf_value: basename
+        path: process.executable
+        parent_folder:
+            native_field: process.executable
+            native_op: LIKE
+            native_value: startswith
+            ocsf_value: dirname
+        # This "hashes" notation comes from jmespath (filter projection)
+        # It's much easier to use the ECS notation in this case
+        hashes[?algorithm_id == 1]:
+            value: process.hash.md5
+        hashes[?algorithm_id == 2]:
+            value: process.hash.sha1
+        hashes[?algorithm_id == 3]:
+            value: process.hash.sha256
+        hashes[?algorithm_id == 4]:
+            value: process.hash.sha512
+        hashes[?algorithm_id == 5]:
+            value: process.hash.ssdeep
+        hashes[?algorithm_id == 6]:
+            value: process.hash.tlsh
+        hashes[*]:
+            value:
+              - process.hash.md5
+              - process.hash.sha1
+              - process.hash.sha256
+              - process.hash.sha512
+              - process.hash.ssdeep
+              - process.hash.tlsh
+    parent_process:
+        cmd_line: process.parent.command_line
+        name: process.parent.name
+        pid: process.parent.pid
+        uid: process.parent.entity_id
+        file:
+            name:
+                native_field: process.parent.executable
+                native_op: LIKE
+                native_value: endswith
+                ocsf_value: basename
+            path: process.parent.executable
+            parent_folder:
+                native_field: process.parent.executable
+                native_op: LIKE
+                native_value: startswith
+                ocsf_value: dirname
+
+
+# src_endpoint: see https://schema.ocsf.io/1.1.0/objects/endpoint
+src_endpoint: &src_ref
+    domain:
+        - client.domain
+        - source.domain
+    hostname:
+        - client.domain
+        - source.domain
+    ip:
+        - client.ip
+        - source.ip
+    mac:
+        - client.mac
+        - source.mac
+    port:
+        - client.port
+        - source.port
+
+
+# endpoint: see https://schema.ocsf.io/1.1.0/objects/endpoint
+endpoint:
+    domain:
+        - client.domain
+        - source.domain
+        - server.domain
+        - destination.domain
+    hostname:
+        - client.domain
+        - source.domain
+        - server.domain
+        - destination.domain
+    ip:
+        - client.ip
+        - source.ip
+        - server.ip
+        - destination.ip
+    mac:
+        - client.mac
+        - source.mac
+        - server.mac
+        - destination.mac
+    port:
+        - client.port
+        - source.port
+        - server.port
+        - destination.port
+
+
+# dst_endpoint: see https://schema.ocsf.io/1.1.0/objects/endpoint
+dst_endpoint: &dst_ref
+    domain:
+        - server.domain
+        - destination.domain
+    hostname:
+        - server.domain
+        - destination.domain
+    ip:
+        - server.ip
+        - destination.ip
+    mac:
+        - server.mac
+        - destination.mac
+    port:
+        - server.port
+        - destination.port
+
+
+# https://schema.ocsf.io/1.1.0/objects/network_traffic
+# should be `network_traffic`?
+traffic: &traffic
+    bytes: network.bytes
+    bytes_in:
+        - destination.bytes
+        - server.bytes
+    bytes_out:
+        - client.bytes
+        - source.bytes
+    packets: network.packets
+    packets_in:
+        - destination.packets
+        - server.packets
+    packets_out:
+        - client.packets
+        - source.packets
+
+
+# https://schema.ocsf.io/1.1.0/objects/network_connection_info
+connection_info:
+    direction: network.direction  #TODO: need transformer?
+    protocol_num: network.iana_number
+    protocol_name: network.transport
+    protocol_ver: network.type
+    protocol_ver_id:
+        native_field: network.type
+        native_value: ip_version_to_network_layer
+        ocsf_value: network_layer_to_ip_version
+
+
+# https://schema.ocsf.io/1.1.0/objects/certificate
+certificate:
+    expiration_time: x509.not_after
+    created_time: x509.not_before
+    serial_number: x509.serial_number
+    fingerprints[*]:
+        algorithm: x509.signature_algorithm
+    version: x509.version_number
+    issuer: x509.issuer.distinguished_name
+    subject: x509.subject.distinguished_name
+    #uid:
+
+
+# https://schema.ocsf.io/1.1.0/objects/user
+user:
+    full_name: user-account:display_name
+    name: user-account:account_login
+    type: user-account:account_type
+    uid: user-account:user_id
+
+
+# https://schema.ocsf.io/1.1.0/classes/network_activity
+# Network Activity [4001] Class
+network_activity:
+    src_endpoint: *src_ref
+    dst_endpoint: *dst_ref
+    traffic: *traffic

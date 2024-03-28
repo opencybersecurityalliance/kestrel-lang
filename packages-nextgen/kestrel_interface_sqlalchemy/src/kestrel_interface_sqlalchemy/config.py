@@ -13,30 +13,19 @@ from kestrel.exceptions import InterfaceNotConfigured
 from kestrel.mapping.data_model import load_mapping
 
 
-PROFILE_PATH_DEFAULT = CONFIG_DIR_DEFAULT / "opensearch.yaml"
-PROFILE_PATH_ENV_VAR = "KESTREL_OPENSEARCH_CONFIG"
+PROFILE_PATH_DEFAULT = CONFIG_DIR_DEFAULT / "sqlalchemy.yaml"
+PROFILE_PATH_ENV_VAR = "KESTREL_SQLALCHEMY_CONFIG"
 
 _logger = logging.getLogger(__name__)
 
 
 @dataclass
-class Auth:
-    username: str
-    password: str
-
-
-@dataclass
 class Connection(DataClassJSONMixin):
-    url: str
-    auth: Auth
-    verify_certs: bool = True
-
-    def __post_init__(self):
-        self.auth = Auth(**self.auth)
+    url: str  # SQLAlchemy "connection URL" or "connection string"
 
 
 @dataclass
-class Index(DataClassJSONMixin):
+class Table(DataClassJSONMixin):
     connection: str
     timestamp: str
     timestamp_format: str
@@ -49,17 +38,17 @@ class Index(DataClassJSONMixin):
                 self.data_model_map = yaml.safe_load(fp)
         else:
             # Default to the built-in ECS mapping
-            self.data_model_map = load_mapping("ecs")
+            self.data_model_map = load_mapping("ecs")  # FIXME: need a default?
 
 
 @dataclass
 class Config(DataClassJSONMixin):
     connections: Dict[str, Connection]
-    indexes: Dict[str, Index]
+    tables: Dict[str, Table]
 
     def __post_init__(self):
         self.connections = {k: Connection(**v) for k, v in self.connections.items()}
-        self.indexes = {k: Index(**v) for k, v in self.indexes.items()}
+        self.tables = {k: Table(**v) for k, v in self.tables.items()}
 
 
 def load_config():

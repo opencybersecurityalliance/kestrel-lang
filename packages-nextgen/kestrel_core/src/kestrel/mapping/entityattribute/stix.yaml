@@ -1,210 +1,143 @@
-# All Categories [*]
-autonomous-system:name: device.org.name
-autonomous-system:number: device.org.uid
+# https://schema.ocsf.io/1.1.0/objects/file
+file:
+    name: file:name
+    size: file:size
+    accessed_time: file:accessed
+    created_time: file:created
+    modified_time: file:modified
+    # This "hashes" notation comes from jmespath (filter projection)
+    # It's much easier to use the ECS notation in this case
+    hashes[?algorithm_id == 1]:
+        value: file:hashes.MD5
+    hashes[?algorithm_id == 2]:
+        value: "file:hashes.'SHA-1'"
+    hashes[?algorithm_id == 3]:
+        value: "file:hashes.'SHA-256'"
+    hashes[?algorithm_id == 4]:
+        value: "file:hashes.'SHA-512'"
+    hashes[?algorithm_id == 5]:
+        value: file:hashes.SSDEEP
+    hashes[?algorithm_id == 6]:
+        value: file:hashes.TLSH
+    hashes[*]:
+        value:
+          - file:hashes.MD5
+          - "file:hashes.'SHA-1'"
+          - "file:hashes.'SHA-256'"
+          - "file:hashes.'SHA-512'"
+          - file:hashes.SSDEEP
+          - file:hashes.TLSH
 
-# File System Activity [1001]
-directory:path: file.path
-directory:accessed: file.accessed_time
-directory:created: file.created_time
-directory:modified: file.modified_time
 
-# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], Email Activity [4009]
-domain-name.value:
-  - src_endpoint.domain
-  - dst_endpoint.domain
-  - dns_query.hostname
+# https://schema.ocsf.io/1.1.0/objects/group
+# group:
+#     domain:
+#     name:
+#     uid:
 
-# Email Activity [4009]
-email-addr:value: user.email_addr
-email-addr:display_name: user.full_name
-# email-message:is_multipart
-# email-message:date
-# email-message:content_type
-email-message:from_ref.value: email.from
-email-message:sender_ref.value: email.smtp_from
-email-message:to_refs[*].value: email.to
-email-message:cc_refs[*].value: email.cc
-email-message:subject: email.subject
-# email-message:received_lines
-email-message:additional_header_fields: email.raw_header
-# email-message:body
-email-message:body_multipart.body_raw_ref.name: file.name
-# email-message:raw_email_ref
-# email-message:body_multipart.body: file.mime_type
 
-# File System Activity [1001], Network File Activity [4010], Email File Activity [4011]
-file:accessed: file.accessed_time
-file:created: file.created_time
-file:name: file.name
-file:size: file.size
-file:hashes.SHA-256: file.hashes[?algorithm_id == 3].value
-file:hashes.SHA-1: file.hashes[?algorithm_id == 2].value
-file:hashes.MD5: file.hashes[?algorithm_id == 1].value
-file:parent_directory_ref.path: file.parent_folder
-# file:name_enc
-# file:magic_number_hex
-file:mime_type: file.mime_type
-# file:is_encrypted
-# file:encryption_algorithm
-# file:decryption_key
-# file:contains_refs
-# file:content_ref
+# https://schema.ocsf.io/1.1.0/objects/process
+process:
+    cmd_line: process:command_line
+    name: process:name
+    pid: process:pid
+    uid: process:x_unique_id
+    file:
+        name: process:binary_ref.name
+        parent_folder: process:binary_ref.parent_directory_ref.path
+        # This "hashes" notation comes from jmespath (filter projection)
+        # It's much easier to use the ECS notation in this case
+        hashes[?algorithm_id == 1]:
+            value: process:binary_ref.hashes.MD5
+        hashes[?algorithm_id == 2]:
+            value: process:binary_ref.hashes.'SHA-1'
+        hashes[?algorithm_id == 3]:
+            value: process:binary_ref.hashes.'SHA-256'
+        hashes[?algorithm_id == 4]:
+            value: process:binary_ref.hashes.'SHA-512'
+        hashes[?algorithm_id == 5]:
+            value: process:binary_ref.hashes.SSDEEP
+        hashes[?algorithm_id == 6]:
+            value: process:binary_ref.hashes.TLSH
+        hashes[*]:
+            value:
+              - process:binary_ref.hashes.MD5
+              - process:binary_ref.hashes.'SHA-1'
+              - process:binary_ref.hashes.'SHA-256'
+              - process:binary_ref.hashes.'SHA-512'
+              - process:binary_ref.hashes.SSDEEP
+              - process:binary_ref.hashes.TLSH
+    parent_process:
+        cmd_line: process:parent_ref.command_line
+        name: process:parent_ref.name
+        pid: process:parent_ref.pid
+        uid: process:parent_ref.x_unique_id
+        file:
+            name: process:parent_ref.binary_ref.name
+            parent_folder: process:parent_ref.binary_ref.parent_directory_ref.path
 
-# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], FTP Activity [4008], SSH Activity [4007]
-ipv4-addr:value:
-  - dst_endpoint.ip
-  - src_endpoint.ip
-  - device.ip
-# ipv4-addr.belongs_to_refs
-# ipv4-addr.resolves_to_refs
 
-# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], FTP Activity [4008], SSH Activity [4007]
-ipv6-addr:value:
-  - dst_endpoint.ip
-  - src_endpoint.ip
-  - device.ip
+# dst_endpoint: see https://schema.ocsf.io/1.1.0/objects/endpoint
+dst_endpoint:
+    ip:
+        - network-traffic:dst_ref.value
+        - ipv4-addr:value
+    port: network-traffic:dst_port
 
-# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], FTP Activity [4008], SSH Activity [4007]
-mac-addr:value: 
-  - dst_endpoint.mac
-  - src_endpoint.mac
-  - device.mac
 
-# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003]
-network-traffic:dst_byte_count: traffic.bytes_in
-network-traffic:dst_packets: traffic.packets_in
-network-traffic:dst_port: dst_endpoint.port
-network-traffic:dst_ref.value: dst_endpoint.ip
-network-traffic:protocols[*]:
-  - connection_info.protocol_num
-  - connection_info.protocol_name
-  - connection_info.protocol_ver_id
-network-traffic:src_byte_count: traffic.bytes_out
-network-traffic:src_packets: traffic.packets_out
-network-traffic:src_port: src_endpoint.port
-network-traffic:src_ref.value: src_endpoint.ip
-network_traffic:start: start_time
-network_traffic:end: end_time
-# network_traffic:is_active
-# network_traffic:ipfix
-# network_traffic:src_payload_ref
-# network_traffic:dst_payload_ref
-# network_traffic:encapsulates_refs
-# network_traffic:encapsulated_by_ref
+# src_endpoint: see https://schema.ocsf.io/1.1.0/objects/endpoint
+src_endpoint:
+    ip:
+        - network-traffic:src_ref.value
+        - ipv4-addr:value
+    port: network-traffic:src_port
 
-# Process Activity [1007]
-process:binary_ref.name: file.name
-process:command_line: process.cmd_line
-process:created: process.created_time
-process:mime_type: mime_type
-process:name: process.name
-process:pid: process.pid
-process:x_unique_id: process.uid
-process:parent_ref.name:
-  - actor.process.name
-  - process.parent_process.name
 
-# Base Event [0]
-software:extension.product.feature_name: metadata.product.feature.name
-software:extension.product.feature_uid: metadata.product.feature.uid
-software:extension.product.feature_version: metadata.product.feature.version
-software:extension.product.path: metadata.product.path
-software:extension.product.uid: metadata.product.uid
-software:languages: metadata.product.lang
-software:name: metadata.product.name
-software:vendor: metadata.product.vendor_name
-software:version: metadata.product.version
+# https://schema.ocsf.io/1.1.0/objects/endpoint
+endpoint:
+    ip: ipv4-addr:value
 
-# HTTP Activity [4002]
-url:value: http_request.url
 
-# Account Change [3001], Authentication [3002], Authorize Session [3003], User Access Management [3005]
-user-account:account_type: user.account.type
-user-account:display_name: user.account.name
-user-account:user_id: user.account.uid
+# https://schema.ocsf.io/1.1.0/objects/device
+device:
+    ip: ipv4-addr:value
 
-# Base Event [0]
-x-ibm-finding:alert_id:
-  - observables.type_id
-  - finding.uid
-x-ibm-finding:description: observables.value
-x-ibm-finding:dst_ip_ref.value: dst_endpoint.ip
-x-ibm-finding:end: end_time
-x-ibm-finding:event_count: count
-x-ibm-finding:finding_type: observables.type
-x-ibm-finding:name: 
-  - observables.name
-  - finding.title
-x-ibm-finding:severity: severity_id
-x-ibm-finding:src_ip_ref.value: src_endpoint.ip
-x-ibm-finding:start: finding.created_time
-x-ibm-finding:time_observed: finding.first_seen_time
-x-ibm-finding:types: finding.types
 
-# All Categories [*]
-x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.tactic_id: attacks[*].tactics.uid
-x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.tactic_name: attacks[*].tactics.name
-x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.technique_id: attacks[*].technique.uid
-x-ibm-ttp-tagging:extensions.'mitre-attack-ext'.version: attacks[*].version
-x-ibm-ttp-tagging:name: attacks[*].technique.name
+# https://schema.ocsf.io/1.1.0/objects/network_traffic
+traffic:  # should be `network_traffic`?
+    #TODO: bytes: sum of byte counts?
+    bytes_in: network-traffic:dst_byte_count
+    bytes_out: network-traffic:src_byte_count
+    #TODO: packets: sum of packet counts?
+    packets_in: network-traffic:dst_packets
+    packets_out: network-traffic:src_packets
 
-# All Categories [*]
-x-oca-asset:name:
-  - dst_endpoint.name
-  - src_endpoint.name
-  - device.name
-x-oca-asset:os_name: device.os.name
-x-oca-asset:hostname: device.hostname
-x-oca-asset:device_id: device.uid
-x-oca-asset:ip_refs[*].value: device.network_interfaces[*].ip
-x-oca-asset:mac_refs[*].value: device.network_interfaces[*].mac
-x-oca-asset:os_ref: device.os
-x-oca-asset:architecture: device.hw_info
-x-oca-asset:host_type: device.type
-x-oca-asset:ingress: device.network_interfaces
-x-oca-asset:egress: device.network_interfaces
-x-oca-asset:geo_ref: device.location
 
-# Base Event [0]
-x-oca-event:action:
-  - activity
-  - activity_name
-x-oca-event:category: category_name
-x-oca-event:code:
-  - activity_id
-  - category_uid
-x-oca-event:confidence: confidence
-x-oca-event:created: time
-x-oca-event:duration: duration
-x-oca-event:module: class_name
-x-oca-event:network_ref.dst_ref.value: dst_endpoint.ip
-x-oca-event:network_ref.src_ref.value: src_endpoint.ip
-x-oca-event:timezone: timezone_offset
+# https://schema.ocsf.io/1.1.0/objects/network_connection_info
+# connection_info:
+#     direction:
+#     protocol_num:
+#     protocol_name:
+#     protocol_ver:
+#     protocol_ver_id:
 
-# Network Activity [4001], HTTP Activity [4002], DNS Activity [4003], FTP Activity [4008], SSH Activity [4007]
-x509-certificate:hashes.SHA-256: file.hashes[?algorithm_id == 3].value
-x509-certificate:hashes.SHA-1: file.hashes[?algorithm_id == 2].value
-x509-certificate:hashes.MD5: file.hashes[?algorithm_id == 1].value
-x509-certificate:version: tls.certificate.version
-x509-certificate:serial_number: tls.certificate.serial_number
-x509-certificate:issuer: tls.certificate.issuer
-x509-certificate:validity_not_before: tls.certificate.created_time
-x509-certificate:validity_not_after: tls.certificate.expiration_time
-x509-certificate:subject: tls.certificate.subject
-x509-certificate:x509_v3_extensions: tls.extension_list
-x509-certificate:signature_algorithm: tls.certificate.fingerprints.algorithm
 
-# Registry Key Activity [201001]
-windows-registry-key:key: win/registry_key.path
+# https://schema.ocsf.io/1.1.0/objects/certificate
+certificate:
+    expiration_time: x509-certificate:validity_not_after
+    created_time: x509-certificate:validity_not_before
+    serial_number: x509-certificate:serial_number
+    fingerprints[*]:
+        algorithm: x509-certificate:signature_algorithm
+    version: x509-certificate:version_number
+    issuer: x509-certificate:issuer
+    subject: x509-certificate:subject
+    #uid:
 
-# Additional mapping for STIX 2.1
-# File System Activity [1001]
-directory:atime: file.accessed_time
-directory:ctime: file.created_time
-directory:mtime: file.modified_time
-file:atime: file.accessed_time
-file:ctime: file.created_time
-file:mtime: file.modified_time
 
-# Process Activity [1007]
-process:image_ref.name: file.name
+# https://schema.ocsf.io/1.1.0/objects/user
+user:
+    full_name: user-account:display_name
+    name: user-account:account_login
+    type: user-account:account_type
+    uid: user-account:user_id

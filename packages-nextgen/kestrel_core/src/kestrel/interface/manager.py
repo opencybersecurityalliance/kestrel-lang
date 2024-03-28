@@ -10,6 +10,7 @@ from typeguard import typechecked
 from typing import Mapping, Iterable, Type
 
 from kestrel.exceptions import (
+    InterfaceNotConfigured,
     InterfaceNotFound,
     InvalidInterfaceImplementation,
     ConflictingInterfaceScheme,
@@ -28,9 +29,12 @@ class InterfaceManager(Mapping):
         interface_classes = _load_interface_classes()
         self.interfaces = list(init_interfaces)  # copy/recreate the list
         for iface_cls in interface_classes:
-            iface = iface_cls()
-            _logger.debug(f"Initialize interface {iface.__name__}")
-            self.interfaces.append(iface)
+            try:
+                iface = iface_cls()
+                _logger.debug(f"Initialize interface {iface_cls.__name__}")
+                self.interfaces.append(iface)
+            except InterfaceNotConfigured as e:
+                _logger.debug(f"Interface {iface_cls.__name__} not configured; ignored")
 
     def __getitem__(self, scheme: str) -> AbstractInterface:
         for interface in self.interfaces:

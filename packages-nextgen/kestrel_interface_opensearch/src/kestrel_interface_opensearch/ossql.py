@@ -9,7 +9,6 @@ from kestrel.ir.filter import (
     BoolExp,
     ExpOp,
     FComparison,
-    ListComparison,
     ListOp,
     MultiComp,
     NumCompOp,
@@ -25,6 +24,10 @@ from kestrel.ir.instructions import (
     ProjectEntity,
     Sort,
     SortDirection,
+)
+from kestrel.mapping.data_model import (
+    translate_comparison_to_native,
+    translate_projection_to_native,
 )
 
 
@@ -68,6 +71,16 @@ comp2func = {
 }
 
 
+def _format_value(value):
+    if isinstance(value, str):
+        # Need to quote string values
+        value = f"'{value}'"
+    elif isinstance(value, list):
+        # SQL uses parens for lists
+        value = tuple(value)
+    return value
+
+
 @typechecked
 class OpenSearchTranslator:
     def __init__(
@@ -102,23 +115,21 @@ class OpenSearchTranslator:
 
     @typechecked
     def _render_comp(self, comp: FComparison) -> str:
-        if isinstance(comp, StrComparison):
-            # Need to quote string values
-            value = f"'{comp.value}'"
-        elif isinstance(comp, ListComparison):
-            # SQL uses parens for lists
-            value = tuple(comp.value)
-        else:
-            value = comp.value
-        # Need to map OCSF filter field to native
-        prefix = f"{self.entity}." if self.entity else ""
+        prefix = (
+            f"{self.entity}." if (self.entity and comp.field != self.timestamp) else ""
+        )
         ocsf_field = f"{prefix}{comp.field}"
-        field = self.from_ocsf_map.get(ocsf_field, comp.field)
-        _logger.debug("Mapped field '%s' to '%s'", ocsf_field, field)
+        comps = translate_comparison_to_native(
+            self.from_ocsf_map, ocsf_field, comp.op, comp.value
+        )
         try:
-            result = f"{field} {comp2func[comp.op]} {value}"
+            comps = [f"{f} {comp2func[o]} {_format_value(v)}" for f, o, v in comps]
+            conj = " OR ".join(comps)
+            result = conj if len(comps) == 1 else f"({conj})"
         except KeyError:
-            raise UnsupportedOperatorError(comp.op.value)
+            raise UnsupportedOperatorError(
+                comp.op.value
+            )  # FIXME: need to report the mapped op, not the original
         return result
 
     @typechecked
@@ -177,24 +188,21 @@ class OpenSearchTranslator:
         # Just save projection and compile it later
         self.project = proj
 
-    def _get_ocsf_cols(self):
-        prefix = f"{self.entity}." if self.entity else ""
-        if not self.project:
-            ocsf_cols = [k for k in self.from_ocsf_map.keys() if k.startswith(prefix)]
-        else:
-            ocsf_cols = [f"{prefix}{col}" for col in self.project.attrs]
-        _logger.debug("OCSF fields: %s", ocsf_cols)
-        return ocsf_cols
-
     def _render_proj(self):
-        fields = {
-            self.from_ocsf_map.get(col, col): col for col in self._get_ocsf_cols()
-        }
-        _logger.debug("Fields: %s", fields)
+        """Get a list of native cols to project with their OCSF equivalents as SQL aliases"""
+        projection = self.project.attrs if self.project else None
+        name_pairs = translate_projection_to_native(
+            self.from_ocsf_map, self.entity, projection
+        )
         proj = [
-            f"`{k}` AS `{v.partition('.')[2]}`" if "." in v else v
-            for k, v in fields.items()
+            f"`{k}` AS `{v}`"
+            if k != v else f"`{k}`"
+            for k, v in name_pairs
+            if k in self.schema  # Ignore mapped attrs the index doesn't have
         ]
+        if not proj:
+            # If this is still empty, then the attr projection must be for attrs "outside" to entity projection?
+            proj = [f"`{attr}`" for attr in self.project.attrs]
         _logger.debug("Set projection to %s", proj)
         return proj
 
