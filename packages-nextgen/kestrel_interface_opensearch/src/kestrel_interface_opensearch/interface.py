@@ -202,7 +202,7 @@ class OpenSearchInterface(AbstractInterface):
         client = self._get_client_for_index(index)
         if index not in self.schemas:
             df = read_sql(f"DESCRIBE TABLES LIKE {index}", client)
-            self.schemas[index] = Series(
-                df["TYPE_NAME"], index=df["COLUMN_NAME"]
-            ).to_dict()
+            self.schemas[index] = (df[["TYPE_NAME", "COLUMN_NAME"]]
+                                   .set_index("COLUMN_NAME").T.to_dict("records")[0])
+            _logger.debug("%s schema:\n%s", index, self.schemas[index])
         return self.schemas[index]

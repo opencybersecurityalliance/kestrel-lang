@@ -194,7 +194,12 @@ class OpenSearchTranslator:
         name_pairs = translate_projection_to_native(
             self.from_ocsf_map, self.entity, projection
         )
-        proj = [f"`{k}` AS `{v}`" if k != v else f"`{k}`" for k, v in name_pairs]
+        proj = [
+            f"`{k}` AS `{v}`"
+            if k != v else f"`{k}`"
+            for k, v in name_pairs
+            if k in self.schema  # Ignore mapped attrs the index doesn't have
+        ]
         if not proj:
             # If this is still empty, then the attr projection must be for attrs "outside" to entity projection?
             proj = [f"`{attr}`" for attr in self.project.attrs]

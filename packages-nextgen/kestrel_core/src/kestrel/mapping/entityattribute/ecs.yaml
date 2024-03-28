@@ -107,7 +107,7 @@ process:
 
 
 # src_endpoint: see https://schema.ocsf.io/1.1.0/objects/endpoint
-src_endpoint:
+src_endpoint: &src_ref
     domain:
         - client.domain
         - source.domain
@@ -120,6 +120,10 @@ src_endpoint:
     mac:
         - client.mac
         - source.mac
+    port:
+        - client.port
+        - source.port
+
 
 # endpoint: see https://schema.ocsf.io/1.1.0/objects/endpoint
 endpoint:
@@ -143,9 +147,15 @@ endpoint:
         - source.mac
         - server.mac
         - destination.mac
+    port:
+        - client.port
+        - source.port
+        - server.port
+        - destination.port
+
 
 # dst_endpoint: see https://schema.ocsf.io/1.1.0/objects/endpoint
-dst_endpoint:
+dst_endpoint: &dst_ref
     domain:
         - server.domain
         - destination.domain
@@ -158,10 +168,14 @@ dst_endpoint:
     mac:
         - server.mac
         - destination.mac
+    port:
+        - server.port
+        - destination.port
 
 
 # https://schema.ocsf.io/1.1.0/objects/network_traffic
-traffic:  # should be `network_traffic`?
+# should be `network_traffic`?
+traffic: &traffic
     bytes: network.bytes
     bytes_in:
         - destination.bytes
@@ -209,3 +223,11 @@ user:
     name: user-account:account_login
     type: user-account:account_type
     uid: user-account:user_id
+
+
+# https://schema.ocsf.io/1.1.0/classes/network_activity
+# Network Activity [4001] Class
+network_activity:
+    src_endpoint: *src_ref
+    dst_endpoint: *dst_ref
+    traffic: *traffic
